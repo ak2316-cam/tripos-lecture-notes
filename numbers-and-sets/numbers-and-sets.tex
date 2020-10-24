@@ -1,7 +1,7 @@
 %  \documentclass[DIV=12, a4]{scrartcl}
 %\documentclass[12pt, a5]{scrartcl}
-% \documentclass[as4]{article}
 
+% \documentclass[a4paper]{report}
 % \usepackage[
 % % fancytheorems, 
 % noindent, 
@@ -9,15 +9,17 @@
 % %noheader
 % ]{vanilla}
 
-\documentclass[a4]{scrreprt}
+
+\documentclass[a4paper]{scrreprt}
 \usepackage[
 fancytheorems, 
 noindent, 
-%spacingfix, 
-%noheader,
+% %spacingfix, 
+% %noheader,
 fancyproofs
-]{adam}
+]{adam} 
 
+\usepackage{tikz}
 
 % \usepackage{subfig}
 
@@ -316,7 +318,6 @@ We will now need to explicitly check that this definition is valid.
 	\frac{a}{b} + \frac{c}{d} &= \frac{a'}{b'} + \frac{c'}{d'} \\
 \iff \frac{ad + bc}{bd} &= \frac{a'd' + b'c'}{b'd'} \\
 \iff (ad + bc)(b'd') &= (a'd' + b'c')(bd) \\
-\iff adb'd' + bcb'd' &= a'd'bd + b'c'bd \\
 \iff (ab')dd' + (cd')bb' &= (a'b)d'd + (c'd)bb', 
 \end{align*}
 which follows from $ab' = a'b$ and $cd' = c'd$.
@@ -332,19 +333,341 @@ We can then define multiplication in the same way as it was defined for integers
 
 With all of these definitions in place, we can now start looking at some of the more interesting properties of numbers.
 
-% \section{Primes and Divisibility}
+\section{Primes and Divisibility}
 
-% \section{Modular Arithmetic}
+We will now begin to discuss some actual number theory, beginning with the incredibly important concept of \emph{divisibility}. You are likely to be familiar with this already, so we will jump into some definitions.
+
+\begin{definition}[Divisibility]
+	For $a, b \in \N$, we say that $a$ \vocab{divides} $b$, written $a \mid b$ if there exists some $c \in \N$ such that $b = ac$.
+\end{definition}
+
+If this is the case, we say that $b$ is a \vocab{multiple} of $a$, and that $a$ is a \vocab{divisor} of $b$. We can now define one of the most fundamental objects in number theory, the \emph{primes}.
+
+\begin{definition}[Primes]
+	A natural number $n \geq 2$ is a \vocab{prime} if its only divisors are $1$ and $n$. If a natural number is not prime, then it is \vocab{composite}.
+\end{definition}
+
+With this definition, we can begin to state and prove some interesting results about the primes, which should hint at their importance in number theory.
+
+\begin{theorem}\label{thm:product-primes}
+	Every natural number is expressible as a product of primes.
+\end{theorem}
+\begin{proof}
+	We use induction on $n$. For $n = 2$ this is true, as $2$ is prime. Now given $n > 2$, if $n$ is prime, then we are done. If not, then $n$ is composite so $n = ab$ for some $1 < a, b < n$. By our induction hypothesis, we have $a = p_1 p_2 \cdots p_k$ and $b = q_1 q_2 \cdots q_l$ for some (not necessarily distinct) primes $p_1, \cdots p_k, q_1, \cdots, q_l$, hence $ab = p_1 \cdots p_k q_1 \cdots q_l$, which is the product of primes. Thus we are done by induction.
+\end{proof}
+
+A nice consequence of this theorem is that the primes go on forever.
+
+\begin{theorem}[Euclid]
+	There are infinitely many primes.
+\end{theorem}
+\begin{proof}
+	Suppose there was finitely many primes, say $p_1, \cdots, p_k$. Then consider the number $N = p_1 p_2 \cdots p_k + 1$. Then $N$ has no prime factors, contradicting the fact that $n$ can be written as the product of primes\footnote{This theorem has an amusingly large number of proofs. A short discussion can be found in the book `Proofs from the Book'.}.
+\end{proof}
+
+\begin{remark}
+	There is no `pattern' to the primes, in the sense that there is no algebraic formula for the $n$th prime. 
+\end{remark}
+
+So we know that a number can be written as the product of primes, but is this unique (up to some reordering)? This would seem to be true from experience, so why can't we write a number as the product of primes in two ways. For example, why can't we have $41 \times 101 = 67 \times 73$? Informally, we might think that this is impossible because we can't have 41 dividing `a bit of' 67 and `a bit of 73'. What we really need to show that prime factorization is unique is the following: For a prime $p$, if $p \mid ab$ then $p \mid a$ or $p \mid b$.
+
+Now should this lemma be easy to prove, or hard to prove? That is, should this follow straight from definitions, or not? The answer is that it \emph{cannot} follow straight from definitions. This is because it's about `primes dividing things', but we define the primes with `things diving it'. This is the wrong way round! It will take some amount of work to be able to prove this.
+
+\subsection{Greatest Common Divisors}
+
+This section will begin to build some machinery that will allow us to tackle the problem of showing that prime factorizations are unique. We will begin by defining the notion of \emph{greatest common divisor}, also known as \emph{highest common factor}\footnote{This was the term used in the lectures, but I prefer greatest common divisor, so I will use that instead.}.
+
+\begin{definition}[Greatest Common Divisor]
+	For $a, b \in \N$, a natural number $d$ is the \vocab{greatest common divisor} of $a$ and $b$, written $d = \gcd(a, b)$ if
+	\begin{enumerate}[label=(\roman*)]
+		\item $d \mid a$ and $d \mid b$;
+		\item If $c \mid a$ and $c \mid b$, then $c \mid d$.§
+	\end{enumerate}
+\end{definition}
+
+We want to show that the greatest common divisor always exists.
+
+\begin{proposition}[Divison Algorithm]
+	For $n, k \in \N$, we can write $n = qk + r$, where $q, r \in \N$ and $0 \leq r < k$.
+\end{proposition}
+\begin{proof}
+	We use induction on $N$. For $n = 1$, this is clearly true. Otherwise, given $n > 1$, we can write $n - 1 = qk + r$ by our inductive hypothesis. Then, if $r < k - 1$, we can write $n = qk + (r + 1)$, and if $r = k - 1$, we can write $n = q(k + 1)$.
+\end{proof}
+
+The division algorithm is related to the greatest common divisor using the following lemma.
+
+\begin{lemma}[Euclid]\label{lemma:euc}
+	For $a, b \in \N$, we can write $a = bq + r$ using the division algorithm. Then $\gcd(a, b) = \gcd(b, r)$.
+\end{lemma}
+\begin{proof}
+	If $d \mid a$ and $d \mid b$, then $d \mid a - bq = r$.
+	Otherwise, if $d \mid b$ and $d \mid r$, then $d \mid bq + r = a$, hence the set of common divisors between $a$ and $b$ is the same as the set of divisors between $b$ and $r$. Thus $\gcd(a, b) = \gcd(b, r)$.
+\end{proof}
+
+\begin{theorem}[Euclidean Algorithm]
+	For $a, b \in \N$, if we repeatedly apply the division algorithm to get
+	\begin{align*}
+		a &= q_1 b + r_1 \\
+		b &= q_2 r_1 + r_2 \\
+		r_1 &= q_3 r_2 + r_3 \\
+		&\vdots \\
+		r_{n - 2} = q_n r_{n - 1},
+	\end{align*}
+	then $\gcd(a, b) = r_{n - 1}$.
+\end{theorem}
+\begin{proof}
+	We repeatedly apply \autoref{lemma:euc} until we have $\gcd(a, b) = \gcd(r_{n - 1}, 0) = r_{n - 1}$.
+\end{proof}
+
+The Euclidean Algorithm gives us both a proof that $\gcd(a, b)$ exists for any natural numbers $a$ and $b$, and it also gives us an efficient way to find it.
+
+\begin{example}
+	To find $\gcd(87, 52)$, we perform the following series of steps.
+	\begin{align*}
+		87 &= 1 \times 52 + 35 \\
+		52 &= 1 \times 35 + 17 \\
+		35 &= 2 \times 17 + 1\\
+		17 &= 17 \times 1,
+	\end{align*}
+	thus $\gcd(87, 52) = 1$.
+\end{example}
+
+\begin{notation}
+	We will sometimes write $\gcd(87, 52) = \hcf(87, 52) = (87, 52) = 1$. And when $\gcd(a, b) = 1$, we say that $a$ and $b$ are \vocab{coprime}.
+\end{notation}
+
+The example above showed that $\gcd(87, 52) = 1$, so is it possible to write $1 = 87x + 52y$ for some $x,y \in \Z$?
+Looking at the computation we performed to find the greatest common divisor, we can work backwards to get
+\begin{align*}
+	1 &= 1 \times 35 - 2 \times 17 \\
+	  &= 1 \times 35 - 2 \times (52 - 35) \\
+	  &= -2 \times 52 + 3 \times 35 \\
+	  &= -2\times 52 + 3 \times (87 - 52) \\
+	  &= 3\times 87 - 5 \times 52,
+\end{align*}
+so it is indeed possible. In fact, there was nothing special about $87$ and $52$ here, we just used the sequence of steps performed in the Euclidean algorithm. We can formalise this.
+
+\begin{theorem}
+	For all $a, b \in \N$, there exists $x, y \in \Z$ such that $ax + by = \gcd(a, b)$.
+\end{theorem}
+\begin{proof} 
+	Run the Euclidean algorithm on $a$ and $b$, say with some output $r_n$. Then we can write $r_n$ as some integer linear combination of $r_{n - 1}$ and $r_{n - 2}$.
+	We can continue this to write any $r_i$ as an integer linear combination of $r_{i - 1}$ and $r_{i - 2}$. Thus eventually, we be able to write $r_n = ax + by$ for some $x, y \in \Z$, and as $r_n = \gcd(a, b)$, we are done. \hfill \qedhere
+
+	\emph{Alternate Proof}. Let $h$ be the least positive integer linear combination of $a$ and $b$. We claim that $h = \gcd(a, b)$. If $d \mid a$ and $d \mid b$, then $d \mid ax + by$ for any $x, y \in \Z$, thus $d \mid h$. Now suppose that $h \nmid a$. Then $a = qh + r$ for some $q, r \in \Z$, with $0 < r < h$. So $r - ah = a - q(ax + by)$, which is also a linear combination of $a$ and $b$. But this is impossible, as it contradicts the minimality of $h$. Thus $h \mid a$, and by the same argument $h \mid b$. Thus $h = \gcd(a, b)$. \hfill \qed
+\end{proof}
+
+\begin{remark}
+	The second proof of the theorem above tells us that the greatest common divisor exists, but offers no way to find it, nor a way to find $x$ or $y$. 
+\end{remark}
+
+This theorem has an interesting application: solving linear diophantine\footnote{A diophantine equation is one where you seek only integer solutions.} equations. 
+
+\begin{corollary}[Bezout's Lemma]
+	Let $a, b, c \in \N$. Then the equation
+	$$
+	ax + by = c
+	$$
+	has an integer solution if and only if $\gcd(a, b) = c$.
+\end{corollary}
+\begin{proof}
+	Let $h = \gcd(a, b)$. If we have a solution $ax + by = c$, then $h \mid a$ and $h \mid b$, thus $h \mid c$. Now, if $h \mid c$, then we have $h = ax + by$ for $a, b \in \Z$ by our previous theorem, and thus we can write $c = \frac{c}{h}ax + \frac{c}{h}by$. Note that $\frac{c}{h}$ is guaranteed to be an integer by our previous argument.
+\end{proof}
+
+\subsection{The Fundamental Theorem of Arithmetic}
+
+We are now in a position to prove the lemma that was discussed quite a few pages ago, which will lead us directly to the uniqueness of prime factorizations.
+
+\begin{theorem}[Euclid's Lemma]
+	Let $p$ be a prime, and $a, b \in \N$. Then $p \mid ab$ implies $p \mid a$ or $p \mid b$.
+\end{theorem}
+\begin{proof}
+	Suppose that $p \nmid a$. We wish to show that $p \mid b$. Then we have $\gcd(a, p) = 1$, which implies that we can write $ax + py = 1$, for some integers $x$ and $y$. Then we can multiply by $b$ to get $abx + pby = b$. But then $p \mid ab$ by our hypothesis, and thus $p \mid abx + pby = b$, and so we are done.
+\end{proof}
+
+\begin{remark}
+	This theorem implies that if $p \mid a_1 a_2 \cdots a_k$, then $p$ must divide at least one of $a_i$, for $1 \leq i \leq k$.
+\end{remark}
+
+\begin{theorem}[Fundamental Theorem of Arithmetic]
+	Every natural number $n \geq 2$ is uniquely expressible as a product of primes, up to re-ordering.
+\end{theorem}
+\begin{proof}
+	We already proved that such a product exists, so we will now prove that such a product is unique. We use induction on $n$.
+	Suppose that $n = p_1 \cdots p_k = q_1 \cdots q_l$, where $p_i, q_i$ are all primes. We wish to show that $k = l$, and after reordering, $p_i = q_i$ for all $i$. We have $p_1 \mid q_1 \cdots q_k$, so $p_1 \mid q_i$ for some $i$. We can (without loss of generality) label that prime $q_1$. Hence $p_1 = q_1$. So $n/p_1 = p_2 \cdots p_k = q_2 \cdots q_l$, thus by induction $k = l$ and $p_2 = q_2$, $p_3 = q_3$, etc.
+\end{proof}
+
+\begin{aside}{Aside: Why Unique Factorization Isn't Obvious}
+	In the fundamental theorem of arithmetic, we took the `things that can't be broken up' (the primes) and we broke up every number as a product of these, uniquely. The same concept makes sense in other places.
+
+Consider instead $\Z[\sqrt{-3}]$, the set of complex numbers of the form $x + y\sqrt{-3}$, where $x, y \in \Z$. For example, $2 + 7\sqrt{-3}$. With these objects, we can both addition and multiplication two elements in $\Z[\sqrt{-3}]$, and always get back an element in $\Z[\sqrt{-3}]$. This allows us to talk about the notions of `divides' and `multiple of' etc in $\Z[\sqrt{-3}]$. 
+
+You might think that you can take the `things you can't break up' in $\Z[\sqrt{-3}]$, and take any element and break it up into those. This is obviously correct (by definition). You may then want to say 
+that this is unique, but that would not be true. For example,
+$$
+4 = 2 \times 2 = (1 + \sqrt{-3})(1 - \sqrt{-3})
+$$
+and all of the terms in this product are `things you can't break up' in $\Z[\sqrt{-3}]$. This allows us to conclude that unique factorization \emph{fails} in $\Z[\sqrt{-3}]$.
+
+\end{aside}
+
+The fundamental theorem of arithmetic has some useful applications.
+
+\begin{itemize}
+	\item \emph{Factors}
+	
+	Let's consider what are the factors of $2 \cdot 3^7 \cdot 11$ are. Certainly any $2^a \cdot 3^b \cdot 11^c$ where $0 \leq a \leq 3$, $0 \leq b \leq 7$ and $0 \leq c \leq 1$ is a factor. Also, there can't be any others. For example, if $7 \mid 2 \cdot 3^7 \cdot 11$, then we'd get a prime factorization involving a 7, which would contradict the uniqueness of prime factorization.
+
+	In general, the factors of $n = p_1^{a_1} \cdots p_k^{a_k}$ are precisely numbers of the form $p_1^{b_1} \cdots p_k^{b_k}$, where $0 \leq b_i \leq a_i$, for all $1 \leq i \leq k$.
+
+	\item \emph{Greatest Common Divisors}
+	
+	If we wanted to find the common factors of $2^3 \cdot 3^7 \cdot 5 \cdot 11^3$ and $2^4 \cdot 3^2 \cdot 11 \cdot 13$, we could note that the common factors are $2^a \cdot 3^b \cdot 11^c$, where $0 \leq a \leq 3$, $0 \leq b \leq 2$ and $0 \leq c \leq 1$.
+	So the greatest common divisor is $2^3 \cdot 3^2 \cdot 11$.
+
+	In general the greatest common divisor of $p_1^{a_1} \cdots p_k^{a_k}$ and $p_1^{b_1} \cdots p_k^{b_k}$ (with $a_i, b_i \geq 0$) is $p_1^{\min(a_1, b_1)} \cdots p_k^{\min(a_k, b_k)}$.
+
+	\item \emph{Lowest Common Multiples}
+	
+	The common multiples of $2^3 \cdot 3^7 \cdot 5 \cdot 11^3$ and $2^4 \cdot 3^2 \cdot 11 \cdot 13$ are all of the form $2^a \cdot 3^b \cdot 5^c \cdot 11^d \cdot 13^e \cdot n$ (for a positive integer $n$) where $a \geq 4, b\geq 7, c\geq 1, d\geq 3$ and $e \geq 1$. We can then get the lowest common multiple as $2^4 \cdot 3^7 \cdot 5^1 \cdot 11^3 \cdot 13^1$.
+
+	Then in general, the lowest common multiple of $p_1^{a_1} \cdots p_k^{a_k}$ and $p_1^{b_1} \cdots p_k^{b_k}$ (with $a_i, b_i \geq 0$) is $p_1^{\max(a_1, b_1)} \cdots p_k^{\max(a_k, b_k)}$.
+\end{itemize}
 
 
+% % 
 
-% \section{The Primes}
+\section{Modular Arithmetic}
+
+It is a common occurrence in number theory that we will consider numbers that differ by a multiple of some fixed number to be equivalent. 
+An example of this is the value of $(-1)^n$, which depends only on whether $n$ is odd or even -- that is, the values of $n$ that differ by a multiple of $2$ will give the same result. To give another example, the last digit of two numbers will be the same when the numbers differ by some multiple of $10$. Modular arithmetic (or congruence notation) is a way of expressing such equivalences, where we have two integers $a$ and $b$ that differ by some fixed number $m$.
+
+\begin{definition}[Integers Modulo $n$]
+	Let $n \in \N$. The \vocab{integers modulo $n$}, written $\Z/n\Z$ consist of the integers where we regard two to be the same if they differ by a multiple of $n$.
+\end{definition}
+
+\begin{definition}[Congruence Notation]
+	If $x$ and $y$ are integers that are the same modulo $n$, then we write
+	$$
+	x \equiv y \pmod{n}.
+	$$
+\end{definition}
+
+This notation implies that $x \equiv y \pmod{n}$ if and only if $n \mid x - y$, that is, if $x = y + kn$ for some $k \in \Z$.
+Note that no two of $0, 1, \dots, n - 1$ are congruent $\pmod{n}$, and every $x \in \Z$ is congruent to exactly one of these modulo $n$ (this follows from the division algorithm).
+
+We can view $\Z/n\Z$ as the following picture (indeed this is the `correct picture' of $\Z/n\Z$).
+
+\begin{center}
+	
+
+ 
+
+	\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+	\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-0.7,xscale=0.7]
+	%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+	
+	%Shape: Circle [id:dp9641223727665371] 
+	\draw   (200,150) .. controls (200,89.25) and (249.25,40) .. (310,40) .. controls (370.75,40) and (420,89.25) .. (420,150) .. controls (420,210.75) and (370.75,260) .. (310,260) .. controls (249.25,260) and (200,210.75) .. (200,150) -- cycle ;
+	%Shape: Circle [id:dp4867138741225918] 
+	\draw  [fill={rgb, 255:red, 184; green, 184; blue, 184 }  ,fill opacity=1 ] (302.5,40) .. controls (302.5,35.86) and (305.86,32.5) .. (310,32.5) .. controls (314.14,32.5) and (317.5,35.86) .. (317.5,40) .. controls (317.5,44.14) and (314.14,47.5) .. (310,47.5) .. controls (305.86,47.5) and (302.5,44.14) .. (302.5,40) -- cycle ;
+	%Shape: Circle [id:dp6885524539067742] 
+	\draw  [fill={rgb, 255:red, 184; green, 184; blue, 184 }  ,fill opacity=1 ] (375,67.5) .. controls (375,63.36) and (378.36,60) .. (382.5,60) .. controls (386.64,60) and (390,63.36) .. (390,67.5) .. controls (390,71.64) and (386.64,75) .. (382.5,75) .. controls (378.36,75) and (375,71.64) .. (375,67.5) -- cycle ;
+	%Shape: Circle [id:dp8052849816078498] 
+	\draw  [fill={rgb, 255:red, 184; green, 184; blue, 184 }  ,fill opacity=1 ] (410,127.5) .. controls (410,123.36) and (413.36,120) .. (417.5,120) .. controls (421.64,120) and (425,123.36) .. (425,127.5) .. controls (425,131.64) and (421.64,135) .. (417.5,135) .. controls (413.36,135) and (410,131.64) .. (410,127.5) -- cycle ;
+	%Shape: Circle [id:dp7232843669595623] 
+	\draw  [fill={rgb, 255:red, 184; green, 184; blue, 184 }  ,fill opacity=1 ] (400,202.5) .. controls (400,198.36) and (403.36,195) .. (407.5,195) .. controls (411.64,195) and (415,198.36) .. (415,202.5) .. controls (415,206.64) and (411.64,210) .. (407.5,210) .. controls (403.36,210) and (400,206.64) .. (400,202.5) -- cycle ;
+	%Shape: Circle [id:dp14614821359588803] 
+	\draw  [fill={rgb, 255:red, 184; green, 184; blue, 184 }  ,fill opacity=1 ] (340,252.5) .. controls (340,248.36) and (343.36,245) .. (347.5,245) .. controls (351.64,245) and (355,248.36) .. (355,252.5) .. controls (355,256.64) and (351.64,260) .. (347.5,260) .. controls (343.36,260) and (340,256.64) .. (340,252.5) -- cycle ;
+	%Shape: Circle [id:dp9823043931092899] 
+	\draw  [fill={rgb, 255:red, 184; green, 184; blue, 184 }  ,fill opacity=1 ] (260,252.5) .. controls (260,248.36) and (263.36,245) .. (267.5,245) .. controls (271.64,245) and (275,248.36) .. (275,252.5) .. controls (275,256.64) and (271.64,260) .. (267.5,260) .. controls (263.36,260) and (260,256.64) .. (260,252.5) -- cycle ;
+	%Shape: Circle [id:dp9834315290824136] 
+	\draw  [fill={rgb, 255:red, 184; green, 184; blue, 184 }  ,fill opacity=1 ] (205,202.5) .. controls (205,198.36) and (208.36,195) .. (212.5,195) .. controls (216.64,195) and (220,198.36) .. (220,202.5) .. controls (220,206.64) and (216.64,210) .. (212.5,210) .. controls (208.36,210) and (205,206.64) .. (205,202.5) -- cycle ;
+	%Shape: Rectangle [id:dp07149613177907699] 
+	\draw  [draw opacity=0][fill={rgb, 255:red, 255; green, 255; blue, 255 }  ,fill opacity=1 ] (180,80) -- (250,80) -- (250,160) -- (180,160) -- cycle ;
+	%Shape: Circle [id:dp5656720700928188] 
+	\draw  [fill={rgb, 255:red, 184; green, 184; blue, 184 }  ,fill opacity=1 ] (230,67.5) .. controls (230,63.36) and (233.36,60) .. (237.5,60) .. controls (241.64,60) and (245,63.36) .. (245,67.5) .. controls (245,71.64) and (241.64,75) .. (237.5,75) .. controls (233.36,75) and (230,71.64) .. (230,67.5) -- cycle ;
+	
+	% Text Node
+	\draw (195.37,127.24) node [anchor=north west][inner sep=0.75pt]  [rotate=-289.59]  {$\dotsc $};
+	% Text Node
+	\draw (304,12.4) node [anchor=north west][inner sep=0.75pt]    {$0$};
+	% Text Node
+	\draw (391,42.4) node [anchor=north west][inner sep=0.75pt]    {$1$};
+	% Text Node
+	\draw (431,112.4) node [anchor=north west][inner sep=0.75pt]    {$2$};
+	% Text Node
+	\draw (421,192.4) node [anchor=north west][inner sep=0.75pt]    {$3$};
+	% Text Node
+	\draw (351,262.4) node [anchor=north west][inner sep=0.75pt]    {$4$};
+	% Text Node
+	\draw (257,262.4) node [anchor=north west][inner sep=0.75pt]    {$5$};
+	% Text Node
+	\draw (187,192.4) node [anchor=north west][inner sep=0.75pt]    {$6$};
+	% Text Node
+	\draw (164,42.4) node [anchor=north west][inner sep=0.75pt]    {$n\ -\ 1$};
+	
+	
+	\end{tikzpicture}
+\end{center}
+With this mental picture, we can begin to build up some properties of modular arithmetic.
+
+\begin{proposition}[Arithmetic Modulo $n$]
+	If $a \equiv a' \pmod{n}$ and $b \equiv b' \pmod{n}$, then $a + b \equiv a' + b' \pmod{n}$ and $ab \equiv a'b' \pmod{n}$.
+\end{proposition}
+\begin{proof}
+	We have $a' = a + kn$ and $b' = b + jn$, for some $k, j \in \Z$.
+	So $a' + b' = a + b + (k + j)n \equiv a + b \pmod{n}$, and $a'b' = (a + kn)(b + jn) = ab + (bk + aj + kjn)n\equiv ab \pmod{n}$.
+\end{proof}
+
+Many of the other rules of arithmetic are inherited from $\Z$, for example we have $a + b \equiv b+a \pmod{n}$ as $a + b = b + a$ in $\Z$. Also some of the number-theoretic facts we have previously established can be expressed in modular arithmetic.
+
+\begin{example}[Euclid's Lemma in Modular Arithmetic]
+	The statement that for a prime $p$, `$p \mid ab \implies p \mid a$ or $p \mid b$' is equivalent saying that $ab \equiv 0 \pmod{p}$ implies that $a \equiv 0 \pmod{p}$ or $b \equiv 0 \pmod{0}$.
+\end{example}
+
+\subsection{Modular Inverses}
+
+We will now begin to look at the multiplicative structure of $\Z/n\Z$. 
+
+\begin{definition}[Modular Inverses]
+	For $a, b \in \Z$, we say that $b$ is an \vocab{inverse} of $a$ if $ab \equiv 1 \pmod{n}$.\footnote{This should be reminiscent of the notion of inverses from group theory.}
+\end{definition}
+
+\begin{example}
+	In $\Z/10\Z$, the inverse of $3$ is $7$, as $3\times 7 = 21\equiv 1 \pmod{10}$. The inverse of $4$ does not exist, as for all $x \in \Z$, $4x \not\equiv 1 \pmod{10}$, as $4x$ is even.
+
+	This example shows that inverses do not always exist for an arbitrary modulus $n$.
+\end{example}
+
+\begin{notation}
+	We write $a^{-1}$ to mean the inverse of $a$ (modulo some $n$).
+\end{notation}
+
+\begin{proposition}[Properties of Modular Inverses]
+	In $\Z/n\Z$,
+	\begin{enumerate}[label=(\roman*)]
+		\item If a modular inverse exists, then it is unique modulo $n$.
+		\item If $a$ has an inverse, and $ab \equiv ac \pmod{n}$, then $b \equiv c \pmod{n}$. That is, we can cancel invertible elements.\footnote{We \emph{cannot} cancel elements in general.}
+	\end{enumerate}
+\end{proposition}
+\begin{proof}
+	To show (i),
+	suppose there exists $b, c \in \Z$ such that for some $a$, $ab \equiv ac \equiv n \pmod{n}$. Then $b(ac) \equiv bab \implies c \equiv b \pmod{n}$. Then to show (ii), we can just multiply both sides by $a^{-1}$.
+\end{proof}
+
+
 % \section{Greatest Common Divisors}
 
 
 
 
+% \chapter{The Reals}
 
+% \chapter{Sets and Functions}
+
+% \chapter{Countability}
 
 
 
