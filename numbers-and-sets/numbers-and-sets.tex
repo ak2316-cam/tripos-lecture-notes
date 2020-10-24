@@ -435,7 +435,7 @@ The Euclidean Algorithm gives us both a proof that $\gcd(a, b)$ exists for any n
 \end{example}
 
 \begin{notation}
-	We will sometimes write $\gcd(87, 52) = \hcf(87, 52) = (87, 52) = 1$. And when $\gcd(a, b) = 1$, we say that $a$ and $b$ are \vocab{coprime}.
+	We will sometimes write $\gcd(87, 52) = \hcf(87, 52) = (87, 52) = 1$. And when $\gcd(a, b) = 1$, we say that $a$ and $b$ are \vocab{coprime} or \vocab{relatively prime}.
 \end{notation}
 
 The example above showed that $\gcd(87, 52) = 1$, so is it possible to write $1 = 87x + 52y$ for some $x,y \in \Z$?
@@ -737,23 +737,122 @@ We can pause for a moment and notice that in the proof of Fermat's little theore
 
 First, we prove a small lemma.
 
-\begin{lemma}
+\begin{lemma}\label{lemma:root-1-mod-p}
 	Let $p$ be prime, then $x^2 \equiv 1 \pmod{p}$ implies $x \equiv 1$ or $x \equiv -1 \pmod{p}$.\footnote{Note that this is only true because $p$ is prime. For example, $1^2 \equiv 3^2 \equiv 5^2 \equiv 7^2 \equiv 1 \pmod{8}$.}
 \end{lemma}
 \begin{proof}
 	$x^2 \equiv 1 \implies x^2 - 1 \equiv 0 \pmod{p}$, which we can factor as $(x + 1)(x - 1) \equiv 0 \pmod{p}$ and thus $x \equiv 1$ or $x \equiv -1 \pmod{p}$.
 \end{proof}
 \begin{remark}
-	It turns out that for a prime $P$, a non-zero polynomial in $\Z/p\Z$ of degree $k$ always has at most $k$ roots.
+	It turns out that for a prime $p$, a non-zero polynomial in $\Z/p\Z$ of degree $k$ always has at most $k$ roots.
 \end{remark}
 
+We can now prove our result about the value of $(p - 1)! \pmod{p}$.
 
-% \begin{theorem}[Wilson's Theorem]
-% 	Let $p$ be a prime, then
-% 	$$
-% 	(p - 1)! \equiv - 1\pmod{p}.
-% 	$$
-% \end{theorem}
+\begin{theorem}[Wilson's Theorem]
+	Let $p$ be a prime, then
+	$$
+	(p - 1)! \equiv - 1\pmod{p}.
+	$$
+\end{theorem}
+\begin{proof}
+	Note that this is true for $p = 2$, so we may assume that $p \geq 2$. Consider the numbers $1, 2, \dots, p - 1$ modulo $p$. We can pair up each $a$ with its inverse $a^{-1}$ for $a \neq a^{-1}$. But $a = a^{-1} \iff a^2 = 1$, so the only elements that are their own inverse are $1$ and $-1$. Thus $1, 2, \dots, p - 1$ consists of some pairs $a, a^{-1}$ and $1$ and $-1$. Thus when we multiply,
+	$
+	(p - 1)! \equiv 1^{\frac{p - 3}{2}} \cdot 1 \cdot -1 \equiv -1 \pmod{p}.
+	$
+\end{proof}
+
+To see how we can use both Wilson's theorem and Fermat's little theorem together, we can consider another question that follows naturally from \autoref{lemma:root-1-mod-p}.
+
+\begin{lemma}[$x^2 + 1$ Lemma]
+	Let $p$ be an odd prime. Then $x^2 \equiv -1 \pmod{-1}$ has a solution if and only if $p \equiv 1 \pmod{4}$.
+\end{lemma}
+\begin{proof}
+	If $p = 4k + 3$, suppose that $x^2 \equiv -1 \pmod{p}$. Then we have from Fermat's little theorem that $x^{4k + 2} \equiv 1 \pmod{p}$, but $x^{4k + 2} \equiv (x^2)^{2k + 1} \equiv (-1)^{2k + 1} \equiv -1$, which is a contradiction.
+
+	We now construct an example to show that $p \equiv 1 \pmod{4}$ works. By Wilson's theorem, $(4k!) \equiv -1 \pmod{p}$. Then, noting that $4k - j \equiv -j - 1 \pmod{p}$, $(2k)!^2 \equiv (2k!)^2 \cdot (-1)^{2k} \equiv (4k)! \equiv -1 \pmod{p}$, so a solution exists.
+\end{proof}
+
+\subsection{Congruence Equations and the Chinese Remainder Theorem}
+
+We now return back to the topic of linear diophantine equations, this time looking specifically at linear congruence equations. Let's look at an example. 
+
+\begin{example}[Solving a Linear Congruence Equation]
+	Solve $7x \equiv 4 \pmod{30}$.
+\end{example}
+\begin{proof}[Solution]
+	First we \emph{find a solution}.
+
+	We have $\gcd(7, 30) = 1$, so we can run the Euclidean algorithm on $7$ and $30$ to obtain $7 \times 13 - 30 \times 3 = 1$. So $7 \times 13 \equiv 1 \pmod{30}$, hence $7 \times 52 \equiv 4 \pmod{30}$. So $x \equiv 52 \pmod{30}$ is a solution.
+
+	Now we show there is \emph{no more solutions}.
+
+	If $x'$ is a solution, then we have $7x \equiv 4 \pmod{30}$ and $7x' \equiv 4 \pmod{30}$. Thus $7x \equiv 7x' \pmod{30}$, which implies that $x \equiv x' \pmod{30}$ as $7$ is invertible.
+	So $x \equiv 52 \pmod{30}$ is the only solution.
+\end{proof}
+
+There is a shorter method that can be used too, if we can quickly spot the inverse of the coefficient of our variable.
+
+\begin{example}
+	Solve $3x \equiv 9 \pmod{28}$.
+\end{example}
+\begin{proof}[Solution]
+	$3x \equiv 9 \pmod{28} \iff 19 \cdot 3 x \equiv 19 \cdot 9 \pmod{28}$, as $19$ is invertible. Thus $x \equiv 171 \equiv 3 \pmod{8}$.
+\end{proof}
+
+If we don't have that the coefficient and the modulus is coprime, it's typically easier to write the equation as a standard linear diophantine equation.
+
+\begin{example}
+	Solve $10x \equiv 12 \pmod{34}$.
+\end{example}
+\begin{proof}[Solution]
+	$10x \equiv 12 \pmod{34} \iff 10x = 12 + 34 y$ for some $y \in \Z$. Then $10x = 12 + 34y \iff 5x = 6 + 17 y$, which we can write as $5x \equiv 6 \pmod{17}$. We can then solve as before. 
+\end{proof}
+
+Now consider a simultaneous congruence equation. Specifically, consider the equations
+\begin{align*}
+	x &\equiv 6 \pmod{17} \\
+	x &\equiv 2 \pmod{19}.
+\end{align*}
+Do we expect a solution to this? We might guess yes, as $17$ and $19$ are coprime, so intuitively `modulo 17 and modulo 19 should be independent of each other'. What about these equations:
+\begin{align*}
+	x &\equiv 6 \pmod{34} \\
+	x &\equiv 11 \pmod{36}.
+\end{align*}
+We shouldn't expect solutions to these equations. Even if you try and figure out if $x$ is even or odd, you'll run into issues. This intuition can be formalized into a theorem.
+
+\begin{theorem}[Chinese Remainder Theorem]
+	Let $m$ and $n$ be relatively prime positive integers. Then for any integers $a$ and $b$, there is solution to
+	\begin{align*}
+		x &\equiv a \mod{m} \\
+		x &\equiv b \mod{n},
+	\end{align*}
+	and this solution is unique modulo $mn$. 
+\end{theorem}
+\begin{proof}
+	First we prove existence. We have $ms + nt = 1$ for some $s, t \in \Z$ by Bezout's lemma. Then $ms \equiv 0 \mod{m}$ and $1 \pmod{n}$ and $nt \equiv 0 \pmod{n}$ and $1 \pmod{m}$. Hence
+	$x = a(nt) + b(ms)$ has $x \equiv a \pmod{m}$ and $x \equiv b \pmod{n}$.
+
+	To show uniqueness, certainly any $x' \equiv x \pmod{mn}$ is also a solution. Conversely, suppose $x'$ has $x' \equiv a \pmod{m}$ and $b \pmod{n}$. Then $x' \equiv x \pmod{m}$ and $x' \equiv x \pmod{n}$, that is, $m \mid x' - x$ and $n \mid x' - x$. Thus $mn \mid x' - x$, as $\gcd(m, n) = 1$, and thus $x' \equiv x \pmod{mn}$.
+\end{proof}
+
+This theorem generalises directly.
+
+\begin{theorem}[General Chinese Remainder Theorem]
+	Let $m_1$, $\dots$, $m_k$ be pairwise relatively prime positive integers, and let 
+	$$M = m_1 m_2 \cdots m_k.
+	$$ Then for all integers $x_1, \dots, x_k$, there exists a unique $x \pmod{M}$ such that 
+	\begin{align*}
+		x & \equiv x_1 \pmod{m_1} \\
+		x & \equiv x_2 \pmod{m_2} \\
+			& \;\vdots \\
+		x & \equiv x_k \pmod{m_k}. \\
+	\end{align*}
+\end{theorem}
+\begin{proof}[Proof Sketch]
+	Reduce the number of equations by applying the two variable Chinese remainder theorem to the last two equations.
+\end{proof}
+
 % \section{Greatest Common Divisors}
 
 
