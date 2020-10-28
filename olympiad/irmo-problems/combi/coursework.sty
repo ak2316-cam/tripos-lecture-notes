@@ -1,0 +1,584 @@
+%% coursework.tex
+%%
+%% Provides common functionality for the various coursework document classes.
+
+\RequirePackage{expl3, xparse, l3keys2e, pdftexcmds, silence}
+
+\ExplSyntaxOn
+
+%% Define Package Metadata
+\tl_const:Nn \c__coursework_packagename_tl {coursework}
+\tl_const:Nn \c__coursework_packagedate_tl {2018/08/10}
+\tl_const:Nn \c__coursework_packageversion_tl {0.0.1}
+\tl_const:Nn \c__coursework_packagedescription_tl {A~ LaTeX3~ package~ to~ provide~ common~ functionality~ for~ the~ various~ coursework~ document~ classes.}
+
+\ProvidesExplPackage{\c__coursework_packagename_tl} % Name
+                    {\c__coursework_packagedate_tl} % Date
+                    {\c__coursework_packageversion_tl} % Version
+                    {\c__coursework_packagedescription_tl} % Description
+
+%% Define Package Options
+\bool_new:N \l__coursework_loadcode_bool
+\bool_new:N \l__coursework_loaddiag_bool
+\bool_new:N \l__coursework_numbertheorems_bool
+\bool_gset_false:N \l__coursework_loadcode_bool
+\bool_gset_false:N \l__coursework_loaddiag_bool
+\bool_gset_true:N \l__coursework_numbertheorems_bool
+
+\DeclareOption{code}{ \bool_gset_true:N \l__coursework_loadcode_bool }
+\DeclareOption{diagram}{ \bool_gset_true:N \l__coursework_loaddiag_bool }
+\DeclareOption{nothmnum}{ \bool_gset_false:N \l__coursework_numbertheorems_bool }
+
+\ProcessOptions\relax
+
+% Suppress warnings
+\WarningFilter{remreset}{The remreset package}
+
+%% Load Required Packages
+% Page Layout
+\RequirePackage{geometry}
+\RequirePackage{hyperref}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{changepage} % adjustwidth env., for definitions et al.
+\RequirePackage[breakable,skins]{tcolorbox}
+\RequirePackage[noadjust]{marginnote}
+\RequirePackage[all]{nowidow} % Prevent widow/orphan lines
+\RequirePackage{calc}
+
+% Text Formatting (excluding fonts)
+\RequirePackage{enumitem} % customize lists
+\RequirePackage{booktabs} % style tables
+\RequirePackage{tabularx} % full-width tables
+\RequirePackage[labelfont=bf]{caption}
+
+% Mathematics
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{amsthm}
+\RequirePackage{thmtools}
+\RequirePackage{mathtools}
+\RequirePackage{bm}
+
+% Physics
+\RequirePackage{physics}
+\RequirePackage{siunitx}
+\RequirePackage{tensor}
+
+% Chemistry
+\RequirePackage[version=4]{mhchem}[2018-06-22]
+
+% Code
+\bool_if:NT \l__coursework_loadcode_bool {
+	\makeatletter
+		\ifnum\pdf@shellescape = 0
+			\typeout{}
+			\typeout{******************}
+			\typeout{* You have passed the `code` option.}
+			\typeout{* You must compile your document with the `-shell-escape` flag.}
+			\typeout{* See the `minted` package for more information.}
+			\typeout{******************}
+			\typeout{}
+			\PackageError{\c__coursework_packagename_tl}{Needs `-shell-escape`}{}
+		\fi
+	\makeatother
+	\RequirePackage{minted}
+	\RequirePackage{algorithm}
+	\RequirePackage{algpseudocode}
+
+	\AtBeginDocument{\usemintedstyle{tango}}
+	\ifXeTeX
+		\typeout{}
+		\typeout{******************}
+		\typeout{* Be sure to use the `-8bit` flag when compiling!}
+		\typeout{* Otherwise your tab literals will be messed up!}
+		\typeout{******************}
+		\typeout{}
+	\fi
+}
+
+\bool_if:NT \l__coursework_loaddiag_bool {
+	\RequirePackage{tikz}
+	\RequirePackage{pgfplots}
+	\RequirePackage[american, siunitx]{circuitikz}
+	\RequirePackage{chemfig}
+
+	\ctikzset{bipoles/thickness=1}
+	\pgfplotsset{compat=1.16}
+}
+
+% Fonts
+\ifPDFTeX
+	\RequirePackage[utf8]{inputenc} % Unicode input
+	\RequirePackage[T1]{fontenc} % Unicode output
+	\RequirePackage[letterspace = 100]{microtype}
+	\RequirePackage{lmodern}
+	\NewDocumentCommand\ipafont{ } { \relax }
+	\NewDocumentCommand\setipafont{ m } { \relax }
+\else
+	\RequirePackage[no-math]{fontspec}
+	\let\mathbbrm\mathbb
+	\RequirePackage{unicode-math}
+	\let\mathbbsf\mathbb % Recover roman bb, sans serif bb fonts
+	\let\mathbb\mathbbrm % Make roman bb default again
+	\ifXeTeX
+		\RequirePackage{microtype}
+	\else
+		\RequirePackage[letterspace = 100]{microtype}
+	\fi
+
+	\let\ipafont\relax
+
+	\NewDocumentCommand\setipafont{ m } { 
+		\renewfontfamily\ipafont{#1}
+	}
+\fi
+
+%% Document Format
+% Page Size
+\geometry{
+	a4paper,
+	top = 1in,
+	bottom = 1in,
+	inner = 1.5in,
+	outer = 1.5in,
+	marginparwidth=1in,
+	marginparsep=0.25in,
+}
+
+% Line Spacing
+\NewDocumentCommand\normalspacing{ } {\renewcommand{\baselinestretch}{1.2}}
+\NewDocumentCommand\tightspacing{ }  {\renewcommand{\baselinestretch}{0.8}}
+\normalspacing
+
+\AtBeginDocument{
+	\WarningFilter[parskip]{latex}{Command}
+	\ActivateWarningFilters[parskip]
+	\usepackage{parskip}
+	\DeactivateWarningFilters[parskip]
+
+	\WarningFilter[ams]{amsmath}{Foreign command}
+	\ActivateWarningFilters[ams]
+
+	% Math spacing
+	\abovedisplayshortskip = -\parskip
+}
+
+% Colors
+\definecolor{linkblue}{HTML}{2364AA}
+\definecolor{linkgold}{HTML}{C1900B}
+\definecolor{linkred}{HTML}{B52639}
+
+\definecolor{covergrey}{HTML}{2e303c}
+
+\definecolor{backgroundgold}{rgb}{1.00, 0.93, 0.80}
+\definecolor{backgroundgrey}{rgb}{0.95, 0.95, 0.95}
+\definecolor{bordergold}{HTML}{B58515}
+\definecolor{bordergrey}{HTML}{444444}
+
+\hypersetup{
+	colorlinks = true ,
+	linkcolor  = linkred ,
+	citecolor = linkred ,
+	urlcolor   = linkblue
+}
+
+%% Define Custom Macros
+% Linguistics
+\NewDocumentCommand\ipa{ m } { {\ipafont #1} }
+\NewDocumentCommand\phon{ m } { \ensuremath{/\text{\ipafont #1}/} }
+\NewDocumentCommand\allo{ m } { \ensuremath{[\text{\ipafont #1}]} }
+\NewDocumentCommand\orth{ m } { \ensuremath{\langle\text{\ipafont #1}\rangle} }
+\NewDocumentCommand\where{ } { \ensuremath{\big/} }
+
+% Mathematics
+\DeclareDocumentCommand\C{ } { \mathbb{C} }
+\NewDocumentCommand\E{ } { \mathbb{E} }
+\NewDocumentCommand\F{ } { \mathbb{F} }
+\NewDocumentCommand\N{ } { \mathbb{N} }
+\NewDocumentCommand\Q{ } { \mathbb{Q} }
+\NewDocumentCommand\R{ } { \mathbb{R} }
+\NewDocumentCommand\Z{ } { \mathbb{Z} }
+\NewDocumentCommand\normal{ } { \trianglelefteq }
+\RenewDocumentCommand\qedsymbol{ } { 
+	\ifPDFTeX
+		$\blacksquare$
+	\else
+		$∎$ % Use the correct Unicode QED symbol
+	\fi
+}
+\def\sling {\atopwithdelims []} % Sterling #s of the first kind
+\def\slings {\atopwithdelims \{\}} % Sterling #s of the second kind
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Inn}{Inn}
+\DeclareMathOperator{\Syl}{Syl}
+\DeclareMathOperator{\lcm}{lcm}
+
+% Notes and Footnotes
+\NewDocumentCommand\note{ om } {
+	\IfValueTF{#1}{
+		\marginnote{\footnotesize\textit{#2}}[#1]
+	}{
+		\marginnote{\footnotesize\textit{#2}}
+	}
+}
+
+\let\oldfootnote\footnote
+\newcounter{cfootnote}
+\DeclareDocumentCommand\footnote{ om } {
+	\IfValueTF{#1}{
+		\refstepcounter{cfootnote}
+		\textsuperscript{\textup{\hyperlink{fn:\thecfootnote}{\thecfootnote}}}
+		\note{\llap{\textup{\textsuperscript{\hypertarget{fn:\thecfootnote}{\thecfootnote}}}}#2}[#1]
+	}{
+		\refstepcounter{cfootnote}
+		\textsuperscript{\textup{\hyperlink{fn:\thecfootnote}{\thecfootnote}}}
+		\note{\llap{\textup{\textsuperscript{\hypertarget{fn:\thecfootnote}{\thecfootnote}}}}#2}
+	}
+}
+
+% Parts Environment
+\NewDocumentEnvironment{parts}
+  { }
+  {\begin{enumerate}[
+  	label = \textup{(\alph*)},
+  	labelwidth = 4.5em,
+  	labelsep = 0.5em,
+  	itemsep = 0ex,
+  	% resume
+  ]}
+  {\end{enumerate}}
+
+\DeclareDocumentCommand\part{ o } {
+	\IfNoValueTF{#1} {
+		\item
+	}{
+		\item\label{#1}
+	}
+}
+
+%% Theorem-like Environments
+
+% Redefine proof environment to remove extra vertical space
+\makeatletter
+\renewenvironment{proof}[1][\proofname]{\par
+  \vspace{-\parskip} % remove the space after the theorem
+  \pushQED{\qed}%
+  \normalfont
+  \topsep0.5\baselineskip \partopsep0pt
+  \trivlist
+  \item[\hskip\labelsep
+        \itshape
+    #1\@addpunct{.}]\ignorespaces
+}{%
+  \popQED\endtrivlist\@endpefalse
+  \vspace{-0.5\baselineskip}
+}
+\makeatother
+
+% Subproof
+\newlength{\spleftmar}
+\NewDocumentEnvironment{subproof} { o } {
+	\begingroup\par
+	\RenewDocumentCommand\qedsymbol{ }{$\square$}
+	\setlength{\spleftmar}{\widthof{\textit{Proof.~}}}
+	\parshape=1~\spleftmar~\dimexpr\linewidth-2\spleftmar\relax
+	\IfNoValueTF{#1}{
+		\begin{proof}
+	}{
+		\begin{proof}[#1]
+	}
+}{
+	\end{proof}
+	\par
+	\endgroup
+}
+
+% Solution
+\NewDocumentEnvironment{solution} { o }
+                       {\IfNoValueTF{#1}{\begin{proof}[Solution]}{\begin{proof}[#1]}}
+                       {\end{proof}}
+
+% Theorem Styles
+\declaretheoremstyle[
+	spaceabove=0.5\baselineskip, spacebelow=0em,
+	headfont=\normalfont\bfseries,
+	bodyfont=\normalfont\itshape,
+	% headpunct={\hspace{1em}}
+]{lemma}
+\declaretheoremstyle[
+	headfont=\normalfont\bfseries,
+	bodyfont=\normalfont,
+	spaceabove=0em, spacebelow=0em,
+]{definition}
+
+% Lemma Style Theorems
+\bool_if:nTF {\l__coursework_numbertheorems_bool} {
+	\declaretheorem[style=lemma, numberwithin=section]{lemma}
+	\declaretheorem[style=lemma, numberwithin=section]{theorem}
+	\declaretheorem[style=lemma, numberwithin=section]{corollary}
+	\declaretheorem[style=lemma, numberwithin=section]{conjecture}
+	\declaretheorem[style=lemma, numberwithin=section]{proposition}
+}{
+	\declaretheorem[style=lemma, numbered=no]{lemma}
+	\declaretheorem[style=lemma, numbered=no]{theorem}
+	\declaretheorem[style=lemma, numbered=no]{corollary}
+	\declaretheorem[style=lemma, numbered=no]{conjecture}
+	\declaretheorem[style=lemma, numbered=no]{proposition}
+}
+
+% Definition Style Theorems
+\declaretheorem[
+	style=definition,
+	title={Definition},
+	numbered=no
+]{cdefinition}
+\declaretheorem[
+	style=definition,
+	title={Notation},
+	numbered=no
+]{cnotation}
+\declaretheorem[
+	style=definition,
+	title={Abuse~of~Notation},
+	numbered=no
+]{cabuse}
+
+% Create environment wrappers for each theorem
+\NewDocumentEnvironment{definition}{o}{
+	% Pre Content
+	% \begin{adjustwidth}{1cm}{1cm}
+		% \vspace*{-\baselineskip} % adjustwidth adds extra space
+		\IfValueTF{#1}{
+			\begin{cdefinition}[#1]
+			\leavevmode\note{#1}\leavevmode\ignorespaces
+		}{
+			\begin{cdefinition}
+		}
+}{
+	% Post Content
+		\end{cdefinition}
+	% \end{adjustwidth}
+}
+
+\NewDocumentEnvironment{notation}{o}{
+	% Pre Content
+	% \begin{adjustwidth}{1cm}{1cm}
+		% \vspace*{-\baselineskip} % adjustwidth adds extra space
+		\IfValueTF{#1}{
+			\begin{cnotation}[#1]
+			\leavevmode\note{#1}\leavevmode\ignorespaces
+		}{
+			\begin{cnotation}
+		}
+		
+}{
+	% Post Content
+		\end{cnotation}
+	% \end{adjustwidth}
+}
+
+\NewDocumentEnvironment{abuse}{o}{
+	% Pre Content
+	\begin{adjustwidth}{1cm}{1cm}
+		\vspace*{-\baselineskip} % adjustwidth adds extra space
+		\IfValueTF{#1}{
+			\begin{cabuse}[#1]
+			\leavevmode\note{#1}\leavevmode\ignorespaces
+		}{
+			\begin{cabuse}
+		}
+		
+}{
+	% Post Content
+		\end{cabuse}
+	\end{adjustwidth}
+}
+
+% Shaded Theorems
+% Create boxes
+\newtcolorbox{greybox}{
+	noparskip ,
+	boxrule = 0.3pt ,
+	boxsep = 0.4cm , % internal padding
+	breakable ,
+	sharp~corners ,
+	colback  = backgroundgrey ,
+	colframe = bordergrey ,
+	before = { \par \vskip 0pt \vskip \parskip } ,
+	after  = { \par \vskip 0pt }
+
+}
+
+\newtcolorbox{goldbox}{
+	noparskip ,
+	boxrule = 0.3pt ,
+	boxsep = 0.4cm , % internal padding
+	breakable ,
+	sharp~corners ,
+	colback = backgroundgold ,
+	colframe = bordergold ,
+	before = { \par \vskip 0pt \vskip \parskip } ,
+	after  = { \par \vskip 0pt }
+}
+
+% Shaded Style Theorems
+\declaretheorem[
+	style = definition,
+	postheadhook = \leavevmode,
+	title = {Problem},
+	numberwithin=section
+]{cproblem}
+
+\declaretheorem[
+	style = definition,
+	postheadhook = \leavevmode,
+	title = {Question},
+	numberwithin=section
+]{cquestion}
+
+\declaretheorem[
+	style = definition,
+	postheadhook = \leavevmode,
+	title = {Exercise},
+	numberwithin=section
+]{cexercise}
+
+\declaretheorem[
+	style = definition,
+	postheadhook = \leavevmode,
+	title = {Example},
+	numberwithin=section
+]{cexample}
+
+% Unnumbered Variants
+\declaretheorem[
+	style = definition ,
+	postheadhook = \leavevmode ,
+	title = {Problem} ,
+	numbered = no
+]{cproblem*}
+
+% Unnumbered Variants
+\declaretheorem[
+	style = definition ,
+	postheadhook = \leavevmode ,
+	title = {Question} ,
+	numbered = no
+]{cquestion*}
+
+% Create environment wrappers for each shaded theorem
+\NewDocumentEnvironment{problem}{ o } {
+	\begin{greybox}
+		\ifXeTeX % Correct margin note spacing
+			\edef\marginnotetextwidth{11.8966390917cm}
+		\fi
+		\setlength{\parindent}{0.5cm} % Indent paragraphs
+		\IfValueTF{#1} {
+			\begin{cproblem}[#1]
+		}{
+			\begin{cproblem}
+		}
+}{
+			\end{cproblem}
+	\end{greybox}
+}
+
+% Create environment wrappers for each shaded theorem
+\NewDocumentEnvironment{question}{ o } {
+	\begin{greybox}
+		\ifXeTeX % Correct margin note spacing
+			\edef\marginnotetextwidth{11.8966390917cm}
+		\fi
+		\setlength{\parindent}{0.5cm} % Indent paragraphs
+		\IfValueTF{#1} {
+			\begin{cquestion}[#1]
+		}{
+			\begin{cquestion}
+		}
+}{
+			\end{cquestion}
+	\end{greybox}
+}
+
+\NewDocumentEnvironment{exercise}{ o } {
+	\begin{greybox}
+		\ifXeTeX % Correct margin note spacing
+			\edef\marginnotetextwidth{11.8966390917cm}
+		\fi
+		\setlength{\parindent}{0.5cm} % Indent paragraphs
+		\IfValueTF{#1} {
+			\begin{cexercise}[#1]
+		}{
+			\begin{cexercise}
+		}
+}{
+			\end{cexercise}
+	\end{greybox}
+}
+
+\NewDocumentEnvironment{example}{ o } {
+	\begin{goldbox}
+		\ifXeTeX % Correct margin note spacing
+			\edef\marginnotetextwidth{11.8966390917cm}
+		\fi
+		\setlength{\parindent}{0.5cm} % Indent paragraphs
+		\IfValueTF{#1} {
+			\begin{cexample}[#1]
+		}{
+			\begin{cexample}
+		}
+}{
+			\end{cexample}
+	\end{goldbox}
+}
+
+%% Problems Environment
+% Intended mostly for handouts, this is simply a fancy
+% enumerate wrapper that provides a compact way to write
+% out lots of different problems. As a bonus, it maintains
+% source compatability with the traditional block-style probelms;
+% Simply remove a problem from the \begin{problems} ... \end{problems}
+% environment.
+
+% Store optional argument for use in items
+\tl_new:N \l_coursework_prlabel_tl
+
+\NewDocumentEnvironment{problems}{ o } {
+	% Store old \problem
+	\let\oldproblem\problem
+	\let\oldendproblem\endproblem
+	\let\problem\relax
+	\let\endproblem\relax
+
+	\IfValueTF{#1}{
+		\tl_gset:Nn \l_coursework_prlabel_tl {#1}
+	}{
+		\tl_gset:Nn \l_coursework_prlabel_tl {Problem}
+	}
+
+	% Redefine problem environment temporarily
+	\NewDocumentCommand\problem{ o } {
+		\IfValueTF{##1} {
+			\item[\refstepcounter{enumi}
+			      \textbf{\l_coursework_prlabel_tl{}~\number\value{enumi}~\textmd{(##1)}.}]
+		}{
+			\item
+		}
+	}
+
+	% Init enumerate
+	\begin{enumerate}[label=\textbf{\l_coursework_prlabel_tl{}~\arabic*.},
+	                                wide,
+	                                labelwidth=!,
+	                                labelindent=0pt]
+}{
+	\end{enumerate}
+
+	% Restore \problem
+	\let\problem\oldproblem
+	\let\endproblem\oldendproblem
+	\let\oldproblem\relax
+}
+
+\ExplSyntaxOff

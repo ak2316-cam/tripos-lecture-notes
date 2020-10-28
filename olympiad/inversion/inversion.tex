@@ -1,0 +1,375 @@
+\documentclass[]{scrartcl}
+
+\usepackage[
+titlingx, 
+theoremy, 
+links, 
+thinx
+]{cjquines}
+\usepackage{parskip}
+
+%\usepackage[inline]{asymptote}
+
+\begin{document}
+
+\title{Inversion\thanks{Based on chapter 8 of Evan Chen's `Euclidean Geometry in Mathematical Olympiads'}}
+\author{Olympiad Training Notes\\ Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{August 14, 2020}
+\maketitle
+
+\subsection*{Rules of the Game}
+
+Let $\omega$ be a circle with center $O$ and radius $r$. An \emph{inversion} about $\omega$ is a transformation satisfying the following.
+
+\begin{itemize}
+	\item The center $O$ of the circle is sent to $P_\infty$.
+	\item The point $P_\infty$ is sent to $O$.
+	\item Any other point $A$ is sent to the point $A^*$ on the ray $OA$ such that $OA \cdot OA^* = r^2$.
+\end{itemize}
+
+\subsection*{A Geometric Interpretation}
+
+First notice that inversion swaps points. Then we can use the following construction find the inverse of points with respect to $\omega$.
+
+\begin{center}
+	\begin{asy}
+	import geometry;
+	unitsize(25);
+
+	point O = origin;
+	real r = 2;
+	circle omega = circle(O, r);
+
+	point A = 3.5*right;
+
+	line[] A_tangents = tangents(omega, A);
+	point lower_tangency = intersectionpoints(A_tangents[0], omega)[0];
+	point upper_tangency = intersectionpoints(A_tangents[1], omega)[0];
+
+	point A_inverse = intersectionpoint(line(upper_tangency, lower_tangency), line(O, A));
+
+	filldraw((path) omega, opacity (0.05) + blue , blue);
+	label("$\omega$", dir(150)*r, NW);
+	dot(O); label("$O$", O, NW);
+	dot(A); label("$A$", A, NE);
+	
+	dot(lower_tangency);
+	dot(upper_tangency);
+	draw(segment(lower_tangency, upper_tangency), dotted+red);
+	draw(segment(A, upper_tangency), dashed+red);
+	draw(segment(A, lower_tangency), dashed+red);
+	draw(segment(O, A));
+
+	dot(A_inverse); label("$A^*$", A_inverse, NE);
+	\end{asy}
+\end{center}
+
+\begin{proof}[Proof Sketch]
+	Check $OA\cdot OA^* = r^2$.
+\end{proof}
+
+
+\subsection*{Inverting Pairs of Points}
+
+Consider points $A$ and $B$ and circle $\omega$.
+
+\begin{center}
+	\begin{asy}
+	import geometry;
+	unitsize(25);
+
+	point O = origin;
+	real r = 2;
+
+	inversion iv = inversion(O, r*r);
+
+	circle omega = (circle) iv;
+
+	point A = dir(30)*1.4;
+	point B = dir(-35)*1.7;
+
+	point As = iv*A;
+	point Bs = iv*B;
+
+	filldraw((path) omega, opacity (0.05) + blue , blue);
+	label("$\omega$", dir(150)*r, NW);
+	dot(O); label("$O$", O, NW);
+	dot(A); label("$A$", A, NW);
+	dot(B); label("$B$", B, SW);
+
+	dot(As); label("$A^*$", As, NW);
+	dot(Bs); label("$B^*$", Bs, SW);
+
+	draw(segment(A, B)); draw(segment(As, Bs));
+	draw(segment(O, As)); draw(segment(O, Bs));
+
+	filldraw((path) circle(A, B, Bs), opacity (0.025) + red , red+dashed);
+	\end{asy}
+\end{center}
+
+Inverting about $\omega$,
+notice that $OA \cdot OA^* = OB\cdot OB^* = r^2$ implies $AA^* B B^*$ are concyclic by power of a point. 
+Notably that gives us the angle condition $\measuredangle OAB = -\measuredangle OB^* A^*$.
+\clearpage
+\subsection*{Inverting Circles and Lines}
+
+In an inversion about a circle with center $O$,
+
+\begin{itemize}
+	\item A line through $O$ inverts to itself.
+	\item A circle through $O$ inverts to a line not through $O$, and vice versa. The diameter of this circle containing $O$ is perpendicular to the line.
+	\item A circle not through $O$ inverts to another circle not through $O$. The centers of these circles are collinear with $O$.
+\end{itemize} 
+\begin{minipage}{.5\textwidth}
+	\begin{center}
+		\begin{asy}
+		import geometry;
+		unitsize(25);
+	
+		point O = origin;
+		real r = 2;
+	
+		inversion iv = inversion(O, r*r);
+	
+		circle omega = (circle) iv;
+	
+		line l = line(dir(45)*1.7, dir(-45)*1.7);
+		point A = dir(45)*1.7 + 2*up;
+		point B = dir(45)*1.7 + 0.4*down;
+		point C = dir(45)*1.7 + 1.7*down;
+
+		circle ls = iv*l;
+		point As = iv*A;
+		point Bs = iv*B;
+		point Cs = iv*C;
+
+
+		// point A = dir(30)*1.4;
+		// point B = dir(-35)*1.7;
+	
+		// point As = iv*A;
+		// point Bs = iv*B;
+	
+		
+		draw(omega, dotted+red);
+		label("$\omega$", dir(220)*r, W);
+		dot(O); label("$O$", O, NW);
+		draw(l);
+		// draw(ls);
+		filldraw((path) ls, opacity (0.05) + blue , blue);
+		label("$\ell$", dir(-45)*1.7+1*down, SW);
+		dot(A); //label("$A$", A, E);
+		dot(B); //label("$B$", B, E);
+		dot(C); //label("$C$", C, E);
+		dot(As); label("$A^*$", As, NW);
+		dot(Bs); label("$B^*$", Bs, N);
+		dot(Cs); label("$C^*$", Cs, SE);
+		draw(line(O, A, extendA=false), blue+dashed);
+		draw(line(O, B, extendA=false), blue+dashed);
+		draw(line(O, C, extendA=false), blue+dashed);
+	
+		// dot(As); label("$A^*$", As, NW);
+		// dot(Bs); label("$B^*$", Bs, SW);
+	
+		// draw(segment(A, B)); draw(segment(As, Bs));
+		// draw(segment(O, As)); draw(segment(O, Bs));
+	
+		// filldraw((path) circle(A, B, Bs), opacity (0.025) + red , red+dashed);
+		\end{asy}
+	\end{center}
+\end{minipage}
+\begin{minipage}{.5\textwidth}
+	\begin{center}
+		\begin{asy}
+			import geometry;
+			unitsize(35);
+		
+			point O = origin;
+			real r = 1.5;
+		
+			inversion iv = inversion(O, r*r);
+		
+			circle omega = (circle) iv;
+		
+			// point A = ;
+			// point B = ;
+			// point C = ;
+			point C = dir(50)*1;
+			circle gamma = circle(dir(20)*0.75, dir(55)*0.75, C);
+
+			point O1 = ((conic) gamma).F;
+
+			point[] gammaintersection = intersectionpoints(gamma, line(O,O1));
+
+			point A = gammaintersection[0];
+			point B = gammaintersection[1];
+			point As = iv*A;
+			point Bs = iv*B;
+			point Cs = iv*C;
+			
+			draw(omega, dotted+red);
+			label("$\omega$", dir(220)*r, W);
+			label("$\gamma$", dir(20)*0.75, SW);
+			dot(O); label("$O$", O, NW);
+			filldraw((path) gamma, opacity (0.05) + black , black);
+			filldraw((path) (iv*gamma), opacity (0.05) + blue , blue);
+
+			dot(A); label("$A$", A, W);
+			dot(B); label("$B$", B, E);
+			draw(line(O, O1, extendA=false), dashed);
+
+			dot(As); dot(Bs);
+			label("$A^*$", As, E);
+			label("$B^*$", Bs, W);
+
+			dot(C); label("$C$", C, NW);
+			dot(Cs); label("$C^*$", Cs, NW);
+			\end{asy}
+	\end{center}
+\end{minipage}
+
+\begin{proof}[Proof Sketch]
+	Angle chase using the angle condition we obtained in the `Inverting Pairs of Points' section.
+\end{proof}
+
+
+\subsection*{Inversion and Distance}
+
+Let $A$ and $B$ be points other than $O$ and consider an inversion about $O$ with radius $r$. Then
+$$
+A^* B^*  = \frac{r^2}{OA \cdot OB} \cdot AB, \quad \quad \text{and} \quad \quad AB = \frac{r^2}{OA^* \cdot OB^*} \cdot A^* B^*.
+$$
+\begin{proof}[Proof Sketch]
+	Use similar triangles, and the second formula follows directly.
+\end{proof}
+
+\subsection*{Inverting Orthogonal Circles}
+
+In the diagram below, we call the circles $\omega_1$ and $\omega_2$ \emph{orthogonal}.
+Inverting about $\omega_1$, $\omega_2$ inverts to itself (and vice versa).
+
+\begin{center}
+	\begin{asy}
+		import geometry;
+		unitsize(30);
+
+		point O1 = left;
+		point O2 = right;
+
+		point X = dir(110);
+
+		real r1 = length(O1 - X);
+		real r2 = length(O2 - X);
+
+		circle omega1 = circle(O1, r1);
+		circle omega2 = circle(O2, r2);
+
+		filldraw((path) omega1, opacity (0.05) + blue , blue);
+		filldraw((path) omega2, opacity (0.025) + red , red+dashed);
+		label("$\omega_1$", dir(220)*r1 + left, W);
+		label("$\omega_2$", dir(320)*r2 + right, E);
+	
+		dot(O1); label("$O_1$", O1, S);
+		dot(O2); label("$O_2$", O2, S);
+
+		dot(X); label("$X$", X, N);
+
+		draw(segment(O1, X)); draw(segment(O2, X));
+		perpendicularmark(segment(O1, X), segment(X, O2), quarter=3);
+
+		
+	\end{asy}
+\end{center}
+
+\begin{proof}[Proof Sketch]
+	Use power of a point with respect to $\omega_2$.
+\end{proof}
+
+\subsection*{Forcing a Swap -- $\sqrt{bc}$ Inversion}
+
+Inversion about a circle at $A$ with radius $\sqrt{AB \cdot AC}$, 
+followed by a reflection across the bisector of $\angle BAC$ swaps $B$ and $C$.
+
+\begin{center}
+	\begin{asy}
+import geometry;
+unitsize(60);
+
+point A = dir(110);
+point B = dir(200);
+point C = dir(340);
+
+real r = length(B - A) * length(C - A);
+inversion iv = inversion(A, r);
+
+circle omega = (circle) iv;
+
+point I = incenter(A, B, C);
+line A_bisector = line(A, incenter(A, B, C), extendA=false);
+
+point Bs = reflect(A_bisector) * C;
+point Cs = reflect(A_bisector) * B;
+
+label("$A$", A, N);
+label("$B$", B, W);
+label("$C$", C, E);
+
+filldraw(A -- B -- C -- cycle, opacity(0.05)+blue, blue);
+draw(arc(omega, 220, 335), dashed);
+
+draw(A_bisector);
+draw(segment(B, Bs), red);
+draw(segment(C, Cs), red);
+
+draw(segment(B, Cs), red+dotted);
+draw(segment(Bs, C), red+dotted);
+
+perpfactor *= 0.75;
+perpendicularmark(A_bisector, line(B, Cs));
+perpendicularmark(A_bisector, line(Bs, C));
+
+label("$B^*$", Bs, W);
+label("$C^*$", Cs, NE);
+
+dot(A); dot(B); dot(C);
+dot(Bs); dot(Cs);
+
+
+// point O1 = left;
+// point O2 = right;
+
+// point X = dir(110);
+
+// real r1 = length(O1 - X);
+// real r2 = length(O2 - X);
+
+// circle omega1 = circle(O1, r1);
+// circle omega2 = circle(O2, r2);
+
+// filldraw((path) omega1, opacity (0.05) + blue , blue);
+// filldraw((path) omega2, opacity (0.025) + red , red+dashed);
+// label("$\omega_1$", dir(220)*r1 + left, W);
+// label("$\omega_2$", dir(320)*r2 + right, E);
+
+// dot(O1); label("$O_1$", O1, S);
+// dot(O2); label("$O_2$", O2, S);
+
+// dot(X); label("$X$", X, N);
+
+// draw(segment(O1, X)); draw(segment(O2, X));
+// perpendicularmark(segment(O1, X), segment(X, O2), quarter=3);
+\end{asy}
+\end{center}
+
+\begin{proof}[Proof Sketch]
+Computation.	
+\end{proof}
+
+% \clearpage
+
+% \begin{problem}[IrMO 2020 P9]
+% 	A trapezium $A B C D,$ in which $A B$ is parallel to $D C,$ is inscribed in a circle of radius $R$ and centre $O .$ The non-parallel sides $D A$ and $C B$ are extended to meet at $P$ while diagonals $A C$ and $B D$ intersect at $E .$ Prove that $|O E| \cdot|O P|=R^{2}$
+% \end{problem}
+
+
+\end{document}
