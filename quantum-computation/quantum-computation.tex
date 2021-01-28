@@ -54,6 +54,7 @@ noindent,
 
 % Computation, at a fundamental level, can be thought of as updating bit strings by prescribed sequences of steps (`the program'). These are usually elementary Boolean operations/gates, for example AND, OR, NOT, SWAP and so on. A crucial property here is that each operation takes a `fixed effort' to perform, independent of the length of the string.
 
+\tableofcontents
 
 \section{Principles of Quantum Mechanics}
 
@@ -158,7 +159,9 @@ and we extend by linearity to all $\ket{\xi} \in V \otimes W$.
 
 We will now state some axioms that describe quantum mechanics.
 
-\begin{axiom*}[QM1 -- Physical States]
+\subsubsection{QM1 -- Physical States}
+
+\begin{axiom*}[QM1]
 	The state of any (isolated) physical system $S$ are represented by unit vectors in a complex vector space $V$ with a given inner product.
 \end{axiom*}
 
@@ -181,7 +184,9 @@ We say $\ket{\psi}$ is a \vocab{superposition} of $\ket{0}$ and $\ket{1}$ with \
 	We call this the \vocab{conjugate} basis or $X$-basis.
 \end{definition}
 
-\begin{axiom*}[QM2 -- Composite Systems]
+\subsubsection{QM2 -- Composite Systems}
+
+\begin{axiom*}[QM2]
 	If system $S_1$ has state space $V_1$ and system $S_2$ has state space $V_2$ then the joint system $S_1 S_2$, obtained by taking $S_1$ and $S_2$ together, has state space $V_1 \otimes V_2$.
 \end{axiom*}
 
@@ -286,8 +291,9 @@ with other cases done similarily.
 
 Some important special cases are $I \otimes A$ and $A \otimes I$, the action of $A$ on the second (or first) component space of $V_2 \otimes V_2$. We often refer to these as \vocab{local operations} on subsystems of composite systems.
 
+\subsubsection{QM3 -- Physical Evolution of Quantum Systems}
 
-\begin{axiom*}[QM3 -- Physical Evolution of Quantum Systems]
+\begin{axiom*}[QM3]
 	Any physical (finite time) evolution of a quantum system is represented by a \vocab{unitary} linear operation on the vector space of states.
 \end{axiom*}
 
@@ -311,9 +317,60 @@ The last piece of notation we will introduce is the partial inner products. For 
 	That is, we pick out the terms of $\ket{\xi}_{AB}$ with a zero in the $A$ slot.
 \end{example}
 
-\begin{axiom*}[QM4 -- Quantum Measurements \& Born Rule]
-	We will come back to this.
-\end{axiom*}
-% Generally, if a system $S$ has states described by $k$ parameters and $S_n$ is the compositite of $n$ instaces of $S$, then the composite system has, in the quantum case, $O(k^n)$ parameters, but in the classical case, $O(n)$ parameters. 
+\subsubsection{QM4 -- Quantum Measurement \& Born Rule}
+
+This axiom describes how classical information is extracted from quantum states. Fundamentally there is a physical limitation on this process and it is rather different than the extraction of classical information.
+
+Typically in a classical setting, we assume that measurements can occur without changing the physical system being studied. For example, if you measured the height of a tree, you wouldn't expect the act of measuring to make the tree any smaller. This is different in a quantum setting, as we shall see.
+
+We will work with a given \emph{single} instance of a quantum state $\ket{\psi}$ of a physical system, with a state space $V$ of dimension $n$.
+
+We first have the \vocab{basic Born rule}, a complete projective measurement (or von Neumann measurement). Let $B = \{\ket{e_1}, \dots, \ket{e_n}\}$ be any orthonormal basis of $V$. We can make a measurement on $\ket{\psi}$ relative to the basis $B$.
+
+Letting $\ket{\psi} = \sum a_i \ket{e_i}$, the possible measurement outcomes are $j = 1, 2, \dots, n$, and the probability of getting an outcome $j$ is $\operatorname{prob}(j) = |\ip{e_j}{\psi}|^2 = |a_j|^2$. If outcome $j$ is seen, then the state is no longer $\ket{\psi}$, but it has been \vocab{collapsed} to $\ket{\psi_j} = \ket{e_j}$.
+
+Clearly this transformation is not unitary, and thus we have a completely different physical process to evolution as described before.
+Notably, repeated measurement gives only the same result, with certainty. We would not get further samples of the $|a_j|^2$ distribution.
+
+To rephrase, the probability is the squared length of $\ket{\psi}$ onto the basis direction $\ket{e_j}$, and the post measurement state is that projection, re-normalized to unit length.
+
+The `complete' above refers to the \emph{one}-dimensionality of the orthonormal subspaces, defined by basis states. We can similarity describe incomplete projective measurements.
+
+Let $\{E_1, E_2, \dots, E_d \}$ by a decomposition of $V$ into $d$ mutually orthogonal subspaces, so $V = E_1 \oplus \cdots \oplus E_d$, and let $\Pi_i$ be the projection onto $E_i$. Then the \vocab{incomplete} projective measurement of $\ket{\psi}$ with respect to the orthogonal decomposition is the following quantum operation. The possible outcomes are $j = 1, \dots, d$, and $\operatorname{prob}(j) = \text{squared length of projection of $\ket{\psi}$ into $E_j$} = \mel{\psi}{\Pi_j^{\dagger} \Pi_j}{\psi} = \mel{\psi}{\Pi_j}{\psi}$.
+(Recall that $\Pi \Pi = \Pi$ and $\Pi^{\dagger} = \Pi$). This is also $\operatorname{tr}(\Pi_j \op{\psi}{\psi})$.
+
+The post measurement state is the projected `collapsed' vector, re-normalised. So $\ket{\psi_j} = \frac{\Pi_j \ket{\psi}}{\operatorname{prob}(j)}$.
+
+\begin{example}[Parity Measurement on 2-Qubits]
+	The parity of a 2-bit string $b_1b_2$ is the modulo 2 sum $b_1 \oplus b_2$. The parity measurement on two qubits is teh incomplete measurement with orthogonal decomposition
+	$$
+	E_0 = \operatorname{span}\{\ket{00}, \ket{11}\}, \quad \quad E_1 = \operatorname{span}\{\ket{01}, \ket{10}\}.
+	$$
+	For $\ket{\psi} = a \ket{00} + b\ket{01} + c\ket{10} + d\ket{11}$, we see $0$ with probability $|a|^2 + |d|^2$, and the post measurement state would be $\frac{a \ket{00} + d \ket{11}}{\sqrt{|a|^2 + |d|^2}}$.
+\end{example}
+
+In some texts (especially pre-2000s) they will typically introduce measurement in the context of `quantum observables'.
+
+\begin{definition}[Observable]
+	A quantum observable $\theta$ is a hermitian operator on $V$ so that $\theta$ has real eigenvalues $\lambda_j$ for $j = 1, \dots, d$, and orthogonal eigenspaces $\Lambda_j$, with $\operatorname{dim}(\Lambda_j)$ being the multiplicity of $\lambda_j$, and $V = \Lambda_1 \oplus \cdots \oplus \Lambda_d$. 
+\end{definition}
+
+The measurement of a quantum observable $\theta$ is then just the incomplete measurement relative to this orthogonal decomposition.
+However, these observables' eigenvalues relate to physical properties, and we thus normally label the outcomes by their eigenvalues $\lambda_j$, not just $j$ as before. We also have things like $\expval{\theta} = \sum \lambda_j \operatorname{prob}(j)$, which obviously depend on the eigenvalues. 
+
+But for the purposes of providing information about $\ket{\psi}$ and its post measurement state, the choice of labelling is immaterial and thus we won't be that interested in observables.
+
+A special case of incomplete measurement relates to measuring a component part of a quantum system, the \vocab{extended Born rule}.
+
+Suppose $\ket{\psi}$ is a state of a composite system $S_1 S_2$ with state space $V \otimes W$. Let $B_V = \{\ket{e_1}, \dots, \ket{e_n}\}$ be an orthonormal basis of $V$. We can uniquely express $\ket{\psi}$ uniquely as $\ket{\psi}_{VW} = \sum_i \ket{e_i}_V \ket{\xi_i}_W$, where $\ket{\psi_i}$ are generally not normalized, and not orthogonal. In fact, $\ket{\xi_i}_W = {}_V\ip{e_i}{\psi}_{VW}$.
+Thus $\ket{\psi}$ normalised implies $\sum_{i = 1}^n \ip{\xi_i}{\xi_i} = 1 = \ip{\psi}{\psi}$.
+
+Now, if we say perform a measurement of $\ket{\psi}$ relative to a basis $B_V$ of $V$ (a `complete measurement on $V$ but not $V \otimes W$') with outcomes $i = 1, \dots, n$, and corresponding orthogonal subspaces (of $V \otimes W$), $E_i = \operatorname{span} \{\ket{e_i} \otimes \ket{\xi} \mid \ket{\xi} \in W\}$, which we write as $\ket{e_i} \otimes W$. The corresponding projectors are $\Pi_i = \op{e_i}{e_i}\otimes I_W $, and $\operatorname{prob}(i) = \ip{\xi_i}{\xi_i}$. The post measurement state for $i$ is $\ket{\psi_i} = \frac{\ket{e_i}_V \ket{\xi_i}_w}{\sqrt{\ip{\xi_i}{\xi_i}}}$.
+
+\begin{remark}
+	According to QM4 (all of the measurement rules), two different states with guaranteed (probability 1) different outcomes for some measurement, must lie in orthogonal subspaces (they must be orthogonal themselves). So non-orthogonal state, although physically different, can never be reliably distinguished (`as information') by any quantum process.
+
+	Also, if $\ket{\psi}$ has dimension $n$, any measurement on it has at most $n$ outcomes. However, we can get more outcomes by adjoining an ancilla $\ket{A}$ of dimension $m$ (independent of $\ket{\psi}$) and measure $\ket{\psi}\ket{A}$ to get up to $mn$ outcomes. 
+\end{remark}
 
 \end{document}
