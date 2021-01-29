@@ -21,6 +21,7 @@ fancyproofs
 
 \usepackage{tikz}
 \usepackage{siunitx}
+\usepackage{asymptote}
 \usetikzlibrary{calc,patterns,angles,quotes,snakes}
 
 
@@ -482,5 +483,113 @@ Then $Y = X_1^{p_1} X_2^{p_2} X_3^{p_3} \cdot C(\lambda_1, \dots, \lambda_{n - 3
 	There is of course a lot of freedom in this formula (as we haven't really considered the physical situation), but it does contain useful information. For example, if $d \mapsto 2d$ and $l \mapsto 2l$, then $p \mapsto \sqrt{2}p$. But if $d \mapsto 2d$ and $l \mapsto l$, then we couldn't say much because it depends on the precise form of $f$. 
 \end{example}
 
+\chapter{Forces}
+
+\section{Force and Potential Energy in 1 Spacial Dimension}
+
+Consider a mass $m$ moving in a straight line with position $x(t)$.
+Let's suppose we had some force that depends only on position $x$, and not velocity $\dot{x}$ or time $t$.
+We will call the force $F(x)$, and define potential energy as follows.
+
+\begin{definition}[Potential Energy]
+	The \vocab{potential energy} $V(X)$ is given by $F(x) = -\frac{\dd V}{\dd x}$, so
+	$$
+	V(x) = - \int^x F(x') \; \dd x'.
+	$$
+\end{definition}
+
+We know that the force satisfies newton's second law, $m \ddot{x} = - \frac{\dd V}{\dd x}$. We also define kinetic energy.
+
+\begin{definition}[Kinetic Energy]
+	The \vocab{kinetic energy} $T(\dot{x}) = \frac{1}{2} m\dot{x}^2$. In higher dimensions, this is generalized to $\frac{1}{2}, |\dot{\vv{x}}|^2$.
+\end{definition}
+
+Now, if we take the kinetic and potential energy we get an important invariant.
+
+\begin{proposition}[Conservation of Energy]
+	The total energy $E = T + V$ is conserved. That is, $\frac{\dd E}{\dd t} = 0$.
+\end{proposition}
+\begin{proof}
+	Differentiating we have
+	\begin{align*}
+		\frac{\dd E}{\dd t} &= \frac{\dd}{\dd t} \left(\frac{1}{2} v \dot{x}^2 + V(x)\right) \\
+		&= m \dot{x}\ddot{x} + \frac{\dd V}{\dd x} \dot{x} \\
+		&= \dot{x} \left(m \ddot{x} + \frac{\dd V}{\dd x} \right) = 0,
+	\end{align*}
+	as required.
+\end{proof}
+
+Note that for conservation of $\frac{1}{2} m \dot{x}^2 + \Phi$, we require $\dot F = -\frac{\dd \Phi}{\dd t}$. In principle, $\Phi$ may depend on $x, \dot{x}$ and $t$. But usually it is the case that there is no such $\Phi$ if $F$ depends on $\dot{x}$ and/or $t$.
+
+\begin{example}[Harmonic Oscillator]
+	Consider a system where $F(x) = -k x$ (physical examples of such system is Hooke's law for an elastic string). Then
+	$$
+	V(x) = -\int^x (-kx') \; \dd x' = \frac{1}{2}k x^2,
+	$$
+	with an appropriate choice of arbitrary constant.
+	We can then seek an explicit expression for $x(t).$ We know that $m \ddot{x} = -kx$, hence
+	$$
+x(t) = A \cos \omega t + B \sin \omega t,
+	$$
+	and
+	$$
+\dot{x} = - \omega A \sin \omega t + \omega B \cos \omega t,
+$$
+for suitable constants $A$ and $B$ and $\omega = (k/m)^{1/2}$.
+
+We can then verify that energy is conserved. The total energy is $E = \frac{1}{2}m \dot{x}^2 + \frac{1}{2}kx^2 = \frac{1}{2}(-\omega A \sin \omega t + \omega B \cos \omega t)^2 m + \frac{1}{2}k (A \omega \sin \omega t + B 
+\sin \omega t)^2 = \frac{1}{2}k(A^2 + B^2)$, which is a constant. 
+\end{example}
+
+Let's now think about more general potentials. In one dimension, conservation of energy gives useful information about the motion. 
+
+We can think of conservation as the first integral of Newton's second law. If we have
+$$
+E = \frac{1}{2} m \dot{x}^2 + V(x) \quad \quad \text{constant},
+$$
+then
+$$
+\dot{x} = \pm\sqrt{\frac{2}{3}(E - V(X))},
+$$
+where $E$ is set by the initial conditions.
+Hence
+$$
+\pm \int_{x_0}^{x} \frac{\dd x'}{\sqrt{\frac{2}{3}(E - V(X))}} = t - t_0
+$$
+with $x = x_0$ when $t = t_0$. We get an implicit solution for $x(t)$. Of course, there is a limit to how much can be taken analytically from this integral, but  
+in principle (possibly numerically) this integral could be evaluated to find $x(t)$.
+
+We can gain some qualitative insights from the conservation of energy.
+
+\begin{example}
+	Take $V(x) = \lambda(x^3 - 3 \beta^2 x)$ where $\lambda, \beta$ are positive constants.
+	\begin{center}
+		\begin{asy}
+			unitsize(55);
+			import graph;
+			pair F(real x) {
+				return (0.5*x, 0.5*0.3*(x^3 - 3*x));
+			}
+	
+			path g = graph(F, -2.1, 2.1);
+	
+			draw(g, blue + linewidth(0.9pt));
+	
+			draw((0, -0.55) -- (0, 0.55), arrow=Arrow(TeXHead));
+			draw((-1.3, 0) -- (1.3, 0), arrow=Arrow(TeXHead));
+
+			label("$V(x)$", (1.6, 0.44415), blue);
+		\end{asy}
+	\end{center}
+	We can wonder what happens if we release the particle from rest at $x=x_0$ for various choices of $x_0$. 
+
+	The assumption of stating from rest implies that the total energy is $V(x_0)$. Then conservation of energy implies that $V(x) \leq V(x_0)$.
+
+	If the left maxima is at $x = -\beta$ and the right minima is at $x = \beta$, then we can consider cases of the value of $x$. 
+
+	If $x_0 < -\beta$, then the particle will keep moving to the left, going to $- \infty$. If $- \beta < x_0 < 2 \beta$, then the particle must stay confined to this region. If $x_0 > 2\beta$, then the particle will move to the left, will reach $x = -\beta$ and will then continue to $- \infty$.
+	
+	Some special cases are $x_0 = - \beta$, where the particle will stay at $-\beta$, and $x_0 = \beta$ where the particle will stay at $\beta$. Lastly, if $x_0 = 2 \beta$, then the particle will move to the left, and will come to rest at $x = - \beta$.
+\end{example}
 
 \end{document}
