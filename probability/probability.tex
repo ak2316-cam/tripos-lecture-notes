@@ -27,7 +27,7 @@ fancyproofs
 
 \title{Probability}
 % \subtitle{Adam Kelly}
-\author{Adam Kelly}
+\author{Adam}
 % \date{Michaelmas 2020}
 \date{\today}
 
@@ -422,5 +422,114 @@ We can use the inclusion-exclusion to count combinatorially.
 	So $|A| = \sum_{k = 0}^m (-1)^k \binom{m}{k}(m - k)^n$.
 \end{example}
 
+
+\subsection{Counting Derangements}
+
+A derangement is a permutation that has no fixed points.
+
+Let $\Omega$ be the set of permutations of $\{1, 2, \dots, n\}$, and $A$ be the set of derangements, $A = \{f \in \Omega \mid f(i) \neq i \text{ for } i = 1,2, \dots, n\}$.
+We pick a permutation at random, and we want to know the probability that it is in $A$.
+
+Define $A_i = \{ f \in \Omega \mid f(i) = i\}$. Then $A = A_1^c \cap \cdots \cap A_n^c = \left(\bigcup_{i = 1}^{n} A_i\right)^c$. So $\PP(A) = 1 - \PP(\bigcup_{i = 1}^n A_i)$. By inclusion exclusion,
+\begin{align*}
+\mathbb{P}\left(\bigcup_{i=1}^{n} A_{i}\right)&=\sum_{k=1}^{n}(-1)^{k+1} \sum_{1 \leq i_{1}<\ldots<i_{k} \leq n} \mathbb{P}\left(A_{i_1} \cap \ldots \cap A_{i_{k}}\right)\\
+&= \sum_{k = 1}^n (-1)^{k + 1} \binom{n}{k} \cdot \frac{(n - k)!}{n!} \\
+&= \sum_{k = 1}^n (-1)^{k + 1} \frac{n!}{k! \cdot (n - k)!}
+ \cdot \frac{(n - k)!}{n!} \\
+ &= \sum_{k = 1}^n \frac{(-1)^{k + 1}}{k!}.
+ \end{align*}
+Thus $\PP(A) = 1 - \sum_{k = 1}^n \frac{(-1)^{k + 1}}{k!} = \sum_{k = 0}^{n} \frac{(-1)^k}{k!}$, and as $n \rightarrow \infty$, we have $\PP(A) \rightarrow e^{-1} \approx 0.3678$.
+
+\subsection{Independence}
+
+If we have some probability space $(\Omega, \FF, \PP)$, we have the notion of \emph{independence}.
+
+\begin{definition}[Independence]
+Let $A, B \in \FF$. They are called \vocab{independent} if $\PP(A \cap B) = \PP(A) \cdot \PP(B)$.
+
+A countable collection of events $(A_n)$ is said to be \vocab{independent} if for all distinct $i_1, i_2, \dots, i_k$, we have
+$$
+\PP(A_{i_1} \cap \cdots \cap A_{i_k}) = \prod_{j = 1}^k \PP(A_{i_j}).
+$$
+\end{definition}
+
+Note that pairwise independence does not imply independence.
+
+\begin{example}[Pairwise Independence is not Independence]
+	If we toss a fair coin twice, we have $\Sigma = \{(0, 0), (0, 1), (1, 0), (1, 1)\}$, and $\PP(\{\omega\}) = 1/4$ for all $\omega \in \Omega$.
+
+Define $A = \{(0, 0), (0, 1)\}$, $B = \{(0, 0), (1,0)\}$ and $C = \{(1, 0), (0, 1)\}$. Then $\PP(A) = \PP(B) = \PP(C) = 1/2$. Also $\PP(A \cap B) = \PP(\{(0, 0)\}) = 1/4 = 1/2 \cdot 1/2 = \PP(A) \cdot \PP(B)$. Thus $A$ and $B$ are independent. Similarly, $B$ and $C$ are independent, and $A$ and $C$ are independent.
+
+However, $\PP(A \cap B \cap C) = \PP(\emptyset) = 0 \neq \PP(A) \cdot \PP(B) \cdot \PP(C)$, so $A$, $B$ and $C$ are not independent. 
+\end{example}
+
+\begin{proposition}
+	If $A$ is independent of $B$, then $A$ is also independent of $B^c$.
+\end{proposition}
+\begin{proof}
+	$\PP(A \cap B^c) = \PP(A) - \PP(A \cap B) = \PP(A) - \PP(A) \cdot \PP(B)$, by the independence of $A$ and $B$. Then this is $\PP(A)\cdot (1 - \PP(B)) = \PP(A) \cdot \PP(B^c)$.
+\end{proof}
+
+
+\subsection{Conditional Probability}
+
+We can now think of this idea of probability based on conditions.
+
+\begin{definition}[Conditional Probability]
+	Suppose we had some event $B \in \FF$ with $\PP(B) > 0$, and let $A \in \FF$. We define the \vocab{conditional probability} of $A$ given $B$
+and write $\PP(A \mid B)$ to be
+$$
+\PP(A \mid B) = \frac{\PP(A \cap B)}{\PP(B)}.
+$$
+\end{definition}
+
+If $A$ and $B$ are independent, then $\frac{\PP(A \cap B)}{\PP(B)} = \frac{\PP(A) \cdot \PP(B)}{\PP(B)} = \PP(A)$. So in this case, $\PP(A \mid B) = \PP(A)$.
+
+We can also generalise this slightly.
+
+\begin{proposition}
+	Suppose $(A_n)$ is a disjoint sequence in $\FF$. Then
+$$
+\PP\left(\bigcup A_n \mid B\right) = \sum_n \PP(A_n \mid B).
+$$
+\end{proposition}
+\begin{proof}
+	By countable additivity, we have
+	\begin{align*}
+		\PP(\bigcup A_n \mid B) &= \frac{\PP((\bigcup A_n) \cap B)}{\PP(B)} \\
+		&= \sum_n \frac{\PP(A_n \cap B}{\PP(B)}\\
+		&= \sum_n \PP(A_n \mid B).
+	\end{align*}
+\end{proof}
+
+We will also use the following result frequently.
+
+\begin{proposition}[Law of Total Probability]
+	Suppose $(B_n)$ is a disjoint collection in $\FF$, and $\bigcup B_n = \Omega$, and $\PP(B_n) > 0$ for all $n$. Let $A \in \FF$. Then 
+	$$
+	\PP(A) = \sum_n \PP(A \mid B_n) \PP(B_n).
+	$$
+\end{proposition}
+\begin{proof}
+	$\PP(A) = \PP(A \cap \Omega) = \PP(A \cap (\bigcup_n B_n))$, and by countable additivity of $\PP$, $\sum_{n}\PP(A \cap B_n) = \sum_n \PP(A\mid B_n) \cdot \PP(B_n)$.
+\end{proof}
+
+\begin{proposition}[Bayes' Formula]
+	Let $(B_n)$ be a disjoint collection of events, with $\cup B_n = \Omega$ and $\PP(B_n) > 0$ for all $n$. Then
+	$$
+	\PP(B_n \mid A) = \frac{\PP(A \mid B_n) \cdot \PP(B_n)}{\sum_k \PP(A\mid B_k) \cdot\PP(B_k)}. 
+	$$
+\end{proposition}
+\begin{proof}
+	We have
+	$$
+	\PP(B_n \mid A) = \frac{\PP(B_n \cap A)}{\PP(A)} = \frac{\PP(A\mid B_n) \cdot \PP(B_n)}{\PP(A)},
+	$$
+	and by the law of total probability, $\PP(A) = \sum_k \PP(A \mid B_k) \cdot \PP(B_k)$.
+\end{proof}
+
+This formula is the basis of Bayesian statistics.
+
+We know the probabilities of the events $(B_k)$, and we have a model which gives us the conditional probabilities $\PP(A \mid B_n)$. Bayes' formula tells us how to calculate the posterior probabilities of $B_n$ given that the event $A$ occurs.
 
 \end{document}
