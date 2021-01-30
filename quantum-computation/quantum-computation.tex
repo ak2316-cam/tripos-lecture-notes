@@ -241,7 +241,7 @@ we note that for basis states,
 		0 & 1 
 	\end{pmatrix},
 \end{align*}
-and we can see that these are a basis for $2x2$ matrices, and we can express
+and we can see that these are a basis for $2\times 2$ matrices, and we can express
 $$
 A = a_{00} \op{0}{0} +  a_{01} \op{0}{1} +  a_{10} \op{1}{0} +  a_{11} \op{1}{1} = \sum a_{ij} \op{i}{j}.
 $$
@@ -372,5 +372,126 @@ Now, if we say perform a measurement of $\ket{\psi}$ relative to a basis $B_V$ o
 
 	Also, if $\ket{\psi}$ has dimension $n$, any measurement on it has at most $n$ outcomes. However, we can get more outcomes by adjoining an ancilla $\ket{A}$ of dimension $m$ (independent of $\ket{\psi}$) and measure $\ket{\psi}\ket{A}$ to get up to $mn$ outcomes. 
 \end{remark}
+
+\subsection{Quantum Gates}
+
+We will finish looking at the principles of quantum mechanics that we will be using by looking at some basic unitary operations for qubits, which are known as \vocab{quantum gates}.
+
+\subsubsection{Single Qubit Gates}
+
+We will begin by listing some gates that act on a single qubit.
+
+\begin{itemize}
+	\item The Hadamard gate, 
+	$$H = \frac{1}{\sqrt{2}}\begin{pmatrix}
+		1 & 1 \\
+		1 & -1
+	\end{pmatrix}.$$
+	We have $H\ket{0} = \ket{+} = \frac{1}{\sqrt{2}}(\ket{0} + \ket{1})$, and $H\ket{1} = \ket{-}$.
+	
+	\item The Pauli operations/gates,
+	$$
+	I = \begin{pmatrix}
+		1 & 0 \\ 0 & 1
+	\end{pmatrix}, \quad \sigma_x = \begin{pmatrix}
+		0 & 1 \\ 1 & 0
+	\end{pmatrix}, \quad \sigma_y = \begin{pmatrix}
+		0 & -i \\ i & 0
+	\end{pmatrix}, \quad \sigma_z = \begin{pmatrix}
+		1 & 0 \\0 & -1
+	\end{pmatrix}.
+	$$
+	These matrices are all unitary and hermitian. These matrices have multiplicative (group) properties, for example $\sigma_x^2 = \sigma_y^2 = \sigma_z^2 = I$, so the eigenvalues are $\pm 1$, and they all anti-commute, $\sigma_x \sigma_y = - \sigma_y \sigma_z$, and there's cyclic shifts, for example $\sigma_y \sigma_z = \sigma_x$.
+
+	We will often use the `real versions' as quantum gates,
+	$$
+	X = \sigma_x, \quad Z = \sigma_z, \quad Y = i \sigma_y = \begin{pmatrix}
+		0 & 1 \\
+		-1 & 0
+	\end{pmatrix}.
+	$$
+
+	Note that $X\ket{0} = \ket{1}$, so this gate is often known as the `quantum NOT gate'. The $X$ eigenbasis is $\ket{+}, \ket{-}$. The $Z$ gate satisfies $Z \ket{0} = \ket{0}$, and $Z\ket{1} = - \ket{1}$. The $Z$ eigenbasis is $\ket{0}$, and $\ket{1}$. Note the relation to the $X$ and $Z$ basis mentioned before.
+
+	\item The phase gates
+	$$
+	P(\theta) = \begin{pmatrix}
+		1 & 0 \\
+		0 & e^{i \theta}
+	\end{pmatrix}.
+	$$
+	Note that $Z = P(\pi)$.
+\end{itemize}
+
+\subsubsection{Two Qubit Gates}
+
+There are also gates that act on multiple qubits.
+The most common examples of two qubit gates are the `controlled' gates.
+
+\begin{itemize}
+	\item The $CX$, or controlled-$X$ gate. This is a two qubit gate where the action of the $X$ gate on the second qubit is controlled by the value of the first qubit.
+	
+	To define it on a basis, $CX \ket{j}\ket{k} = \ket{j} \ket{j \oplus k} = \ket{j} X^{j} \ket{k}$, where $\oplus$ is addition modulo 2. So $CX \ket{0} \ket{\alpha} = \ket{0} \ket{\alpha} = CX\ket{1}\ket{\alpha} = \ket{1} X \ket{\alpha}$.
+
+	The matrix for the $CX$ gate is
+	$$
+	CX = \begin{pmatrix}
+		1 & 0 & 0 & 0 \\
+		0 & 1 & 0 & 0 \\
+		0 & 0 & 0 & 1 \\
+		0 & 0 & 1 & 0
+	\end{pmatrix}.
+	$$
+	We typically call the first qubit the \vocab{control} qubit and the second qubit the \vocab{target} qubit. The two qubits have asymmetrical roles, so sometimes we write $CX_{ab}$ to mean $a$ is the control qubit and $b$ is the target qubit to make this explicit.
+
+	\item The $CZ$, or controlled-$Z$ gate. This is $CZ_{12}\ket{i}\ket{j} = \ket{j} z^j\ket{k} = (-1)^{jk}\ket{j}\ket{k}$. 
+	
+	Somewhat unusually, this controlled gate is symmetric, where $CZ_{12} = CZ_{21}$. The matrix for this gate is
+	$$
+		CZ = \begin{pmatrix}
+			1 & 0 & 0 & 0 \\
+			0 & 1 & 0 & 0 \\
+			0 & 0 & 1 & 0 \\
+			0 & 0 & 0 & -1 
+		\end{pmatrix}.
+	$$
+\end{itemize}
+
+\section{Quantum States as Information Carriers}
+
+Recall that information corresponds to distinguishable states of a physical system. Classically, \emph{any} two different states are distinguishable (in principle). Quantumly, states are distinguishable reliably if and only if they are \emph{orthogonal}.
+A qubit is the simplest quantum system that can reliably encode a classical bit, even though it has infinitely many different states.
+
+So if given a quantum state $\ket{\psi}$, it is impossible to identify its identity with certainty.
+For example, if given $\ket{0}, \ket{+}$ as `yes' and `no', we would not be able to reliably distinguish between the answers.
+
+We call `what we get' quantum information.
+
+Given some quantum information $\ket{\psi}$, we have three basic operations that we can perform on it.
+\begin{enumerate}
+	\item \emph{Ancilla}. We can take a fixed known quantum state $\ket{A}$ and adjoin it to get $\ket{\tilde{\psi}} = \ket{\psi} \ket{A}$. $\ket{A}$ is called an \vocab{ancilla}.
+	\item \emph{Unitary}. We can apply a unitary $U$ of our choice, with $\ket{\psi}$ becoming $U\ket{\psi}$.
+	\item \emph{Measure}. We can perform a measurement on (part of) $\ket{\psi}$. We can record this result, and then use the post-measurement state for further quantum information processing. This further processing could be chosen adaptively depending on the measurement outcome.
+	
+	The output here is generally a probabilistic mixture over post-measurement states, corresponding to the Born rule.
+\end{enumerate}
+Most generally, we can do any sequence of the three actions above.
+
+\subsection{The No-Cloning Theorem}
+
+Informally, the no-cloning theorem says that `quantum information cannot be copied or cloned'. This is unlike the classical situation where any information can be copied.
+
+Given some quantum information $\ket{\psi}_A$, any copy/cloning process is a quantum evolution process of $A$, $B$ and $M$, with
+$$
+\ket{\psi}_A \ket{0}_B \ket{M_0}_M \longrightarrow  \ket{\psi}_A \ket{\psi}_B \ket{M_{\psi}}_M.
+$$
+Here, $B$ is a quantum system of the same dimension as $A$, usually in a `blank', fixed state (independent of $\psi$), and $M$ is any other system needed to perform the copying, stating in some `ready'-state $\ket{M_0}$ (also independent of $\psi$). The final state of $M$ may depend on $\ket{\psi}$ though.
+
+\begin{theorem}[No-Cloning Theorem, Unitary Version]
+	Let $\mathcal{S}$ be any known set of quantum state of $A$ that contains at least one pair $\ket{\xi} \neq \ket{\eta}$ of non-orthogonal states.
+	Then no unitary process exists that achieves cloning of all states in $S$.
+\end{theorem}
+
+We will prove this next time.
 
 \end{document}
