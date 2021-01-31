@@ -27,7 +27,7 @@ fancyproofs
 
 \title{Probability}
 % \subtitle{Adam Kelly}
-\author{Adam}
+\author{Adam Kelly}
 % \date{Michaelmas 2020}
 \date{\today}
 
@@ -531,5 +531,96 @@ We will also use the following result frequently.
 This formula is the basis of Bayesian statistics.
 
 We know the probabilities of the events $(B_k)$, and we have a model which gives us the conditional probabilities $\PP(A \mid B_n)$. Bayes' formula tells us how to calculate the posterior probabilities of $B_n$ given that the event $A$ occurs.
+
+\begin{example}[False Positive of a Rare Diease]
+	Suppose that some rare disease $A$ affects $0.1\%$ of the population. We have a medical test that is positive for $98\%$ of the affected population and $1\%$ of those unaffected by the disease. Suppose we picked an individual at random. What is the probability that they suffer from the disease $A$ given that they tested positive?
+
+	We define $A = \{\text{individual suffers from $A$}\}$ and $P =\{\text{individual tested positive}\}$. We want $\PP(A \mid P)$.
+
+	We have $\PP(A) = 0.001$, and $\PP(P \mid A) = 0.98$, and $\PP(A \mid A^c) = 0.01$. Then
+	\begin{align*}
+		\PP(A \mid P) &= \frac{\PP(P \mid A) \cdot \PP(A)}{\PP(P \mid A) \cdot \PP(A) + \PP(P \mid A^c) \cdot \PP(A^c)} \\
+		&= \frac{0.98 \cdot 0.001}{0.98 \cdot 0.001 + 0.01\cdot 0\cdot 999} = 0.089\dots \approx 0.09.
+	\end{align*}
+	So $\PP(A \mid P) = 0.09$. 
+
+	The reason why this is so low is that $\PP(A \mid A^c)$ is much larger than $\PP(A)$.
+\end{example}
+
+\begin{example}[Extra Knowledge Gives Surprising Results]
+	Consider the following three statements:
+	\begin{enumerate}[label=(\alph*)]
+		\item I have two children, one of which is a boy.
+		\item I have two children, and the eldest one is a boy.
+		\item I have two children, one of whom is a boy born on a Thursday.
+	\end{enumerate}
+	In each case, we want to know $\PP(\text{I have 2 boys} \mid a)$ (or b or c).
+
+	Since no further information is given, we take all outcomes to be equally likely.
+
+	Define the event $BG$ where the eldest is a boy, youngest is a girl. Also define the event $GB$ where the eldest is a girl and youngest is a boy. Lastly define events $BB, GG$ for two boys or two girls respectively.
+	
+	Now consider the various statements
+	\begin{enumerate}[label=(\alph*)]
+		\item $\PP(BB \mid BB \cup BG \cup GB) = \frac{1}{3}$.
+		\item $\PP(BB \mid BB \cup BG) = \frac{1}{2}$.
+		\item Define the event $GT$ where the eldest is a girl and the youngest is a boy born on a Thursday. Also define $TN$ where the eldest is a boy born on a Thursday, and the youngest is a boy not born on a Thursday. Similarity define $TT$, $TG$, and $NT$.
+		
+		Then $\PP((TT\cup TN \cup NT) \mid  (GT \cup TG \cup TT \cup TN \cup NT)) = \frac{13}{27}$.
+	\end{enumerate}
+\end{example}
+
+\begin{example}[Simpson's Paradox]
+	Consider a program that has 100 applicants, 50 of which are women and 50 of which are men. The table below shows the probability of applicants getting into the program based on what type of school they went to.
+	\begin{center}
+	\begin{tabular}{|c|c|c|c|}
+		\hline All applicants & Admitted & Rejected & $\%$ Admitted \\
+		\hline State & 25 & 25 & $50 \%$ \\
+		\hline Independent & 28 & 22 & $56 \%$ \\
+		\hline
+		\end{tabular}
+	\end{center}
+	Now the next two tables show this information for men only and women only.
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|}
+			\hline Men only & Admitted & Rejected & \% Admitted \\
+			\hline State & 15 & 22 & $41 \%$ \\
+			\hline Independent & 5 & 8 & $38 \%$ \\
+			\hline
+			\end{tabular}
+		\end{center}
+		\begin{center}
+			\begin{tabular}{|c|c|c|c|}
+				\hline Women only & Admitted & Rejected & $\%$ Admitted \\
+				\hline State & 10 & 3 & $77 \%$ \\
+				\hline Independent & 23 & 14 & $62 \%$ \\
+				\hline
+				\end{tabular}
+	\end{center}
+
+	Note that in both the men only and women only, the percentage admitted from independent schools was \emph{lower} than from state schools, but in the total applicants the percentage admitted from independent schools was \emph{higher}.
+
+	This phenomenon is called \emph{confounding} in statistics, and arises when we aggregate data from disparate populations.
+
+	Define $A$ to be the event that an individual is admitted, $B$ that they are a man, $B^c$ that they are a woman, $C$ that they come from a state school, and $C^c$ that they come from an independent school. Then we see that
+	$$
+	\PP(A \mid B \cap C) > \PP(A \mid B \cap C^c), \quad \text{and} \quad \PP(A \mid B^c \cap C) > \PP(A \mid B^c \cap C^c),
+	$$
+	but in the example above we have $\PP(A \mid C^c) > \PP(A \mid C)$.
+
+	So
+	\begin{align*}
+		PP(A \mid C) &= \PP(A \cap B \mid C) + \PP(A \cap B^c \mid C) \\
+		&= \frac{\PP(A \cap B \cap C)}{\PP(C)} + \frac{\PP(A \cap B^c \cap C)}{\PP(C)} \\
+		&= \PP(A \mid B \cap C) + \PP(A \mid B^c \cap C) \cdot \PP(B^c \mid C) \\
+		&> \PP(A \mid B \cap C^c) \cdot \PP(B \mid C) + \PP(A \mid B^c \cap C^c) \PP(B^c \mid C).
+	\end{align*}
+	Assuming that $\PP(B \mid C) = \PP(B \mid C^c)$, though this wasn't the case in the example, then
+	\begin{align*}
+		\PP(A \mid C) &> \PP(A \mid B \cap C^c) \cdot \PP(B \mid C^c) + \PP(A \mid B^c \cap C^c) \cdot \PP(B^c \mid C^c) \\
+		&= \PP(A \mid C^c).
+	\end{align*}
+	So under this extra assumption, we would get that indeed $\PP(A \mid C) > \PP(A \mid C^c)$.
+\end{example}
 
 \end{document}
