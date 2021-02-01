@@ -1,0 +1,241 @@
+\documentclass[11pt]{article}
+
+\usepackage[
+% fancytheorems, 
+% fancyproofs,
+noindent, 
+nokoma
+%spacingfix, 
+]{adam}
+
+\newtheorem{postulate}{Postulate}
+\usepackage{geometry}
+
+% \usepackage{ulem}
+% \DeclareRobustCommand{\hsout}[1]{\texorpdfstring{\sout{#1}}{#1}}
+
+\usepackage{cancel}
+\usepackage{physics}
+
+% \usepackage{titling}
+% \setlength{\droptitle}{-4em}
+
+
+\title{\vspace{-3\baselineskip}\ \\Qubits and Quantum States}
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{\today}
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+A \vocab{qubit} is a two-state quantum mechanical system used for representing quantum information. In this article, we will look at how qubits are described mathematically, along with how computation is performed with them.
+
+The approach taken in this article is going to be slightly less abstract than the approach taken in lectures. However, familiarity with Dirac (bra-ket) notation will be assumed. 
+I will also avoid commenting on the general differences between quantum or classical information, except when it suits.
+
+\section{Representing Quantum States}
+
+In general, the state of an isolated quantum system is described by a vector, the \vocab{state vector}, in a complex vector space equipped with an inner product.
+
+\subsection{Single Qubit States}
+
+One of the simplest possible quantum systems is the \emph{qubit}. The state vector of a single qubit $\ket{\psi}$ is 
+an element of a two-dimensional complex vector space $V_2$. If this vector space has orthonormal basis vectors $\ket{0}$ and $\ket{1}$, we can write $\ket{\psi}$ in the form  
+$$
+\ket{\psi} = \alpha \ket{0} + \beta \ket{1} = \begin{pmatrix}
+	\alpha \\
+	\beta
+\end{pmatrix},
+$$
+where $\alpha, \beta \in \mathbb{C}$. There is also an additional normalization condition of $|\alpha|^2 + |\beta|^2 = 1$, the reason for which will be described later.
+
+\begin{remark}
+	With the state of a qubit described in this way, we can see that there is states that can correspond with classical bits, $\ket{0}$ and $\ket{1}$, but there is also a whole lot of states in between.
+\end{remark}
+
+\subsection{Multiple Qubit States}
+
+
+We can take two quantum systems and allow them to interact. 
+To describe this combined system, we will need a way to combine their corresponding vector spaces. This is done with the tensor product.
+% A short and informal description of the tensor product is given at the end of this handout.
+
+To see how this works, we will consider the case of two qubits {\color{ForestGreen}$A$} and {\color{WildStrawberry} $B$}, with corresponding two-dimensional vector spaces {\color{ForestGreen}$V_A$} and {\color{WildStrawberry} $V_B$}. 
+When qubits {\color{ForestGreen}$A$} and {\color{WildStrawberry} $B$} are combined (and allowed to interact), their combined state is an element of the vector space ${\color{ForestGreen}V_A} \otimes {\color{WildStrawberry} V_B}$. The orthonormal basis for this vector space is
+$$
+\{
+{\color{ForestGreen}\ket{0}} \otimes {\color{WildStrawberry} \ket{0}}, \quad
+{\color{ForestGreen}\ket{0}} \otimes {\color{WildStrawberry} \ket{1}}, \quad 
+{\color{ForestGreen}\ket{1}} \otimes {\color{WildStrawberry} \ket{0}}, \quad 
+{\color{ForestGreen}\ket{1}} \otimes {\color{WildStrawberry} \ket{1}} \}.
+$$
+
+\begin{remark}[Notation]
+	We sometimes use the shorthand notation $\ket{1}\otimes \ket{0} = \ket{1}\ket{0} = \ket{10}$. Also, we may neglect the binary notation and write (for example) $\ket{6} = \ket{110} = \ket{1} \ket{1} \ket{0} = \ket{1} \otimes \ket{1} \otimes \ket{0}$.
+\end{remark}
+
+
+The vector space ${\color{ForestGreen}V_A} \otimes {\color{WildStrawberry} V_B}$ is the space of all the possible states the qubits can be in together, even after they have interacted with each other.
+Even though the vector spaces {\color{ForestGreen}$V_A$} and {\color{WildStrawberry} $V_B$} are isomorphic, it is important to think about them as \emph{completely different} vector spaces. This is because they describe the states of completely different objects (even if they are both just qubits).
+
+Concretely, the vector space $V_A \otimes V_B$ has the orthonormal basis
+$$
+\left\{\begin{pmatrix}
+	1 \\ 0 \\ 0 \\ 0
+\end{pmatrix},  \begin{pmatrix}
+	0 \\ 1 \\ 0 \\ 0
+\end{pmatrix},  \begin{pmatrix}
+	0 \\ 0 \\ 1 \\ 0
+\end{pmatrix},  \begin{pmatrix}
+	0 \\ 0 \\ 0 \\ 1
+\end{pmatrix} \right\},
+$$
+where each of these vectors is found by calculating the tensor product of the column vectors corresponding to the basis vectors $\ket{0}$ and $\ket{1}$ for {$V_A$} and {$V_B$}. We can write the state $\ket{\phi}$ of both qubits as
+$$
+\ket{\phi} = \alpha_{00} \ket{00} + \alpha_{01} \ket{01} +\alpha_{10} \ket{10} +\alpha_{11} \ket{11} = \begin{pmatrix}
+	\alpha_{00}\\
+	\alpha_{01}\\
+	\alpha_{10}\\
+	\alpha_{11},
+\end{pmatrix}
+$$
+where $\alpha_i \in \mathbb{C}$ and $\sum |\alpha_i|^2 = 1$.
+
+
+We can generalise this naturally to an $n$-qubit system. The state of an $n$-qubit system $\ket{\psi}$ is a vector in a $2^n$ dimensional complex vector space,
+$$
+\ket{\psi} = \sum_{i = 0}^{2^n - 1} \alpha_i \ket{i} = \begin{pmatrix}
+	\alpha_0 \\
+	\alpha_1 \\
+	\vdots \\
+	\alpha_{2^n - 1}
+\end{pmatrix}
+$$
+where $\alpha_i \in \mathbb{C}$ and $\sum |\alpha_i| = 1$.
+
+
+\subsection{Product and Entangled States}
+
+We said before that it was possible to bring together two quantum systems to interact. Of course, it is also possible that when we do bring together two quantum systems, they stay independent. We describe this using the notions of \emph{product} and \emph{entangled} states.
+
+\begin{definition*}
+	For two quantum systems $A$ and $B$, we say that their state $\ket{\psi}$ is a \vocab{product state} if we can write $\ket{\psi} = \ket{u}_A\otimes \ket{v}_B$, where $\ket{u}_A$ is the state for $A$ and $\ket{v}_B$ is the state for $B$.
+	Otherwise, we say that they are \vocab{entangled}.
+\end{definition*}
+
+It's relatively straightforward to write down an example of an entangled state. Take, for example
+$$
+\ket{\psi} = \frac{\ket{00} + \ket{11}}{\sqrt{2}}.
+$$
+
+There is a simple criterion for whether a two qubit state is a product state or not. If we have some state
+$$
+\ket{\psi} = \begin{pmatrix}
+	a \\ b \\ c \\ d
+\end{pmatrix},
+$$ 
+then we can write it as the a product state if and only if $ad - bc = 0$. For larger quantum systems, determining if a given state is a product state or not can be a difficult problem.
+
+
+\section{Updating Quantum States \& Quantum Gates}
+
+Once we have described our $n$-qubit system using some vector $\ket{\psi}$, we want to describe how computation is performed using these qubits. The way we describe this is with \emph{unitary transformations}.
+
+In general, any physical evolution of a quantum system is represented by a unitary linear operation on the system's corresponding vector space.
+If we have an $n$-qubit system, then a matrix acting on its vector space will be an $2^n \times 2^n$ matrix $U$, such that $U U^{-1} = I$ (so that it's unitary).
+
+\subsection{Quantum Gates}
+
+Transformations that only act on a single qubit in the system are called `single qubit gates', and correspond to $2 \times 2$ unitary matrices. Some common single qubit gates are given below.
+\begin{align*}
+	I = \begin{pmatrix}
+		1 & 0 \\
+		0 & 1
+	\end{pmatrix},\quad 
+	H = \frac{1}{\sqrt{2}}\begin{pmatrix}
+		1 & 1 \\ 1 & -1
+	\end{pmatrix}, \quad 
+	X = \begin{pmatrix}
+		0 & 1 \\1 & 0
+	\end{pmatrix},\\
+	Y = \begin{pmatrix}
+		0 & 1 \\
+		-1 & 0
+	\end{pmatrix}, \quad 
+	Z = \begin{pmatrix}
+		1 & 0 \\ 0 & -1
+	\end{pmatrix}, \quad
+	P(\theta) = \begin{pmatrix}
+		1 & 0 \\ 0 & e^{i \theta}
+	\end{pmatrix}.
+\end{align*}
+
+
+Gates that act on two (or more) qubits are somewhat more interesting. The most common examples of two qubit gates are the `controlled' gates.
+A controlled gate acts on two qubits, the \vocab{control} qubit and the \vocab{target qubit}. The gate can be thought of as applying a single qubit gate to the target qubit, depending on the value of the control qubit. Two controlled gates are shown below.
+$$
+	CX = \begin{pmatrix}
+		1 & 0 & 0 & 0 \\
+		0 & 1 & 0 & 0 \\
+		0 & 0 & 0 & 1 \\
+		0 & 0 & 1 & 0
+	\end{pmatrix}, \quad \quad CZ = \begin{pmatrix}
+		1 & 0 & 0 & 0 \\
+		0 & 1 & 0 & 0 \\
+		0 & 0 & 1 & 0 \\
+		0 & 0 & 0 & -1
+	\end{pmatrix}.
+$$
+In the gates above, the first qubit is the control qubit and the second qubit is the target qubit (interestingly these are actually symmetrical for the $CZ$ gate).
+
+To see how they work, consider the action of the $CX$ gate on the basis states of a two qubit system.
+\begin{align*}
+	CX \ket{00} &= \ket{00} \\
+	CX \ket{01} &= \ket{01} \\
+	CX \ket{10} &= \ket{11} \\
+	CX \ket{11} &= \ket{10} 
+\end{align*}
+
+\subsection{Applying Gates}
+
+We can apply a single qubit gate to a single qubit system by multiplying the matrix by the corresponding state vector. For example,
+$$
+H \ket{0} = \frac{1}{\sqrt{2}}\begin{pmatrix}
+	1 & 1 \\ 1 & -1
+\end{pmatrix} \begin{pmatrix}
+	1 \\ 0 
+\end{pmatrix} = \frac{1}{\sqrt{2}}\begin{pmatrix}
+	1 \\
+	1
+\end{pmatrix} = \frac{\ket{0} + \ket{1}}{\sqrt{2}}.
+$$
+
+Applying a single qubit gate to a qubit in a multiple qubit system is slightly more complicated. 
+
+If we had some $n$-qubit system, and we wanted to apply the gate $H$ to qubit $k$, then to form full $2^n \times 2^n$ matrix that we can multiply with the state vector, we need to consider the basis vectors of the system's vector space.
+
+If we had some basis vector $\ket{i_1}  \ket{i_2}   \cdots   \ket{i_k}   \cdots   \ket{i_n}$, then the transformed vector would be 
+$$
+\ket{i_1}  \ket{i_2}   \cdots   (H\ket{i_k})   \cdots   \ket{i_n}
+$$
+We can rewrite this as
+$$
+(I\ket{i_1})  (I\ket{i_2})   \cdots   (H\ket{i_k})   \cdots   (I\ket{i_n}),
+$$
+and using the `mixed-product' property of the Kronecker product (the tensor product of matrices), this is equal to
+$$
+(\underbrace{I \otimes  I \otimes  \cdots  \otimes I}_{k - 1 \text{ times}} \otimes  H  \otimes \underbrace{I \otimes  \cdots  \otimes I}_{n - k \text{ times}}) [\ket{i_1}  \ket{i_2}   \cdots   \ket{i_k}   \cdots   \ket{i_n}].
+$$
+Thus the full $2^n \times 2^n$ matrix is given by $\underbrace{I \otimes  I \otimes  \cdots  \otimes I}_{k - 1 \text{ times}} \otimes  H  \otimes \underbrace{I \otimes  \cdots  \otimes I}_{n - k \text{ times}}$.
+
+\begin{remark}
+	If performing this computation by hand (or on a computer), it will be somewhat more efficient if you note that taking $I \otimes  I \otimes  \cdots  \otimes I$ with $m$ identity matrices is just a $2^m \times 2^m$ identity matrix. Also, in some cases the sparsity of the resulting matrix may make it faster to just try and work out the final matrix by hand. This procedure is guaranteed to work, however.
+\end{remark}
+
+Unlike the in single-qubit gate case, writing down a straightforward formula for expanding a two-qubit gate's $4 \times 4$ matrix into a $2^n \times 2^n$ matrix is somewhat harder. Typically the best approach will be to see how the transformation acts on the basis vectors and construct the matrix that way.\footnote{There is a few tricks that can be used however, and a sufficiently interested reader can send me an email and I will elaborate. Having to actually construct such things is a surprisingly irregular occurrence, however.There are also a number of tricks that can be used to make constructing the matrix redundant. As before, if you want to know more, email me.}
+
+
+\end{document}
