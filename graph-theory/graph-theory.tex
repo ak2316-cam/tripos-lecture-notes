@@ -485,6 +485,12 @@ We are also going to use some notation for removing an edge or a vertex from a g
 	For an edge $xy$ or a vertex $x$, we define $G - xy$ to be the graph $G$ with the edge $xy$ removed, and $G - x$ to be $G$ with vertex $x$ removed, along with all edges incident to $x$. We will also define $G + xy$ to be $G$ with the edge $xy$, and $G + x$ to be $G$ with the vertex $x$. 
 \end{notation}
 
+An easy way to get a subgraph is by taking a subset of the vertices and seeing what edges you get from the original graph.
+
+\begin{definition}[Inducted Subgraph]
+	If $G = (V, E)$ is a graph and $X \subseteq X$, the \vocab{subgraph inducted by $X$} is defined to be $G[X] = (X, \{xy \in E \mid x, y \in X\})$.
+\end{definition}
+
 \subsection{Graph Isomorphism}
 
 Now that we have defined graphs, it's natural to define some notion of isomorphism.
@@ -2266,5 +2272,240 @@ We say that a graph $G$ is \vocab{$k$-connected} if $\kappa(G) \geq k$. In parti
 \end{definition}
 
 We note this immediately implies that $G$ is 1-connected if and only if it's connected, and it is 2-connected if and only if it has no cut vertex.
+
+We can note some basic properties of connnectivity.
+
+\begin{lemma}[Increasing/Reducing Connectivity]
+	If $G = (V, E)$ is a $k$-connected graph and $v \in V$ then $G - v$ is $(k - 1)$-connected\footnote{Note that it is also possible that $G - v$ is $(k + 1)$-connected, so connectivity can also increase by deleting a vertex.}. 
+	Also, if we have some $e \in E$, then $G - E$ is $(k - 1)$-connected.
+\end{lemma}
+\begin{proof}[Proof Sketch]
+Check definitions.
+\end{proof}
+
+\section{Preparing for Menger's Theorem}
+
+We are going to prove Menger's theorem about connectivity measures, but we have to do some setting up beforehand.
+
+\begin{definition}[$ab$-Seperator]
+	If $G = (V, E)$ is a graph and $a, b \in V$ are distinct vertices, we say that $S$ is an \vocab{$ab$ seperator} if $a$ and $b$ lie in different components of $G - S$ (so $a, b \not \in S$).
+\end{definition}
+\begin{center}
+	
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,244); %set diagram left start at 0, and has height of 244
+
+%Shape: Ellipse [id:dp5456884071329711] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (80,140) .. controls (80,137.6) and (81.95,135.65) .. (84.35,135.65) .. controls (86.74,135.65) and (88.69,137.6) .. (88.69,140) .. controls (88.69,142.4) and (86.74,144.35) .. (84.35,144.35) .. controls (81.95,144.35) and (80,142.4) .. (80,140) -- cycle ;
+%Straight Lines [id:da48887835380809685] 
+\draw    (84.35,140) -- (124.35,140) ;
+%Shape: Ellipse [id:dp3518026107295714] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (120,140) .. controls (120,137.6) and (121.95,135.65) .. (124.35,135.65) .. controls (126.74,135.65) and (128.69,137.6) .. (128.69,140) .. controls (128.69,142.4) and (126.74,144.35) .. (124.35,144.35) .. controls (121.95,144.35) and (120,142.4) .. (120,140) -- cycle ;
+%Straight Lines [id:da2569667737631437] 
+\draw    (125.65,140) -- (165.65,140) ;
+%Straight Lines [id:da5492267818009359] 
+\draw    (165.65,140) -- (205.65,140) ;
+%Shape: Ellipse [id:dp4061735863595012] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (201.31,140) .. controls (201.31,137.6) and (203.26,135.65) .. (205.65,135.65) .. controls (208.05,135.65) and (210,137.6) .. (210,140) .. controls (210,142.4) and (208.05,144.35) .. (205.65,144.35) .. controls (203.26,144.35) and (201.31,142.4) .. (201.31,140) -- cycle ;
+%Straight Lines [id:da7926147442016905] 
+\draw    (205.65,140) -- (245.65,140) ;
+%Shape: Ellipse [id:dp2831533253474541] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (241.31,140) .. controls (241.31,137.6) and (243.26,135.65) .. (245.65,135.65) .. controls (248.05,135.65) and (250,137.6) .. (250,140) .. controls (250,142.4) and (248.05,144.35) .. (245.65,144.35) .. controls (243.26,144.35) and (241.31,142.4) .. (241.31,140) -- cycle ;
+%Straight Lines [id:da9253425888653984] 
+\draw    (245.65,140) -- (285.65,140) ;
+%Straight Lines [id:da6853684797150857] 
+\draw    (84.35,101.31) -- (124.35,101.31) ;
+%Shape: Ellipse [id:dp24532826804783203] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (120,101.31) .. controls (120,98.91) and (121.95,96.96) .. (124.35,96.96) .. controls (126.74,96.96) and (128.69,98.91) .. (128.69,101.31) .. controls (128.69,103.71) and (126.74,105.65) .. (124.35,105.65) .. controls (121.95,105.65) and (120,103.71) .. (120,101.31) -- cycle ;
+%Straight Lines [id:da05451042638119863] 
+\draw    (125.65,101.31) -- (165.65,101.31) ;
+%Straight Lines [id:da5345774835607592] 
+\draw    (165.65,101.31) -- (205.65,101.31) ;
+%Shape: Ellipse [id:dp3039776693568341] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (201.31,101.31) .. controls (201.31,98.91) and (203.26,96.96) .. (205.65,96.96) .. controls (208.05,96.96) and (210,98.91) .. (210,101.31) .. controls (210,103.71) and (208.05,105.65) .. (205.65,105.65) .. controls (203.26,105.65) and (201.31,103.71) .. (201.31,101.31) -- cycle ;
+%Straight Lines [id:da8557756146270807] 
+\draw    (205.65,101.31) -- (245.65,101.31) ;
+%Shape: Ellipse [id:dp27237308581230457] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (241.31,101.31) .. controls (241.31,98.91) and (243.26,96.96) .. (245.65,96.96) .. controls (248.05,96.96) and (250,98.91) .. (250,101.31) .. controls (250,103.71) and (248.05,105.65) .. (245.65,105.65) .. controls (243.26,105.65) and (241.31,103.71) .. (241.31,101.31) -- cycle ;
+%Straight Lines [id:da15450912716718623] 
+\draw    (245.65,101.31) -- (285.65,101.31) ;
+%Shape: Ellipse [id:dp7403096135920925] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (281.31,101.31) .. controls (281.31,98.91) and (283.26,96.96) .. (285.65,96.96) .. controls (288.05,96.96) and (290,98.91) .. (290,101.31) .. controls (290,103.71) and (288.05,105.65) .. (285.65,105.65) .. controls (283.26,105.65) and (281.31,103.71) .. (281.31,101.31) -- cycle ;
+%Straight Lines [id:da24560609074217554] 
+\draw    (84.35,101.31) -- (84.35,140) ;
+%Straight Lines [id:da00015775083091418285] 
+\draw    (124.35,101.31) -- (124.35,140) ;
+%Straight Lines [id:da899533178202826] 
+\draw    (165.65,101.31) -- (165.65,140) ;
+%Straight Lines [id:da8027307897062378] 
+\draw    (205.65,101.31) -- (205.65,140) ;
+%Straight Lines [id:da4488601007681525] 
+\draw    (245.65,101.31) -- (245.65,140) ;
+%Straight Lines [id:da06681009392429282] 
+\draw    (285.65,101.31) -- (285.65,140) ;
+%Shape: Ellipse [id:dp6446679731861344] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 74; green, 144; blue, 226 }  ,fill opacity=1 ] (80,101.31) .. controls (80,98.91) and (81.95,96.96) .. (84.35,96.96) .. controls (86.74,96.96) and (88.69,98.91) .. (88.69,101.31) .. controls (88.69,103.71) and (86.74,105.65) .. (84.35,105.65) .. controls (81.95,105.65) and (80,103.71) .. (80,101.31) -- cycle ;
+%Shape: Ellipse [id:dp040522613570049715] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 74; green, 144; blue, 226 }  ,fill opacity=1 ] (281.31,140) .. controls (281.31,137.6) and (283.26,135.65) .. (285.65,135.65) .. controls (288.05,135.65) and (290,137.6) .. (290,140) .. controls (290,142.4) and (288.05,144.35) .. (285.65,144.35) .. controls (283.26,144.35) and (281.31,142.4) .. (281.31,140) -- cycle ;
+%Shape: Ellipse [id:dp04873007750765079] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 208; green, 2; blue, 27 }  ,fill opacity=1 ] (161.31,140) .. controls (161.31,137.6) and (163.26,135.65) .. (165.65,135.65) .. controls (168.05,135.65) and (170,137.6) .. (170,140) .. controls (170,142.4) and (168.05,144.35) .. (165.65,144.35) .. controls (163.26,144.35) and (161.31,142.4) .. (161.31,140) -- cycle ;
+%Shape: Ellipse [id:dp9891714391896026] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 208; green, 2; blue, 27 }  ,fill opacity=1 ] (161.31,101.31) .. controls (161.31,98.91) and (163.26,96.96) .. (165.65,96.96) .. controls (168.05,96.96) and (170,98.91) .. (170,101.31) .. controls (170,103.71) and (168.05,105.65) .. (165.65,105.65) .. controls (163.26,105.65) and (161.31,103.71) .. (161.31,101.31) -- cycle ;
+%Shape: Ellipse [id:dp2849749355484227] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][dash pattern={on 4.5pt off 4.5pt}] (149.45,120.65) .. controls (149.45,101.33) and (156.71,85.65) .. (165.65,85.65) .. controls (174.6,85.65) and (181.85,101.33) .. (181.85,120.65) .. controls (181.85,139.98) and (174.6,155.65) .. (165.65,155.65) .. controls (156.71,155.65) and (149.45,139.98) .. (149.45,120.65) -- cycle ;
+%Shape: Ellipse [id:dp176649285086236] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (464,94.35) .. controls (464,91.95) and (465.95,90) .. (468.35,90) .. controls (470.74,90) and (472.69,91.95) .. (472.69,94.35) .. controls (472.69,96.74) and (470.74,98.69) .. (468.35,98.69) .. controls (465.95,98.69) and (464,96.74) .. (464,94.35) -- cycle ;
+%Straight Lines [id:da3578944166804391] 
+\draw    (468.35,94.35) -- (508.35,94.35) ;
+%Shape: Ellipse [id:dp818699489217852] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (504,94.35) .. controls (504,91.95) and (505.95,90) .. (508.35,90) .. controls (510.74,90) and (512.69,91.95) .. (512.69,94.35) .. controls (512.69,96.74) and (510.74,98.69) .. (508.35,98.69) .. controls (505.95,98.69) and (504,96.74) .. (504,94.35) -- cycle ;
+%Shape: Ellipse [id:dp1179787551977306] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (445.65,183.04) .. controls (445.65,180.64) and (447.6,178.69) .. (450,178.69) .. controls (452.4,178.69) and (454.35,180.64) .. (454.35,183.04) .. controls (454.35,185.43) and (452.4,187.38) .. (450,187.38) .. controls (447.6,187.38) and (445.65,185.43) .. (445.65,183.04) -- cycle ;
+%Straight Lines [id:da7030617576330449] 
+\draw    (450,183.04) -- (490,183.04) ;
+%Shape: Ellipse [id:dp26588027068881903] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (485.65,183.04) .. controls (485.65,180.64) and (487.6,178.69) .. (490,178.69) .. controls (492.4,178.69) and (494.35,180.64) .. (494.35,183.04) .. controls (494.35,185.43) and (492.4,187.38) .. (490,187.38) .. controls (487.6,187.38) and (485.65,185.43) .. (485.65,183.04) -- cycle ;
+%Straight Lines [id:da8304473485867623] 
+\draw    (490,183.04) -- (530,183.04) ;
+%Straight Lines [id:da3274159917452236] 
+\draw    (468.35,55.65) -- (508.35,55.65) ;
+%Shape: Ellipse [id:dp9121589253513109] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (504,55.65) .. controls (504,53.26) and (505.95,51.31) .. (508.35,51.31) .. controls (510.74,51.31) and (512.69,53.26) .. (512.69,55.65) .. controls (512.69,58.05) and (510.74,60) .. (508.35,60) .. controls (505.95,60) and (504,58.05) .. (504,55.65) -- cycle ;
+%Shape: Ellipse [id:dp8542112303360323] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (445.65,144.35) .. controls (445.65,141.95) and (447.6,140) .. (450,140) .. controls (452.4,140) and (454.35,141.95) .. (454.35,144.35) .. controls (454.35,146.74) and (452.4,148.69) .. (450,148.69) .. controls (447.6,148.69) and (445.65,146.74) .. (445.65,144.35) -- cycle ;
+%Straight Lines [id:da8630553251216713] 
+\draw    (450,144.35) -- (490,144.35) ;
+%Shape: Ellipse [id:dp6787786312798346] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (485.65,144.35) .. controls (485.65,141.95) and (487.6,140) .. (490,140) .. controls (492.4,140) and (494.35,141.95) .. (494.35,144.35) .. controls (494.35,146.74) and (492.4,148.69) .. (490,148.69) .. controls (487.6,148.69) and (485.65,146.74) .. (485.65,144.35) -- cycle ;
+%Straight Lines [id:da13049390248883708] 
+\draw    (490,144.35) -- (530,144.35) ;
+%Shape: Ellipse [id:dp5541273416199433] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (525.65,144.35) .. controls (525.65,141.95) and (527.6,140) .. (530,140) .. controls (532.4,140) and (534.35,141.95) .. (534.35,144.35) .. controls (534.35,146.74) and (532.4,148.69) .. (530,148.69) .. controls (527.6,148.69) and (525.65,146.74) .. (525.65,144.35) -- cycle ;
+%Straight Lines [id:da2491562563800629] 
+\draw    (468.35,55.65) -- (468.35,94.35) ;
+%Straight Lines [id:da20338823145866813] 
+\draw    (508.35,55.65) -- (508.35,94.35) ;
+%Straight Lines [id:da6116167394236871] 
+\draw    (450,144.35) -- (450,183.04) ;
+%Straight Lines [id:da6541846431698229] 
+\draw    (490,144.35) -- (490,183.04) ;
+%Straight Lines [id:da5861235738790173] 
+\draw    (530,144.35) -- (530,183.04) ;
+%Shape: Ellipse [id:dp46365826902703333] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 74; green, 144; blue, 226 }  ,fill opacity=1 ] (464,55.65) .. controls (464,53.26) and (465.95,51.31) .. (468.35,51.31) .. controls (470.74,51.31) and (472.69,53.26) .. (472.69,55.65) .. controls (472.69,58.05) and (470.74,60) .. (468.35,60) .. controls (465.95,60) and (464,58.05) .. (464,55.65) -- cycle ;
+%Shape: Ellipse [id:dp2745129658013531] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 74; green, 144; blue, 226 }  ,fill opacity=1 ] (525.65,183.04) .. controls (525.65,180.64) and (527.6,178.69) .. (530,178.69) .. controls (532.4,178.69) and (534.35,180.64) .. (534.35,183.04) .. controls (534.35,185.43) and (532.4,187.38) .. (530,187.38) .. controls (527.6,187.38) and (525.65,185.43) .. (525.65,183.04) -- cycle ;
+%Straight Lines [id:da29084508946390863] 
+\draw [color={rgb, 255:red, 128; green, 128; blue, 128 }  ,draw opacity=1 ]   (320,120) -- (418.14,80.74) ;
+\draw [shift={(420,80)}, rotate = 518.2] [color={rgb, 255:red, 128; green, 128; blue, 128 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da2903274675735513] 
+\draw [color={rgb, 255:red, 128; green, 128; blue, 128 }  ,draw opacity=1 ]   (320,130) -- (418.08,159.43) ;
+\draw [shift={(420,160)}, rotate = 196.7] [color={rgb, 255:red, 128; green, 128; blue, 128 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (71,87.65) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 74; green, 144; blue, 226 }  ,opacity=1 ]  {$a$};
+% Text Node
+\draw (287.65,143) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 74; green, 144; blue, 226 }  ,opacity=1 ]  {$b$};
+% Text Node
+\draw (171,68.65) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,opacity=1 ]  {$S$};
+% Text Node
+\draw (455,42) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 74; green, 144; blue, 226 }  ,opacity=1 ]  {$a$};
+% Text Node
+\draw (532,186.04) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 74; green, 144; blue, 226 }  ,opacity=1 ]  {$b$};
+% Text Node
+\draw (327,61) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 128; green, 128; blue, 128 }  ,opacity=1 ] [align=left] {Removing $\displaystyle S$};
+
+
+\end{tikzpicture}
+
+\end{center}
+
+We then have a number of useful lemmas, that we will employ later on.
+
+% \begin{lemma}
+% 	Let $G = (V, E)$ be $k$-connected, and let $S \subseteq V$ be a separator breaking the graph into components $C_1, \dots, C_l$. Then the graph defined by $\tilde{G} = G[C_i \cup S]$ along with a vertex $x$ joined to all of $S$. Then $\tilde{G}$ is $k$-connected.
+% \end{lemma}
+% \begin{proof}[Proof Sketch]
+% 	Check definitions
+% \end{proof}
+
+\begin{notation}
+	We let $\kappa_{a, b}(G)$ be the minimum size of an $ab$ separator.
+\end{notation}
+
+\begin{lemma}
+	Let $G = (V, E)$ be a graph. Then $\kappa_{a, b}(G) \geq \kappa_{a, b}(G - v)$, where $v \in V$ and $v \neq a, b$.
+\end{lemma}
+\begin{proof}
+	If $G - v$ has an $ab$ separator $S$ then $S \cup \{v\}$ is an $ab$ separator in $G$.
+\end{proof}
+
+\begin{lemma}
+	For a graph $G = (V, E)$, 
+	$\kappa_{a, b}(G - e) \geq \kappa_{a, b}(G) = 1$, for $e \in E$ and $a \sim b$.
+\end{lemma}
+\begin{proof}
+	If $G - e$ has an $ab$ separator $S$ then $S \cup \{x\}$ and $S \cup \{y\}$ are $ab$ separators in $G$, where $e = xy$.
+\end{proof}
+
+
+
+\begin{lemma}
+	Let $G = (V, E)$ be a graph with distinct non-adjacent vertices $a, b \in V$. Also let $\kappa_{a, b}(G) \geq k$. Let $S$ be an $ab$ separator in $G$, and say $G - S = A \cup C$, where $A$ is the connected component containing $a$. Then define $\tilde{G}$ as the induced graph $G[A \cup S]$ with a vertex $x$ joined to all of $S$. Then $\kappa_{a, x}(\tilde{G}) \geq k$.
+\end{lemma}
+\begin{proof}[Proof Sketch]
+	Check definitions.
+\end{proof}
+
+We can now formalize our `independent paths' notion of connectivity.
+
+\begin{definition}[Independent Paths]
+	We say that $P_1, \dots, P_k$ are \vocab{independent $ab$ paths} if each of $P_1, \dots, P_k$ are $ab$-paths and all of the vertices in these paths are distinct, apart from $a$ and $b$.
+\end{definition}
+
+\section{Actually Menger's Theorem}
+
+Finally, we can state and prove Menger's theorem.
+
+\begin{theorem}[Menger's Theorem, First Form]
+	Let $G = (V, E)$ be a graph, with distinct and non-adjacent $a, b \in V$. If every $ab$ separator in $G$ has size at least $k$ then we can find $k$ independent $ab$ paths.
+\end{theorem}
+\begin{proof}
+	Suppose for a contradiction, assume this is false and let $G$ be the counterexample that 
+	\begin{enumerate}[label=(\arabic*)]
+		\item Minimizes $\kappa_{a, b}(a)$
+		\item Subject to (1), minimizes the number of edges in the graph.
+	\end{enumerate}
+	Then we observe that $\kappa_{a, b}(G - e) = \kappa_{a, b}(G) - 1$ for any edge $e \in E$. We will let $k = \kappa_{a, b}(G)$.
+
+	\textbf{Claim}. There exists an $ab$ separator $S$ with $|S| = k$ so that $S \not \subseteq N(a)$ and $S \not \subseteq N(b)$.
+
+	We first observe that $N(a) \cap N(b)$ is empty. To see this, let $x \in N(a) \cap N(b)$ and $G' = G-x$. Then $\kappa_{a, b}(G') \geq \kappa_{a, b}(G) - 1$, thus there are $k - 1$ independent paths $P_1, \dots, P_{k - 1}$ in $G'$, then $P_1, \dots, P_{k - 1}, axb$ are $k$ independent paths in $G$, and our graph would then not be a counterexample.
+
+	Now choose a shortest path $P = a x_1 \dots x_l b$. Let $G' = G - x_1 x_2$. We know that $\kappa_{a, b}(G') = k - 1$. Therefore there exists an $ab$ separator $S'$ of size $k - 1$.
+	Let $A$ be the component of $a$ in $G' - S'$, and $B$ be the component of $b$ in $G' - S'$. Note that $x_1x_2$ must have $x_1 \in A$ and $x_2 \in B$. 
+
+	Note $x_1 \sim a$, and $x_2 \not \sim a$ since $P$ is the shortest path. Also note that $x_2 \neq b$, since $N(a) \cap N(b) = \emptyset$. 
+
+	If $S' \subseteq N(a)$, then $S' \cup \{x_2\}$ is an $ab$ separator of size $k$, and $S \not \subseteq N(a), N(b)$. If $S' \subseteq N(b)$, then $S = S' \cup \{x_1\}$ is an $ab$ separator of size $k$, and $S \not \subseteq N(b), N(a)$. Lastly, if $S' \not \subseteq N(a)$ and $S' \not \subseteq N(b)$, then $S = S' \cup \{x_1\}$ is an $ab$ separator of size $k$ that is not in $N(a)$ or $N(b)$. So our claim holds.
+
+	So let $S$ be an $ab$ separator with $|S| = k$ and $S \not \subseteq N(a), N(b)$. Define $A$, $B$ to be the components containing $a$ and $b$ in $G - S$. We also define $\tilde{G}_a$ as $G[A\cup S]$ with a vertex $x$ that joins to all of $S$. define $\tilde{G}_b$ likewise. We now have
+	$$
+	e(\tilde{G}_a) < e(G), \quad e(\tilde{G}_b) < e(G).
+	$$
+	We also have $\kappa_{a, b}(\tilde{G}_a) = k = \kappa_{a, b}(\tilde{G}_b)$. Thus $\tilde{G}_a$ and $\tilde{G}_b$ satisfy the theorem, by minimality. 
+
+	So we can find independent $ax$ paths $P_1, \dots, P_k \in \tilde{G}_a$ and $yb$ paths $Q_1, \dots, Q_k \in \tilde{G}_b$. Thus we can find $k$ independent $ab$ paths by concatenation and reordering in $G$, as desired.
+\end{proof}
+
+\begin{remark}
+	It should be noted that we need the non-adjacent condition, otherwise there is no $ab$ separator. Before we write down the proof, we will isolate some notable facts about connectivity.
+	Also, this result implies Hall's theorem.
+\end{remark}
+
+
 
 \end{document} 
