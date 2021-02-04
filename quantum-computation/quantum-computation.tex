@@ -534,7 +534,111 @@ For any measurement, the output probabilities are the same in both cases.
 
 Indeed, if $\Pi_i$ is the projection operator for outcome $i$ in a measurement for Bob, then in the yes case, $p_{\text{yes}}(i) = \frac{1}{2}\ev{\Pi_i}{0}  +\frac{1}{2}\ev{\Pi_i}{1} = \tr\left(\Pi_i \left(\frac{\op{0}{0} + \op{1}{1}}{2}\right)\right)$. In the no case, $p_{\text{no}}(i) = \tr\left(\Pi_i \left(\frac{\op{+}{+} + \op{-}{-}}{2}\right)\right)$, but $\op{0}{0} + \op{1}{1} = \op{+}{+} + \op{-}{-} = I$, and the probabilities are equal. Thus $B$ cannot detect $A's$ attempted signalling.
 
-Now if $B$ could \emph{clone} quantum states, then at noon, Bob could clone his qubit many times (say $10^6$). Now in the `yes' case, all will be zero or all will be one. Similarly in the `no' case, he measures all copies in the $\{\ket{0}, \ket{1}\}$ basis and he will see a uniformly random bit string. Of course this is not possible, but the above result.
+Now if $B$ could \emph{clone} quantum states, then just after noon, Bob could clone his qubit many times (say $10^6$). Now in the `yes' case, all will be zero or all will be one. Similarly in the `no' case, he measures all copies in the $\{\ket{0}, \ket{1}\}$ basis and he will see a uniformly random bit string. Of course this is not possible, by the above result.
 
+\section{Distinguishing Non-Orthogonal States}
+
+We know that we can't perfectly distinguish non-orthogonal states. But how well can we do it?
+
+\begin{itemize}
+	\item \emph{Given}. An unknown quantum state $\ket{\psi}$ of dimension $d$.
+	\item \emph{Promise}. $\ket{\psi}$ is either $\ket{\alpha_0}$ or $\ket{\alpha_1}$, which are distinct known states.
+	\item \emph{Problem}. Determine which $i$ is such that $\ket{\psi} = \ket{\alpha_i}$.
+\end{itemize}
+
+We will apply the \emph{state estimation} process.
+
+Given $\ket{\psi}$, we can adjoin an ancilla $\ket{A}$ to give $\ket{\psi}\ket{A}$. Then we can perform a unitary on the full system, and we can perform a measurement with outcomes $0$ and $1$ for our answer.
+
+\begin{remark}
+	It can be shown (as with the no-cloning theorem) that this process is completely general.
+\end{remark}
+
+We can simplify this process. Adjoining $\ket{A}$ just changes discrimination of $\ket{\alpha_0}$ vs $\ket{\alpha_1}$ to that of $\ket{\alpha_0}\ket{A}$ vs $\ket{\alpha_1}\ket{A}$, with the same inner product. So this is just working in a larger dimension (and we will see later that the dimension will not matter).
+
+If we call the process $M_1$ `doing $U$ followed my measurement with projectors $\Pi_0$, $\Pi_1$', it is equivalent to just performing $M_2$ (the `$U$-rotated measurement') with projectors $\tilde{\Pi}_i = U^{\dagger} \Pi_i U$ as they give the same outputs on any state $\ket{\xi}$,
+\begin{align*}
+	\operatorname{prob}_{M_1}(i) = (\bra{\xi}U^{\dagger})\Pi_i (U \ket{\xi}) = \operatorname{prob}_{M_2}(i).
+\end{align*}
+Hence our process is equivalent to just a single measurement. 
+
+Given $\ket{\alpha_0}$ or $\ket{\alpha_1}$, we can just perform a single measurement with projectors $\Pi_0$ and $\Pi_1$. Of course, some measurements are better than others for querying the correct answer with higher probability. We will introduce a `figure of merit' for the measurement, the \emph{success probability}.
+
+\begin{definition}[Success Probability]
+	With no prior knowledge of which state we are getting, we assume the prior probabilities of a half. Then the \vocab{success probability} $P_S$ is
+	$$
+	P_s = \frac{1}{2}\operatorname{prob}(\text{output is }0 \mid \ket{\alpha_0}\text{ input}) + \frac{1}{2}\operatorname{prob}(\text{output is }1 \mid \ket{\alpha_1}\text{ input}).
+	$$
+	so by the Born rule,
+$$
+P_s = \frac{1}{2}(\ev{\Pi_0}{\alpha_0} + \ev{\Pi_1}{\alpha_1}).
+$$
+\end{definition}
+
+Since $\Pi_0 + \Pi_1 = I$, $\Pi_1 = I - \Pi_0$, so
+\begin{align*}
+	P_S &= \frac{1}{2} + \frac{1}{2}(\ev{\Pi_0}{\alpha_0} - \ev{\Pi_0}{\alpha_1}) \\
+		&= \frac{1}{2} + \frac{1}{2}\tr\left[\Pi_0 (\op{\alpha_0}{\alpha_0} - \op{\alpha_1}{\alpha_1})\right],
+\end{align*}
+and we can calculate the optimal $\{\Pi_0, I - \Pi_0\}$. We look more closely at
+$$
+D = \dyad{\alpha_0} - \dyad{\alpha_1}.
+$$
+This has the following properties:
+\begin{itemize}
+	\item $D$ is hermitian, so it has real eigenvalues and has a complete basis of orthonormal eigenstates.
+	\item If $\ket{\beta} \perp \ket{\alpha_0}$ and $\ket{\alpha_1}$, then $D \ket{beta} = 0$. So $D$ has only two non-zero eigenvalues, and the eigenvectors are spanned by $\ket{\alpha_0}$ and $\ket{\alpha_1}$.
+	\item $\tr D = 0$, so the non-zero eigenvalues must sum to $0$. Thus we can write them as $+ \delta$ and $- \delta$, with $\delta>0$ and eigenstates $\ket{p}$ and $\ket{m}$.
+	\item We can write
+	$$
+	D = \delta \dyad {p} - \delta\dyad{m}.
+	$$
+	Now we need to determine $\delta$ in terms of $\ket{\alpha_0}$ and $\ket{\alpha_1}$.
+	\item We can work in the two dimensional subspace of $\ket{\alpha_0}$ and $\ket{\alpha_1}$. We will introduce an orthonormal basis so that we can work with components. We choose $\ket{\alpha_0^{\perp}}$ orthonormal to $\ket{\alpha_0}$, and we use $\{\ket{\alpha_0^{\perp}}, \ket{\alpha_0}\}$ as a basis. Then
+	$$
+	\ket{\alpha_0} = \begin{pmatrix}
+		1 \\ 0
+	\end{pmatrix}, \quad \ket{\alpha_1} = \begin{pmatrix}
+		c_0 \\c_1
+	\end{pmatrix} = c_0 \ket{\alpha_0} + c_1 \ket{\alpha_0^{\perp}}.
+	$$
+	So $c_0 = \ip{\alpha_0}{\alpha_1}$, and $|c_1| = \sin \theta$ for $\cos \theta = |\ip{\alpha_0}{\alpha_1}|$.
+	\item We can then write down the projectors
+	$$
+	D = \begin{pmatrix}
+		1 \\ 0
+	\end{pmatrix}\begin{pmatrix}
+		1 & 0
+	\end{pmatrix} - \begin{pmatrix}
+		c_0 \\ c_1
+	\end{pmatrix}\begin{pmatrix}
+		c_0^* & c_1^*
+	\end{pmatrix}  = \begin{pmatrix}
+		|c_1|^2 & -c_0c_1^* \\
+		-c_1 c_0^* & -|c_1|^2
+	\end{pmatrix},
+	$$
+	then $\det(D - \lambda I) = 0$ gives $\lambda = \pm |c_1| = \pm \sin \theta$. So $\delta = \sin \theta$.
+\end{itemize}
+
+Finally returning to our expression for the success probability,
+we can use our new expression for $D$ to get
+\begin{align*}
+	P_s &= \frac{1}{2} + \frac{\delta}{2}\tr\left[\Pi_0 (\dyad{p} - \dyad{m})\right] \\
+	&= \frac{1}{2} + \frac{\delta}{2}\left(\ev{\Pi_0}{p} - \ev{\Pi_0}{m}\right).
+\end{align*}
+Now for any projector $\Pi$ and state $\ket{\xi}$, we have $0 \leq \ev{\Pi}{\xi} \leq 1$. Hence $P_S$ achieves its maximum value of $\frac{1}{2} + \frac{\delta}{2} = \frac{1}{2}(1 + \sin \theta)$ if $\Pi_0$ is chosen to be any projector into a subspace containing $\ket{p}$ so $\Pi_0\ket{p} = \ket{p}$ and is orthogonal to $\ket{m}$, so that $\Pi_0 \ket{m} = \ket{0}$. Such a choice of $\Pi_0$ is always possible since $\ket{p}$ is orthogonal to $\ket{m}$. The achievable bound is then
+$$
+P_S \leq \frac{1}{2} + \frac{\sin \theta}{2},
+$$
+which is the \vocab{Helstrom-Holevo bound} (for pure states). 
+
+In particular, an ancilla is never needed, only the inner product is relevant. Also, if $\ket{\alpha_0}$, $\ket{\alpha_1}$ are qubit states (with dimension 2), we can work entirely in their two dimensional space, and the optimal discriminating measurement will be a complete projective measurement of the quantum observable $D = \dyad{\alpha_0} - \dyad{\alpha_1}$, that is, measurement relative to the eigenbasis of $D$. 
+
+We have thus proved the following theorem.
+
+\begin{theorem}[Helstrom-Holevo Bound]
+	Given one of two equally likely states, $\alpha_0$ and $\alpha_1$ with $|\ip{\alpha_0}{\alpha_1}| = \cos \theta$, the probability $P_S$ of correctly identifying the state by any quantum process is bounded by $P_S \leq \frac{1}{2}(1 + \sin \theta)$, and the bound is tight.
+\end{theorem}
 
 \end{document}
