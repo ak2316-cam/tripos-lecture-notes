@@ -21,6 +21,7 @@ fancyproofs
 
 \usepackage{tikz}
 \usepackage{booktabs}
+\usepackage{mathtools}
 
 % \usepackage{subfig}
 
@@ -617,15 +618,47 @@ Let $G$ be a finite group, and write $|G| = p^a m$ where $p$ is a prime with $p 
 \begin{theorem}[First Sylow Theorem]
 	The set $\syl_p(G) = \{P \leq G \mid |P| = p^a \}$ of \vocab{Sylow $p$-subgroups} is non-empty.
 \end{theorem}
+\begin{proof}
+	We wish to show that $G$ has a subgroup of order $p^a$.
+	Let $\Omega$ be the set of all subsets of $G$ of size $p^a$.
+	We have
+	$$
+	|\Omega| = \binom{p^a m}{p^a} = \frac{p^a m}{p^2} \cdot \frac{p^a m - 1}{p^a - 1} \cdots \frac{p^a m - p^a + 1}{1}.
+	$$
+	For $0 \leq k < p^a$, the numbers $p^am - k$ and $p^a  -k$ are divisible by the same power of $p$. Thus $|\Omega|$ is coprime to $p$.
+
+	Let $G$ act on $\Omega$ by left multiplication, where for $g \in G
+$ and $X \in Omega$, we put $g*X = \{gx \mid x \in X\} \in \Omega$. For any $X \in \Omega$, we have $|\stab_G(X)| \cdot |\orb_G(X)| = |G| = p^a m$. But by the coprimality described above, we can pick $X$ such that $|\orb_G(X)|$ is coprime to $p$. Therefore $p^a \mid |\stab_G(X)|$.
+
+On the other hand, if $g \in G$ and $x \in X$, then $g \in (g x^{-1}) * X$. Therefore $G = \bigcup_{g \in G} g*X$. Thus $|G| \leq |\orb_G(X)| \cdot |X|$, and thus $|\stab_G(X)| = \frac{|G|}{|\orb_G(X)|} \leq |X| = p^a$. So $|\stab_G(X)| = p^a$, and is thus a Sylow $p$-subgroup.
+\end{proof}
+
 \begin{theorem}[Second Sylow Theorem]
 	All elements of $\syl_p(G)$ are conjugate.
 \end{theorem}
+\begin{proof}
+	We claim that if $P \in \syl_p(G)$ and $Q \leq G$ is a $p$-subgroup then $Q \leq gPg^{-1}$ for some $g \in G$.
+	
+	Let $Q$ act on the set of left cosets of $G$ by left multiplication, where $q * gP = qgP$. The orbit stabiliser theorem implies each orbit has size dividing $|Q|$, so it is either 1 or a multiple of $p$. 
+
+	Since $|G:P| = m$ is coprime to $p$, there exists an orbit of size 1. Thus there exists $g \in G$ such that $qgP = gP$ for all $q \in Q$, and we get $g^{-1}q g \in P$, so $Q \subseteq gPg^{-1}$.
+\end{proof}
 
 \begin{theorem}[Third Sylow Theorem]
 	The number $n_p = |\syl_p(G)|$ of Sylow $p$-subgroups satisfies $n_p \equiv 1 \pmod{p}$, and $n_p \mid G$. 
 \end{theorem}
+\begin{proof}
+	Let $G$ act on $\syl_p(G)$ by conjugation. The second Sylow theorem implies that this action is transitive. So by the orbit stabiliser theorem, $n_p = |\syl_p(G)|$ divides $|G|$.
 
-Proof later on!
+	Now let $P \in \syl_p(G)$. $P$ acts on $\syl_p(G)$ by conjugation. Then the orbits have size dividing $|P|$, so they are either 1 or a multiple of $p$.
+
+	To show $n_p \equiv 1 \pmod{p}$, it suffices to show that $\{P\}$ is the unique orbit of size 1. If $\{Q\}$ is an orbit of size 1, then $P$ normalizes $Q$, so $P \leq N_G(Q)$. Now $P$ and $Q$ are Sylow $p$-subgroups of $N_G(Q)$. Hence by the second Sylow theorem, they are conjugate in $N_G(Q)$, and equal since $Q \normal N_G(Q)$. Thus $\{P\}$ is the unique orbit of size 1.
+\end{proof}
+
+
+\newsubsection{Applications of the Sylow Theorems}
+
+We will now look at how the Sylow theorems can be use to prove some facts about certain groups.
 
 \begin{corollary}
 	If $n_p = 1$, then the unique Sylow $p$-subgroup is normal.
@@ -646,4 +679,64 @@ Let $|G| = 1000 = 2^3 \cdot 5^3$. Then $n_5 \equiv 1 \pmod{5}$, and $n_5 \mid 8$
 
 	Thus $n_3 = 22$, and $n_11 = 12$. But then counting the $G$ has $22 \cdot (3 - 1) = 44$ elements of order 3, and $12 \cdot (11 - 1) = 120$ elements of order 11. But then $120 + 44 = 164 > 132$, which is a contradiction. Thus there does not exist a simple group of order $132$. 
 \end{example}
+
+\newchapter{Some Matrix Groups}
+
+We are going to look at some more types of groups, specifically groups of matrices.
+
+\newsection{Basic Definitions}
+
+Let $F$ be a field (for example $\C$ or $\Z/p\Z$). 
+Recall the groups $\GL_n(F)$ of $n \times n$ 
+invertible matrices over $F$, and $\SL_n(F) = \kernel(\GL_n \xrightarrow{\det} F^\times) \normal GL_n(F)$.
+Also let $Z \normal \GL_n(F)$ be the group of scalar matrices (scalar multiples of the identity matrices). 
+
+We define the \emph{projective general/special linear groups} as follows.
+
+\begin{definition}[Projective General Linear Group]
+	The \vocab{projective general linear group} $\PGL_n(F)$ is defined to be $\GL_n(F) / Z$.
+\end{definition}
+
+\begin{definition}[Projective Special Linear Group]
+	The \vocab{projective special linear group} $\PSL_n(F)$ is the group $\SL_n(F) / (Z \cap  \SL_n(F))$, which is isomorphic to $Z\cdot \SL_n(F) / Z$, by the second isomorphism theorem.
+\end{definition}
+
+\begin{example}
+	Let $G = \GL_n(\Z/p\Z)$. A list of $n$ vectors in $(\Z/p\Z)^n$ are the columns of some $A \in G$ if and only if they are linearly independent.
+	Thus
+	\begin{align*}
+		|G| &= (p^n - 1)(p^n - p)(p^n - p^2) \cdots (p^n - p^{n - 1}) \\
+		&= p^{1 + 2 + \cdots + (n - 1)}(p^n - 1)(p^{n - 1} - 1) \cdots (p - 1) \\
+		&= p^{\binom{n}{2}} \prod_{i = 1}^n (p^i - 1).
+	\end{align*}
+
+	We see that the Sylow $p$-subgroups have order $p^{\binom{n}{2}}$. One such is the subgroup of upper triangular matrices with 1's on the diagonal.
+	$$
+	U = \left\{\begin{pmatrix}
+		1 & * & * & \cdots & * \\
+		0 & 1 & * & \cdots & * \\
+		\vdots  &\vdots   & \vdots & \ddots &\vdots \\
+		0 & 0 & 0 & \cdots & 1
+	\end{pmatrix}\right\} \leq G.
+	$$
+	Indeed there are $\binom{n}{2}$ entries $*$, each which can take $p$ values, so the order is $p^{\binom{n}{2}}$.
+\end{example}
+
+Just as $\PGL_2(\C)$ acts on $\C \cup \{\infty\}$ via Möbius maps, $\PGL_2(\Z/p\Z)$ acts on $\Z/p\Z \cup \{\infty\}$.
+Indeed, $\GL_2(\Z/p\Z)$ acts as
+$$
+\begin{pmatrix}
+	a & b\\
+	c & d
+\end{pmatrix}: z \longmapsto \frac{az + b}{cz + d},
+$$
+and since scalar matrices act trivially, this is an action of $\PGL_2(\Z/p\Z)$.
+
+\begin{lemma}
+	The permutation representation of $\PGL_2(\Z/p\Z) \rightarrow S_{p + 1}$ is injective (and is an isomorphism if $p = 2$ or 3).
+\end{lemma}
+\begin{proof}
+	Suppose $\frac{az + b}{cz + d} = z$ for all $z \in \Z/p\Z \cup \{\infty\}$ Putting $z = 0$ shows $b = 0$. Putting $z = \infty$ shows $c = 0$. Putting $z = 1$ shows $a = d$, and thus this is a scalar matrix. 
+\end{proof}
+
 \end{document}
