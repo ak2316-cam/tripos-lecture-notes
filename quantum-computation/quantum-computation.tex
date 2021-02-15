@@ -20,7 +20,9 @@ noindent,
 % ]{adam} 
 
 \usepackage{tikz}
+\usepackage{booktabs}
 \usepackage{physics}
+\usepackage{qcircuit}
 
 % \usepackage{subfig}
 
@@ -645,7 +647,7 @@ We have thus proved the following theorem.
 	There are other discrimination scenarios possible. One example is unambiguous state discrimination, where we have three outcome measurements which are \texttt{0}, \texttt{1} and \texttt{fail}. If \texttt{0} is seen, then the state received was certainly $\ket{\alpha_0}$. If \texttt{1} is seen, then it was certainly $\ket{\alpha_1}$, but if \texttt{fail} is seen, then the process has failed (and all information about the state is lost).
 \end{remark}
 
-\subsection{The No Signalling Principle}
+\subsection{The No-Signalling Principle}
 
 Alice and Bob are distantly separated in space. They each have local quantum systems $A$ and $B$ respectively. Initially $AB$ is in some joint quantum state (which is possible entangled). They can apply only local operations (on their own system).
 
@@ -719,5 +721,92 @@ Suppose Alice and Bob have access only to subsystems $A$ and $B$ of a joint stat
 	Also if $A$ and $B$ include local ancillas, this just enlarges the local spaces and the shared state, and the above arguments still apply.
 \end{remark}
 
+\subsection{Quantum Dense Coding}
+
+The previous subsection showed that a single sent qubit can reliably encode only one classical bit. But, if the qubit is \emph{entangled} with a second qubit, already held with the receiver, then we can double classical information capacity to two bits. 
+
+We will begin by introducing some definitions.
+
+\begin{definition}[Bell States/Basis]
+	The \vocab{Bell states} for $2$ qubits are the states
+	\begin{align*}
+		\ket{\phi^+} &= \frac{1}{\sqrt{2}}(\ket{00} + \ket{11}), \\
+		\ket{\phi^-} &= \frac{1}{\sqrt{2}}(\ket{00} - \ket{11}), \\
+		\ket{\psi^+} &= \frac{1}{\sqrt{2}}(\ket{01} + \ket{10}), \\
+		\ket{\psi^+} &= \frac{1}{\sqrt{2}}(\ket{01} + \ket{10}).
+	\end{align*}
+	they are orthonormal and form the \vocab{Bell bases} $B = \{\ket{\phi^+}, \ket{\phi^-}, \ket{\psi^+}, \ket{\psi^-}\}$ for two qubits.
+\end{definition}
+
+These can all be constructed by performing local operations on $\ket{\phi^+}$. Explicitly,
+\begin{align*}
+	\ket{\phi^+} &= I \otimes I \ket{\phi^+} \\
+	\ket{\phi^-} &= Z \otimes I \ket{\phi^+} \\
+	\ket{\psi^+} &= X \otimes I \ket{\phi^+} \\
+	\ket{\psi^-} &= Y \otimes I \ket{\phi^+}.
+\end{align*}
+We can also make Bell states from the computational basis. Now we can get on to the quantum dense coding.
+
+\begin{theorem}[Quantum Dense Coding Protocal]
+	Given $A$ and $B$, distantly separated in space, with each possessing one qubit of a $\ket{\phi^+}$ state, it is possible for $A$ to send two bits of information to $B$ by sending only one qubit.
+\end{theorem}
+\begin{proof}
+	$A$ applies $I, Z, X$ or $Y$ to their qubit to get $\ket{\phi^+}$, $\ket{\phi^-}$, $\ket{\psi^+}$, $\ket{\psi^-}$, corresponding to $00$, $01$, $10$ and $11$ respectively. $A$ then sends their qubit to $B$, who then does a Bell measurement on the two qubits, from which they recover the two bits of information.
+\end{proof}
+
+\subsection{Quantum Teleportation}
+
+This is a protocol in the `LOCC' paradigm (local operations and classical communication).
+
+We have $A$ and $B$ distantly separated in space. They can communicate classically, and they share an entangled $\ket{\phi^+}$ state. Suppose that $A$ has another qubit in some unknown state $\ket{\alpha}$. She wants to transfer this qubit to $B$.
+
+We know that $\ket{\alpha}$ cannot be identified and communicated classically, and we are not allowing communication of classical information (so we couldn't `put the qubit in a box' and send it). We can however do the following.
+
+\begin{theorem}[Quantum Teleportation]
+	$A$ can transfer $\ket{\alpha}$ to $B$ using the entanglement of $\ket{\phi}$, `without the state having passed through the space in-between'.
+\end{theorem}
+\begin{proof}
+	Let qubits $1$, $2$ and $3$ be respectively $A$'s input $\ket{\alpha}$, $A$'s qubit of $\ket{\phi^+}$ and $B$'s qubit of $\ket{\phi^+}$. 
+
+	Writing $\ket{\alpha} = a\ket{0} + b\ket{1}$ then
+	\begin{align*}
+		\ket{\alpha}\ket{\phi^+} &= (a \ket{0} + b \ket{1}) \frac{1}{\sqrt{2}}(\ket{00} + \ket{11}) \\
+		&= \frac{a}{\sqrt{2}}\ket{000} + \frac{a}{\sqrt{2}}\ket{011} + \frac{b}{\sqrt{2}}\ket{100} + \frac{b}{\sqrt{2}}\ket{111}.
+	\end{align*}
+	The quantum teleportation protocol then has five steps.
+	\begin{enumerate}
+		\item $A$ applies $CX_{12}$ to her qubits $1$ and $2$.
+		\item $A$ applies $H$ to qubit $1$
+		\item $A$ measures her $2$ qubits in the computational basis, obtaining a two bit string $00, 01, 10$ or $11$
+		
+		At this point our state is
+		\begin{align*}
+			\frac{1}{2}[\ket{00}(a\ket{0} + b\ket{1}) + \ket{01}(a\ket{1} + b\ket{0})\\ + \ket{10}(a\ket{0} - b\ket{1}) + \ket{11}(a\ket{1} - b\ket{1})] \\
+		= \frac{1}{2}[\ket{00} I \ket{\alpha}+\ket{01} X \ket{\alpha}+\ket{10} Z \ket{\alpha}+\ket{11} XZ \ket{\alpha}]
+		\end{align*}
+		So by the Born rule we have:
+		\begin{center}
+			% Please add the following required packages to your document preamble:
+%
+	\begin{tabular}{@{}ccc@{}}
+	\toprule
+	Outcome       & Post Measurement State & Probability \\ \midrule
+	$00$			  & $\ket{00}\ket{\alpha}$       &  $1/4$           \\
+	$01$	          & $\ket{01}X\ket{\alpha}$                   &   $1/4$          \\
+	$10$			  &    $\ket{10}Z\ket{\alpha}$                    &  $1/4$           \\ 
+	$11$			  &      $\ket{11}XZ\ket{\alpha}$                  &    $1/4$         \\ \bottomrule
+	\end{tabular}
+		\end{center}
+		So we note that this measurement provided $A$ with no additional information about $\ket{\alpha}$.
+
+		\item $A$ sends the two bit outcome to $B$ 
+		\item On receiving $ij$, $B$ applies the operation $Z^i X^j$ to his qubit $3$, which is then guaranteed to be in state $\ket{\alpha}$ in every case.
+	\end{enumerate}
+\end{proof}
+
+After the teleportation protocol, $A$ is left with a two qubit state $\ket{00}$, $\ket{01}$, $\ket{10}$ or $\ket{11}$, chosen uniformly at random. That is, $A$ has \emph{no} information about $\ket{\alpha}$.
+Thus this process is consistent with the no-cloning theorem (in a strong sense).
+
+It should be noted that physically, the system embodying $\ket{\alpha}$ is not transferred. Only the state identity/information is reconstructed exactly in another physical system.
 
 \end{document}
