@@ -43,7 +43,7 @@ fancyproofs
 
 	This set of notes is a work-in-progress account of the course `Graph Theory', originally lectured by Dr Julian Sahasrabudhe in Lent 2020 at Cambridge. These notes are not a transcription of the lectures, but they do roughly follow what was lectured (in content and in structure).
 
-	These notes are my own view of what was taught, and should be somewhat of a superset of what was actually taught. I frequently provide different explanations, proofs, examples, and so on in areas where I feel they are helpful. Because of this, this work is likely to contain errors, which you may assume are my own. If you spot any or have any other feedback, I can be contacted at \href{mailto:ak2316@cam.ac.uk}{ak2316@cam.ac.uk}.
+	These notes are my own view of what was taught, and should be somewhat of a superset of what was actually taught. I frequently provide different explanations, proofs, examples, and so on in areas where I feel they are helpful. Because of this, this work is likely to contain errors, which you may assume are my own. If you spot any or have any other feedback, let me know.
 
 
 	% {\color{red} Notes written upto lecture 6.}
@@ -488,7 +488,7 @@ We are also going to use some notation for removing an edge or a vertex from a g
 An easy way to get a subgraph is by taking a subset of the vertices and seeing what edges you get from the original graph.
 
 \begin{definition}[Inducted Subgraph]
-	If $G = (V, E)$ is a graph and $X \subseteq X$, the \vocab{subgraph inducted by $X$} is defined to be $G[X] = (X, \{xy \in E \mid x, y \in X\})$.
+	If $G = (V, E)$ is a graph and $X \subseteq V$, the \vocab{subgraph inducted by $X$} is defined to be $G[X] = (X, \{xy \in E \mid x, y \in X\})$.
 \end{definition}
 
 \subsection{Graph Isomorphism}
@@ -3892,7 +3892,7 @@ In contrast to the chromatic number, it is much easier to get a handle on the ed
 
 Welcome to the chapter on extremal graph theory, where we think about problems involving things with an `extreme' flavour.
 
-\section{Eulerian Circuits}
+\section{Eulerian Circuits and Hamiltonian Cycles}
 
 We are going to begin our chapter on extremal graph theory with something that's not \emph{really} extremal graph theory. Still, it will lead us nicely into the more extreme parts of this chapter and the course. Let's state a definition.
 
@@ -4250,5 +4250,61 @@ Our first question might be `is there an iff type condition for Hamiltonian cycl
 \begin{theorem}[Dirac's Theorem]
 	Let $G$ be a graph with $n\geq 3$ such that $\delta(G) \geq n/2$. Then $G$ contains a Hamiltonian cycle.
 \end{theorem}
+\begin{proof}
+	For a contradiction, assume that $G$ is a counterexample to the theorem.
+	Note that $G$ is connected, since $x \not \sim y$ then $N(x), N(y) \subset V \backslash\{x, y\}$ and $|N(x)|, |N(y)| \geq \frac{n}{2}$, and thus $N(x) \cap N(y) \neq \emptyset$, and thus $d(x, y) \leq 2$.
+
+	Let $x_1, \dots, x_\ell$ be the longest path in $G$. Note that $x_1, \dots, x_\ell$ does not form a cycle, as otherwise if $\ell = n$, then we have a contradiction, and if $\ell < n$ then there exists $y \not \in \{x_1, \dots, x_\ell\}$ that is $y \sim x_i$. Thus we can find a longer path (which is also a contradiction).
+
+	Now if there exists $i \in \{1, \dots, \ell - 1\}$ so that $x_i \sim x_\ell$ and $x_{i + 1} \sim x_1$, then the vertices $x_1, \dots, x_\ell$ form a cycle. This contradicts the above.
+
+	Define
+	$$
+	N^+(x_\ell) = \{x_i \mid x_{i - 1} \in N(X_l), 2 \leq i \leq \ell\}.
+	$$
+	We have $N^+(x_\ell) \cap N(x_1) = \empty$, but this is impossible since $|N^+(x_\ell)| \geq n/2$, $|N(x_1)| \geq n/2$, and $N^+(x_\ell), N(x_1) \subseteq \{x_2, \dots, x_\ell\}$. Thus we have a contradiction.
+\end{proof}
+
+\begin{remark}
+	We never \emph{really} used this $\delta(G) \geq n/2$ condition fully. It suffices to have $d(x) + d(y) \geq n$ for $x \not \sim y$.
+\end{remark}
+
+We can use this same argument to prove a more general result about paths.
+
+\begin{proposition}\label{prop:used-here}
+	Let $G$ be a connected graph. Let $k < n$ and assume $\delta(G) \geq k/2$. Then $G \geq P_{k + 1}$.
+\end{proposition}
+\begin{proof}[Proof Sketch]
+	Similar to Dirac's theorem. Choose a longest path $x_1, \dots, x_\ell$ in $G$. They don't form a cycle, and then we can force a configuration like $x_1 \sum x_{i + 1}$, $x_{\ell} \sum x_i$ by using the minimum degree condition.
+\end{proof}
+
+We may wonder in the above if it's possible to replace `path' with `cycle' in the above. The answer is, sadly, no.
+
+A natural question is to wonder how many edges are needed to `force' a (for example) triangle.
+For a Hamilton cycle, this sort of question would have been a bit strange, and a more natural question would be what is the minimum value of $\delta(G)$ to ensure that $G$ contains a Hamilton cycle.
+In the next theorem, we will give a result that answers a simpler sort of question.
+
+\begin{theorem}
+	Let $G$ be a graph. If $e(G) > \frac{n}{2}(k - 1)$, then $G$ contains a path of length $k$.
+\end{theorem}
+\begin{proof}
+	We will prove the contrapositive: If $G$ is $P_{k + 1}$ free, then $e(G) \leq \frac{n}{2}(k - 1)$.
+
+	We will apply induction on $n$. This is true for $n = 2$.
+	Then given a graph $G$ on $|G| = n \geq 3$ vertices, if $G$ is disconnected let $G_1, \dots, G_k$ be the components of $G$. Then each of these has $G_i \not \supseteq P_{k + 1}$. Then by induction we have $e(G_i) \leq \frac{n(G_i)(k - 1)}{2}$. Thus
+	$$
+	e(G) = \sum_{i = 1}^k e(G_i) \leq \sum \frac{n(G_i)(k - 1)}{2} = \left(\frac{k - 1}{2}\right)n,
+	$$
+	and we are done.
+
+	Now if there is a vertex $v$ with $d(v) \leq \frac{k - 1}{2}$, then consider $G - v$. Then $e(G - v) = e(G) - d(v)$, and also $G - v$ does not contain $P_{k + 1}$. Thus $e(G - v) \leq \frac{n - 1}{2}(k - 1)$. So
+	$$
+	e(G) = e(G - v) + d(v) \leq \frac{n - 1}{2}(k - 1) + \frac{k -1}{2} \leq \frac{n}{2}(k - 1).
+	$$
+	Thus we can assume $G$ is connected and $d(v)  \geq \frac{k}{2}$.
+	We we can apply \autoref{prop:used-here} to find a path of length $k$, that is, $P_{k + 1} \subseteq G$, which is a contradiction.
+
+	[We may also assume $k < n$ for if $k = n$ then $e(G) \leq \frac{k}{2}(n - 1)$, which reduces to showing $e(G) \leq \binom{n}{2}$, which is trivial].
+\end{proof}
 
 \end{document}
