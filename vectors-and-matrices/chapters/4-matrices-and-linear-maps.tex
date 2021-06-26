@@ -1,1 +1,93 @@
 \chapter{Matrices and Linear Maps}
+
+Vector spaces have two basic operations: addition and scalar multiplication. 
+The prominence of these operations makes thinking about functions that preserve this structure quite useful. Such functions are called linear maps, and in the setting of finite dimensional vector spaces we have a useful way of studying them: matrices. In this chapter we will study both ideas and how they link together.
+
+\section{Linear Maps}
+
+Let's begin by defining what we mean exactly by a linear map.
+
+\begin{definition}[Linear Map]
+    A \vocab{linear map} or \vocab{linear transformation} is a function $T : V \rightarrow W$ between two vector spaces $V$ and $W$ such that
+    $$
+    T(\lambda \vv{x} + \mu \vv{y}) = \lambda T(\vv{x}) + \mu T(\vv{y}),
+    $$
+    for all $\vv{x}, \vv{y} \in V$ and $\lambda, \mu \in \R$ or $\C$\footnote{Depending on whether we are working with real or complex vector spaces.}.
+\end{definition}
+
+From this definition, it is immediately clear that a linear map is completely determined by its action on a set of basis vectors.
+
+Let's have a look at some examples of linear maps that appear in geometry.
+
+\begin{example}[Geometric Linear Maps]
+The following are all examples of linear maps.
+\begin{enumerate}[label=(\roman*)]
+    \item A rotation is an example of a linear map. In $\R^2$, a rotation about $\vv{0}$ through an angle $\theta$ is defined by
+    \begin{align*}
+        \vv{e_1} \mapsto \vv{e_1}' &= \cos \theta \vv{e}_1 + \sin \theta \vv{e}_2 \\
+        \vv{e_2} \mapsto \vv{e_2}' &= -\sin \theta \vv{e}_2 + \cos \theta \vv{e}_2
+    \end{align*}
+    
+    \begin{center}
+        \begin{tikzpicture}
+            % angle 40 degrees
+          \draw [->] (0, 0) -- (2.75, 0) node [right] {$\vv{e}_1$};
+          \draw [->] (0, 0) -- (0, 2.75) node [above] {$\vv{e}_2$};
+          \draw [->, color=blue] (0, 0) -- (2.107, 1.768) node [anchor=south west] {$\vv{e}_1'$} node [pos=0.3, below] {$\theta$};
+          \draw [->, color=blue] (0, 0) -- (-1.768, 2.107) node [anchor=south east] {$\vv{e}_2'$};
+        %   \draw [dashed] (0, 1.7) node [left] {$y$} -- (2.5, 1.7) -- (2.5, 0) node [below] {$x$};
+        \end{tikzpicture}
+      \end{center}
+    
+      In $\R^3$, a rotation about an axis given by $\vv{e}_3$ is defined as above, but with $\vv{e}_3 \mapsto \vv{e}_3'= \vv{e}_3$.
+
+      \item A projection onto a plane through the origin with unit normal $\hat{\vv{n}}$ is a linear map, defined by
+      $$
+      \vv{x} \mapsto \vv{x}'= \vv{x}_{\perp} = \vv{x} - (\vv{x} \cdot \hat{\vv{n}}) \hat{\vv{n}}.
+        $$
+        Similarly, the reflection about that plane is a linear map, defined by
+        $$
+        \vv{x} \mapsto \vv{x}' = \vv{x} - 2(\vv{x} \cdot \hat{\vv{n}}) \hat{\vv{n}}
+        $$
+    \item A dilation along the basis vectors with scale factors $\alpha, \beta, \gamma$ is a linear map, defined by
+    $$
+    \vv{e}_1 \mapsto \vv{e}_1' = \alpha \vv{e}_1, \quad \vv{e}_2 \mapsto \vv{e}_2' = \beta \vv{e}_2, \quad \vv{e}_3 \mapsto \vv{e}_3' = \gamma \vv{e}_3.
+    $$
+    \item For orthogonal unit vectors $\vv{a}, \vv{b} \in \R^3$ and $\lambda \in \R$, we can define a shear to be the linear map
+    $$
+      \vv{x} \mapsto \vv{x}' = \vv{x} + \lambda \vv{x} (\vv{x} \cdot \vv{b}).
+    $$
+\end{enumerate}
+\end{example}
+
+When we have a linear map $T: V \rightarrow W$, it can be helpful to think about what vectors in the vector space $W$ are in the image of this function, and also what in $V$ will just be sent to $\vv{0}$. Because we deal with these so commonly, we introduce standard terms.
+
+\begin{definition}[Image and Kernel]
+    If $T: V \rightarrow W$ is a linear map, we say that its \vocab{image} is the set
+    $$
+    \img(T) = \{ \vv{x}' \in W \mid \vv{x}' = T(\vv{x}) \text{ for some } \vv{x} \in V\},
+    $$ 
+    and its \vocab{kernel} is the set
+    $$
+    \ker (T) = \{ \vv{x} \in W \mid T(\vv{x}) = \vv{0}\}.
+    $$
+\end{definition}
+
+\begin{proposition}[Image and Kernel are Subspaces]
+    If $T : V \rightarrow W$ is a linear map, then $\ker(T)$ is a subspace of $V$ and $\img(T)$ is a subspace of $W$.
+\end{proposition}
+\begin{proof}[Proof Sketch]
+    Use the properties of $T$ as a linear map to check definitions.
+\end{proof}
+
+These subspaces have a special property relating to their dimension.
+We call the dimension of the image the \vocab{rank} and dimension of the kernel as the \vocab{nullity} of a linear map. Then we have the following result (the proof of which is non-examinable).
+
+\begin{theorem}[Rank-Nullity Theorem]
+    For a linear map $T: V \rightarrow W$, we have $\rank(T) + \nullity(T) = \dim V$.
+\end{theorem}
+\begin{proof}
+    Let $\vv{e}_1, \dots, \vv{e}_k$ be a basis for $\ker (T)$. Extend this by adding in $\vv{e}_{k + 1}, \dots, \vv{e}_n$ to get a basis for $V$. We claim that $B = \{T(\vv{e_{k + 1}}), \dots, T(\vv{e}_n)\}$ is a basis for $\img (T)$ (from which the result would follow).
+
+    First we have that $B$ spans $\img(T)$, since for any $\vv{x} = \sum_{i =1}^n x_i \vv{e}_i \in V$, $T(\vv{x}) = \sum_{i = k+1}^n x_i T(\vv{e}_i)$. Also, $B$ is linearly independent since $\sum_{i = k + 1}^n \lambda_i T(e_i) = \vv{0}$ implies that $T\left(\sum_{i = k + 1}^n \lambda_i \vv{e}_i\right) = \vv{0}$. But then that linear combination must be in the kernel, so we must have $\lambda_i = 0$, as $\{\vv{e}_1, \dots, \vv{e}_n\}$ are linearly independent. Thus $B$ is a basis, as required.
+\end{proof}
