@@ -7,10 +7,13 @@ noindent,
 %  spacingfix,  
 ]{adam}
 
+\usepackage{tikz}
+\usepackage{cancel}
 
-\title{Optimisation}
+
+\title{Variational Principles}
 \author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
-\date{\today}
+\date{\today, to Lecture 2}
 
 
 \allowdisplaybreaks
@@ -19,92 +22,225 @@ noindent,
 
 \maketitle
 
-At its heart, analysis is the study of ideas that depend on the notion of \emph{limits}.
-The main concepts of analysis (such as convergence, continuity, differentiation and integration) will all depend quite fundamentally on a limiting process.
+From finding geodesics to expressing the fundamental laws of nature, variational principles and the calculus of variations arise naturally in pure \& applied mathematics, and theoretical physics.
+Here, we will study such ideas, with the underlying goal of considering problems involving minimizing (or maximizing) quantities that depend on an entire function. 
 
-This article constitutes my notes for the `Analysis I' course, held in Lent 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+This article constitutes my notes for the `Variational Principles' course, held in Easter 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
 
-{\color{purple}Currently up to lecture 1.}
+% {\color{purple}Currently up to lecture 1.}
 
 \tableofcontents
 
-% \clearpage
+\section{Introduction}
 
-This course is roughly split into:
-\begin{itemize}
-	\item Convex Optimisation (1-3)
-	\item General optimisation with Lagrange Multipliers (4-5)
-	\item Linear Programming (minimizing linear functions), and applications (6-12)
-\end{itemize}
 
-\section{Optimisation Problems}
+% Lecture 1
 
-In optimization, we are interested in solving problems that look like:
-minimize $f(x)$ for $x \in X$, or minimize $f(x)$ for $x \in X$, $h(x) = b$ where $h : \R^n \rightarrow \R^m$.
+We will begin our study of variational principles by getting a feel for the type of problems that we care about. 
+As a field, the study of variational principles can be traced back to a single problem, posed by Johann Bernoulli in 1696. It is there that we will begin.
 
-We will always be looking at minimizing functions.
+\subsection{A Motivating Problem -- The Brachistochrone}
 
-Terminology:
-\begin{itemize}
-	\item $f$ is called the objective function. 
-	\item The components of $x$ are the decision variables.
-	\item In the above, `$h(x) = b$' is a functional constraint.
-	\item `$x \in X$' is the regional constraint.
-	\item The set $\{x \in X : h(x) = b\}$ is called the feasible set $X(b)$. A problem is feasible if this set is not empty, and otherwise it is in-feasible. We say the problem is bounded if the minimum is bounded.
-	\item A point $x^* \in X(b)$ is optimal if it minimises $f$ over $X(b)$. The value of $f(x^*)$ is called the optimal constraint.
-\end{itemize}
+One of the earliest problems in the calculus of variations is the \vocab{Brachistochrone} problem.
 
-So why do we only care about constraints $h(x) =b$? Well consider the constraint $h(x) \leq b$, then $h(x) + s = b$, $s \geq 0$. So we can always convert an inequality constraint into a functional and regional constraint.
+\begin{example}[Brachistochrone]
+	Consider a particle sliding on a wire between two fixed points $A$ and $B$, under the influence of gravity. Which shape of the wire will give the shortest travel time, when the particle starts from rest?
+\end{example}
 
-\section{Convex Optimisation}
-
-\begin{definition}[Convex Set]
-	A set $S \subseteq \R^n$ is \vocab{convex} if for all $x, y \in S$, and all $\lambda \in [0, 1]$, $x(1 - \lambda) + y(\lambda) \in S$. That is, the line segment joining $x$ and $y$ lies in $S$.
-\end{definition}
+It is not immediately obvious what the answer to this problem is. We won't solve it right now, but we can still can take some steps in the right direction. We first setup a coordinate system, setting $A$ to be the origin, and $B$ to be some point $(x_2, y_2)$.
 
 \begin{center}
-	insert diagram 1 - convex here.
+	\begin{tikzpicture}
+		\coordinate (origin) at (0,0);
+		\coordinate (b) at (4.0, -2.0);
+		
+		% \filldraw[color=blue!80, fill=blue!2] (z1) circle (0.7);
+
+		% draw axes
+		\draw [<->] (-0.5, 0) -- (5.0, 0) node [right] {$x$};
+		\draw [<->] (0, 0.5) -- (0, -2.5) node [below] {$y$};
+	
+		\draw [dashed, blue] (b) -- (4.0, 0) node [black, above] {$x_2$};
+		\draw [dashed, blue] (b) -- (0, -2.0) node [black, left] {$y_2$};
+
+		% draw some paths between A and B
+		\draw [green] (origin) to [bend right=30] (b);
+		\draw [red] (origin) to [bend right=60] (b);
+		\draw [red] (origin) to [bend right=5] (b);
+		\draw [red] (origin) to [bend left=15] (b);
+
+		\draw (2.25, -0.5) node [red] {$\gamma$};
+		% \draw plot [smooth, red] coordinates {(0,0) (2.0, -1.2) (4.0, -2.0))};
+
+		% draw the points A and B
+		\node at (b)[circle,fill,inner sep=1.5pt]{};
+		\draw (b) node [right] {$B$};
+
+		\node at (origin)[circle,fill,inner sep=1.5pt]{};
+		\draw (origin) node [above left] {$A$};
+
+		% draw vectors
+		% \draw [->] (origin) -- (z1) node [anchor=south west] {$c$};
+		% \draw [dashed] (1, 1.25) -- (0.3, 1.25) node [pos=0.5, anchor=south] {$\rho$};
+		\end{tikzpicture}
 \end{center}
 
-We want to study the notion of \emph{convex functions}.
+In this coordinate system, for a given curve $\gamma$, we can write down the travel time 
+$$
+T = \int_\gamma \dd t = \int_\gamma \frac{1}{v} \dd s,
+$$
+where $v$ is the velocity of the particle. Since the particle starts at $y = 0$, conservation of energy implies that 
+\begin{align*}
+	\frac{1}{2}m v^2 + mg y &= 0 \\
+	\implies v &= \sqrt{-2gy}.
+\end{align*}
+Thus to solve our problem, we really want to minimize
+$$
+T[y] = \frac{1}{\sqrt{2g}} \int_0^{x_2} \frac{\sqrt{1 + (y')^2}}{\sqrt{-y}} \dd x,
+$$
+subject to $y$ being a smooth function with $y(0) = 0$, and $y(x_2) = y_2$.
 
-\begin{definition}[Convex Functions]
-	A function $f:S \rightarrow \R$ is \vocab{convex} if $S$ is convex, and for all $x, y \in S$, and $\lambda \in [0, 1]$ we have
-	$$
-f((1 - \lambda)x + \lambda y) \leq (1 - \lambda)f(x) + \lambda f(y).
-	$$
-	The function is \vocab{strictly convex} if the inequality is strict, and is \vocab{concave} if $-f$ is convex.
+\subsection{Problems of Interest}
+
+Let's jump to another problem from pure mathematics, finding geodesics.
+
+\begin{example}[Geodesic Problem]
+	Find the shortest path $\gamma$ between two points on a surface $\Sigma$ (if one exists).
+\end{example}
+
+
+If $\Sigma$ is $\R^2$, we can again adopt a coordinate system, and try to find the shortest curve $\gamma$ between the two points $A = (x_1, y_1)$ and $B=(x_2, y_2)$.
+To solve this problem, we really want to minimize
+$$
+D[y] = \int_{x_1}^{x_2} \sqrt{1 + (y')^2} \dd{x},
+$$
+subject to $y$ being a smooth function with $y(x_1) = y_1$ and $y(x_2) = y_2$.
+
+Both of these problems have a similar flavour: we are trying the minimize or maximize something like
+\begin{equation}\label{eq:functional}
+	F[y] = \int_{x_1}^{x_2} f(x, y(x), y'(x)) \dd x, \tag{$*$}
+\end{equation}
+among all functions such that $y(x_1) = y_1$ and $y(x_2) = y_2$.
+This quantity \eqref{eq:functional} is called a \vocab{functional}, that is, a function on the space of functions\footnote{In standard calculus, we usually consider functions which map numbers $\rightarrow$ numbers. In the calculus of variations, we consider \emph{functional} which map functions $\rightarrow$ numbers. An intuitive example is that of arc-length, which takes some curve and gives back a number corresponding to its length.}.
+
+In this article, we are going to study the \emph{calculus of variations}, in which we will be finding extrema (minima, maxima, and saddle points) of functionals. 
+We will start by looking back at and extending our knowledge of extrema in finite dimensions, before using this knowledge to approach problems involving functionals.
+
+\begin{notation}
+	Throughout this article, we will frequently refer to different spaces of functions. We will let $C(\R)$ be the space of continuous functions on $\R$, and $C^k(\R)$ be the space of functions with continuous $k$th derivative. We will also write $C_(\alpha, \beta)^k(\R)$ for the subset of functions $f$ with $f(\alpha) = f(\beta)$.
+\end{notation}
+
+% Lecture 2
+
+\section{Calculus for Functions on \texorpdfstring{$\R^n$}{R-n}}
+
+For this section, we are going to consider a function $f \in C^2(\R^n)$, that is, $f: \R^n \rightarrow \R$, with continuous second derivative.
+
+\subsection{Stationary Points}
+
+Recall the definition of a stationary point for a function $f \in C^2(\R^n)$.
+
+\begin{definition}[Stationary Point]
+	We say that $a \in \R^n$ is a \vocab{stationary point} of $f$ if
+	$\nabla f(a)= 0$.
 \end{definition}
 
-In one dimension, such functions look `$u$-shaped', and points between $x$ and $y$ always lies below the chord.
-
-\subsection{Unconstrained Optimisation}
-
-We are going to look at the problem of minimizing $f(x)$ where $f: \R^n \rightarrow \R$ is a convex function. 
-
-Convex functions have certain properties that allow us to minimize them somewhat easily. The most important property is that \emph{local} information gives us \emph{global} information. Informally, if you know what a convex function looks like in a small neighbourhood, you can always say something about what it looks like outside of that.
-
-Let's have a think about how to tell if a function is convex.
-
-A first order condition for convexity is that a tangent line always lies below the curve. That is,
+If $a$ is a stationary point of $f$, then we can look at the Taylor expansion of $f$ around $a$ to determine the nature of the stationary point. For $x$ near $a$, usiing the summation convention we have
 $$
-f(y) \geq f(x) + (y - x) f'(x).
+f(x) = f(a) + \cancel{(x - a) \cdot \nabla f(a)} + \frac{1}{2}(x_i - a_i)(x_j - a_j) \left.\partial^2_{ij} f \right|_a + O(|x - a|^2),
 $$
-In higher dimensions, we will have to replace $f'(x)$ with $\nabla f(x)$, and take a dot product (treating it as a vector). 
-Note that if $\nabla f(x) = 0$, then $f(y) \geq f(x)$, thus $x$ minimizes $f$.
+where $\partial_i f = \partial f/\partial x_i$.
 
-Let's write this all down properly.
+Now let $H_{ij} = \partial^2_{ij} f$ be the Hessian matrix, which we note is symmetric. If we shift the origin such that $a = 0$ and write $H = H(0)$, we can diagonalize this matrix to get
+$$
+H' = R^T H(0) R = \begin{pmatrix}
+	\lambda_1 & \cdots & 0 \\
+	\vdots& \ddots &\vdots \\
+	0 &\cdots & \lambda_n
+\end{pmatrix}.
+$$
+Then we have
+$$
+	f(x') - f(0) = \frac{1}{2}\sum_{i = 1}^n \lambda_i (x_i')^2 + O(|x'|^2).
+$$
+
+The behavior then depends on if the eigenvalues of $H(0)$ are positive or negative:
+
+\begin{enumerate}[label=(\roman*)]
+	\item If all $\lambda_i > 0$, then $f(x') > f(0)$ in all directions, and we have a local minimum.
+	\item If all $\lambda_i < 0$, then $f(x') < f(0)$ in all directions, and we have a local maximum.
+	\item If some of the eigenvalues are positive and some are negative, then $f(x')$ is increasing in some directions and is decreasing in others, and we have a saddle point.
+	\item If some (or all) of the eigenvalues are $0$, then we need to consider higher order derivatives in the Taylor expansion.
+\end{enumerate}
+
+In the special case where $n = 2$, then $\det H = \lambda_1 \lambda_2$ and $\tr H = \lambda_1 + \lambda_2$. From this we obtain the conditions:
 
 
+\begin{itemize}
+	\item If $\det > 0, \tr > 0$ we have a local minimum.
+	\item If $\det > 0, \tr < 0$ we have a local maximum.
+	\item If $\det < 0$ we have a saddle point.
+	\item If $\det = 0$, then we need to look at higher derivatives.
+\end{itemize}
 
-\begin{theorem}[First Order Convexity Conditions]
-	A differentiable function $f: \R^n \rightarrow \R$ is convex if and only if for $x, y \in \R^n$ we have
+\begin{remark}
+	If a function $f: D \rightarrow \R$ is defined on some domain $D$, then the minimum or maximum could be obtained on the boundary of $D$, where we may not have $\nabla f = 0$.
+\end{remark}
+
+\begin{example}[Finding and Classifying Stationary Points]
+	Consider the function $f(x, y) = x^3 + y^3 - 3xy$. Then at a stationary point we have
 	$$
-f(y) \geq f(x) + (y - x) \cdot \nabla f(x).
+\nabla f = \begin{pmatrix}
+	3x^2 - 3y \\
+	3y^2 - 3x
+\end{pmatrix} = \begin{pmatrix}
+	0 \\ 0
+\end{pmatrix}.
 	$$
-\end{theorem}
-\begin{proof}
-	
+	These imply that at a stationary point, $y^4 = y$. Thus we have the points $(0, 0)$ and $(1, 1)$. We can write down the Hessian as
+	$$
+	H = \begin{pmatrix}
+		6x & -3 \\ -3 & 6y
+	\end{pmatrix}.
+	$$
+	At $(0, 0)$, we have $\det H = -9 < 0$, so $f$ has a saddle point there. At $(1, 1)$, we have $\det H = 27 > 0$, and $\tr H = 12 > 0$, so $f$ has a local minimum there.
+\end{example}
+
+\subsection{Constraints and Lagrange Multipliers}
+
+Consider the following problem, and two natural ways to solve it.
+
+\begin{example}
+	Find the circle centered at $(0, 0)$ with smallest radius such that the circle intersects the parabola $y = x^2 - 1$.
+\end{example}
+\begin{proof}[Direct Solution]
+	One way to solve this problem is to substitute the constraint $y = x^2 - 1$ into the expression we are trying to minimize.
+	$$
+	r^2 = x^2 + y^2 = x^2 + (x^2 - 1)^2 = x^4 - x^2 + 1.
+	$$	
+	To have a stationary point, the derivative of the RHS must be zero, so $4x^3 - 2x = 0$. This gives us two solutions: $x = \pm 1/\sqrt{2}, y = - 1/2$ and $x = 0, y = -1$. These give the two possible radii of $\sqrt{3}/2$ and $1$, of which the first is the smallest. \qedhere
+
+	While this solution works, it's not hard to imagine that we may not be able to say solve for $y$. An alternate solution is given below.
+
+	\emph{Lagrange Multipliers Solution}. Define the function $h(x, y, \lambda) = f(x, y) - \lambda g(x, y)$, where $f(x, y) = x^2 + y^2 = r^2$, $g(x, y) = 0$ is the constraint, and $\lambda$ is the Lagrange multiplier. So $x^2 + y^2 - \lambda (y - x^2 + 1)$. We are going to extremize this over 3 variables with no constraints.
+	\begin{align*}
+		\frac{\partial h}{\partial x} &= 2x + 2 \lambda x = 0, \\
+		\frac{\partial h}{\partial y} &= 2y - \lambda  = 0, \\
+		\frac{\partial h}{\partial \lambda} &= y - x^2 + 1 = 0,
+	\end{align*}
+	where the third condition is our constraint.
+	From these we get either $x = 0, y = -1$ and $f = 1, \lambda = -2$ or $y = -1/2, x = \pm 1 / \sqrt{2}$ and $f = 3/4, \lambda = -1$, giving the radius $\sqrt{3}/2$.\qed
 \end{proof}
 
+So why does the second solution work? Well suppose that we wanted to minimize a function $f$ subject to $g = 0$. Then $\nabla g$ is perpendicular to $g = 0$. Also, $\nabla f$ is perpendicular to $f(x) = c$, for any constant $c$. So at the extremum, we must have that $\nabla f$ and $\nabla g$ are parallel, that is,
+$$
+\nabla f - \lambda \nabla g = 0,
+$$
+for some $\lambda$. Thus it suffices to consider the extrema of $h = f - \lambda g$.
+
+This method generalizes to multiple variables and multiple constraints. For example, if we wanted to extremize $f: \R^n \rightarrow \R$, subject to $g_{\alpha}(x) = 0$, where $g_{\alpha}: \R^n \rightarrow \R$ and $\alpha = 1, \dots, k$, we would define
+$$
+h(x_1, \dots, x_n, \lambda_1, \dots, \lambda_k) = f - \sum_{\alpha=1}^k \lambda_{\alpha} g_{\alpha},
+$$
+and would extremize this function with respect to the $n + k$ variables.
 \end{document}
