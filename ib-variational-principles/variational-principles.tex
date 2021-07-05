@@ -13,7 +13,7 @@ noindent,
 
 \title{Variational Principles}
 \author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
-\date{\today, to Lecture 2}
+\date{\today, to Lecture 3}
 
 
 \allowdisplaybreaks
@@ -127,7 +127,7 @@ In this article, we are going to study the \emph{calculus of variations}, in whi
 We will start by looking back at and extending our knowledge of extrema in finite dimensions, before using this knowledge to approach problems involving functionals.
 
 \begin{notation}
-	Throughout this article, we will frequently refer to different spaces of functions. We will let $C(\R)$ be the space of continuous functions on $\R$, and $C^k(\R)$ be the space of functions with continuous $k$th derivative. We will also write $C_(\alpha, \beta)^k(\R)$ for the subset of functions $f$ with $f(\alpha) = f(\beta)$.
+	Throughout this article, we will frequently refer to different spaces of functions. We will let $C(\R)$ be the space of continuous functions on $\R$, and $C^k(\R)$ be the space of functions with continuous $k$th derivative. We will also write $C_{(\alpha, \beta)}^k(\R)$ for the subset of functions $f$ with $f(\alpha) = f(\beta)$.
 \end{notation}
 
 % Lecture 2
@@ -243,4 +243,146 @@ $$
 h(x_1, \dots, x_n, \lambda_1, \dots, \lambda_k) = f - \sum_{\alpha=1}^k \lambda_{\alpha} g_{\alpha},
 $$
 and would extremize this function with respect to the $n + k$ variables.
+
+\section{The Euler-Lagrange Equations}
+
+We are now going to move on to deriving some necessary conditions for the extrema of a functional.
+
+\subsection{Deriving the Euler-Lagrange Equations}
+
+We want to extremize the functional \eqref{eq:functional},
+\begin{equation}
+	F[y] = \int_{\alpha}^{\beta} f(x, y(x), y'(x)) \dd x, \tag{$*$}
+\end{equation}
+where we assume that $f$ is given and depends on $y$, with fixed endpoints.
+
+
+\begin{center}
+	\begin{tikzpicture}
+		\coordinate (origin) at (0.5,0.75);
+		\coordinate (b) at (4.25, 1.75);
+		
+		% \filldraw[color=blue!80, fill=blue!2] (z1) circle (0.7);
+
+		% draw axes
+		\draw [<->] (-0.75, 0) -- (5.0, 0) node [right] {$x$};
+		\draw [<->] (0, -0.75) -- (0, 2.0) node [above] {$y$};
+	
+		\draw [dashed, blue] (b) -- (4.25, 0) node [black, below] {$\beta$};
+		\draw [dashed, blue] (b) -- (0, 1.75); % node [black, left] {$y_2$};
+
+		\draw [dashed, blue] (origin) -- (0.5, 0) node [black, below] {$\alpha$};
+		\draw [dashed, blue] (origin) -- (0, 0.75);
+
+		% draw some paths between A and B
+		\draw [green] (origin) to [bend right=30] (b);
+		\draw [red] (origin) to [bend right=60] (b);
+		\draw [red] (origin) to [bend right=5] (b);
+		\draw [red] (origin) to [bend left=15] (b);
+
+		% \draw (2.25, -0.5) node [red] {$\gamma$};
+		% \draw plot [smooth, red] coordinates {(0,0) (2.0, -1.2) (4.0, -2.0))};
+
+		% draw the points A and B
+		\node at (b)[circle,fill,inner sep=1.5pt]{};
+		\draw (b) node [right] {$B$};
+
+		\node at (origin)[circle,fill,inner sep=1.5pt]{};
+		\draw (origin) node [above left] {$A$};
+
+		% draw vectors
+		% \draw [->] (origin) -- (z1) node [anchor=south west] {$c$};
+		% \draw [dashed] (1, 1.25) -- (0.3, 1.25) node [pos=0.5, anchor=south] {$\rho$};
+		\end{tikzpicture}
+\end{center}
+
+Our strategy will be to consider some small perturbation $y \mapsto y + \epsilon \eta(x)$, where $\eta(\alpha) = \eta(\beta) = 0$. From this, we will compute $F[y + \epsilon \eta]$. To proceed with this strategy, we will need an important lemma.
+
+\begin{lemma}[Fundamental Lemma of Calculus of Variations]
+	If $g: [\alpha, \beta] \rightarrow \R$ is continuous on $[\alpha, \beta]$ and is such that
+	$$
+	\int_{\alpha}^{\beta} g(x) \eta(x) \dd x = 0,
+	$$
+	for all $\eta$ continuous on $[\alpha, \beta]$ with $\eta(\alpha) = \eta(\beta) = 0$, then $g(x) = 0$ for all $x \in [\alpha, \beta]$.
+\end{lemma}
+\begin{proof}
+	Say (for a contradiction) that there exists some $\bar{x} \in (\alpha, \beta)$ such that $g(\bar(x)) = 0$. Say $g(\bar{x}) > 0$. Then by continuity there exists an interval $[x_1, x_2] \subset [\alpha, \beta]$ such that $g(x) > c$ on $[x_1, x_2]$ for some $c > 0$. Then set
+	$$
+	\eta(x) = 
+	\begin{cases}
+		(x - x_1)(x_2 - x) &\mbox{if } x \in [x_1, x_2], \\
+		0 &\mbox{if } x \not \in [x_1, x_2].
+	   \end{cases}
+	$$
+	Then we have
+	$$
+	   \int_\alpha^\beta g(x) \eta(x)) \dd x > c \int_{x_1}^{x_2} (x - x_1)(x_2 - x) \dd x > 0,
+	$$
+	which is a contradiction.
+\end{proof}
+
+\begin{remark}
+	In the proof above, we construct a \emph{bump function} $\eta$. It is possible to make this smoother by taking various powers of the constructed function.
+\end{remark}
+
+Now let's return to our computation. We have
+\begin{align*}
+	F[y + \epsilon \eta] &= \int_{\alpha}^{\beta} f(x, y + \epsilon \eta, y' + \epsilon \eta') \dd x \\
+	&= F[y] + \epsilon \int_{\alpha}^{\beta} \left(\frac{\partial f}{\partial y} \eta + \frac{\partial f}{\partial y'} \eta '\right) \dd x + O(\epsilon^2).
+\end{align*}
+We will return to the $O(\epsilon^2)$ term later, but for now we note that for an extremum of the functional, we want this first-order term to vanish, so we want something like 
+$$
+\left.\frac{dF[y + \epsilon]}{d\epsilon}\right|_{\epsilon = 0} = 0.
+$$
+
+We now make a move which we will return to time and time again in the calculus of variations. Integrating the $\epsilon$-term by parts,
+\begin{align*}
+	0 &= \int_{\alpha}^{\beta} \frac{\partial f}{\partial y} \eta - \frac{d}{dx} \left(\frac{\partial f}{\partial y'}\right) \eta \dd x + \cancel{\left[\frac{\partial f}{\partial y'}\eta\right]_{\alpha}^{\beta}} \\
+	&= \int_{\alpha}^{\beta} \left(\frac{\partial f}{\partial y} - \frac{d}{dx} \left(\frac{\partial f}{\partial y'}\right)\right) \eta \dd x.
+\end{align*}
+Applying the fundamental lemma of the calculus of variations, we obtain the following necessary condition for an extremum.
+
+\begin{theorem}[Euler-Lagrange Equation]
+	Suppose $y \in C^2_{(\alpha, \beta)}(\R)$ is a function with fixed endpoints that extremizes the functional
+	$$
+	F[y] = \int_{\alpha}^{\beta} f(x, y(x), y'(x)) \dd x.
+	$$
+	Then $y$ must satisfy the \vocab{Euler-Lagrange} equation
+	\begin{equation}\label{eq:el}
+		\frac{\partial f}{\partial y} - \frac{d}{dx} \left(\frac{\partial f}{\partial y'}\right) = 0. \tag{$\dagger$}
+	\end{equation}
+\end{theorem}
+
+\begin{notation}
+	The LHS of the \eqref{eq:el} is denoted by $\displaystyle\frac{\delta F[y]}{\delta y(x)}$ and is the \vocab{functional derivative}.
+\end{notation}
+
+\subsection{First Integrals of the Euler-Lagrange Equations}
+
+Of course, now that we have a necessary condition for externality, our next concern is solving the Euler-Lagrange equation.
+The Euler-Lagrange equations give us a second-order ODE for $y$.
+It is sometimes possible to reduce the order of the ODE to get a first-order ODE, the \vocab{first integral}, which is what we will look at in this section.
+
+If $f$ does not explicitly depend on $y$, then $\partial f/\partial y = 0$. Then we get
+$$
+ \frac{d}{dx} \left(\frac{\partial f}{\partial y'}\right) = 0 \implies \frac{\partial f}{\partial y'} = c,
+$$
+for some constant $c$.
+
+\begin{example}[Geodesics on the Euclidean Plane]
+	Consider again the problem of finding geodesics on the Euclidean plane. 
+
+	We want to minimize the functional
+	$$
+	D[y] = \int_{x_1}^{x_2} \sqrt{1 + (y')^2} \dd x.
+	$$
+	Using the Euler-Lagrange equations, we have $f(y') = \sqrt{1 + (y')^2}$, so $\partial f/\partial y = 0$, and thus by the result above
+	$$
+	\frac{y'}{\sqrt{1 + (y')^2}} = c,
+	$$
+	for some constant $c$. For this to be the case, we must have $y'$ constant, so $y$ is a straight line.
+\end{example}
+
+
+
 \end{document}
