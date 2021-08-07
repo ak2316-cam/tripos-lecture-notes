@@ -4886,16 +4886,86 @@ However, it turns out that this quadratic bound is, quite frankly, awful. To sho
 	$$
 \mathbb{P}(A^{(2)}\text{ is monochromatic}) = 2 \cdot 2^{-\binom{t}{2}}.
 	$$
-	Then
+	Applying the union bound then gives us our desired result
 	\begin{align*}
-		\PP(\text{there exists a monochromatic $K_t \subset K_n$}) &\leq \sum_{A \in K_n^{(t)}} 2 \cdot 2^{-\binom{t}{2}} \\
-		&= 2 \binom{n}{t} 2^{-\binom{t}{2}}.
+		\PP(\text{there exists a monochromatic $K_t \subset K_n$}) &\leq \sum_{A \in K_n^{(t)}} 2 \cdot 2^{-\binom{t}{2}} = 2 \binom{n}{t} 2^{-\binom{t}{2}}.
 	\end{align*}
 	Then to show that this is less than 1 for $n = 2^{t/2}$, we can take
 	\begin{align*}
-		2 \binom{n}{t} 2^{-\binom{t}{2}} \leq 2 \frac{n^t}{t!}2^{\frac{t(t-1)}{2}} \leq \left(\frac{2^{1/t}}{t!^{1/t}} \cdot n 2^{-\frac{t - 1}{2}}\right)^t,
+		2 \binom{n}{t} 2^{-\binom{t}{2}} \leq 2 \frac{n^t}{t!}2^{\frac{t(t-1)}{2}} = \left(\frac{2^{1/t}}{t!^{1/t}} \cdot n 2^{-\frac{t - 1}{2}}\right)^t,
 	\end{align*}
-	and thus it is indeed less than 1 for $n \approx 2^{t/2}$.
+	and thus it is indeed less than 1 for $n = 2^{t/2}$.
 \end{proof}
+
+The proof idea we employed is known as the \emph{probabilistic method}, and is an immensely powerful technique that can be used to show all kinds of interesting results.
+
+Getting much better bounds on $R(t)$ is still a major open problem, and surprisingly the bounds we have proved so far aren't far from state of the art -- the base of the exponential term is still the same in best known results. Also, there's currently no known construction that gives an exponential lower bound directly.
+
+\section{The Probabilistic Method}
+
+At the end of our discussion on Ramsey numbers, we used an argument that combines probability and random graphs to prove a result. In this section we are going to look a bit more closely at the type of argument that we used.
+
+\subsection{Random Graphs}
+
+We first are going to come up with a probability space involving a graph where each edge is included independently at random with probability $p$.
+
+\begin{definition}[Binomial Random Graph]
+	Let $n \in \N$ and $p \in [0, 1]$, let $\GG(n, p)$ be the probability space on all graphs with vertex set $\{1, 2, \dots, n\}$, with $\PP(ij \in E(\GG)) = p$, and every edge included/excluded independently.
+\end{definition}
+
+\begin{remark}
+	For our `$R(t) \geq 2^{t/2}$' result, we were working with $G(n, 1/2)$, which is the same as sampling uniformly on a graph on $\{1, \dots, n\}$.
+\end{remark}
+
+Another use of random graphs is in the Zarankiewicz problem. Recall our definition of $Z(n, t)$. We proved already that $Z(n, t) \leq 2 n^{2 - 1/t}$, and we hadn't yet proved a lower bound. We are able to come up with one using the probabilistic method.
+
+\begin{theorem}
+	We have $Z(n, t) \geq \frac{1}{4}n^{2 - \frac{2}{t + 1}}$.
+\end{theorem}
+\begin{proof}
+	Let $G$ be a random bipartite graph with parts $A, B$ and $|A| = |B| = n$.
+	Then, define $\widetilde{G}$ to be $G$ with an edge removed from each $K_{t, t}$ in $G$.
+	Then
+	$$
+	e(\widetilde{G}) \geq e(G) - \#\left(K_{t, t}\text{'s in $G$}\right),
+	$$
+	and by linearity of expectation
+	$$
+	\EE \left[e(\widetilde{G})\right] \geq \EE\left[e(G)\right] - \EE\left[\#\left(K_{t, t}\text{'s in $G$}\right)\right].
+	$$
+	We have $\EE[e(G)] = pn^2$, and also $\EE\left[\#(K_{t,t}\text{'s in $G$})\right]$ can be written using indicator functions as 
+$$
+	\EE\left[\sum_{A', B'} \mathbbm{1}\left(A', B' \text{ induce a $K_{t, t}$}\right)\right] = \binom{n}{t}^2 p^{t^2},
+$$
+where we sum over $A' \leq A$, $B' \leq B$ with $|A'| = |B'| = t$. Thus
+\begin{equation}\label{eq:zar}
+	\EE[e(\widetilde{G})] \geq pn^2 - \binom{n}{t}^2p^{t^2}.\tag{*}
+\end{equation}
+We want the RHS of this to be positive, so it's enough to have
+$$
+pn^2 \geq n^{2t}p \iff n^{-\frac{2}{t + 1}} \geq p,
+$$
+so if $p = n^{-2/(t + 1)}$ then $(*) \geq pn^2/2 \geq n^2/2 - 2/(t+1)$, as desired.
+\end{proof}
+
+This proof is an example of the `modification method'.
+
+\subsection{Random Graphs and Chromatic Number}
+
+
+One big picture question in graph theory is `what makes $\chi(G)$ large?'
+A possible answer is that $G$ contains a large clique, but that's not the whole story. For example, there's a triangle free graph with arbitrarily large $\chi$. Another possible answer is that $G$ has lots of short cycles, but it turns out that this is false too.
+
+\begin{definition}[Girth]
+	The \vocab{girth} of a graph $G$ is the length of the shortest cycle in $G$, denoted $\girth(G)$.
+\end{definition}
+
+\begin{definition}[Independent Set]
+	An \vocab{independent set} in a graph is a subset of vertices no two of which are adjacent. We will denote the size of the largest independent set $\alpha(G)$.
+\end{definition}
+
+\begin{theorem}
+	For every $k, G \in \N$, there exists a graph $G$ with $\girth(G) \geq g$ and $\chi(G) \geq k$.
+\end{theorem}
 
 \end{document}
