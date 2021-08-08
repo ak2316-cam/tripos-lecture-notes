@@ -4964,8 +4964,70 @@ A possible answer is that $G$ contains a large clique, but that's not the whole 
 	An \vocab{independent set} in a graph is a subset of vertices no two of which are adjacent. We will denote the size of the largest independent set $\alpha(G)$.
 \end{definition}
 
+We can prove that graphs with large girth can also have arbitrarily large chromatic number. We will first need to note that if $G$ is a graph, then
+$$
+\chi(G) \geq \frac{n}{\alpha(G)}.
+$$
+
 \begin{theorem}
 	For every $k, G \in \N$, there exists a graph $G$ with $\girth(G) \geq g$ and $\chi(G) \geq k$.
+\end{theorem} 
+\begin{proof}
+	Let $G$ be a random graph sampled from $\GG(n, p)$ where $p = n^{\frac{1}{g} - 1}$. We form the new graph $\widetilde{G}$ be the graph where we remove a vertex from each cycle of length $g - 1$.
+
+	We are going to do a few steps.
+	\begin{enumerate}
+		\item We want to show that $\PP(|\widetilde{G}| \geq n/2) \rightarrow 1$ as $n \rightarrow \infty$.
+		\item We want to use $\chi(\widetilde{G}) \geq |\widetilde{G}|/\alpha(\widetilde{G})$, noting that $\alpha(\widetilde{G}) \leq \alpha(G)$. To do this, we will prove $\PP(\alpha(G) \leq n/2k) \rightarrow 1$ as $n \rightarrow \infty$.
+	\end{enumerate}
+
+	\emph{Step 1}. Let $X_i$ be the number of cycles of length $i$ in $G$, and let $X = \sum_{i = 1}^{g - 1} X_i$. We can write
+	\begin{align*}
+		X_i \ = \sum_{x_1, \dots, x_i \in [n]} \mathbbm{1}\left(x_1 \dots x_i \text{ are a cycle in $G$}\right).
+	\end{align*}
+	Taking expectations,
+	$$
+\EE[X_i]\ = \sum_{x_1, \dots, x_i \in [n]} \PP\left(x_1 \dots x_i \text{ are a cycle in $G$}\right) \leq n^i p^i.
+	$$
+	Using this we have
+	$$
+	\EE\left[\#\text{ of cycles of length $\leq g - 1$}\right] = \EE[X] = \sum_{i = 1}^{g - 1} (np)^i \leq gn^{\frac{g - 1}{g}}.
+	$$
+Using Markov's inequality, 
+$$
+\PP(X > n/2) \leq \frac{\EE[X]}{n/2} \rightarrow 0 \quad \text{as }n \rightarrow \infty,
+$$
+thus $\PP(|\widetilde{G}| \geq n/2) \rightarrow 1$, as we needed.
+
+\emph{Step 2}. Let $Y_t$ be the number of independent sets of size $t = n/2k$. Then
+$$
+Y_t = \sum_{I \in [n]^{(t)}} \mathbbm{1}\left(\text{$I$ is independent}\right),
+$$
+and taking expectations
+$$
+\EE[Y_t] = \sum_{I \in [n]^{(t)}} \PP\left(\text{$I$ is independent}\right) = \binom{n}{t}(1 - p)^{\binom{t}{2}} \leq n^t e^{-p\binom{t}{2}} = \left(n e^{-p \frac{t - 1}{2}}\right)^t,
+$$
+and with $p = n^{1/g - 1}$ and $t = n/2k$, so the RHS tends to 0 as $n$ tends to infinity. Then
+$$
+\PP(Y_t \geq 1) \leq \EE[Y_t] \rightarrow 0,
+$$
+and $\PP(Y_t \geq 1) = \PP(\alpha(G) \geq t) = \PP(\alpha(G) \geq n/2k)$. Putting that together, $\chi(\widetilde{G}) \geq \frac{|\widetilde{G}|}{\alpha(\widetilde{G})} \geq \frac{|\widetilde{G}|}{\alpha(G)} \geq \frac{n/2}{n/2k} \geq k$ holds with probability tending to 1 as $n$ tends to infinity, finishing our proof.
+\end{proof}
+
+\subsection{Structure of Random Graphs}
+
+Now let's look at another question, which is what does a typical graph $G$ sampled from $\GG(n, p)$ look like? What does its structure look like as $p$ varies from 0 to 1? As a first example, we will consider the following more precise question:
+
+\begin{quotation}
+	For what $p$ does $G$ sampled from $\GG(n, p)$ contain a $K_t$?
+\end{quotation}
+
+\begin{theorem}
+	Let $G$ be sampled from $\GG(n, p)$, where $p = p(n)$, and let $t \in \N$. Then
+	$$
+	\PP(G \text{ contains a $K_t$}) \longrightarrow 1 \quad \text{if} \quad p(n)n^{\frac{2}{t - 1}} \longrightarrow \infty \quad \text{as} \quad n \longrightarrow \infty.
+	$$
+	Moreover, $\PP(\text{$G$ contains $K_t$}) \rightarrow 0$ if $p(n) n^{\frac{2}{t - 1}} \rightarrow 0$ as $n \rightarrow\infty$.
 \end{theorem}
 
 \end{document}
