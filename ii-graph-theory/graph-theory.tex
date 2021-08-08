@@ -5016,18 +5016,88 @@ and $\PP(Y_t \geq 1) = \PP(\alpha(G) \geq t) = \PP(\alpha(G) \geq n/2k)$. Puttin
 
 \subsection{Structure of Random Graphs}
 
-Now let's look at another question, which is what does a typical graph $G$ sampled from $\GG(n, p)$ look like? What does its structure look like as $p$ varies from 0 to 1? As a first example, we will consider the following more precise question:
+So what does a typical graph sampled from $\GG(n, p)$ look like? What does its structure look like as $p$ varies from 0 to 1? As a first example, we will consider the following more precise question:
 
-\begin{quotation}
+\begin{center}
 	For what $p$ does $G$ sampled from $\GG(n, p)$ contain a $K_t$?
-\end{quotation}
+\end{center}
 
 \begin{theorem}
-	Let $G$ be sampled from $\GG(n, p)$, where $p = p(n)$, and let $t \in \N$. Then
-	$$
-	\PP(G \text{ contains a $K_t$}) \longrightarrow 1 \quad \text{if} \quad p(n)n^{\frac{2}{t - 1}} \longrightarrow \infty \quad \text{as} \quad n \longrightarrow \infty.
-	$$
-	Moreover, $\PP(\text{$G$ contains $K_t$}) \rightarrow 0$ if $p(n) n^{\frac{2}{t - 1}} \rightarrow 0$ as $n \rightarrow\infty$.
+	Let $G$ be sampled from $\GG(n, p(n))$, and let $t \in \N$. Then
+	$\lim_{n \to \infty} \PP(G \text{ contains a $K_t$}) \rightarrow 1$ if $p(n)n^{\frac{2}{t - 1}} \rightarrow \infty$.
+	Moreover, $\lim_{n \to \infty} \PP(\text{$G$ contains $K_t$}) \rightarrow 0$ if $p(n) n^{\frac{2}{t - 1}} \rightarrow 0$.
 \end{theorem}
+\begin{proof}
+	Define $X_t$ to be the number of $K_t$s in $G$. Then
+	$$
+	X_t = \sum_{A \in [n]^{(t)}} \mathbbm{1}\left(G[A] \text{ is complete}\right),
+	$$
+	and
+	$$
+	E[X_t] = \sum_{A \in [n]^{(t)}} \PP\left(G[A] \text{ is complete}\right) = \binom{n}{t}p^{\binom{t}{2}}.
+	$$
+	We note that $\binom{n}{t}p^{\binom{t}{2}} \leq n^t p^{\binom{t}{2}} =\left(n^{\frac{2}{t - 1}}p\right)^{\binom{t}{2}}$, and this tends to 0 or $\infty$ if $n^{\frac{2}{t - 1}}p$ tends to $0$ or $\infty$ respectively.
+	So
+	$$
+\PP(\text{$G$ contains a $K_t$}) = \PP(X_t \geq 1)\leq \EE[X_t] \rightarrow 0 \quad \text{if} \quad n^{\frac{2}{t - 1}}p \rightarrow 0.
+	$$
+
+	We now need to show that $\PP(G \supseteq K_t) \rightarrow 1$ if $pn^{\frac{2}{t - 1}} \rightarrow \infty$. We will use $\PP(G \not \supseteq K_t) = \PP(X_t = 0) \leq \PP(|X_t - \EE[X_t]| \geq \EE[X_t])$. By Chebyshev, we have
+	$$
+	\PP(|X_t - \EE[X_t]| \geq \EE[X_t]) \leq \frac{\operatorname{Var}(X_t)}{\EE[X_t]^2},
+	$$
+	so it suffices to show that this tends to 0.
+
+	We calculate the variance as
+	\begin{align*}
+		\operatorname{Var}(X_t) &= \EE[X^2] - (\EE[X])^2 \\
+		&= \sum_{A, B \in [n]^{(t)}} \left[\PP(\text{$G[A]$, $G[B]$ complete}) - \PP(\text{$G[A]$ complete}) \PP(\text{$G[B]$ complete})\right],
+	\end{align*}
+	which we calculate by hand as
+	$$
+	\operatorname{Var}(X_t) = \sum_{s = 1}^t \binom{n}{t}\binom{t}{s} \binom{n - t}{t - s}\left[p^{2\binom{t}{2} - \binom{s}{2}} - p^{2 \binom{t}{2}}\right],
+	$$
+	and noting that $\binom{n - t}{t - s} / \binom{n}{t} \leq t!/n^s$ for $n$ large, we have
+\begin{align*}
+	\frac{\operatorname{Var}(X_t)}{(\EE[X])^2} &= \sum_{s = 1}^t \frac{\binom{n}{t}\binom{t}{s} \binom{n - t}{t - s}\left[p^{2\binom{t}{2} - \binom{s}{2}} - p^{2 \binom{t}{2}}\right]}{\binom{n}{t} p^{2\binom{t}{2}}}, \\
+	&\leq 2^{t+1} t! \sum_{s = 1}^t \frac{1}{n^s}\cdot \frac{1}{p^{\binom{s}{2}}} \\
+	&\leq (t!)^2 \sum_{s = 1}^t  \left(\frac{1}{n^{\frac{2}{s - 1}}}p\right)^{\binom{s}{2}}.
+\end{align*}
+Since $n^{\frac{2}{t - 1}}p \rightarrow \infty$, then $n^{\frac{2}{s - 1}}p \rightarrow \infty$ for each $s \leq t$, this goes to zero as required.
+\end{proof}
+
+This is an example of a threshold result, where almost suddenly when $p$ goes to a  certain value, we start to see some consistent structure in the random graphs.
+Another somewhat similar question is:
+\begin{center}
+	What is the threshold for the graph to be connected?
+\end{center}
+We will find that this `transition' will be much faster than with the previous example.
+
+\begin{theorem}
+	Let $G$ be sampled from $\GG(n, p(n))$, then $\lim_{n \to \infty} \PP(\text{$G$ is connected}) = 1$ if $p > (1 + \epsilon)\frac{\log n}{n}$ and $\lim_{n \to \infty} \PP(\text{$G$ is disconnected}) = 0$ if $p < (1 - \epsilon) \frac{\log n}{n}$. 
+\end{theorem}
+\begin{proof}
+	For the `first direction' we will show that there is an isolated vertex with probability going to 1 if $p < (1 - \epsilon)\frac{\log n}{n}$.
+	Let $I$ be the number of isolated vertices. We are going to use a similar strategy to before, where we calculate the variance and apply Chebyshev.
+
+	We have
+	$$
+	\EE[I] = n(1 - p)^{n - 1} \quad \text{and} \quad \EE[I^2] = \sum_{u, v \in [n]} \PP(\text{$u$, $v$ are isolated}),
+	$$
+	which gives us the variance
+	\begin{align*}
+		\operatorname{Var}(I) &= \sum_{u, v \in [n]} \left[\PP(\text{$u$, $v$ isolated}) - \PP(\text{$u$ isolated})\PP(\text{$v$ isolated})\right] \\
+		&= \left(\sum_{u \in [n]} \PP(\text{$u$ iso}) - \PP(\text{$u$ iso})^2\right) +\left( \sum_{u \neq v \in [n]} \PP(\text{$u$, $v$ iso}) - \PP(\text{$u$ iso})\PP(\text{$v$ iso})\right)\\
+		&= \left(n(1-p)^{n - 1}\right) +\left( \sum_{u \neq v \in [n]} (1 - p)^{2(n - 1) - 1} - (1 - p)^{2(n - 1)}\right) \\
+		&= n(1-p)^{n-1}+n(n-1)(1-p)^{2(n-1)-1} p.
+	\end{align*}
+	Then we can apply Chebyshev to get
+	\begin{align*}
+		\PP(I = 0) &\leq \PP(|I - \EE [I]| \geq \EE[I]) \leq \frac{\operatorname{Var}(I)}{\EE[I]^2} \\
+		&= \frac{n(1-p)^{n-1}+n(n-1)(1-p)^{2(n-1)-1}}{n^{2}(1-p)^{2(n-1)}} \\
+		&= \frac{1}{(1-p)^{2(n-1)} n}+p \longrightarrow 0,
+	\end{align*}
+	as required.
+\end{proof}
 
 \end{document}
