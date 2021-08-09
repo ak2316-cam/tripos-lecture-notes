@@ -5114,4 +5114,308 @@ We will find that this `transition' will be much faster than with the previous e
 	thus $\PP(\text{$G$ is disconnected}) \rightarrow 0$, as required.
 \end{proof}
 
+\section{Algebraic Methods in Graph Theory}
+
+The final aspect of graph theory we are going to look at is the use of linear algebraic methods to solve problems. This is a naturally occurring technique, as will be shown by the problem below.
+
+\subsection{A Motivating Problem}
+
+The \vocab{diameter} of a graph is the maximum distance between two vertices in a graph. We are going to try and attack the problem below:
+\begin{center}
+	How many vertices can a graph with fixed $\Delta$ have, given its diameter is at most 2?
+\end{center}
+
+
+By just thinking a little bit, it's not hard to come up with the bound
+$$
+n \leq 1 + \Delta + (\Delta - 1)\Delta = 1 + \Delta^2,
+$$
+but is it possible to have a graph that attains this bound? We are going to call such graphs \emph{Moore graphs}.
+
+\begin{definition}[Moore Graph]
+	A \vocab{Moore graph} is a $k$-regular graph on $k^2 + 1$ vertices that has diameter 2.
+\end{definition}
+
+
+\begin{example}[Examples of Moore Graphs]
+	Below are Moore graphs for $k = 2$ and $k = 3$.
+	\begin{center}
+		
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,193); %set diagram left start at 0, and has height of 193
+
+%Shape: Regular Polygon [id:dp024957585264367532] 
+\draw   (206.41,87.8) -- (175.31,130.6) -- (125,114.25) -- (125,61.35) -- (175.31,45) -- cycle ;
+%Shape: Circle [id:dp29741943315370634] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (201.41,87.8) .. controls (201.41,85.04) and (203.64,82.8) .. (206.41,82.8) .. controls (209.17,82.8) and (211.41,85.04) .. (211.41,87.8) .. controls (211.41,90.56) and (209.17,92.8) .. (206.41,92.8) .. controls (203.64,92.8) and (201.41,90.56) .. (201.41,87.8) -- cycle ;
+%Shape: Circle [id:dp4054706308761076] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (170.31,45) .. controls (170.31,42.24) and (172.55,40) .. (175.31,40) .. controls (178.07,40) and (180.31,42.24) .. (180.31,45) .. controls (180.31,47.76) and (178.07,50) .. (175.31,50) .. controls (172.55,50) and (170.31,47.76) .. (170.31,45) -- cycle ;
+%Shape: Circle [id:dp12380769307227824] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (120,61.35) .. controls (120,58.59) and (122.24,56.35) .. (125,56.35) .. controls (127.76,56.35) and (130,58.59) .. (130,61.35) .. controls (130,64.11) and (127.76,66.35) .. (125,66.35) .. controls (122.24,66.35) and (120,64.11) .. (120,61.35) -- cycle ;
+%Shape: Circle [id:dp8693699422038552] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (120,114.25) .. controls (120,111.49) and (122.24,109.25) .. (125,109.25) .. controls (127.76,109.25) and (130,111.49) .. (130,114.25) .. controls (130,117.01) and (127.76,119.25) .. (125,119.25) .. controls (122.24,119.25) and (120,117.01) .. (120,114.25) -- cycle ;
+%Shape: Circle [id:dp5154338194074841] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (170.31,130.6) .. controls (170.31,127.83) and (172.55,125.6) .. (175.31,125.6) .. controls (178.07,125.6) and (180.31,127.83) .. (180.31,130.6) .. controls (180.31,133.36) and (178.07,135.6) .. (175.31,135.6) .. controls (172.55,135.6) and (170.31,133.36) .. (170.31,130.6) -- cycle ;
+%Shape: Regular Polygon [id:dp8418421572099659] 
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ] (425.65,64.54) -- (405.73,125.65) -- (341.45,125.59) -- (321.65,64.43) -- (373.69,26.71) -- cycle ;
+%Shape: Regular Polygon [id:dp6477205072878389] 
+\draw  [draw opacity=0] (397.42,73.68) -- (388.31,101.63) -- (358.92,101.59) -- (349.87,73.63) -- (373.66,56.38) -- cycle ;
+%Shape: Ellipse [id:dp9103507527023804] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (369.32,56.38) .. controls (369.32,53.99) and (371.26,52.04) .. (373.66,52.04) .. controls (376.06,52.04) and (378.01,53.99) .. (378.01,56.38) .. controls (378.01,58.78) and (376.06,60.73) .. (373.66,60.73) .. controls (371.26,60.73) and (369.32,58.78) .. (369.32,56.38) -- cycle ;
+%Shape: Ellipse [id:dp31104898615276766] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (345.52,73.63) .. controls (345.52,71.23) and (347.47,69.29) .. (349.87,69.29) .. controls (352.27,69.29) and (354.21,71.23) .. (354.21,73.63) .. controls (354.21,76.03) and (352.27,77.98) .. (349.87,77.98) .. controls (347.47,77.98) and (345.52,76.03) .. (345.52,73.63) -- cycle ;
+%Shape: Ellipse [id:dp8531725987659267] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (354.57,101.59) .. controls (354.57,99.2) and (356.52,97.25) .. (358.92,97.25) .. controls (361.32,97.25) and (363.26,99.2) .. (363.26,101.59) .. controls (363.26,103.99) and (361.32,105.94) .. (358.92,105.94) .. controls (356.52,105.94) and (354.57,103.99) .. (354.57,101.59) -- cycle ;
+%Shape: Ellipse [id:dp977904252531125] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (383.96,101.63) .. controls (383.96,99.23) and (385.91,97.28) .. (388.31,97.28) .. controls (390.71,97.28) and (392.65,99.23) .. (392.65,101.63) .. controls (392.65,104.03) and (390.71,105.97) .. (388.31,105.97) .. controls (385.91,105.97) and (383.96,104.03) .. (383.96,101.63) -- cycle ;
+%Shape: Ellipse [id:dp07323541608994599] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (393.07,73.68) .. controls (393.07,71.28) and (395.02,69.34) .. (397.42,69.34) .. controls (399.82,69.34) and (401.76,71.28) .. (401.76,73.68) .. controls (401.76,76.08) and (399.82,78.03) .. (397.42,78.03) .. controls (395.02,78.03) and (393.07,76.08) .. (393.07,73.68) -- cycle ;
+%Straight Lines [id:da4400393480000273] 
+\draw    (349.87,73.63) -- (397.42,73.68) ;
+%Straight Lines [id:da5787165119529025] 
+\draw    (373.66,56.38) -- (388.31,101.63) ;
+%Straight Lines [id:da6242869474547084] 
+\draw    (397.42,73.68) -- (358.92,101.59) ;
+%Straight Lines [id:da03879273035602715] 
+\draw    (349.87,73.63) -- (388.31,101.63) ;
+%Straight Lines [id:da9360067218685735] 
+\draw    (373.66,56.38) -- (358.92,101.59) ;
+%Shape: Ellipse [id:dp3067067456219563] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (317.3,64.43) .. controls (317.3,62.03) and (319.25,60.09) .. (321.65,60.09) .. controls (324.05,60.09) and (325.99,62.03) .. (325.99,64.43) .. controls (325.99,66.83) and (324.05,68.78) .. (321.65,68.78) .. controls (319.25,68.78) and (317.3,66.83) .. (317.3,64.43) -- cycle ;
+%Shape: Ellipse [id:dp20970983277524669] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (369.35,26.71) .. controls (369.35,24.31) and (371.29,22.36) .. (373.69,22.36) .. controls (376.09,22.36) and (378.04,24.31) .. (378.04,26.71) .. controls (378.04,29.1) and (376.09,31.05) .. (373.69,31.05) .. controls (371.29,31.05) and (369.35,29.1) .. (369.35,26.71) -- cycle ;
+%Shape: Ellipse [id:dp38493825198511766] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (421.31,64.54) .. controls (421.31,62.14) and (423.26,60.2) .. (425.65,60.2) .. controls (428.05,60.2) and (430,62.14) .. (430,64.54) .. controls (430,66.94) and (428.05,68.89) .. (425.65,68.89) .. controls (423.26,68.89) and (421.31,66.94) .. (421.31,64.54) -- cycle ;
+%Shape: Ellipse [id:dp8805142297889146] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (401.38,125.65) .. controls (401.38,123.26) and (403.33,121.31) .. (405.73,121.31) .. controls (408.13,121.31) and (410.07,123.26) .. (410.07,125.65) .. controls (410.07,128.05) and (408.13,130) .. (405.73,130) .. controls (403.33,130) and (401.38,128.05) .. (401.38,125.65) -- cycle ;
+%Shape: Ellipse [id:dp12067575614295589] 
+\draw  [draw opacity=0][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (337.1,125.59) .. controls (337.1,123.19) and (339.05,121.24) .. (341.45,121.24) .. controls (343.85,121.24) and (345.79,123.19) .. (345.79,125.59) .. controls (345.79,127.99) and (343.85,129.93) .. (341.45,129.93) .. controls (339.05,129.93) and (337.1,127.99) .. (337.1,125.59) -- cycle ;
+%Straight Lines [id:da3206754539174652] 
+\draw    (321.65,64.43) -- (349.87,73.63) ;
+%Straight Lines [id:da9360681340647068] 
+\draw    (373.66,56.38) -- (373.69,26.71) ;
+%Straight Lines [id:da002126066594282605] 
+\draw    (425.65,64.54) -- (397.42,73.68) ;
+%Straight Lines [id:da021537651617950848] 
+\draw    (405.73,125.65) -- (388.31,101.63) ;
+%Straight Lines [id:da4807941308781154] 
+\draw    (341.45,125.59) -- (358.92,101.59) ;
+
+% Text Node
+\draw (135,150) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 74; green, 144; blue, 226 }  ,opacity=1 ] [align=left] {$\displaystyle k=2$};
+% Text Node
+\draw (353,150) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 74; green, 144; blue, 226 }  ,opacity=1 ] [align=left] {$\displaystyle k=3$};
+
+
+\end{tikzpicture}
+
+	\end{center}
+	Note that the graph for $k = 3$ is the Petersen graph. Playing around a bit, you might find that such a graph for $k =4$ \emph{does not exist}, so it seems that Moore graphs are somewhat special.
+\end{example}
+
+\begin{remark}
+	A Moore graph is a $k$-regular graph for which any $x \neq y$ with $x, y \in V(G)$ has exactly one path of length $\leq 2$ between $x$ and $y$.
+\end{remark}
+
+So Moore graphs don't always exist, leading to a natural question -- does there exist infinitely many of them?
+
+
+\subsection{The Adjacency Matrix}
+
+One way to encode a graph is using an adjacency matrix.
+
+\begin{definition}[Adjacency Matrix]
+	Given a graph $G = (V, E)$ on $n$ vertices, we define the \vocab{adjacency matrix} of $G$ to be the $n \times n$ matrix
+	$$
+	A_{ij} = \begin{cases}
+		1 &\mbox{if } ij \in E, \\
+		0 &\mbox{otherwise}.
+	   \end{cases}
+	$$
+\end{definition}
+
+\begin{example}[Example of an Adjacency Matrix]
+	An graph and its associated adjacency matrix are given below.
+	\begin{center}
+		
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,175); %set diagram left start at 0, and has height of 175
+
+%Shape: Regular Polygon [id:dp8165195969556436] 
+\draw   (357.63,44.35) -- (390.92,68.53) -- (378.2,107.66) -- (337.06,107.66) -- (324.35,68.53) -- cycle ;
+%Straight Lines [id:da15791485707448394] 
+\draw    (337.06,107.66) -- (390.92,68.53) ;
+%Straight Lines [id:da23073765520759704] 
+\draw    (324.35,68.53) -- (390.92,68.53) ;
+%Shape: Ellipse [id:dp17310472200950877] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][fill={rgb, 255:red, 208; green, 2; blue, 27 }  ,fill opacity=1 ] (353.29,44.35) .. controls (353.29,41.95) and (355.23,40) .. (357.63,40) .. controls (360.03,40) and (361.98,41.95) .. (361.98,44.35) .. controls (361.98,46.74) and (360.03,48.69) .. (357.63,48.69) .. controls (355.23,48.69) and (353.29,46.74) .. (353.29,44.35) -- cycle ;
+%Shape: Ellipse [id:dp5461725104402386] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][fill={rgb, 255:red, 208; green, 2; blue, 27 }  ,fill opacity=1 ] (320,68.53) .. controls (320,66.13) and (321.95,64.18) .. (324.35,64.18) .. controls (326.74,64.18) and (328.69,66.13) .. (328.69,68.53) .. controls (328.69,70.93) and (326.74,72.87) .. (324.35,72.87) .. controls (321.95,72.87) and (320,70.93) .. (320,68.53) -- cycle ;
+%Shape: Ellipse [id:dp5637673399510057] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][fill={rgb, 255:red, 208; green, 2; blue, 27 }  ,fill opacity=1 ] (332.71,107.66) .. controls (332.71,105.26) and (334.66,103.32) .. (337.06,103.32) .. controls (339.46,103.32) and (341.4,105.26) .. (341.4,107.66) .. controls (341.4,110.06) and (339.46,112.01) .. (337.06,112.01) .. controls (334.66,112.01) and (332.71,110.06) .. (332.71,107.66) -- cycle ;
+%Shape: Ellipse [id:dp39121741039735514] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][fill={rgb, 255:red, 208; green, 2; blue, 27 }  ,fill opacity=1 ] (373.86,107.66) .. controls (373.86,105.26) and (375.8,103.32) .. (378.2,103.32) .. controls (380.6,103.32) and (382.55,105.26) .. (382.55,107.66) .. controls (382.55,110.06) and (380.6,112.01) .. (378.2,112.01) .. controls (375.8,112.01) and (373.86,110.06) .. (373.86,107.66) -- cycle ;
+%Shape: Ellipse [id:dp24628517565938868] 
+\draw  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][fill={rgb, 255:red, 208; green, 2; blue, 27 }  ,fill opacity=1 ] (386.57,68.53) .. controls (386.57,66.13) and (388.52,64.18) .. (390.92,64.18) .. controls (393.32,64.18) and (395.26,66.13) .. (395.26,68.53) .. controls (395.26,70.93) and (393.32,72.87) .. (390.92,72.87) .. controls (388.52,72.87) and (386.57,70.93) .. (386.57,68.53) -- cycle ;
+
+% Text Node
+\draw (352,22.4) node [anchor=north west][inner sep=0.75pt]    {$1$};
+% Text Node
+\draw (396,52.4) node [anchor=north west][inner sep=0.75pt]    {$2$};
+% Text Node
+\draw (383,111.4) node [anchor=north west][inner sep=0.75pt]    {$3$};
+% Text Node
+\draw (322,110.4) node [anchor=north west][inner sep=0.75pt]    {$4$};
+% Text Node
+\draw (309,53.4) node [anchor=north west][inner sep=0.75pt]    {$5$};
+% Text Node
+\draw (481,12) node [anchor=north west][inner sep=0.75pt]   [align=left] {Adjacency Matrix};
+% Text Node
+\draw (461,42.4) node [anchor=north west][inner sep=0.75pt]    {$A=\begin{pmatrix}
+0 & 1 & 0 & 0 & 1\\
+1 & 0 & 1 & 1 & 1\\
+0 & 1 & 0 & 1 & 0\\
+0 & 1 & 1 & 0 & 1\\
+1 & 1 & 0 & 1 & 0
+\end{pmatrix}$};
+
+
+\end{tikzpicture}
+
+	\end{center}
+\end{example}
+
+Now while this is just a straightforward representation of a graph, the fact that it's a matrix means that we can start asking questions about it, even if it's not immediately obvious that they have any meaning. For example, what do the eigenvalues of this matrix look like? What about the eigenvectors? 
+
+We can observe that the adjacency matrix is symmetric, which we know implies that it has real eigenvalues $\lambda_1 \geq \cdots \geq \lambda_n$, and an associated eigenbasis $v_1, \dots, v_n$ which is orthonormal.
+
+We can also observe that for a graph $G$ with adjacency matrix $A$, since there's no edge between a vertex and itself, that there is only zeros along the diagonal of $A$, so it has zero trace and
+$$
+\sum_{i = 1}^n \lambda_i = \tr(A) = 0.
+$$
+Also, if we call $\lambda_1 = \lambda_{max}$ and $\lambda_n = \lambda_{min}$, then
+$$
+\lambda_{max} = \max_{x : |x|^2 = 1} x^T A x, \quad \text{and} \quad \lambda_{min} = \min_{x : |x|^2 = 1} x^T A x
+$$
+
+Somewhat surprisingly, we are going to be able to connect all of these algebraic facts back to our original graph.
+
+
+\begin{proposition}
+	Let $G = (V, E)$ be a graph with adjacency matrix $A$. Then
+	\begin{enumerate}[label=(\roman*)]
+		\item $\frac{1}{n}\sum_{x \in V} d(x) \leq \lambda_{max}(G) \leq \Delta(G)$.
+		\item $\lambda_{max}(G) = \Delta(G)$ if and only if $G$ is $\Delta$-regular.
+		\item $\lambda_{min}(G) = \Delta(G)$ if and only if $G$ is $\Delta$-regular and bipartite.
+	\end{enumerate}
+\end{proposition}
+\begin{proof}
+	\emph{Part (i)}. For the lower bound, let $w = \frac{1}{\sqrt{n}}(1, \dots, 1)$. Then we observe by interpreting the adjacency matrix in a graph theoretic sense that
+	$$
+	\lambda_{max} = \max_{x : |x|^2 = 1} x^T A x \geq w^T Aw = \frac{1}{n}\sum_{x \in V} d(x).
+	$$
+	For the upper bound, let $x = (x_1, \dots, x_n)$ be an eigenvector corresponding to $\lambda_{max}$. Assume WLOG that $|x_1| \geq |x_i$, for all $i$. Then
+	$$
+	\lambda x_1 = (\lambda_{max} x)_1 = (Ax)_1 = \sum_{i:v_i \sim v_1} x_i,
+	$$
+	which gives us
+	$$
+	|\lambda_{max} x_1| \leq \sum_{i: v_i \sim v_1} |x_i| \leq |x_1|\Delta,
+	$$
+	so $|\lambda_{max}| \leq \Delta$, and $\lambda_{max} \leq \Delta$.
+
+	\emph{Part (ii)}. If $G$ is $\Delta$-regular, then consider $\mathbbm{1} = (1, \dots, 1)$. Then
+	$$
+A \mathbbm{1} = \Delta\mathbbm{1},
+	$$
+	thus $\lambda_{max} \geq \Delta$, so $\lambda_{\max} = \Delta$ by our previous result. 
+
+	If $\lambda_{max} = \Delta$, then let $x = (x_1, \dots, x_n)$ be an associated eigenvector, and as before assume $|x_1| \geq |x_i|$ for all $i$. Then
+	$$
+	\Delta x_1 = (\Delta x)_1 = (Ax)_1 = \sum_{i:v_i \sim v_1} x_i,
+	$$
+	therefore $x_i = x$ for all $i$ where $v_i \sim v_1$. So now we repeat the argument for all $v_i \in N(v_1)$ to learn that all $x_j$ with $d(v_j, v_1) \leq 2$ has $x_j = x_1$ and so on, until we get $x_1 = x_i$ for all $v_j$ in the component of $v_i$. We then repeat for each component, to see that $x$ is constant on each component, and thus $G$ must be a regular graph.
+
+	\emph{Part (iii)}. Omitted.
+\end{proof}
+
+Another fact that will bring us closer to Moore graphs concerns the interpretation of the square of an adjacency matrix.
+
+\begin{proposition}
+	Let $G$ be a graph and let $A$ be its adjacency matrix. Then $(A^2)_{ij}$ is the number of walks of length 2 between $i, j$.
+\end{proposition}
+\begin{proof}[Proof Sketch]
+Consider how $A^2$ is calculated.	
+\end{proof}
+
+\subsection{Moore Graphs}
+
+Now we can apply our newfound algebraic tools to our question about Moore graphs and graph diameter. We will see that our result really does show that Moore graphs are pretty special.
+
+\begin{lemma}[Necissary Condition for the Existence of Moore Graphs]
+	Let $G$ be a Moore graph of degree $k$, then
+	$$
+	\frac{1}{2}\left(k^{2} \pm \frac{k^{2}-2 k}{\sqrt{4 k-3}}\right) \quad \text{are integers.}
+	$$
+\end{lemma}
+\begin{proof}
+	Let $G$ be a Moore graph of degree $k$ on $n$ vertices, and let $A$ be the adjacency matrix of $G$. Then we have
+	$$
+	(A^2)_{ij} = \begin{cases}
+		k &\mbox{if } i = j, \\
+		1 &\mbox{if } i \neq j\text{ and $ij \not \in E$},\\
+		0 &\mbox{if } i j \in E.
+	   \end{cases}
+	$$
+	Thus $A^2 = (J - A) + (k - 1)I$, where $J$ is the matrix of all $1$s. So we have
+	$$
+A^2 + A - (k - 1)I = J.
+	$$
+	Now let $\lambda_{max}$ be a maximum eigenvalue of $A$, and let $x$ be a corresponding eigenvector. Since $G$ is $k$-regular, $\mathbbm{1}$ is an eigenvector of $A$, and thus we know that $x \perp \mathbbm{1}$, since $\lambda_{max} \neq \Delta$. Then
+	$$
+	   (A^2 + A - (k - 1)I)x = Jx \implies (\lambda_{max}^2 + \lambda_{max} - (k - 1))x = 0,
+	$$
+	so $\lambda_{max}^2 + \lambda_{max} - (k - 1) = 0$. Thus
+	$$
+	   \lambda_{max} = \left(\frac{-1 \pm \sqrt{1+4(k-1)}}{2}\right)=\left(\frac{-1 \pm\sqrt{4 k-3}}{2}\right).
+	$$
+	So $A$ has eigenvalues $k$ with multiplicity $1$, $\lambda_{max}$ with multiplicity say $r$, and $\mu$ with multiplicity $s$, with $r + s = n - 1$. We also know that
+	$$
+	   \sum_{i = 1}^n \lambda_i = 0 = k + r\lambda + s\mu,
+	$$
+	and solving this for integers $r$ and $s$ and using $n = k^2 + 1$ gives the desired result.
+\end{proof}
+
+With this lemma, we can heavily restrict the possible Moore graphs.
+
+\begin{theorem}[Hoffman-Singleton Theorem]
+	Let $G$ be a Moore graph of degree $k$. Then $k \in \{2, 3, 7, 57\}$.
+	% K=2 C5, K=3 petersen, K=7 Exists Hoffman Singelton graph, K=57 unknown
+\end{theorem}
+\begin{proof}
+	We need to find out when
+	$$
+	\frac{1}{2}\left(k^{2} \pm \frac{k^{2}-2 k}{\sqrt{4 k-3}}\right)
+	$$
+	are integers. One case is when $k^2 - 2k = 0$, implying that $k = 2$. Another case is when $4k - 3 = t^2$, where $t \mid k^2 - 2k$. Then we have
+	$$
+	t \mid\left(\frac{t^{2}+3}{4}\right)^{2}-2\left(\frac{t^{3}+3}{4}\right),
+	$$
+	and multiplying by 16,
+	$$
+	t \mid t^4 - 2t^2 - 15,
+	$$
+	so $t \mid 15$, and thus $t \in \{3, 5, 15\}$, and since $4k - 3 = t^2$, this shows that $k \in \{3, 7, 57\}$.
+\end{proof}
+
+\begin{remark}
+	For $k = 2$, $3$ and $7$, the graphs are known to exist, but a graph for $k = 57$ is has not yet been found.
+\end{remark}
+
 \end{document}
