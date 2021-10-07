@@ -1,0 +1,139 @@
+\documentclass[a4paper]{scrartcl}
+
+\usepackage[
+    fancytheorems, 
+    fancyproofs, 
+    noindent, 
+]{adam}
+
+
+\title{Analysis and Topology}
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{\today}
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+This course is a second course in Analysis and a first course in Topology. 
+We will study both concrete results over $\R$ and $\C$ concerning uniform convergence and continuity, and we will also move to more abstract settings to discuss metric and topological spaces, completeness, connectedness and compactness.
+
+This article constitutes my notes for the `Analysis and Topology' course, held in Michaelmas 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+
+
+
+\tableofcontents
+
+% \section{Introduction}
+
+% \subsection{Outline of the Course}
+
+% This is a second course in Analysis and a first course in Topology. 
+
+% \begin{enumerate}
+%     \item Uniform convergence and uniform continuity
+%     \item Metric spaces
+%     \item Completeness and the contraction mapping theorem
+%     \item Topological spaces
+%     \item Connectedness
+%     \item Compactness
+%     \item Differentiation and the inverse function theorem
+% \end{enumerate}
+
+% \subsection{Prerequisites}
+
+% Of course the Analysis I course from Part IA is going to assumed knowledge.
+
+% \subsection{Books}
+
+% Burkill \& Burkill and Sutherland are both good. Sutherland has a good motivation about abstraction.
+
+% \subsection{Example Sheets}
+
+% Plus questions are not exam questions.
+
+\section{Uniform Convergence and Uniform Continuity} 
+
+Recall the notion of convergence for a sequence in $\R$ or $\C$:
+
+\begin{definition}[Convergence of a Sequence]
+    A sequence $a_{1}, a_{2}, \cdots \in \mathbb{R}$ is said to \vocab{converge} to the limit $a$ if given any $\epsilon>0$, we can find an integer $N$ such that $\left|a_{n}-a\right|<\epsilon$ for all $n \geq N$. We write $a_{n} \rightarrow a$ as $n \rightarrow \infty$
+\end{definition}
+
+That is, given any $\varepsilon$, there is some point in the sequence after which the terms of the sequence are $\varepsilon$ close to $a$. 
+
+Our aim is going to define a similar notion to make sense of $f_n \rightarrow f$, where $f_n$ is a sequence of functions.
+
+% Diagram 1
+
+\begin{definition}[Uniform Convergence]
+    A sequence of functions $f_1, f_2, \dots$ with $f_i : S \rightarrow \R$ is said to \vocab{converge uniformly} on $S$ to a function $f:S \rightarrow \R$ if given any $\varepsilon > 0$, we can find an integer $N$ such that $|f_n(x) - f(x)| < \varepsilon$, for any $x \in S$.
+\end{definition}
+
+\begin{remark}
+    In the above definition, our $N$ can depend only on $\varepsilon$, and must be independent of the particular choice of $x \in S$. This is why we call this \emph{uniform} convergence -- because the property has to hold uniformly across the domain. 
+\end{remark}
+
+Equivalently, we could say that for all $\varepsilon > 0$ there's some $N \in \N$ such that for all $n \geq N$ we have $\sup_{x \in S} |f_n(x) - f(x)| < \varepsilon$.
+
+The above definition implies that if we fix some value of $x$ that $f_1(x), f_2(x), \dots$ converges to $f(x)$. This implies that the function $f$ is unique, due to the uniqueness of limits in $\R$ and $\C$. We sometimes call $f$ the \vocab{uniform limit}.
+
+\begin{definition}[Pointwise Convergence]
+We say that $f_n$ \vocab{converges pointwise} on $S$ to $f$ if $f_n(x) \rightarrow f(x)$ for every $x \in S$.
+\end{definition}
+\begin{remark}
+    In this definition our `$N$' can depend on $\varepsilon$ \emph{and} $x$! This makes it a much weaker notion than uniform convergence, and clearly uniform convergence implies pointwise convergence.
+\end{remark}
+
+\begin{example}[Checking Uniform Convergence]
+    Consider the sequence of functions $f_n(x) = x^2 \cdot e^{-n x}$ for $n \in \N$ and $x \in \R^+$. We want to know if this sequence of functions converges uniformly on this domain.
+
+    Since pointwise convergence is implied by uniform convergence, we can first check the pointwise limit exists and use that to specify $f$ in our definition of uniform convergence.
+
+    Fix $x \geq 0$. Then $x^2 e^{-nx} \rightarrow 0$ as $n \rightarrow 0$. So $f_n$ tends to $0$ (the zero function) pointwise on $\R^+$. We can now check if $f_n$ converges uniformly to the zero function.
+
+    We can attempt to compute the quantity
+    $$
+    \sup_{x \geq 0} |f_n(x) - 0| =  \sup_{x \geq 0} f_n(x).
+    $$
+    One approach would be to differentiate it, which would need some care. A better way is to find an upper bound on $|f_n(x) - f(x)|$ which does not depend on $x$. In this case we can bound
+    $$
+    0 \leq x^2 e^{-nx} = \frac{x^2}{1 + nx + n^2x^2/2 + \cdots} \leq \frac{2}{n^2},
+    $$
+    for all $x \geq 0$. Thus $\sup_{x \geq 0} f_n(x) \leq 2/n^2 \rightarrow 0$ as $n \rightarrow \infty$. So does indeed $f_n \rightarrow 0$ uniformly on $\R^+$.
+\end{example}
+
+\begin{example}[Showing Uniform Convergence Doesn't Hold]
+    Consider the sequence of functions $f_n(x) = x^n$ for $n \in \N$, over the domain $[0, 1]$.
+
+    We can compute the limit as
+    $$
+    x^n \rightarrow f(x) = \begin{cases}
+        0 &\mbox{if } 0 \leq x < 1, \\
+        1 &\mbox{if } x = 1.
+       \end{cases}
+    $$
+    This implies that $\sup_{x \in [0, 1]} |f_n(x) - f(x)| = 1$. So this doesn't tend to zero, and thus the sequence of functions $f_n$ converges pointwise but not uniformly.
+
+    Alternatively, we could compute $\sup_{x \in [0, 1]} f_n(x) \geq f_n((1/2)^{1/n}) = 1/2$, which shows that $f_n$ does not converge uniformly.
+\end{example}
+
+\begin{remark}
+    The statement ``$f_n \not \rightarrow f$ uniformly on the domain $S$'' means there exists some $\varepsilon$ such that for all $N \in \N$, there's some $n \geq N$ and $x \in S$ such that $|f_n(x) - f(x)| \geq \varepsilon$. In many cases when thinking about this, it's almost easier just to negate the statement symbolically.
+\end{remark}
+
+We will now see that the uniform limit function retains certain properties from the original sequence, namely that the uniform limit of continuous functions is continuous.
+
+\begin{theorem}[Continuity of the Uniform Limit]
+    Let $S \subseteq \R$ or $\C$. Given a sequence of functions $f_n : S \rightarrow \R$ (or $\C$) and $n \in \N$. If $f_n$ is continuous for all $n$, and $f_n \rightarrow f$ uniformly on $S$, then $f$ is continuous.
+\end{theorem}
+\begin{proof}
+    To be completed in the next lecture
+\end{proof}
+
+Informally, the idea of the proof is to pick an $a \in S$. We want $x \approx a$ to imply $f(x) \approx f(a)$. We choose $n$ such that $f_n \approx f$ everywhere. Then as $f_n$ is continuous, $x \approx a$ implies $f_n(x) \approx f_n(a)$, so $f(x) \approx f_n(x) \approx f_n(a) \approx f(a)$.
+
+
+\end{document}
