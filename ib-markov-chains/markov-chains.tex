@@ -7,7 +7,6 @@ noindent,
 %  spacingfix,  
 ]{adam}
 
-
 \title{Markov Chains}
 \author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
 \date{\today}
@@ -19,90 +18,144 @@ noindent,
 
 \maketitle
 
-Free my guy Markov
-
-This article constitutes my notes for the `Markov Chains' course, held in Lent 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+This article constitutes my notes for the `Markov Chains' course, held in Michaelmas 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
 
 
 \tableofcontents
 
 % \clearpage
 
-This course is roughly split into:
-\begin{itemize}
-	\item Convex Optimisation (1-3)
-	\item General optimisation with Lagrange Multipliers (4-5)
-	\item Linear Programming (minimizing linear functions), and applications (6-12)
-\end{itemize}
 
-\section{Optimisation Problems}
+\section{Introduction}
 
-In optimization, we are interested in solving problems that look like:
-minimize $f(x)$ for $x \in X$, or minimize $f(x)$ for $x \in X$, $h(x) = b$ where $h : \R^n \rightarrow \R^m$.
+For this whole course, $I$ will be a finite or countable set. All of our random variables will also be defined on the same probability space $(\Omega, \FF, \PP)$.
 
-We will always be looking at minimizing functions.
-
-Terminology:
-\begin{itemize}
-	\item $f$ is called the objective function. 
-	\item The components of $x$ are the decision variables.
-	\item In the above, `$h(x) = b$' is a functional constraint.
-	\item `$x \in X$' is the regional constraint.
-	\item The set $\{x \in X : h(x) = b\}$ is called the feasible set $X(b)$. A problem is feasible if this set is not empty, and otherwise it is in-feasible. We say the problem is bounded if the minimum is bounded.
-	\item A point $x^* \in X(b)$ is optimal if it minimises $f$ over $X(b)$. The value of $f(x^*)$ is called the optimal constraint.
-\end{itemize}
-
-So why do we only care about constraints $h(x) =b$? Well consider the constraint $h(x) \leq b$, then $h(x) + s = b$, $s \geq 0$. So we can always convert an inequality constraint into a functional and regional constraint.
-
-\section{Convex Optimisation}
-
-\begin{definition}[Convex Set]
-	A set $S \subseteq \R^n$ is \vocab{convex} if for all $x, y \in S$, and all $\lambda \in [0, 1]$, $x(1 - \lambda) + y(\lambda) \in S$. That is, the line segment joining $x$ and $y$ lies in $S$.
+\begin{definition}[Markov Chain]
+	A \vocab{stochastic process} $(X_n)_{n \geq 0}$ is called a \vocab{Markov chain} if for all $n \geq 0$ and all $x_0, \dots, x_{n+1} \in I$, we have\footnote{We assume here that we are not conditioning on a zero probability event.}
+	$$
+	\PP(X_{n + 1} = x_{n + 1} \mid X_n = x_n, \dots, X_0 = x_0) = \PP(X_{n + 1} = x_{n + 1} \mid X_n = x_n).
+	$$
 \end{definition}
 
-\begin{center}
-	insert diagram 1 - convex here.
-\end{center}
+\begin{remark}
+	This definition gives a \emph{discrete time} Markov chain. It is possible to define a continuous time Markov chain, but we won't worry about that for now.
+\end{remark}
 
-We want to study the notion of \emph{convex functions}.
+If $\PP(X_{n + 1} = y \mid X_n = x)$ for all $x, y \in I$ is independent of $n$, then $X$ is called \vocab{time-homogeneous}. Otherwise, it is \vocab{time-inhomogeneous}. In this course, we will only study time-homogeneous Markov chains.
 
-\begin{definition}[Convex Functions]
-	A function $f:S \rightarrow \R$ is \vocab{convex} if $S$ is convex, and for all $x, y \in S$, and $\lambda \in [0, 1]$ we have
-	$$
-f((1 - \lambda)x + \lambda y) \leq (1 - \lambda)f(x) + \lambda f(y).
-	$$
-	The function is \vocab{strictly convex} if the inequality is strict, and is \vocab{concave} if $-f$ is convex.
+We will write $P(x, y) = \PP(X_1 = y \mid X_0 = x)$, where $x, y \in I$. We call $P$ a \vocab{stochastic matrix}, because
+$$
+	\sum_{y \in I} P(x, y) = 1,
+$$
+that is, the sum of each row is 1.
+
+
+\begin{remark}
+	The index set does not have to be $\N$, it could be say $\{0, 1, \dots, N\}$ for $N \in \N$.
+\end{remark}
+
+So to characterize a Markov chain, we need this matrix $P$, giving the probability of passing from a state $x$ to a state $y$. We call this matrix the \vocab{transition matrix} of $X$.
+
+\begin{definition}[Markov]
+	We say that $X$ is \vocab{$\markov(\lambda, P)$} if $X_0$ has distribution $\lambda$ and $P$ is the transition matrix. That is,
+	\begin{enumerate}[label=(\roman*)]
+		\item $\PP(X_0 = x_0) = \lambda_{x_0}$, $x_0 \in I$,
+		\item $\PP(X_{n + 1} = x_{n + 1} \mid X_n = x_n, \dots, X_0 = x_0) = P(x_n, x_{n + 1}) = P_{x_n x_{n + 1}}$.
+	\end{enumerate}
 \end{definition}
 
-In one dimension, such functions look `$u$-shaped', and points between $x$ and $y$ always lies below the chord.
+We usually represent a Markov chain by its diagram corresponding to the allowed transitions. 
 
-\subsection{Unconstrained Optimisation}
-
-We are going to look at the problem of minimizing $f(x)$ where $f: \R^n \rightarrow \R$ is a convex function. 
-
-Convex functions have certain properties that allow us to minimize them somewhat easily. The most important property is that \emph{local} information gives us \emph{global} information. Informally, if you know what a convex function looks like in a small neighbourhood, you can always say something about what it looks like outside of that.
-
-Let's have a think about how to tell if a function is convex.
-
-A first order condition for convexity is that a tangent line always lies below the curve. That is,
-$$
-f(y) \geq f(x) + (y - x) f'(x).
-$$
-In higher dimensions, we will have to replace $f'(x)$ with $\nabla f(x)$, and take a dot product (treating it as a vector). 
-Note that if $\nabla f(x) = 0$, then $f(y) \geq f(x)$, thus $x$ minimizes $f$.
-
-Let's write this all down properly.
-
-
-
-\begin{theorem}[First Order Convexity Conditions]
-	A differentiable function $f: \R^n \rightarrow \R$ is convex if and only if for $x, y \in \R^n$ we have
+\begin{example}[Diagram of a Markov Chain]
+	Let $\alpha, \beta \in (0, 1)$. We consider the matrix
 	$$
-f(y) \geq f(x) + (y - x) \cdot \nabla f(x).
+	P = \begin{pmatrix}
+		\alpha & 1 - \alpha \\
+		1 - \beta & \beta
+	\end{pmatrix}.
+	$$
+	This is a transition matrix on two states which we can call $1$ and $2$. Here $\alpha$ is the probability of staying at 1, and $1 - \alpha$ is the probability of moving from state 2 when at state 1.
+
+	A diagram of this is given below. This is a directed graph with the relevant probabilities labelling each edge.
+
+	% Diagram ex 1
+\end{example}
+
+\begin{example}
+	Suppose that we have the transition matrix
+	$$
+	P = \begin{pmatrix}
+		\frac{1}{2} & \frac{1}{2} & 0 \\
+		\frac{1}{3} & \frac{1}{3} & \frac{1}{3} \\
+		1 & 0 & 0 
+	\end{pmatrix}.
+	$$
+	This is a transition matrix on three states and corresponds with the diagram
+
+	% Diagram ex 2
+\end{example}
+
+\begin{theorem}
+	The process $X$ is $\markov(\lambda, P)$ if and only if for all $n \geq 0$ and all $x_0, \dots, x_n \in I$ we have
+	$$
+	\PP(X_0 = x_0, \dots, X_n = x_n) = \lambda_{x_0} P(x_0, x_1) \cdots P(x_{n - 1}, x_n).
 	$$
 \end{theorem}
 \begin{proof}
-	
+	First suppose that $X$ is $\markov(\lambda, P)$. Then
+	\begin{align*}
+		\PP(X_n = x_n, \dots, X_0 = x_0) &= \PP(X_n = x_n \mid X_{n - 1} = x_{n - 1} , \dots, X_0 = x_0) \\&\ \cdot \PP(X_{n - 1} = x_{n - 1} , \dots, X_0 = x_0)\\
+		&= P(x_{n - 1}, x_n) \cdot \PP(X_{n - 1} = x_{n - 1} , \dots, X_0 = x_0) \\
+		&= P(x_0, x_1) \dots P(x_{n - 1}, x_n) \PP(X_0 = x_0) \\
+		&= \lambda_{x_0} P(x_0, x_1) \cdots P(x_{n - 1}, x_n),
+	\end{align*}
+	as required.
+
+	Now suppose that the property holds. Then $n = 0$ gives $\PP(X_0 = x_0) = \lambda_{x_0}$, so our base case holds. Then
+	\begin{align*}
+		\PP(X_n = x_)n \mid X_{n - 1} = x_{n - 1} , \dots, X_0 = x_0) &= \frac{\lambda_{x_0}P(x_0, x_1)\cdots P(x_{n - 1}, x_n)}{\lambda_{x_0}P(x_0, x_1)\cdots P(x_{n - 2}, x_{n-1})}\\ 
+		&= P(x_{n - 1}, x_n)
+	\end{align*}
 \end{proof}
 
+Now we are going to define some useful notation.
+
+\begin{definition}[$\delta_i$-mass]
+	For $i \in I$, the \vocab{$\delta_i$-mass} of $i$ is defined as
+	$\delta_{ij} = \ii(i = j)$.
+\end{definition}
+
+Recall the notion of independence for random variables. Let $X_1, \dots, X_n$ be discrete random variables. They are \emph{independent} if for all $x_1, \dots, x_n \in I$, we have
+$$
+\PP(X_1= x_1, \dots, X_n = x_n) = \prod_{i = 1}^n \PP(X_i = x_i).
+$$
+
+We have a similar notion for sequences of random variables. We say a sequence $(X_n)_{n \geq 0}$ is \emph{independent} if for all $i_1 < i_2 < \dots < i_k$ and all $x_1, \dots, x_k$,
+$$
+\PP(X_{i_1} = x_1, \dots, X_{i_k} = x_k) = \prod_{j = 1}^k \PP(X_{i_j} = x_j).
+$$
+
+If $X = (X_n)_{n \geq 0}$ and $Y = (Y_n)_{n \geq 0}$ are two sequences of random variables, they are independent if for all $k, m$ and $i_1 < \cdots < i_k$, $j_1 < \cdots j_m$ we have
+\begin{align*}
+	&\ \PP(X_{i_1} = x_1, \dots, X_{i_k} = x_k, Y_{j_1} = y_1, \dots, Y_{j_m} = y_m) \\
+	&= \PP(X_{i_1} = x_1, \dots, X_{i_k} = x_k) \cdot \PP(Y_{j_1} = y_1, \dots, Y_{j_m} = y_m) 
+\end{align*}
+
+\begin{theorem}[Simple Markov Property]
+	Suppose that $X$ is $\markov(\lambda, P)$. Fix $m \in \N$ and $i \in I$. Conditional on $X_m = i$, the process $(X_{m + n})_{n \geq 0}$ is $\markov(\delta_i, P)$ and it is independent of $X_0, \dots, X_m$.
+\end{theorem}
+
+\begin{proof}
+	We need to show that
+	$$
+	\PP(X_{m} = x_0, \dots, X_{m + n} = x_n \mid X_m = i) = \delta_{i x_0}P(x_0, x_1) \dots P(x_{n - 1}, x_n).
+	$$
+	(To be completed next lecture)
+\end{proof}
+
+\begin{remark}
+	Informally, this theorem says `past and future are independent given the present'.
+\end{remark}
+
 \end{document}
+
