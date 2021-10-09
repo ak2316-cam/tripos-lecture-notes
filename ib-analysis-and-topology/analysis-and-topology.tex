@@ -191,10 +191,143 @@ We will now see that the uniform limit function retains certain properties from 
     Let $S \subseteq \R$ or $\C$. Given a sequence of functions $f_n : S \rightarrow \R$ (or $\C$) and $n \in \N$. If $f_n$ is continuous for all $n$, and $f_n \rightarrow f$ uniformly on $S$, then $f$ is continuous.
 \end{theorem}
 \begin{proof}
-    To be completed in the next lecture
+    Fix $a \in S$, and let $\varepsilon > 0$. We seek a $\delta > 0$ such that for all $x \in S$ we have $|x - a| < \delta$ implying $|f(x) - f(a)| < \varepsilon$.
+
+    We choose $n \in \N$ such that for all $x \in S$ we have $|f_n(x) - f(x)| < \epsilon$. Fix such an $n$. Since $f_n$ is continuous, there exists $\delta > 0$ such that for all $x \in S$, we have $|x - a| < \delta$ implying $|f_n(x) - f_n(a)| < \varepsilon$. So for all $x \in S$ if $|x - a| < \delta$ then
+$$
+        |f(x) - f(a)| \leq |f(x) - f_n(x)| + |f_n(x) - f_n(a)| + |f_n(a) - f(a)| 
+         < 3 \varepsilon.
+$$
 \end{proof}
+% TODO: Rewrite this proof
 
 Informally, the idea of the proof is to pick an $a \in S$. We want $x \approx a$ to imply $f(x) \approx f(a)$. We choose $n$ such that $f_n \approx f$ everywhere. Then as $f_n$ is continuous, $x \approx a$ implies $f_n(x) \approx f_n(a)$, so $f(x) \approx f_n(x) \approx f_n(a) \approx f(a)$.
+This type of proof is called a `$3\varepsilon$ proof'. 
 
+\begin{remark}
+    This result \emph{does not} hold for just pointwise convergence. For example, consider $f(x) = x^n$ on the interval $[0, 1]$. However, the set of points at which it can be discontinuous is relatively small. Also this result does not hold for differentiability.
+\end{remark}
+
+Another way of viewing this result is that it gives us a case where swapping limits is okay\footnote{Generally, swapping limits is bad.}, that is 
+$$
+    \lim_{x \to a} \lim_{n \to \infty} f_n(x) = \lim_{x \to a} f(x) = f(a),
+$$
+if $f_n$ converges uniformly to $f$.
+
+\begin{lemma}[Uniform Limit of Bounded Functions is Bounded]\label{lemma:uniform-bounded}
+Assume that $f_n \rightarrow f$ uniformly on some set $S$.  
+If $f_n$ is bounded for every $n$, then so is $f$.  
+\end{lemma}
+\begin{proof}
+Fix some $n \in \N$ such that for all $x \in S$ we have $|f_n(x) - f(x)| < 1$. Then since $f_n$ is bounded, there is an $M \in \R$ such that $|f_n(x)| \leq M$ for all $x \in S$. Thus
+$$
+    |f(x)| \leq |f(x) - f_n(x)| + |f_n(x)| \leq 1 + M.
+$$
+\end{proof}
+
+You may recall from a previous analysis course that if $f:[a, b] \rightarrow \R$ is bounded, then for a dissection $\DD = \{x_0, x_1, \dots, x_n\}$ with $a = x_0 \leq x_1 \leq \cdots \leq x_n = b$, we can define the upper and lower sums of $f$ with respect to $\DD$ as
+\begin{align*}
+    S_{\DD}(f) &= \sum_{j = 1}^n (x_j - x_{j - 1}) \sup_{x \in [x_{j - 1}, x_j]} f(x), \\
+    s_{\DD}(f) &= \sum_{j = 1}^n (x_j - x_{j - 1}) \inf_{x \in [x_{j - 1}, x_j]} f(x).
+\end{align*}
+With this we have Riemann's criterion for integrability, which is that a function is integrable if and only if for all $\varepsilon > 0$ there exists some dissection $\DD$ such that $S_{\DD}(f) - s_{\DD}(f) < \varepsilon$.
+
+It's easy to see that for any $I \subset [a, b]$
+$$
+\sup_{I} f - \inf_I f = \sup_{x, y \in I} (f(x) - f(y)) = \sup_{x, y \in I} |f(x) - f(y)|.
+$$
+This is called the \vocab{oscillation} of $f$ on $I$, and the integrability criterion above says that integrable functions don't oscillate too much.
+
+\begin{theorem}[Uniform Limit of Integrable Functions is Integrable]\label{thm3}
+Let $f_n: [a, b] \rightarrow \R$ be a sequence of integrable functions. If $f_n \rightarrow f$ uniformly on $[a, b]$ then $f$ is integrable and
+$$
+\int_a^b f_n \rightarrow \int_a^b f,
+$$
+as $n \rightarrow \infty$.
+\end{theorem}
+\begin{proof}
+    We prove that $f$ is bounded and satisfies Riemann's criterion. 
+
+    By definition, each $f_n$ is bounded, so by \autoref{lemma:uniform-bounded} $f$ is also bounded. 
+
+    Now fix some $\varepsilon > 0$, and an $n \in \N$ such that for all $x \in [a, b]$ we have $|f_n(x) - f(x)| < \varepsilon$. Since $f_n$ is integrable, there exists a dissection $\DD = \{x_0, x_1, \dots, x_n\}$ of $[a, b]$ such that $S_{\DD}(f_n) - s_{\DD}(f_n) < \varepsilon$. Now fix $k \in \{1, \dots, N\}$. For $x, y \in [x_{k - 1}, x_k]$
+    \begin{align*}
+        |f(x) - f(y)| &\leq |f(x) - f_n(x)| + |f_n(x) - f_n(y)| + |f_n(y) - f(y)| \\
+        &< |f_n(x) - f_n(y)| + 2 \varepsilon.
+    \end{align*}
+    Hence
+    \begin{align*}
+        \sup_{x, y \in [x_{k - 1}, x_k]} |f(x) - f(y)| \leq \sup_{x, y \in [x_{k - 1}, x_k]} |f_n(x) + f_n(y)| + 2 \varepsilon.
+    \end{align*}
+    Multiplying by $(x_k - x_{k - 1})$ and summing over $k = 1$ to $N$ we get
+    $$
+    S_{\DD}(f) - s_{\DD}(f) \leq S_{\DD}(f_n) - s_{\DD}(f_n) + 2 \varepsilon (b - a) \leq \varepsilon (2(b - a) + 1),
+    $$
+    so $f$ is integrable.
+
+    Finally, we can write
+    $$
+    \left|\int_a^b f_n - \int_a^b f\right| \leq \int_a^b |f_n - f| \leq (b - a) \cdot \sup_{[a, b]} |f_n - f| \rightarrow 0
+    $$
+    as $n \rightarrow \infty$.
+\end{proof}
+
+Similar to the previous theorem, this result can be viewed as giving us a case where swapping integrals (which are some form of limit) and limits is okay, so that
+$$
+    \int_a^b \lim_{n \to \infty} f_n(x) \dd x = \lim_{n \to \infty} \int_a^b f_n(x) \dd x,
+$$
+whenever $f_n \rightarrow f$ uniformly. We also have the corollary below.
+
+\begin{corollary}
+Let $f_n: [a, b] \rightarrow \R$ be a sequence of integrable functions. Then if $\sum_{n = 1}^{\infty} f_n(x)$ converges uniformly on $[a, b]$, then $x \mapsto \sum_{n = 1}^{\infty} f_n(x)$ is integrable and
+$$
+\int_a^b \sum_{n = 1}^{\infty} f_n(x) \dd x = \sum_{n = 1}^{\infty} \int_a^b f_n(x) \dd x.
+$$
+\end{corollary}
+\begin{proof}
+We define the functions
+\begin{align*}
+    F_n(x) &= \sum_{k = 1}^{n} f_k(x) \\
+    F(x) &= \sum_{k = 1}^{\infty} f_n(x),
+\end{align*}
+where $x \in [a, b]$ and $n \in \N$. Then by assumption $F_n \rightarrow F$ uniformly on $[a, b]$, and from a previous course we can recall that $F_n$ is integrable and $\int_a^b F_n = \sum_{k = 1}^n \int_a^b f_k$. The result then follows from \autoref{thm3}.
+\end{proof}
+
+\begin{theorem}
+    let $f_n: [a, b] \rightarrow \R$ be a sequence of continuously differentiable functions. Then if
+    \begin{enumerate}[label=(\roman*)]
+        \item $\sum_{k = 1}^{\infty} f_k'(x)$ converges uniformly on $[a, b]$,
+        \item There exists $c \in [a, b]$ such that $\sum_{n = 1}^{\infty} f_n(c)$ converges,
+    \end{enumerate}
+    then $\sum_{k = 1}^{\infty} f_k(x)$ converges uniformly on $[a, b]$ to a continuously differentiable function $f$, and moreover
+    $$
+    \left(\sum_{k = 1}^{\infty} f_k\right)'(x) = f'(x) = \sum_{k = 1}^{\infty} f_k'(x).
+    $$
+\end{theorem}
+\begin{proof}
+    Let $g(x) = \sum_{k = 1}^{\infty} f_k'(x)$, for $x \in [a, b]$. 
+
+    The idea is to solve $f' = g$ with initial conditions $f(c) = \sum_{n = 1}^{\infty} f_n(c)$.
+
+    Let $\lambda = \sum_{n = 1}^{\infty} f_n(c)$, and define $f: [a, b] \rightarrow \R$ by $f(x) = \lambda + \int_c^x g(t) \dd t$. To have this well defined, we need to know that $g$ is integrable. Since $\sum_{k = 1}^{\infty} f_k'(x)$ converges uniformly to $g$ on $[a, b]$, $g$ is continuous and hence integrable. By the fundamental theorem of calculus, $f' = g$ on $[a, b]$ (so $f'$ is continuous), and $f(c) = \lambda$.
+
+    Also by the fundamental theorem of calculus, $f_k(x) = f_k(c) + \int_c^x f_k'(t) \dd t$, where $k \in \N$ and $x \in [a, b]$. 
+
+    Fix $\varepsilon > 0$. By assumption, there exists $N \in \N$ such that
+    $$
+    \left|\lambda - \sum_{k = 1}^n f_k(c)\right|< \varepsilon, \quad \text{and} \quad \left| g(t) - \sum_{k = 1}^n f_k'(t) \right| < \varepsilon,
+    $$
+    for all $n \geq N$ and $t \in [a, b]$. Now for $x \in [a, b]$, $n \geq N$, we have
+    \begin{align*}
+        \left|f(x) - \sum_{k = 1}^n f_k(x)\right| &= \lambda + \int_c^x g(t) \dd t - \sum_{k = 1}^n \left( f_k(c) + \int_c^x f'_k(t) \dd t\right) 
+        \\
+        & \leq \left|\lambda - \sum_{k = 1}^n f_k(c)\right| + \left|\int_c^x \left(g(t) - \sum_{k = 1}^n f_k'(t) \right) \dd t\right| \\
+        &\leq \varepsilon + |x - c| \cdot \varepsilon \leq (b - a + 1)\varepsilon.
+    \end{align*}
+\end{proof}
+
+Recall from a previous analysis course that a sequence $x_n$ is Cauchy if for all $\varepsilon > 0$, there exists $N \in \N$ such that for all $m, n \geq N$ we have $|x_m - x_n| < \varepsilon$. The general principle of convergence then said that every Cauchy sequence converges.
+
+% Next time - generalise and general principle of uniform convergence.
 
 \end{document}
