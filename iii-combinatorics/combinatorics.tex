@@ -13,6 +13,8 @@
 
 \allowdisplaybreaks
 
+\newcommand{\A}{\mathcal{A}}
+
 \begin{document}
 
 \maketitle
@@ -36,10 +38,10 @@ This article constitutes my notes for the `Combinatorics' course, held in Michae
 We will begin our study of combinatorics by considering \emph{set systems} -- collections of subsets of a set (which will typically be $X = [n] = \{1, 2, \dots, n\}$).
 
 \begin{definition}[Set Systems]
-Let $X$ be a set. A \vocab{set system} on $X$ or a \vocab{family of subsets} of $X$ is a family $\mathcal{A} \subset \mathcal{P}(X)$.
+Let $X$ be a set. A \vocab{set system} on $X$ or a \vocab{family of subsets} of $X$ is a family $\A \subset \power(X)$.
 \end{definition}
 
-It's often useful to think about the power set of a set $X$, $\mathcal{P}(X)$, as a graph. We can do this by joining two elements $A$ and $B$ if $|A \triangle B| = 1$, where $\triangle$ is the symmetric difference.
+It's often useful to think about the power set of a set $X$, $\power(X)$, as a graph. We can do this by joining two elements $A$ and $B$ if $|A \triangle B| = 1$, where $\triangle$ is the symmetric difference.
 This graph is the \vocab{discrete cube $Q_n$}\footnote{This is the same graph as the boolean hypercube, in the obvious way.}.
 
 
@@ -48,20 +50,122 @@ This graph is the \vocab{discrete cube $Q_n$}\footnote{This is the same graph as
 We are first going to look at what happens when sets are contained or not contained in each-other. If you know anything about posets, this will likely be familiar. 
 
 \begin{definition}[Chain and Antichain]
-We say that $\mathcal{A} \subset \mathcal{P}(X)$ is a vocab{chain} if for all $A, B \in \mathcal{A}$ we have $A \subset B$ or $B \subset A$.
+We say that $\A \subset \power(X)$ is a \vocab{chain} if for all $A, B \in \A$ we have $A \subset B$ or $B \subset A$.
 
-We say that $\mathcal{A}$ is a \vocab{antichain} if for all $A, B \in \mathcal{A}$ with $A \neq B$ we have $A \not \subset B$ and $B \not \subset A$.
+We say that $\A$ is a \vocab{antichain} if for all $A, B \in \A$ with $A \neq B$ we have $A \not \subset B$ and $B \not \subset A$.
 \end{definition}
 
 \begin{example}]
     $\{\{1, 4\}, \{1, 4, 7, 8\}, \{1, 2, 4, 7, 8\}\}$ is a chain, and  $\{\{1, 4\}, \{1, 7, 8\}, \{32, 3, 8\}\}$ is an antichain.
 \end{example}
 
-A natural first question is how big can a chain be? We can easily get $|\mathcal{A}| = n - 1$ by taking
+A natural first question is how big can a chain be? We can easily get $|\A| = n - 1$ by taking
 $$
-\mathcal{A} = \{\emptyset, \{1\}, \{1, 2, \}, \dots, [n]\}.
+\A = \{\emptyset, \{1\}, \{1, 2, \}, \dots, [n]\}.
 $$
-Can we beat this? No, since $\mathcal{A}$ must meet $X^{(r)}$ (the set of $r$ element subsets of $X$) at at most one point.
+Can we beat this? No, since $\A$ must meet $X^{(r)}$ (the set of $r$ element subsets of $X$) at at most one point.
 
-How about antichains? We can achieve $|\mathcal{A}| = n$ by taking all singleton sets, but can we do any better? Well with the same idea we can take each $\lfloor n/2\rfloor$-element subset of $[n]$, giving $|\mathcal{A}| = \binom{n}{\lfloor n/2\rfloor}$. Can we do better than \emph{this}? It's not quite obvious (and it's this type of question that we will come across frequently in this course...).
+How about antichains? We can achieve $|\A| = n$ by taking all singleton sets, but can we do any better? Well with the same idea we can take each $\lfloor n/2\rfloor$-element subset of $[n]$, giving $|\A| = \binom{n}{\lfloor n/2\rfloor}$. Can we do better than \emph{this}? It's not quite obvious (and it's this type of question that we will come across frequently in this course...).
+
+\begin{theorem}[Sperner's Lemma]\label{sperner}
+    Let $\A \in \power(X)$ be an antichain. Then
+    $$
+    |\A| \leq \binom{n}{\lfloor n/2 \rfloor},
+    $$
+    and this is sharp.
+\end{theorem}
+
+Inspired by what made chains have size at most $n + 1$, we can try and decompose $\power (X)$ into $\binom{n}{\lfloor n/2 \rfloor}$ chains. If we can do this, we will be done as $\A$ meets each in at most one point.
+We can try and do this decomposition explicitly, but it turns out that it's incredibly hard to do. 
+Instead, it's sufficient to find:
+
+\begin{enumerate}
+    \item For each $r < n/2$, a matching (set of disjoint edges) from $X^{(r)}$ to $X^{(r + 1)}$,
+    \item For each $r > n/2$, a matching from $X^{(r)}$ to $X^{(r - 1)}$.
+\end{enumerate}
+We'd then be done as we can just put these matchings together to form chains, and we end up with the right number. By taking complements, it's enough to prove the first, and to prove there's a matching, we just need to check Hall's condition.
+
+\begin{proof}[Proof of Sperner's Lemma]
+    Consider the subgraph of $Q_n$ spanned by $X^{(r)}\cup X^{(r + 1)}$. This graph is bipartite, and $d(A) = n - r$ for all $A \in X^{(r)}$ and $d(A) = r + 1$ for all $A \in X^{(r + 1)}$.
+
+    Given a set $S \subset X^{(r)}$, the number of edges between $S$ and $\Gamma(S)$, the neighborhood of $S$, is
+    $|S|(n - r)$ counting from below and at most $|\Gamma(S)|(r + 1)$ counting from above. So
+    $$
+    |\Gamma(S)| \geq |S| \frac{n - r}{r + 1} \geq |S|,
+    $$
+    since $r \leq (n - 1)/2$. Thus there is a matching by Hall's theorem from $X^{(r)}$ to $X^{(r + 1)}$ which is sufficient.
+\end{proof}
+
+\begin{remark}
+    While this proof does tell us about size, it doesn't tell us about uniqueness -- which antichains have size $\binom{n}{\lfloor n/2 \rfloor}$?
+\end{remark}
+
+It is possible to strengthen Sperner's lemma significantly. 
+
+We know that if we have an antichain, then if we add up all of the numbers of sets of each of $X^{(1)}, \cdots, X^{(n)}$, we get at most $|X^{(\lfloor n/2 \rfloor)}|$. We can show if you add up the fraction of each of $X^{(1)}, \cdots, X^{(n)}$ that the antichain occupies, you end up with at most 1.
+To prove this though, we will need to do a little bit more work.
+
+We are going to introduce the concept of the \emph{shadow} of a set system, and this will reoccur throughout the course.
+
+\begin{definition}[Shadow]
+    The \vocab{shadow} of $\A \subset X^{(r)}$ is the set system $\partial \A \subset X^{(r - 1)}$ given by 
+    $$
+    \partial \A = \bigcup_{S \in \A} S^{(r - 1)}.
+    $$
+\end{definition}
+
+For example if $\A = \{\{1,2,3\}, \{2, 3, 4\}, \{1, 4, 5\}, \{1, 2, 7\}\}$ then $\partial \A = \{\{1, 2\}, \{1, 3\}$, $\{2, 3\}, \{2, 4\}, \{3, 4\}, \{1, 5\}$, $\{4, 5\}, \{1, 7\}, \{2, 7\}\}$.
+
+We can then prove that the shadow of $\A$ occupies at least as great a fraction of it's `layer' (with respect to fixed-sized subsets of $X$) as $A$ does.
+
+\begin{lemma}[Local LYM (Lubell, Yamamoto, Meshalyin) Inequality]
+    Let $1 \leq r \leq n$, and let $\A \subset X^{(r)}$, then 
+    $$
+    \frac{|\partial \A|}{\binom{n}{r - 1}} \geq \frac{|\A|}{\binom{n}{r}}.
+    $$
+\end{lemma}
+\begin{proof}
+    The number of edges between $\A$ and $\partial \A$ is given by $|\A| r$, counting from above, and from below is at most $|\partial \A|(n - r + 1)$. Thus
+    $$
+    \frac{|\partial \A|}{|\A|} \geq \frac{r}{n - r + 1} = \frac{\binom{n}{r-1}}{\binom{n}{r}}.
+    $$
+\end{proof}
+
+To have equality, we would need every $A \in \A$, $i \in A$ and $j \not \in A$ to have $(A - \{i\}) \cup \{j\} \in \A$. Thus equality only happens when $\A = \emptyset$ or $\A = X^{(r)}$.
+
+We can now use this lemma to prove our strengthening of Sperner's lemma.
+
+\begin{theorem}[LYM Inequality]
+    Let $\A \subset \power(X)$ be an antichain. Then
+    $$
+\sum_{r = 0}^{\infty} \frac{|\A \cap X^{(r)}|}{\binom{n}{r}} \leq 1.
+    $$
+\end{theorem}
+\begin{proof}[Proof 1 (`Bubble down by Local LYM')]
+    For each $r$, write $\A_r$ for $\A \cap X^{(r)}$.
+    
+    First, $|\A_n| / \binom{n}{n} \leq 1$ trivially. Then $\partial \A_n$ and $\A_n$ are disjoint, since $\A$ is an antichain. Thus
+    $$
+    \frac{|\partial \A_n|}{\binom{n}{n - 1}} + \frac{|\partial \A_{n - 1}|}{\binom{n}{n - 1}} = \frac{|\partial A_n \cup \A_{n - 1}|}{\binom{n}{n - 1}} \leq 1.
+    $$
+    Thus by Local LYM, we get
+    $$
+    \frac{|\A_n|}{\binom{n}{n}} + \frac{|\A_{n - 1}|}{\binom{n}{n - 1}} \leq 1.
+    $$
+    Then $\partial(\partial \A_n \cup \A_{n - 1})$ and $\A_{n - 2}$ are disjoint, so
+    $$
+\frac{|\partial(\partial \A_n \cup \A_{n - 1})|}{\binom{n}{n - 2}} + \frac{|\A_{n - 2}|}{\binom{n}{n - 2}} \leq 1,
+    $$
+    and thus by Local LYM
+    $$
+    \frac{|\partial \A_n \cup \A_{n - 1}|}{\binom{n}{n - 1}} + \frac{|\A_{n - 2}|}{\binom{n}{n - 2}} \leq 1,
+    $$
+    so
+    $$
+    \frac{|\A_n|}{\binom{n}{n}} + \frac{|\A_{n - 1}|}{\binom{n}{n - 1}} + \frac{|\A_{n - 2}|}{\binom{n}{n - 2}}  \leq 1.
+    $$
+    We can continue on like this until we end up with the desired result.
+\end{proof}
+
+
 \end{document}
