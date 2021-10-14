@@ -21,12 +21,33 @@ noindent,
 
 \maketitle
 
+A stochastic process is said to have the `Markov property' if, conditional on its present value, the future is independent of the past.
+
+This is a \emph{restrictive} assumption, but we do end up with a useful model with a rich mathematical theory, which we shall study in this course.
+
 This article constitutes my notes for the `Markov Chains' course, held in Michaelmas 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
 
 
 \tableofcontents
 
 % \clearpage
+
+\section{The Markov Property}
+
+\subsection{What is a Markov Chain?}
+
+Let $S$ be a countable set (the set of possible `states'), and let $X_n$ be a sequence of random variables taking values in $S$.
+
+\begin{definition}[Markov Chain]
+	The sequence of random variables $X_n$ is a \vocab{Markov chain} if it satisfies the \vocab{Markov property}
+	$$
+	\PP(X_{n + 1} = x_{n + 1} \mid X_n = x_n, X_0 = x_0) = \PP(X_{n + 1} = x_{n + 1} \mid X_n = x_n).
+	$$
+
+	The Markov chain is said to be \vocab{homogeneous} if for all $i, j \in S$ the conditional probability $\PP(X_{n + 1} = j \mid X_n = i)$ is independent of $n$.
+\end{definition}
+
+In this course we are only going to study homogeneous Markov chains.
 
 
 \section{Introduction}
@@ -202,6 +223,134 @@ If $X = (X_n)_{n \geq 0}$ and $Y = (Y_n)_{n \geq 0}$ are two sequences of random
 \begin{remark}
 	Informally, this theorem says `past and future are independent given the present'.
 \end{remark}
+
+\section{MISSING LECTURE 2}
+
+\section{Lecture 3}
+
+\begin{example}
+	Given the transition matrix
+	$$
+	P = \begin{pmatrix}
+		0 & 1 & 0 \\
+		0 & 1/2 & 1/2 \\ 
+		1/2 & 0 & 1/2
+	\end{pmatrix},
+	$$
+	we want to find $p_{11}(n)$. The eigenvalues of this matrix are $1, i/2$ and $-i/2$. We write $i/2 = (\cos \pi/2 + i \sin \pi/2)/2$, and then we can write the general form for $p_{11}(n)$ as
+	$$
+	p_{11}(n) = \alpha + \beta \cdot \left(\frac{1}{2}\right)^n \cos \left(\frac{n \pi}{2}\right) + \gamma \cdot \left(\frac{1}{2}\right)^n \sin\left(\frac{n \pi}{2}\right).
+	$$
+	We can then compute by hand $p_{11}(0) = 1$, $p_{11}(1) = 0$ and $p_{11}(2) = 0$. So, if you solve this system for $\alpha, \beta, \gamma$, you get
+	$$
+	p_{11}(n) = \frac{1}{5} + \left(\frac{1}{2}\right)^n \left(\frac{4}{5}\cos\left(\frac{n \pi}{2}\right) - \frac{2}{5} \sin \left(\frac{n \pi}{2}\right)\right).
+	$$
+\end{example}
+
+\subsection{Communicating Classes}
+
+\begin{definition}
+$X$ is a Markov chain with transition matrix $P$ and values in $I$. For $x, y \in I$ we say that \vocab{$x$ leads to $y$} and write it $x \rightarrow y$ if
+$$
+\PP(X_m = y \text{ for some }n \geq 0) > 0. 
+$$
+We say that $x$ \vocab{communicates} with $y$ and write $x \longleftrightarrow y$ if both $x \rightarrow y$ and $y \rightarrow x$.  
+\end{definition}
+
+\begin{theorem}
+	The following are equivalent: 
+	\begin{enumerate}[label=(\roman*)]
+		\item $x \rightarrow y$;
+		\item There exists a sequence of states $x = x_0, x_1, \dots, x_k = y$ such that 
+		$$P(x_0, x_1)P(x_1, x_2) \cdots P(x_{k - 1}, x_k) > 0;$$
+		\item There exists $n \geq 0$ such that $p_{xy}(n) > 0$.
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	Trivial.
+\end{proof}
+
+\begin{corollary}
+	$\longleftrightarrow$ is an equivalence relation on $I$.
+\end{corollary}
+\begin{proof}
+	Trivial.
+\end{proof}
+
+\begin{definition}[Communicating Classes]
+	The equivalence classes induced by $\longleftrightarrow$ on $I$ are called \vocab{communicating classes}.
+\end{definition}
+
+A communicating class $C$ is \vocab{closed} if whenever $x \in C$ and $x \rightarrow y$ then $y \in C$.
+
+A matrix $P$ is called \vocab{irreducible} if it has a single communicating class, that is, for all $x, y \in I$ we have $x \longleftrightarrow y$. 
+
+A state $x$ is called \vocab{absorbing} if $\{x\}$ is a closed class. 
+
+\subsection{Hitting Times}
+
+\begin{definition}
+	For $A \subseteq I$, we define $T_A$ to be the \vocab{hitting time} of $A$,
+	$
+	T_A: \Omega \rightarrow \{0, 1, 2, \dots \} \cup \{\infty\},
+	$
+	defined by $T_A(\omega) = \inf\{ n \geq 0: X_n(\omega) \in A\}$, where we take $\inf \emptyset = \infty$.
+
+	The \vocab{hitting probability} of $A$ is $h^A: I \rightarrow [0, 1]$ such that $h_i^A = \PP_i(T_A < \infty)$.
+
+	The \vocab{mean hitting time} of $A$ is $k^A: I \rightarrow \R$ with $k_i^A = \EE_i[T_A] = \sum_{n = 0}^{\infty} n \cdot \PP_i(T_a = n) + \infty \cdot \PP_i(T_a = \infty)$.
+\end{definition}
+
+\begin{example}
+	Consider the Markov chain in the diagram below.
+	\begin{center}
+		\begin{tikzpicture}
+		
+		\node[state] (1) {1};
+		\node[state, right=of 1] (2) {2};
+		\node[state, right=of 2] (3) {3};
+		\node[state, right=of 3] (4) {4};
+		
+		\draw[every loop, >=latex]
+		% (1) edge[loop above] node {1} (1)
+		(2) edge[auto=left] node {$\frac{1}{2}$} (1)
+		(2) edge[bend left, auto=left] node {$\frac{1}{2}$} (3)
+		(3) edge[bend left, auto=left] node {$\frac{1}{2}$} (2)
+		(3) edge[auto=left] node {$\frac{1}{2}$} (4);
+		% (4) edge[loop above] node {1} (4);
+		
+		\end{tikzpicture}
+		\end{center}
+
+		We take $A = \{4\}$, and want to find $h_2^A = \PP_2(T_A < \infty)$. We have
+		\begin{align*}
+			h_2^A &= \frac{1}{2}h_3^A \\
+			h_3^A &= \frac{1}{2} \cdot 1 + \frac{1}{2} h_2^A \\
+		\implies h_2^A &= \frac{1}{3}.
+		\end{align*}
+		If instead we took $B = \{1, 4\}$ and wanted to find $k_2^B$, we would get
+		\begin{align*}
+			k_2^B &= 1 + \frac{1}{2}k_3^B \\
+			k_3^B &= 1 + \frac{1}{2}k_2^B \\
+	\implies k_2^B &= 2.
+		\end{align*}
+\end{example}
+
+In the computations above, we really should check that this is a valid method (though it is quite intuitive).
+
+\begin{theorem}
+	Let $A \subseteq I$. The vector $(h_i^A)_{i \in A}$ is the minimal non-negative solution to
+	\begin{align*}
+		h_i^A = \begin{cases}
+			1 &\mbox{if } i  \in A, \\
+			\sum_{j} P(i, j) h_j^A &\mbox{if } i \not \in A,
+		   \end{cases}
+	\end{align*}
+	where minimality means that if $(x_i)_{i \in A}$ is another solution to the linear system, then $x_i \geq h_i^A$ for all $i$.
+\end{theorem}
+\begin{proof}
+	We first check that $h_i$ does indeed solve this system. 
+\end{proof}
 
 \end{document}
 
