@@ -479,15 +479,149 @@ We will return to this when we discuss compactness later on.
 
 \subsection{Uniform Continuity}
 
-Recall the notion of continuity in $\R$ or $\C$.
+Recall the standard notion of continuity.
 
 \begin{definition}[Continuity]
-	Let $A \subseteq \R$ (or $\C$) and $f: A \rightarrow \C$. We say that $f$ is \vocab{continuous at $a$} $\in A$ if given any $\epsilon > 0$ we can find a $\delta > 0$ such that $|f(x) - f(y)| < \epsilon$ for all $y \in A$ such that $|x - y| < \delta$.
+	Let $A \subseteq \C$ and $f: A \rightarrow \C$. We say that $f$ is \vocab{continuous at $a$} $\in A$ if given any $\epsilon > 0$ we can find a $\delta > 0$ such that $|f(x) - f(y)| < \epsilon$ for all $y \in A$ such that $|x - y| < \delta$.
 
 
 	We say that $f$ is \vocab{continuous} if it is continuous at every $a \in A$.
 \end{definition}
 
 In the above definition, our $\delta$ is allowed to depend on both $\varepsilon$ \emph{and} $x$.
+
+\begin{definition}[Uniform Continuity]
+    Let $A \subset \C$ and $f: A \rightarrow \C$. We say that $f$ is \vocab{uniformly continuous} on $A$ if given any $\varepsilon > 0$ we can find a $\delta > 0$ such that for all $x, y \in U$ we have $|x - y| < \delta$ implying $|f(x) - f(y)| < \varepsilon$.
+\end{definition}
+
+Here, we again impose this \emph{uniformity} constraint, that is, $\delta$ is allowed to depend on $\varepsilon$ only. 
+
+It's easy to see that uniform continuity implies continuity, but the converse doesn't hold in general.
+
+\begin{example}[Uniformly Continuous Function]
+    We will show that $f(x) = 2x + 17$ is uniformly continuous over $\R$. 
+
+    Given $\varepsilon > 0$, let $\delta = \varepsilon / 2$. Then for all $x, y \in \R$ with $|x - y| < \delta$ we have $|f(x) - f(y)| = 2|x - y| < \varepsilon$, as required.
+\end{example}
+
+\begin{example}[A Non-Uniformly Continuous Function]
+    The function $f(x) = x^2$ over $\R$ is continuous, but not uniformly continuous. 
+
+    Consider $\varepsilon = 1$. Then given some $\delta$, let $x > 1/\delta$ and $y = 1/\delta + \delta/2$. Then we have $|x - y| < \delta$ but $|f(x) - f(y)| = 1 + \delta^2/4 > 1 = \varepsilon$, so $f$ is not uniformly continuous.
+\end{example}
+
+Here, our uniform continuity was shown to not hold by taking larger and larger $x$, which forced the slope of the function to get too large for a given value of $\delta$ to be sufficient. It turns out that this is the only failure point of uniform continuity, and indeed continuity implies uniform continuity when we are working over a bounded interval.
+
+The proof of this is quite natural -- we use Bolzano-Weierstrass to show that a contradiction to uniform continuity is a contradiction to continuity.\footnote{Another argument which is more direct can be made using compactness, but we will look past this for now.}
+
+\begin{theorem}[Continuous Functions are Uniformly Continuous]
+    Let $f: [a, b] \rightarrow \C$ be continuous. Then $f$ is uniformly continuous
+\end{theorem}
+\begin{proof}
+	Suppose $f$ was not uniformly continuous, that is, there exists some $\epsilon > 0$ such that for all $\delta > 0$ there is some $x, y$ with $|x - y| < \delta$ such that $|f(x) - f(y)| \geq \epsilon$.
+
+	Taking $\delta = 1/n$, we can find some sequences $x_n, y_n \in [a, b]$ such that $|x_n - y_n| < 1/n$, and $|f(x_n) - f(y_n)| \geq \epsilon$. Then by Bolzano-Weierstrass, we can find some convergent subsequence $x_{n_j} \rightarrow x$ for some $x \in [a, b]$. But then $|x_{n_j} - y_{n_j}| < 1/n_j$ for all $j$, so we must have $y_{n_j} \rightarrow x$ also.
+
+	Then $|f(x_{n_j}) - f(y_{n_j})| \geq \epsilon$ for every $j$, which implies that $f(x_{n_j})$ and $f(y_{n_j})$ cannot converge to the same value. But then by continuity we have $f(x_{n_j}) \rightarrow f(x)$ and $f(y_{n_j}) \rightarrow f(x)$, which is a contradiction. Thus $f$ must be uniformly continuous.
+\end{proof}
+
+With this result, we can prove the familiar result that continuous functions are integrable.
+
+\begin{theorem}[Continuous Functions are Integrable]
+	Let $f:[a, b] \rightarrow \R$ be continuous. Then $f$ is Riemann integrable.
+\end{theorem}
+\begin{proof}
+	Given $\epsilon > 0$, since $f$ is uniformly continuous, there is some $\delta > 0$ such that $|f(x) - f(y)| < \epsilon/(b - a)$ whenever $|x - y| < \delta$ and $x, y \in [a, b]$.
+
+	Now choose some integer $n \geq (b - a)/\epsilon$, and define the dissection $\DD = \{x_0, x_1, \dots, x_n\}$ with $x_j = a + j(b - a)/n$. Then we have
+	$$
+	\sup_{x \in [x_{j - 1}, x_j]} f(x) - \inf_{x \in [x_{j - 1}, x_j]} f(x) \leq \frac{\epsilon}{(b - a)},
+	$$
+	for all $1 \leq j \leq n$, and thus 
+	\begin{align*}
+		S_\DD(f) - s_\DD(f) &= \sum_{j = 1}^n (x_j - x_{j - 1})\left[\sup_{x \in [x_{j - 1}, x_j]} f(x) - \inf_{x \in [x_{j - 1}, x_j]} f(x)\right] \\
+		&\leq \sum_{j = 1}^n \frac{b - a}{n} \cdot \frac{\epsilon}{b - a} = \epsilon,
+	\end{align*}
+	and thus $f$ is Riemann integrable.
+\end{proof}
+
+\section{Metric Spaces}
+
+\subsection{Defining Metric Spaces}
+
+In $\R$ and $\C$, we measured the `closeness' of two points $x, y$ using $|x - y|$. We used this throughout our study of analysis both in this course and previously, and possibly the most important property of this was the triangle inequality,
+$$
+|x + z| \leq |x + y| + |y + z|.
+$$
+
+The triangle inequality acts, more or less, as saying that being close is \emph{transitive}. That is, if $x$ is close to $y$, and $y$ is close to $z$, then $x$ is close to $z$.
+
+In fact, we can abstract away quite naturally from the absolute value into a more general setting in which a measure of distance has this property.
+
+\begin{definition}[Metric]
+    Let $M$ be a set. A \vocab{metric} on $M$ is a function $d: M \times M \rightarrow \R$ such that
+    \begin{itemize}
+        \item \emph{Positivity}. For all $x, y \in M$, $d(x, y) \geq 0$, with equality if and only if $x = y$.
+        \item \emph{Symmetry}. For all $x, y \in M$, $d(x, y) = d(y, x)$.
+        \item \emph{Triangle inequality}. For all $x, y, z \in M$,
+        $$
+        d(x, z) \leq d(x, y) + d(y, z).
+        $$
+    \end{itemize}
+\end{definition}
+
+\begin{definition}[Metric Space]
+    A \vocab{metric space} is a pair $(M, d)$ where $M$ is a set and $d$ is a metric on $M$. 
+\end{definition}
+
+\begin{example}[Metric Spaces on $\R$]
+    The real line $\R$ is a metric space under the metric $d(x, y) = |x - y|$. In fact, any subset of $\R$ is a metric space with the same metric.
+\end{example}
+
+\begin{example}[Euclidean Space $\R^n$]
+   In $\R^n$, we can define the \vocab{Euclidean norm}
+   of $x \in \R^n$ by
+   $$
+    \norm{x} = \norm{x}_2 = \left(\sum_{k = 1}^n |x_k|^2\right)^{\frac{1}{2}}.
+   $$
+   This satisfies the triangle inequality $\norm{x + y} \leq \norm{x} + \norm{y}$. This `norm' then induces a metric on $\R^n$
+   $$
+    d(x, y) = d_2(x, y) = \norm{x - y}_2 = \left(\sum_{k = 1}^n |x_k - y_k|^2\right)^{\frac{1}{2}}.
+   $$
+   This metric is the \vocab{Euclidean distance}, and with it we get a metric space $(\R^n, d_2)$ called \vocab{Euclidean space}. This is the standard metric space on $\R^n$.
+\end{example}
+\begin{remark}
+    We sometimes denote the $n$-dimensional real or complex Euclidean space by $\ell_2^n$. The Euclidean norm is called the $\ell_2$-norm, and the corresponding Euclidean distance is called the $\ell_2$-metric.
+\end{remark}
+
+\begin{example}[Taxicab Metric]
+It's also possible to use the \vocab{taxicab metric} on $\R^n$, given by
+$$
+d(x, y) = \sum_{k = 1}^{n} |x_k - y_k|.
+$$
+This is also known as the $\ell_1$-metric.
+\end{example}
+
+\begin{example}[$\ell_\infty$ Metric]
+In $\R^n$ or $\C^n$, we can define the $\ell_{\infty}$ norm of $x$ by
+$$
+    \norm{x}_{\infty} = \max_{1 \leq k \leq n} |x_k|,
+$$
+and then we can define the \vocab{$\ell_{\infty}$-metric} by
+$$
+d(x, y) = \norm{x - y}_{\infty} = \max_{1 \leq k \leq n} |x_k - y_k|.
+$$
+We then get a metric space which we denote by $\ell_{\infty}^n$.
+\end{example}
+
+\begin{example}
+    Let $S$ be a set, and let $\ell_{\infty}(S)$ be the set of all bounded scalar functions on $S$. We define the $\ell_{\infty}$-norm of $f \in \ell_{\infty}(S)$ by
+    $$
+    \norm{f} = \norm{f}_{\infty} = \sup_{x \in S}|f(x)|,
+    $$
+    also called the $\sup$ norm or the uniform norm.
+\end{example}
+
+
 
 \end{document}
