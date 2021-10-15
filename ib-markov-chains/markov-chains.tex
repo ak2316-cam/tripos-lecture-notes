@@ -253,7 +253,7 @@ $$
 since $p_{i, j}$ is real and so all of the imaginary parts must cancel out.
 
 
-If \emph{some eigenvalues repeat}, then the situation is slightly more complicated. If an eigenvalue $\mu_k$ has multiplicity $m$, we can simply replace $a_k$ by a degree $m$ polynomial in $n$\footnote{This comes from considering the Jordan Normal form of the transition matrix}. 
+If \emph{some eigenvalues repeat}, then the situation is slightly more complicated. If an eigenvalue $\mu_k$ has multiplicity $m$, we can simply replace $a_k$ by a degree $m$ polynomial in $n$\footnote{This comes from considering the Jordan Normal form of the transition matrix.}. 
 
 
 \begin{example}[Transition Matrix with Complex Eigenvalues]
@@ -304,63 +304,132 @@ If \emph{some eigenvalues repeat}, then the situation is slightly more complicat
 
 \section{Class Structure}
 
-Test
-
-
 
 \subsection{Communicating Classes}
 
-\begin{definition}
-$X$ is a Markov chain with transition matrix $P$ and values in $I$. For $x, y \in I$ we say that \vocab{$x$ leads to $y$} and write it $x \rightarrow y$ if
-$$
-\PP(X_m = y \text{ for some }n \geq 0) > 0. 
-$$
-We say that $x$ \vocab{communicates} with $y$ and write $x \longleftrightarrow y$ if both $x \rightarrow y$ and $y \rightarrow x$.  
+In Graph Theory, one can often make a problem easier by looking at the \emph{connected components} of the graph, effectively splitting it up into smaller disconnected chunks which are easier to understand on their own. 
+This has a natural analogue in the study of Markov chains,\footnote{Indeed, one can view a Markov chain as a labelled directed graph, and then apply the same connected components argument to obtain the theory shown here.} where we consider which states can interact.
+
+\begin{definition}[Communication]
+	Let $X_n$ be a Markov chain. For $i, j \in S$, we say that $i$ \vocab{leads to} $j$, written $i \rightarrow j$, if $p_{i, j}(n) > 0$ for some $n \geq 0$.
+
+	If $i \rightarrow j$ and $j \rightarrow i$, we say that $i$ and $j$ \vocab{communicate}, and write $i \leftrightarrow j$.
 \end{definition}
 
-\begin{theorem}
-	The following are equivalent: 
-	\begin{enumerate}[label=(\roman*)]
-		\item $x \rightarrow y$;
-		\item There exists a sequence of states $x = x_0, x_1, \dots, x_k = y$ such that 
-		$$P(x_0, x_1)P(x_1, x_2) \cdots P(x_{k - 1}, x_k) > 0;$$
-		\item There exists $n \geq 0$ such that $p_{xy}(n) > 0$.
-	\end{enumerate}
+We can use this idea of communication to break up our state space by noting that communication is an equivalence relation.
+
+\begin{theorem}[Communication is an Equivalence Relation]
+The relation $\leftrightarrow$ is an equivalence relation on $S$.
 \end{theorem}
 \begin{proof}
-	Trivial.
+	For any $i \in S$, $p_{i, i}(0) = 1$ and thus $i \leftrightarrow i$, so the relation is reflexive. The relation is symmetric by definition, so we are just left to check transitivity.
+
+	Let $i, j, k \in S$, and suppose that $i \leftrightarrow j$ and $k \leftrightarrow k$. Then there exists $m, n \geq 0$ such that $p_{i, j}(n) > 0$ and $p_{j, k}(m) > 0$. Then by the Chapman-Kolmogorov equations,
+	\begin{align*}
+		p_{i, k}(m + n) = \sum_{l \in S}p_{i, l}(m)p_{l, k}(n) \geq p_{i, j}(n) p_{j, k}(m) > 0,
+	\end{align*}
+	so $i \rightarrow k$. By the same argument $k \rightarrow i$, and thus $\leftrightarrow$ is transitive.
 \end{proof}
 
-\begin{corollary}
-	$\longleftrightarrow$ is an equivalence relation on $I$.
-\end{corollary}
-\begin{proof}
-	Trivial.
-\end{proof}
+Because communication is an equivalence relation, it partitions the state space.
 
 \begin{definition}[Communicating Classes]
-	The equivalence classes induced by $\longleftrightarrow$ on $I$ are called \vocab{communicating classes}.
+	The equivalence classes induced by $\longleftrightarrow$ on $S$ are called \vocab{communicating classes}.
 \end{definition}
 
-A communicating class $C$ is \vocab{closed} if whenever $x \in C$ and $x \rightarrow y$ then $y \in C$.
+Because communication is really a notion about directed graphs (and not \emph{really} about individual probabilities), it's usually relatively easy to identify the communicating classes from the diagram of a Markov chain.
 
-A matrix $P$ is called \vocab{irreducible} if it has a single communicating class, that is, for all $x, y \in I$ we have $x \longleftrightarrow y$. 
+For example, the Markov chain below has its communicating classes coloured (and the transition probabilities are not labelled, as they are not needed to infer the communicating classes, aside from knowing they are non-zero along each edge).
 
-A state $x$ is called \vocab{absorbing} if $\{x\}$ is a closed class. 
+\begin{center}
+\begin{tikzpicture}
+
+\tikzstyle{every state}=[fill,draw=none,blue,text=white]
+\tikzstyle{accepting}=[green!50!black,text=white]
+\tikzstyle{initial}= [red,text=white]
+
+\node[state, initial] (1) {1};
+\node[state, initial, right=of 1] (2) {2};
+\node[state, accepting, below=of 1] (3) {3};
+\node[state, left=of 3] (4) {4};
+
+% \draw[every loop, >=latex]
+% (1) edge[loop above] node {$1/2$} (1)
+% (1) edge[bend left, above] node {$1/2$} (2)
+% (2) edge[loop above] node {$1/2$} (2)
+% (2) edge[bend left, below] node {$1/2$} (1)
+% (3) edge[left] node {$1/3$} (1)
+% (3) edge[below] node {$1/6$} (4)
+% (3) edge[bend right, right] node {$1/6$} (2)
+% (3) edge[loop below] node {$1/6$} (3)
+% (4) edge[loop below] node {$1$} (4);
+
+\draw[every loop, >=latex]
+(1) edge[loop above] (1)
+(1) edge[bend left, above] (2)
+(2) edge[loop above] (2)
+(2) edge[bend left, below] (1)
+(3) edge[left] (1)
+(3) edge[below] (4)
+(3) edge[bend right, right] (2)
+(3) edge[loop below] (3)
+(4) edge[loop below] (4);
+
+\end{tikzpicture}
+\end{center}
+
+In the Markov chain above, we can see that there are a few different ways that communicating classes can appear.
+
+A communicating class $C$ is \vocab{closed} if there is no way to leave it, in that if $i \in C$ and $i \rightarrow j$, then $j$ in $C$. For example, in the Markov chain above, the communicating class $\{1, 2\}$ is closed.
+
+A state $i \in S$ is \vocab{absorbing} if there is no way to leave that state, that is, $\{i\}$ is a communicating class. In the Markov chain above, $4$ is absorbing.
+
+If a Markov chain has only one communicating class, we call is \vocab{irreducible}, as we cannot split it into smaller parts in this way.
+
+% A communicating class $C$ is \vocab{closed} if whenever $x \in C$ and $x \rightarrow y$ then $y \in C$.
+
+% A matrix $P$ is called \vocab{irreducible} if it has a single communicating class, that is, for all $i, y \in I$ we have $x \leftrightarrow y$. 
+
+% A state $x$ is called \vocab{absorbing} if $\{x\}$ is a closed class. 
+
+
+\section{Hitting Times and Absorption Probabilities}
 
 \subsection{Hitting Times}
 
-\begin{definition}
-	For $A \subseteq I$, we define $T_A$ to be the \vocab{hitting time} of $A$,
-	$
-	T_A: \Omega \rightarrow \{0, 1, 2, \dots \} \cup \{\infty\},
-	$
-	defined by $T_A(\omega) = \inf\{ n \geq 0: X_n(\omega) \in A\}$, where we take $\inf \emptyset = \infty$.
+When studying Markov chains, a frequently occurring question is `\emph{how long does it take to reach a given state $i \in S$?}', a concept which we formulate as the \emph{hitting time}.
 
-	The \vocab{hitting probability} of $A$ is $h^A: I \rightarrow [0, 1]$ such that $h_i^A = \PP_i(T_A < \infty)$.
-
-	The \vocab{mean hitting time} of $A$ is $k^A: I \rightarrow \R$ with $k_i^A = \EE_i[T_A] = \sum_{n = 0}^{\infty} n \cdot \PP_i(T_a = n) + \infty \cdot \PP_i(T_a = \infty)$.
+\begin{definition}[Hitting Time]
+	Let $X_n$ be a Markov chain.
+	The \vocab{hitting time} of some subset of states $A \subseteq S$ is the random variable $T_A$, which is the least $n$ for which $T_n \in A$. 
+	In particular,
+	$$
+	T_A = \inf\{n \geq 0 \mid X_n \in A\},
+	$$
+	where this may be $\infty$ if $X_n \not \in A$ for all $n \geq 0$.
 \end{definition}
+
+In this section, we will also look some related quantities, such as the \emph{hitting probability} and \emph{mean hitting time}.
+
+\begin{definition}[Hitting Probability]
+	Let $X_n$ be a Markov chain, and let $A \subseteq S$ be some subset of states.
+	The \vocab{hitting probability} $h^A_i$ of $A$ is the probability that $X_n$ eventually reaches a state in $A$, given $X_0 = i$. That is,
+	$$
+	h^A_i = \PP(T_A < \infty \mid X_0 = i),
+	$$
+	where $i \in S$.
+\end{definition}
+
+\begin{definition}[Mean Hitting Time]
+	Let $X_n$ be a Markov chain, and let $A \subseteq S$ be some subset of states.
+	The \vocab{mean hitting time} $k^A_i$ of $A$ is the expected number of steps taken for $X_n$ to reach a state in $A$, given $X_0 = i$. That is,
+	$$
+	k^A_i = \EE[T_A \mid X_0 = i],
+	$$
+	where $i \in S$. We note that this may be $\infty$.
+\end{definition}
+
+So how do we go about calculating these quantities? An intuitive way is to try and consider what happens as we move from one state to another, as we will see in the example below.
 
 \begin{example}
 	Consider the Markov chain in the diagram below.
@@ -383,34 +452,54 @@ A state $x$ is called \vocab{absorbing} if $\{x\}$ is a closed class.
 		\end{tikzpicture}
 		\end{center}
 
-		We take $A = \{4\}$, and want to find $h_2^A = \PP_2(T_A < \infty)$. We have
+		Suppose we took $A = \{4\}$ and wanted to find the hitting probability $h_2^A = \PP(T_A < \infty \mid X_0 = 2)$. One might intuitively suppose that
 		\begin{align*}
-			h_2^A &= \frac{1}{2}h_3^A \\
-			h_3^A &= \frac{1}{2} \cdot 1 + \frac{1}{2} h_2^A \\
-		\implies h_2^A &= \frac{1}{3}.
+			h_2^A &= P_{2, 3} h_3^A = \frac{1}{2} h_3^A, \\
+			h_3^A &= P_{3, 2} \cdot h_2^A + P_{3, 4} \cdot h_4^A = \frac{1}{2} \cdot h_2^A + \frac{1}{2}.
 		\end{align*}
-		If instead we took $B = \{1, 4\}$ and wanted to find $k_2^B$, we would get
-		\begin{align*}
-			k_2^B &= 1 + \frac{1}{2}k_3^B \\
-			k_3^B &= 1 + \frac{1}{2}k_2^B \\
-	\implies k_2^B &= 2.
-		\end{align*}
+		which when solved gives us $h_2^A = 1/3$.
+
+		Alternative, if we took $B = \{1, 2\}$ and wanted to find the mean hitting time $k_2^B$, we could again try the intuitive approach of writing
+		$$
+		k_2^B = 1 + \frac{1}{2}k_3^B,
+		$$
+		and noting that $k_3^B = k_2^B$ by symmetry, giving $k_2^B = 2$.
 \end{example}
 
-In the computations above, we really should check that this is a valid method (though it is quite intuitive).
+In the computations above, we really should check that these are valid methods (though it \emph{really is} quite intuitive).
 
-\begin{theorem}
-	Let $A \subseteq I$. The vector $(h_i^A)_{i \in A}$ is the minimal non-negative solution to
+\begin{theorem}[Computing Hitting Probabilities]
+	Let $A \subseteq S$. Then the set of hitting probabilities $h^A = (h_i^A \mid i \in S)$ is the minimal\footnote{Minimal in that if $x$ is another non-negative solution, then $x_i \geq h_i^A$ for all $i \in S$.} non-negative solution to the equations
 	\begin{align*}
 		h_i^A = \begin{cases}
 			1 &\mbox{if } i  \in A, \\
-			\sum_{j} P(i, j) h_j^A &\mbox{if } i \not \in A,
+			\sum_{j \in S} P_{i, j} h_j^A &\mbox{if } i \not \in A.
 		   \end{cases}
 	\end{align*}
-	where minimality means that if $(x_i)_{i \in A}$ is another solution to the linear system, then $x_i \geq h_i^A$ for all $i$.
 \end{theorem}
 \begin{proof}
-	We first check that $h_i$ does indeed solve this system. 
+	We first check that $h_i$ solves this system. Clearly if $i \in A$, then $h_i^A = 1$, so take $i \in S\backslash A$. Then conditioning on the first step in the chain,
+	\begin{align*}
+		h_i^A &= \sum_{j \in S} P_{i, j} \PP(T_A < \infty \mid X_0 = i, X_1 = j)  \\
+		&= \sum_{j \in S} P_{i, j} h_j^A,
+	\end{align*}
+	by the simple Markov property. So $h_i$ does indeed solve this system.
+
+	We now check minimality. Let $x = (x_i \mid i \in S)$ be another non-negative solution. For $i \in A$, we have $x_i = h^A_i = 1$, so that holds. Then for $i \in S \backslash A$, since $x$ satisfies the system of equations we can write
+	\begin{equation}\label{eq:1}
+		x_i = \sum_{j \in S}P_{i, j} x_j = \sum_{j \in A} P_{i, j} x_j + \sum_{j \in S \backslash A} P_{i, j} x_j. \tag{$\dagger$}
+	\end{equation}
+	Then with $x_j = 1$ for $j \in A$ and $x \geq 0$, we have
+	\begin{align*}
+		x_i \geq \sum_{j \in A} P_{i, j} = \PP(X_1 \in A \mid X_0 = i) = \PP(T_A < 2 \mid X_0 = i).
+	\end{align*}
+	Similarily, expanding \eqref{eq:1}, we have
+	\begin{align*}
+	x_i &= \PP(X_1 \in A \mid X_0 = i) + \sum_{j \in S \backslash A} P_{i, j} \left(\sum_{k \in A} P_{j, k} x_k + \sum_{k \in S \backslash A} P_{j, k} x_k\right) \\
+		&\geq \PP(X_1 \in A \mid X_0 = i) + \PP(X_1 \not \in A, X_2 \in A \mid X_0 = i) \\
+		&= \PP(T_A < 3 \mid X_0 = 1).
+	\end{align*}
+	We can repeat this argument to eventually establish that $x_i \geq \PP(T_A < n \mid X_0 = i)$, for all $n \geq 0$. Then as $n \rightarrow \infty$, we have $x_i \geq \PP(T_A < \infty \mid X_0 = i)$, as required.
 \end{proof}
 
 \end{document}
