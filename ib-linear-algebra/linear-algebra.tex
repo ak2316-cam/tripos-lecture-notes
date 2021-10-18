@@ -267,9 +267,7 @@ With that out of the way, we can prove some results about finite dimensional vec
     If $\{v_1, \dots, v_n\}$ is linearly independent, then we are done. If it's not, then (up to reordering) we have $v_n \in \langle\{v_1, \dots, v_{n - 1}\}\rangle$. But then $\langle\{v_1, \dots, v_n\}\rangle = \langle\{v_1, \dots, v_{n - 1}\}\rangle$, so we can not include $v_n$ in our subset. Not including elements in this way repeatedly, since there is finitely many elements in $S$, we must eventually get a linearly independent set that still spans $V$.
 \end{proof}
 
-The next result it about two ideas: constructing bases and the size of linearly independent sets. 
-
-\begin{theorem}
+\begin{theorem}[Steinitz Exchange Lemma]
     Let $V$ be a finite dimensional vector space. Then if $\{v_1, \dots, v_m\}$ is a set of linearly independent vectors, and $\{w_1, \dots, w_n\}$ spans $V$, then
     \begin{enumerate}[label=(\roman*)]
         \item $m \leq n$
@@ -291,5 +289,125 @@ The next result it about two ideas: constructing bases and the size of linearly 
 
     Repeating this process, we will be done after $m$ steps, and we have also shown (at the final step) that $m \leq n$.
 \end{proof}
+
+\begin{corollary}[Dimension]
+    Let $V$ be a finite dimensional vector space over $\F$. Then any two bases of $V$ have the same number of elements, called the \vocab{dimension} of $V$, denoted $\dim V$ or $\dim_\F V$.
+\end{corollary}
+\begin{proof}
+    Immediate by Steinitz exchange lemma.
+\end{proof}
+
+So using Steinitz exchange lemma we have finally been able to pin down exactly what is meant by the dimension of a vector space -- it's the size of it's basis.
+This should match up to the intuitive idea of `freedom' that you had at the start of this section. Freedom in a vector space comes from varying coefficients, and in a basis we can both freely vary coefficients and also reach any element in a vector space uniquely, so the number of independent parameters really is the size of the basis.
+
+Steinitz also gives us a few useful results for free.
+
+\begin{corollary}
+    Let $V$ be a vector space over $\F$ with finite dimension $n = \dim V$. Then
+    \begin{enumerate}[label=(\roman*)]
+        \item Any independent set of vectors has at most $n$ elements, with equality if and only if it's a basis.
+        \item Any spanning set has at least $n$ elements, with equality if and only if it's a basis.
+    \end{enumerate} 
+\end{corollary}
+\begin{proof}
+    Immediate by Steinitz exchange lemma.
+\end{proof}
+
+Working with basis and dimension can make the study of vector spaces much easier. For example, Steinitz allows us to take a subspace and nicely extend a basis for that subspace to a basis for the entire space. Working with ideas like this can make many results easier to prove, as we will see in the following propositions.
+
+
+\begin{proposition}[Dimension of the Sum of Subspaces]
+    Let $U$, $W$ be subspaces of a vector space $V$. if $U$ and $W$ are finite dimensional, then so is $U + W$, and $\dim U + W = \dim U + \dim W - \dim U \cap W$.
+\end{proposition}
+\begin{proof}
+    Pick a basis $\{v_1, \dots, v_a\}$ of $U \cap W$, and extend by Steinitz exchange lemma to a basis $\{v_1, \dots, v_a, u_1, \dots, u_b\}$ of $U$, and to a basis $\{v_1, \dots, v_a, w_1, \dots, w_c\}$ of $W$.
+    
+    It suffices to prove that $\{v_1, \dots, v_a, u_1, \dots, u_b, w_1, \dots, w_c\}$ is a basis of $U + W$.
+
+    Clearly this set of vectors spans $U + W$, so we just need to check that they are linearly independent. Suppose that
+    $$
+    \sum_{i = 1}^{a} \alpha_i v_i + \sum_{i = 1}^b \beta_i u_i + \sum_{i = 1}^c \gamma_i w_i = 0.
+    $$
+    Rewriting,
+    \begin{equation}\label{eq:thing}
+        \sum_{i = 1}^{a} \alpha_i v_i + \sum_{i = 1}^b \beta_i u_i = -\sum_{i = 1}^c \gamma_i w_i, \tag{$\dagger$}
+    \end{equation}
+    where the LHS is in $U$ and the RHS is in $W$. This implies that
+    $
+    \sum_{i = 1}^c \gamma_i w_i \in U \cap W,
+    $
+    and can be written as 
+    $
+    \sum_{i = 1}^c \gamma_i w_i = \sum_{i = 1}^a  \mu_i v_i$,
+    for some $\mu_i$, and then substituting this back into \eqref{eq:thing},
+    $$
+    \sum_{i = 1}^a (\alpha_i + \mu_i) v_i + \sum_{i = 1}^b \beta_i u_i = 0
+    $$
+    which forces $\beta_i = 0$. A similar argument also gives $\gamma_i = 0$, which then finally forces $\alpha_i = 0$, since $\{v_1, \dots, v_a\}$ is a basis.
+\end{proof}
+
+\begin{proposition}[Dimension of the Subspace its Quotient]
+    If $V$ is a finite dimensional vector space over $\F$ and $U \subseteq V$, then $U$ and $V / U$ are also finite dimensional, and $\dim V = \dim U + \dim V / U$.
+\end{proposition}
+\begin{proof}
+    Let $\{u_1, \dots, u_\ell\}$ be a basis of $U$, and extend it via Steinitz exchange lemma to a basis $\{v_1, \dots, v_\ell, w_{\ell+1}, \dots, w_n\}$ of $V$.
+
+    It's easy to see that $\{w_{\ell + 1} + U, \dots, w_{n} + U\}$ is a basis of $V/U$, as it clearly spans and linear independence is inherited from it being a basis of $V$. The result then follows.
+\end{proof}
+
+\subsection{Direct Sums}
+
+Previously, we were able to look at the substructure of a vector space by looking at subspaces. Given two subspaces, we were then able to construct their sum, which is the set of all linear combinations of elements in each subspace. 
+
+When studying a vector space using its subspaces in this way (considering their sum), it can be useful to impose an \emph{additional} constraint about the way in which the subspaces interact. In particular, it can be useful to impose a uniqueness constraint on the linear combinations that are created.
+
+\begin{definition}[Direct Sum]
+    Let $V$ be a vector space over $\F$, and let $U, W \leq V$. We say that $V$ is the \vocab{direct sum} of $U$ and $W$, written $V = U \oplus W$ if and only if every element $v \in V$ can be decomposed as
+    $$
+    v = u + w
+    $$
+    with $u \in U$ and $w \in W$, with this decomposition being unique.
+\end{definition}
+
+Of course, we can generalize the notion of a direct sum naturally to the case of multiple subspaces, in the way that you would expect.
+
+\begin{remark}[Warning]
+    We say that $W$ is \emph{a} direct complement of $U$ in $V$. There is \emph{no uniqueness} of such a complement!
+\end{remark}
+
+
+
+\begin{lemma}
+    Let $V$ be a vector space and let $U, W \leq V$.
+    Then the following are equivalent.
+    \begin{enumerate}[label=(\roman*)]
+        \item $V = U \oplus W$
+        \item $V = U + W$ and $U \cap W = \{0\}$
+        \item For any basis $B_1$ of $U$ and $B_2$ of $W$, the union $B = B_1 \cup B_2$ is a basis of $V$.
+    \end{enumerate}
+\end{lemma}
+\begin{proof}
+    \emph{(ii) implies (i)}. Let $V = U + W$ with $U \cap W = \{0\}$. Then for all $v \in V$, we can write $v = u + w$ with $u \in U$ and $w \in W$. To see that this is unique, suppose that
+    $$
+    v = u + w = u' + w'.
+    $$
+    Then $(u - u') = - (w-w')$, and thus they are both in $U \cap W$, but the only element of this is $0$, and thus $u = u'$ and $w = w'$, giving us uniqueness.
+
+    \emph{(i) implies (iii)}. Let $B_1$ be a basis of $U$ and $B_2$ be a basis of $W$. Then $B = B_1 \cup B_2$ clearly spans $V$, so we need to check that it's linearly independent. Indeed, if
+    $$
+    \sum_{u \in B_1} \lambda_u u + \sum_{w \in B_2} \lambda_w w = 0,
+    $$
+    then $V = U \oplus W$ implies that since this is the sum of an element of $U$ and an element of $W$, then each is zero, and linear independence follows from $B_1, B_2$ being sets of linearly independent vectors.
+
+    \emph{(iii) implies (ii)}. 
+    Clearly we have $V = U+W$, so we just need to check that $U \cap W = \{0\}$. Let $v \in U \cap W$. Then we can write
+    $$
+    v = \sum_{u \in B_1} \lambda_u u = \sum_{w \in B_2} \lambda_w w \implies \sum_{u \in B_1} \lambda_u u - \sum_{w \in B_2} \lambda_w W = 0,
+    $$
+    and since $B_1 \cup B_2$ is a basis for $V$, we must have $\lambda_u, \lambda_w = 0$ for all $u, w \in B_1, B_2$, implying that $v = 0$.
+\end{proof}
+
+This result extends as you would expect for the case of direct products using multiple subspaces.
+
 
 \end{document}
