@@ -431,7 +431,7 @@ In this section, we will also look some related quantities, such as the \emph{hi
 
 So how do we go about calculating these quantities? An intuitive way is to try and consider what happens as we move from one state to another, as we will see in the example below.
 
-\begin{example}
+\begin{example}[Computing Hitting Probabilities and Mean Hitting Times]
 	Consider the Markov chain in the diagram below.
 	\begin{center}
 		\begin{tikzpicture}
@@ -500,6 +500,73 @@ In the computations above, we really should check that these are valid methods (
 		&= \PP(T_A < 3 \mid X_0 = 1).
 	\end{align*}
 	We can repeat this argument to eventually establish that $x_i \geq \PP(T_A < n \mid X_0 = i)$, for all $n \geq 0$. Then as $n \rightarrow \infty$, we have $x_i \geq \PP(T_A < \infty \mid X_0 = i)$, as required.
+\end{proof}
+
+This method of computing hitting probabilities is perfectly valid on Markov chains with infinite state spaces.
+
+\begin{example}[Hitting Probabilities on an Infinite State Space]
+	Consider the Markov chain with states $S = \{0, 1, \dots\}$ such that $P_{0, 1} = 1$, and
+	$$
+	P_{i, i+1} = p, \quad P_{i, i - 1} = q \quad \text{for all } i \geq 1,
+	$$ 
+	where $p, q \in (0, 1)$ with $p + q = 1$.
+
+	\begin{center}
+		\begin{tikzpicture}
+		
+		\node[state] (1) {1};
+		\node[state, right=of 1] (2) {2};
+		\node[state, right=of 2] (3) {3};
+		\node[state, right=of 3] (4) {4};
+		\node[state, right=of 4] (5) {$\cdots$};
+		
+		\draw[every loop, >=latex]
+		(1) edge[above] node {1} (2)
+		(2) edge[above] node {$p$} (3)
+		(3) edge[above] node {$p$} (4)
+		(4) edge[above] node {$\cdots$} (5)
+		(2) edge[bend left, below] node {$q$} (1)
+		(3) edge[bend left, below] node {$q$} (2)
+		(4) edge[bend left, below] node {$q$} (3)
+		(5) edge[bend left, below] node {$\cdots$} (4);
+		\end{tikzpicture}
+		\end{center}
+
+	Let $h_i = \PP(T_0 < \infty \mid X_0 = i)$, and suppose that $p \neq q$. Then we clearly have $h_0 = 1$, and generally we can write down the recurrence 
+	$$
+		h_i = p h_{i + 1} + qh_{i - 1}.
+	$$
+	This then implies $p(h_{i + 1} - h_i) = q(h_{i} - h_{i - 1})$, so that
+	$$
+		h_{i+1} - h_{i}  = \left(\frac{q}{p}\right)^i (h_1 - 1).
+	$$
+	This inspires us to write $h_i$ as a telescoping sum
+	\begin{align*}
+		h_i &= \sum_{j = 1}^i (h_j - h_{j - 1}) + 1  \\
+			&= (h_1 - 1) \sum_{j = 1}^i \left(\frac{q}{p}\right)^j + 1,
+	\end{align*}
+	which gives us our general solution $h_i = a + b(q/p)^i$, which we can then solve.
+
+	In the case that $q > p$, then in order for $h_i$ to be the minimal solution, we need to have $a = 1$ and $b = 0$, so $h_i = 1$.
+\end{example}
+
+% \begin{example}[Birth and Death Chains]
+% 	Consider the Markov chain similar to before with states $S = \{0, 1, \dots\}$ such that $P_{0, 1} = 1$ and $P_{i, i + 1} = p$ 
+% \end{example}
+
+We also need to check that our method for calculating the mean hitting time was valid.
+
+\begin{theorem}[Computing Mean Hitting Times]
+	Let $A \subseteq S$. Then the set of mean hitting times $k^A = (k_i^A \mid i \in S)$ is the minimal non-negative solution to the equations
+	\begin{align*}
+		k_i^A = \begin{cases}
+			0 &\mbox{if } i  \in A, \\
+			1 + \sum_{j \in S\backslash A} P_{i, j} k_j^A &\mbox{if } i \not \in A.
+		   \end{cases}
+	\end{align*}
+\end{theorem}
+\begin{proof}
+	To be completed next lecture.
 \end{proof}
 
 \end{document}
