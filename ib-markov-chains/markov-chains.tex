@@ -110,10 +110,10 @@ Since this does not depend on $i_0, \dots, i_{n - 1}$, $X_n$ is a homogeneous Ma
 An important aspect of Markov chains is that they are \emph{memoryless}, in the future is independent of the past, conditional on the present. This is encapsulated in the \vocab{simple Markov property}.
 
 \begin{theorem}[Simple Markov Property]
-	Let $X_n$ be a Markov chain. Then conditional on $X_m = i$, the sequence of random variables $(X_{m + n})_{n \geq 0}$ is\footnote{Here $\delta_{ij}$ is 1 if $i = j$ and 0 otherwise.} $\markov(\delta_i, P)$, and is independent of $X_0, \dots, X_m$.
+	Let $X_n$ be a Markov chain. Then conditional on $X_m = i$, the sequence of random variables $(X_{m + n})_{n \geq 0}$ is\footnote{Here $\delta_{ij}$ is 1 if $i = j$ and 0 otherwise.} $\markov(\delta_i, P)$, and is independent of $X_0, \dots, X_{m - 1}$.
 \end{theorem}
 \begin{proof}
-	Given any event $H$ determined by $X_0, \dots, X_m$, we want to show that for an event $F = \{X_m = i_m, \dots X_{m + n} = i_{m +n}\}$ we have
+	Given any event $H$ determined by $X_0, \dots, X_{m - 1}$, we want to show that for an event $F = \{X_m = i_m, \dots X_{m + n} = i_{m +n}\}$ we have
 	$$
 	\PP(H \cap F \mid X_m = i) = \delta_{ii_m}P_{i_m, i_{m + 1}} \cdots P_{i_{m + n-1}, i_{m + n}} \PP(H \mid X_m = i).
 	$$
@@ -393,7 +393,7 @@ If a Markov chain has only one communicating class, we call is \vocab{irreducibl
 % A state $x$ is called \vocab{absorbing} if $\{x\}$ is a closed class. 
 
 
-\section{Hitting Times and Absorption Probabilities}
+\section{Hitting Times, Stopping Times and Absorption Probabilities}
 
 \subsection{Hitting Times}
 
@@ -566,7 +566,62 @@ We also need to check that our method for calculating the mean hitting time was 
 	\end{align*}
 \end{theorem}
 \begin{proof}
-	To be completed next lecture.
+	We first check that $k_i$ solves this system. Clearly if $i \in A$, then $k_i^A = 0$, so take $i \in S \backslash A$. Then conditioning on the first step in the chain,
+	\begin{align*}
+		k_i^A &= \sum_{j \in S} P_{i, j}\EE[T_A \mid X_0 = i, X_1 = j]  \\
+		&= \sum_{j \in S} P_{i, j}(1 + \EE[T_A \mid X_0 = j]) \\
+		&= 1 + \sum_{j \in S} P_{i, j} k_j^A, 	
+	\end{align*}
+	which is equivalent to our original sum.
+
+	We now show that the solution is minimal. Let $y = (x_i \mid i \in S)$ be another non-negative solution. Then for $i \in A$ we have $y_i = k_i^A = 0$, so consider $i \in S \backslash A$. We can then write
+	\begin{align*}
+	y_i &= 1 + \sum_{j \in S \backslash A} P_{i, j} y_j  \\
+	&= 1 + \sum_{j \in S \backslash A} P_{i, j}\left(1 + \sum_{k \in S \backslash A} P_{j, k} y_k\right) \\
+	&\geq \PP(T_A \geq 1 \mid X_0 = i) + \PP(T_A \geq 2 \mid X_0 = 1).
+	\end{align*}
+	By iterating this, we obtain
+	$$
+	y_i \geq \sum_{m = 1}^n \PP(T_A \geq m \mid X_0 = i),
+	$$
+	and taking the limit as $n \rightarrow \infty$, this gives
+	$$
+	y_i \geq \sum_{m = 1}^{\infty} \PP(T_A \geq m \mid X_0 = i) = k_i^A,
+	$$
+	where we note that for a random variable $M$ taking non-negative integer values we have $\EE[M] = \sum_{m = 1}^{\infty} \PP(M \geq m).$
+\end{proof}
+
+So it does work, how lovely.
+
+\subsection{Stopping Times and the Strong Markov Property}
+
+We previously proved the \emph{simple Markov property}, that 
+conditional on the value of a Markov chain at a given time $m$, the future is independent of the past.
+This property required that we take some fixed time $m$ -- but what if $m$ itself is random? It's \emph{not} true in general\footnote{For example, let $T$ be the first time that a Markov chain hits some value $i$. Then if we condition on time $T - 1$, the future is then determined since the next step will be to $i$! You will see that this type of event is not allowed in our definition of stopping times.} that the Markov property still holds for an arbitrary random time, but it is true for certain kinds of times.
+
+\begin{definition}[Stopping Times]
+	A random time $T : \Omega \rightarrow \{0, 1, \dots\} \cup \{\infty\}$ is a \vocab{stopping time} for a Markov chain $X_n$ if for all $n \geq 0$ the event $\{T = n\}$ is given in terms of $X_0, X_1, \dots, X_n$ only.
+\end{definition}
+
+In particular, random times that `look into the future' are not stopping times. A straightforward example of a stopping time is the hitting time $T^A$ that we defined in the previous section.
+
+With stopping times, we can indeed make a statement similar to the Markov property using random times.
+
+\begin{theorem}[Strong Markov Property]	
+Let $X_n$ be a Markov chain with transition matrix $P$, and let $T$ be a stopping time. Then conditional on $T < \infty$ and $X_T = i$, the sequence of random variables $(X_{T + n})_{n \geq 0}$ is $\markov(\delta_i, P)$ and is independent of $X_0, \dots, X_T$.
+\end{theorem}
+\begin{proof}
+Let $H$ be an event given in terms of $X_0, \dots, X_{T - 1}$. Then it suffices to show that
+\begin{align*}
+	&\ \PP(X_{T + 1} = i_1, \dots, X_{T + n} = i_n, H \mid T < \infty, X_T = i)  \\
+	&= \PP(X_1 = i_1, \dots, X_n = i_n \mid X_0 = i) \PP(H \mid T < \infty, X_T = i).
+\end{align*}
+The event $H \cap \{T = m\}$ is given in terms of $X_1, X_2, \dots, X_m$ only. Furthermore, $X_T = X_m$ when $T = m$. We condition on the event $H \cap \{T = m\} \cap \{X_m = i\}$ and use the simple Markov property at time $m$ to get
+\begin{align*}
+&\ \PP(X_{T + 1} = i_1, \dots, X_{T + n} = i_n, H \mid T < \infty, X_T = i) \\
+&= \PP(X_1 = i_1, \dots, X_n = i_n) \PP(H, T = m, X_T = i).
+\end{align*}
+Summing this over $m = 0, 1, \dots$ and dividing by $\PP(T < \infty, X_T = i)$ then gives the desired result.
 \end{proof}
 
 \end{document}
