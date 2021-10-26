@@ -624,5 +624,105 @@ The event $H \cap \{T = m\}$ is given in terms of $X_1, X_2, \dots, X_m$ only. F
 Summing this over $m = 0, 1, \dots$ and dividing by $\PP(T < \infty, X_T = i)$ then gives the desired result.
 \end{proof}
 
+\subsection{Recurrence and Transience}
+
+We now consider states that a Markov chain continues to come back to, or only visits finitely many times.
+
+% Definition of Recurrennt and Transient
+
+\begin{lemma}[Probability of Repeated Visiting]
+	$\PP(V_i > r \mid X_0 = i) = f_i^r$, for all $r \in \N$.
+\end{lemma}
+\begin{proof}
+	Suppose it is true for $r$. We need to show that
+	\begin{align*}
+		\PP(V_i > r + 1 \mid X_0 = i) &= \PP(T_i^{(r + 1)} < \infty \mid X_0 = i) = \PP(T_i^{(r + 1)} < \infty, T_i^{(r)} < \infty) \\
+		&= \PP(T_i^{(r + 1)} < \infty \mid T_i^{(r)} < \infty, T_0 = i) \cdot \PP(T_i^{(r)} < \infty \mid X_0 = i) \\
+		&= \PP(T_i^{(r + 1)} < \infty \mid T_i^{(r)} < \infty, T_0 = i) \cdot f_i^r. 
+	\end{align*}
+	By the strong Markov property applied to $T_i^{(r)}$ (which is a stopping time), we get
+	$$
+	\PP(T_i^{(r + 1)} < \infty \mid X_0 = i) = \PP(T_i < \infty \mid X_0 = i) = f_i,
+	$$
+	and thus our result holds.
+\end{proof}
+
+\begin{theorem}[Recurrence and Transience Criterion]
+	Let $X_n$ be a markov chain with transition matrix $P$, and let $i \in S$. Then we have the following dichotomy:
+	\begin{enumerate}[label=(\arabic*)]
+		\item If $\PP(T_i< \infty \mid X_0 = i) = 1$, then $i$ is recurrent and $\sum_{n = 0}^{\infty} p_{i, i}(n)$ is infinite.
+		\item If $\PP(T_i < \infty \mid X_0 = i) < 1$, then $i$ is transient and $\sum_{n = 0}^{\infty} p_{i, i}(n) < \infty$.
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	We can write $V_i$ using indicator functions as
+	$
+	V_i = \sum_{n = 0}^{\infty} \ii[X_n = 1],
+	$
+	and then by linearity of expectation we can write
+	$$
+	\EE[V_i \mid X_0 = i] = \sum_{n = 0}^{\infty} \PP(X_m = i \mid X_0 = i) = \sum_{n = 0}^{\infty} p_{i, i}(n).
+	$$
+	
+	\emph{Part (1)}. If $f_i = 1$, then for all $r$ we have $\PP(V_i > r \mid X_0 = i) = 1$, and thus $\PP(V_i = \infty \mid X_i = 0) = 1$, implying that $i$ is recurrent, and $\EE[V_i \mid X_0 = i] = \infty$, implying that $\sum_{n = 0}^{\infty} p_{i, i}(n) = \infty$.
+
+	\emph{Part (2)}. If $f_i < 1$, then by the previous lemma we have $\EE[V_i \mid X_0 = i] = 1/(1 - f_i) < \infty$, implying that $\PP(V_i < \infty \mid X_0 = i) = 1$, so $i$ is transient, and $\sum_{n = 0}^{\infty} p_{i, i}(n)$.
+\end{proof}
+
+\begin{theorem}[Recurrence and Transience of Communicating States]
+	Let $x$ and $y$ be two states that communicate. Then either they are both recurrent or they are both transient.
+\end{theorem}
+\begin{proof}
+	Suppose that $x$ is recurrent. We will show that $y$ is also recurrent. Since $x \rightarrow y$, there is some $m, l \in \N$ such that $p_{x, y}(m) > 0$ and $p_{y, x}(l) > 0$. Then we know that $\sum_{n = 0}^{\infty} p_{x, x}(n) = \infty$, and then
+	\begin{align*}
+	\sum_{n = 0}^{\infty} p_{y, y}(n) 
+	&\geq \sum_{n = 0}^{\infty} 
+	p_{y, y}(n + m + l) \\ 
+	&\geq \sum_{n = 0}^{\infty} p_{y, x}(l) p_{x, x}(n) p_{x, y}(m)  \\
+	&\geq p_{y, x}(l) p_{x, y}(m) \sum_{n = 0}^{\infty} p_{x, x}(n) = \infty.
+	\end{align*}
+\end{proof}
+
+This immediately can be applied to the entire class structure of a Markov chain.
+
+\begin{corollary}[Class Structure of Recurrence and Transience]
+	Either all of the states in a communicating class are recurrent or they are all transient.
+\end{corollary}
+
+Recurrent communicating classes have a certain flavour to them, which should be intuitive. Really, for a communicating class to be recurrent we have to avoid getting stuck outside of that given communicating class. This forces closure of the communicating class.
+
+\begin{theorem}[Closure of Recurrent Communicating Classes]	
+	If $C$ is a recurrent communicating class, then it must be closed.
+\end{theorem}
+\begin{proof}
+	Suppose that $C$ was not closed. Then there exists $x \in C$ and $Y \not \in C$ such that $x \rightarrow y$. Let $n$ be such that $p_{x, y}(n) > 0$. If starting from $x$ we hit $y$ at some point, then we can never visit $x$ again so
+	$$
+	\PP(V_x < \infty \mid X_0 = x) \geq \PP(X_m = y \mid X_0 = x) = p_{x, y}(m) > 0,
+	$$
+	so $x$ is not current which is a contradiction.
+\end{proof}
+
+\begin{theorem}[Finite Closed Classes are Recurrent]
+	A finite closed class is recurrent.
+\end{theorem}
+\begin{proof}[Proof Sketch]
+	Pick any state $x$ in the class. By pigeonhole there's another recurrent state $y$ communicating with $x$. Then there's positive probability of moving from $x$ to $y$ and $y$ to $x$, and this implies that $x$ is also recurrent.
+\end{proof}
+
+\begin{theorem}
+	Let $P$ be irreducible and recurrent. Then for all $x$ and $Y$, $\PP(T_y < \infty \mid X_0 = x) = 1$.
+\end{theorem}
+\begin{proof}
+	Omitted.
+\end{proof}
+
+\begin{theorem}[Pólya]
+	A simple random walk in $\Z^d$ is recurrent for $d = 1$ and $d = 2$ and transient for $d \geq 3$.
+\end{theorem}
+
+Said in a better way, a drunk man will find his way home, but a drunk bird may get lost forever.
+
+
+
 \end{document}
 
