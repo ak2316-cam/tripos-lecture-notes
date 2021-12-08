@@ -1,17 +1,16 @@
-\documentclass[a4paper]{scrartcl}
+\documentclass[a4paper]{article}
 
 \usepackage[
-fancytheorems, 
-fancyproofs, 
-noindent, 
-%  spacingfix,  
+    % fancytheorems, 
+    % fancyproofs, 
+    % noindent, 
+    nokoma
 ]{adam}
 
 
-\title{Optimisation}
+\title{Optimization}
 \author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
 \date{\today}
-
 
 \allowdisplaybreaks
 
@@ -19,92 +18,121 @@ noindent,
 
 \maketitle
 
-At its heart, analysis is the study of ideas that depend on the notion of \emph{limits}.
-The main concepts of analysis (such as convergence, continuity, differentiation and integration) will all depend quite fundamentally on a limiting process.
+This is a short description of the course. It should give a little flavour of what the course is about, and what will be roughly covered in the notes.
 
-This article constitutes my notes for the `Analysis I' course, held in Lent 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+This article constitutes my notes for the `Optimization' course, held in Easter 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
 
-{\color{purple}Currently up to lecture 1.}
 
-\tableofcontents
+\section{Convex Optimization}
 
-% \clearpage
+\subsection{Optimization Problems}
 
-This course is roughly split into:
-\begin{itemize}
-	\item Convex Optimisation (1-3)
-	\item General optimisation with Lagrange Multipliers (4-5)
-	\item Linear Programming (minimizing linear functions), and applications (6-12)
-\end{itemize}
+In this course, we care about problems that look like `minimize $f(x)$ subject to $x \in X$', or problems with constraints that look like `minimize\footnote{We will almost always talk about minimizing, since maximizing is basically the same thing.} $f(x)$ subject to $x \in X$ where $h(x) = b$'.
 
-\section{Optimisation Problems}
+In such problems, we call $f$ the \vocab{objective function}, and if $x \in \R^n$, we call the components \vocab{decision variables}. Constraints such as the one above can be given as a \vocab{functional constraint} $h(x) = b$ and a \vocab{regional constraints} $x \in X$. If both of the constraints hold for a given $x$, we say it is in the \vocab{feasible set} $X(b)$. A problems is feasible if the feasible set is non-empty and bounded if the minimum of this set is bounded.
 
-In optimization, we are interested in solving problems that look like:
-minimize $f(x)$ for $x \in X$, or minimize $f(x)$ for $x \in X$, $h(x) = b$ where $h : \R^n \rightarrow \R^m$.
+A point $x^* \in X(b)$ is \vocab{optimal} if it minimizes $f$ over $(b)$. The value $f(x^*)$ is the \vocab{optimal cost}.
 
-We will always be looking at minimizing functions.
+\subsection{Unconstrained Optimization of Convex Functions}
 
-Terminology:
-\begin{itemize}
-	\item $f$ is called the objective function. 
-	\item The components of $x$ are the decision variables.
-	\item In the above, `$h(x) = b$' is a functional constraint.
-	\item `$x \in X$' is the regional constraint.
-	\item The set $\{x \in X : h(x) = b\}$ is called the feasible set $X(b)$. A problem is feasible if this set is not empty, and otherwise it is in-feasible. We say the problem is bounded if the minimum is bounded.
-	\item A point $x^* \in X(b)$ is optimal if it minimises $f$ over $X(b)$. The value of $f(x^*)$ is called the optimal constraint.
-\end{itemize}
+We will first study optimization problems involving convex functions without constraints. In particular, we are going to study the problem:
+\begin{center}
+    Minimize $f(x)$, where $f : \R^n \rightarrow \R$ is a convex function.
+\end{center}
+The reason we will care specifically about convex functions is, as you will see, that local information about the function gives us global information about the function.
 
-So why do we only care about constraints $h(x) =b$? Well consider the constraint $h(x) \leq b$, then $h(x) + s = b$, $s \geq 0$. So we can always convert an inequality constraint into a functional and regional constraint.
 
-\section{Convex Optimisation}
+It is likely that you are already familiar with the notions of convex sets and convex functions.
 
 \begin{definition}[Convex Set]
-	A set $S \subseteq \R^n$ is \vocab{convex} if for all $x, y \in S$, and all $\lambda \in [0, 1]$, $x(1 - \lambda) + y(\lambda) \in S$. That is, the line segment joining $x$ and $y$ lies in $S$.
+    A set $S \in \R^n$ is \vocab{convex} if for all $x, y \in S$ and all $\lambda \in [0, 1]$ we have $\lambda x + (1 - \lambda) y \in S$.
 \end{definition}
 
-\begin{center}
-	insert diagram 1 - convex here.
-\end{center}
+Informally, a set is convex if the line segment between any two points is totally contained in the set. We can also define convexity for functions.
 
-We want to study the notion of \emph{convex functions}.
-
-\begin{definition}[Convex Functions]
-	A function $f:S \rightarrow \R$ is \vocab{convex} if $S$ is convex, and for all $x, y \in S$, and $\lambda \in [0, 1]$ we have
-	$$
-f((1 - \lambda)x + \lambda y) \leq (1 - \lambda)f(x) + \lambda f(y).
-	$$
-	The function is \vocab{strictly convex} if the inequality is strict, and is \vocab{concave} if $-f$ is convex.
+\begin{definition}[Convex Function]
+    A function $f: S \rightarrow \R$ is \vocab{convex} if $S$ is convex and for all $x, y \in S$ and $\lambda \in [0, 1]$ we have
+    $$
+    f(\lambda x + (1 - \lambda) y) \leq \lambda f(x) + (1 - \lambda) f(y).
+    $$
+    If this inequality is strict then the function is \vocab{strictly convex}. A function is called \vocab{concave} if $-f$ is convex.
 \end{definition}
 
-In one dimension, such functions look `$u$-shaped', and points between $x$ and $y$ always lies below the chord.
+Again informally, this says that if we consider the graph of the function then the chord between two points will always be above the function.
 
-\subsection{Unconstrained Optimisation}
+In general, checking this definition by hand is hard, and we typically use some other conditions to check for convexity.
 
-We are going to look at the problem of minimizing $f(x)$ where $f: \R^n \rightarrow \R$ is a convex function. 
-
-Convex functions have certain properties that allow us to minimize them somewhat easily. The most important property is that \emph{local} information gives us \emph{global} information. Informally, if you know what a convex function looks like in a small neighbourhood, you can always say something about what it looks like outside of that.
-
-Let's have a think about how to tell if a function is convex.
-
-A first order condition for convexity is that a tangent line always lies below the curve. That is,
+\begin{proposition}[First-Order Conditions for Convexity]
+A differentiable function $f: \R^n \rightarrow \R$ is convex if and only if for all $x, y \in \R^n$ we have
 $$
-f(y) \geq f(x) + (y - x) f'(x).
-$$
-In higher dimensions, we will have to replace $f'(x)$ with $\nabla f(x)$, and take a dot product (treating it as a vector). 
-Note that if $\nabla f(x) = 0$, then $f(y) \geq f(x)$, thus $x$ minimizes $f$.
-
-Let's write this all down properly.
-
-
-
-\begin{theorem}[First Order Convexity Conditions]
-	A differentiable function $f: \R^n \rightarrow \R$ is convex if and only if for $x, y \in \R^n$ we have
-	$$
 f(y) \geq f(x) + (y - x) \cdot \nabla f(x).
-	$$
-\end{theorem}
+$$
+\end{proposition}
 \begin{proof}
-	
+    We will first check that convexity implies that this condition holds by showing it holds for $n = 1$ and using that for the general case. 
+
+    If $f: \R \rightarrow \R$ is convex, and $x, y \in \R$ then for any $t \in [0, 1]$ we have
+    \begin{align*}
+        f((1 - t)x + ty) &= f(x + t(y - x)) \\
+        & \leq (1 - t)f(x) + tf(y) \\
+\implies f(y) & \geq f(x) + \frac{f(x + t(y - x)) - f(x)}{t}.
+    \end{align*}
+    Taking the limit as $t \rightarrow 0$, we get that $f(x) \geq f(x) + f'(x)(y - x)$.
+
+    Now for $f: \R^n \rightarrow \R$, taking any $x, y \in \R^n$ we can define the restricted function $g(t) = f((1 - t)x + ty)$. Since $f$ is convex, $g$ is also convex. We can then compute
+    $$
+    g'(t) = (y - x) \cdot \nabla f((1 - t) x + ty)
+    $$
+    So using the $n = 1$ case, we have $g(1) \geq g(0) + g'(0) (1 - 0)$, that is, $f(y) \geq f(x) + (y - x) \cdot \nabla f(x)$, so the condition holds as required.
+
+    Now we will show that the first-order conditions imply convexity.
+    For some $t \in [0, 1]$, we define $x_t = (1 - t) x + ty$. Then we know that
+    \begin{align*}
+        f(x) &\geq f(x_t) + (x - x_t) \cdot \nabla f(x_t), \\
+        f(y) &\geq f(x_t) + (y - x_t) \cdot \nabla f(x_t).
+    \end{align*}    
+    With a small amount of algebraic manipulation, summing gives 
+    $$
+    (1 - t)f(x) + tf(y) \geq f(x_t),
+    $$
+    as required.
 \end{proof}
+
+A possibly more familiar condition for convexity is the second-order conditions. This involves the \emph{Hessian}, the generalization of the second derivative to $\R^n$.
+
+\begin{definition}[Hessian]
+    If $f: \R^n \rightarrow \R$ is a twice differentiable function, then the \vocab{Hessian matrix} $\nabla^2 f$ is the symmetric matrix of square derivatives given by
+    $$
+    (\nabla^2 f)_{ij} = \frac{\partial^2 f}{\partial x_i \partial x_j}.
+    $$
+\end{definition}
+
+In particular, we care about a specific property of the Hessian matrix.
+
+\begin{definition}[Positive Semidefinite]
+    A matrix $A$ is \vocab{positive semidefinite} if for all $x \in \R^n$ we have $x \cdot Ax \geq 0$. Equivalently, if all of the eigenvalues of $A$ are non-negative.
+\end{definition}
+
+
+\begin{proposition}[Second-Order Conditions for Convexity]
+A twice differentiable function $f:\R^n \rightarrow \R$ is convex if $\nabla^2 f(x)$ is positive semidefinite at all $x \in \R^n$.
+\end{proposition}
+\begin{proof}
+    Using the Taylor expansion of $f$, we have
+    $$
+f(y) = f(x) + (y - x) \cdot \nabla f(x) + \frac{1}{2}(y - x) \cdot ( \nabla^2f(z)(y - x)),
+    $$
+    where $z = (1 - \lambda)x + \lambda y$ for some $\lambda \in [0, 1]$. Then by the first order conditions, $f$ is convex.
+\end{proof}
+
+% \section{Introduction}
+
+% We look at
+% \begin{enumerate}
+%     \item Convex Optimisation
+%     \item Lagrange method
+%     \item Linear programming
+%     \item Applicaitons of linear programming
+% \end{enumerate}
 
 \end{document}
