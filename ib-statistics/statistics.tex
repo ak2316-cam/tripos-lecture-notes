@@ -1,0 +1,152 @@
+\documentclass[a4paper]{scrartcl}
+
+\usepackage[
+    fancytheorems, 
+    fancyproofs, 
+    noindent, 
+]{adam}
+
+
+\title{Statistics}
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{\today}
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+% This is a short description of the course. It should give a little flavour of what the course is about, and what will be roughly covered in the notes.
+
+Statistics the science of making informed decisions. It is an area of mathematics that is widely applicable, and covers the design of experiments, the analysis of data, statistical inference, and the communication of uncertainty and risk.
+In this course we will focus on formal statistical inference.
+
+
+This article constitutes my notes for the `Statistics' course, held in Lent 2022 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+
+
+\tableofcontents
+
+\section{Introduction}
+
+\subsection{Parametric Inference}
+
+Let $X_1, \dots, X_n$ be i.i.d random variables. We will assume that the distribution of $X_i$ belongs to some family with parameter $\theta \in \Theta$.
+For example, we could have $X_1 \sim \operatorname{Poisson}(\mu)$ with $\theta = \mu \in \Theta = (0, \infty)$. We can also have a multi-dimensional parameter such as $X_1 \sim N(\mu, \sigma^2)$ with $\theta(\mu, \sigma^2) \in \Theta = \R \times (0, \infty)$.
+We will use the observed $X = (X_1, \dots, X_n)$ to make inferences about the parameter $\theta$. Such inferences include:
+
+\begin{enumerate}
+  \item Point estimate of $\hat{\theta}(X)$ of $\theta$;
+  \item An interval estimate $(\hat{\theta}_1(X), \hat{\theta}_2(X))$ of $\theta$;
+  \item Testing hypothesis about $\theta$, that is, checking whether there is evidence in the data $X$ against a given hypothesis.
+\end{enumerate}
+
+In this course we will usually assume that the distribution family of $X_1, \dots, X_n$ is known, and that the parameter is unknown. From time to time we will be able to make slightly more general statements.
+
+\subsection{A Recap on Probability}
+
+Statistics makes heavy use of probability theory, and for that reason we will review some of the relevant material here.
+
+Let $\Omega$ be the \vocab{sample space} of outcomes in an experiment. A measurable subset of $\Omega$ is called an \vocab{event}, and the set of events is denoted $
+\FF$. 
+
+A \vocab{probability measure} $\PP: \FF \rightarrow [0, 1]$ is a function which satisfies
+\begin{enumerate}
+  \item $\PP(\emptyset) = 0$
+  \item $\PP(\Omega) = 1$
+  \item $\PP\left(\bigcup_{i = 1}^n A_i\right) = \sum_{i = 1}^n \PP(A_i)$ if $A_i$ is a sequence of disjoint events.
+\end{enumerate}
+
+A \vocab{random variable} is a (measurable) function $X : \Omega \rightarrow \R$. 
+Note that the random variable is defined without reference to the probability measure.
+
+\begin{example}[Tossing a Coin]
+  Consider the experiment of tossing a coin. Here we have $\Omega = \{HH, HT, TH, TT\}$, and $\FF$ is the power set of $\Omega$. We can have a random variable $X$ to be the number of heads, with
+  $$
+  X(HH) = 2, \quad X(HT) = 1, \quad X(TH) = 1, \quad X(TT) = 0
+  $$
+\end{example}
+
+The way that a random variable is linked to the probability measure is by considering it's \vocab{distribution}, that is $F_X: \R \rightarrow [0, 1]$ with
+$$
+F_X(x) = \PP(X \leq x).
+$$
+
+A discrete random variable is one which takes values in a countable set. It's \vocab{probability mass function} is given by 
+$$p_X(x) = \PP(X = x).$$
+We say that $X$ has a continuous distribution if it has a \vocab{probability density function} $f_X(x)$ which satisfies
+$$
+\PP(X \in A) = \int_A f_X(x) \dd x
+$$
+when $A$ is `sufficiently nice'.
+
+The \vocab{expectation} of a random variable $X$ is defined to be
+$$
+\EE[X] = \sum_{x \in X} x \cdot p_X(x)
+$$
+when $X$ is discrete, and
+$$
+\EE[X] = \int_{\infty}^{\infty} x f_X(x) \dd x
+$$
+when $X$ is continuous. 
+
+The \vocab{variance} of $X$ is given by
+$$
+\var(X) = \EE[(X - \EE[X])^2].
+$$
+
+We say that $X_1, \dots, X_n$ are \vocab{independent} if for all $x_1, \dots, x_n$ we have
+$$
+\PP(X_1 \leq x_1, \dots, X_n \leq x_n) = \PP(X_1 \leq x_1) \cdots \PP(X_n \leq x_n).
+$$
+If the variables have probability density functions (or probability mass functions) $f_{X_1}, \dots, f_{X_n}$ then the joint PDF (or PMF) is
+$$
+f_X(x) = \prod_i f_{X_i}(x_i).
+$$
+
+
+\begin{example}[Maximum of Random Variables]
+  If $Y = \max\{X_1, \dots, X_n\}$ for independent random variables $X_1, \dots, X_n$, then
+$$
+F_Y(y) = \PP(Y \leq y) = \PP(X_1 \leq y, \dots, X_n \leq y) = \prod_i F_{X_i}(y),
+$$
+and then by differentiating we can obtain the PDF of $Y$ (if it exists).
+
+\end{example}
+
+We will now consider some linear transformations of random variables.
+Let $a \in \R^n$ be a constant.
+We have
+\begin{align*}
+  \EE[a_1X_1 + \cdots + a_n X_n] &= \EE[a^T X] = a^T \EE[X] \\
+  \var(a^T X) &= \sum_{i, j} a_i a_j \operatorname{Cov}(X_i, X_j) = a^T \operatorname{Var}(X) a
+\end{align*}
+where $\operatorname{Cov}(X_i, X_j) = \EE[(X_i - \EE[X_i])(X_j - \EE[X_j])]$, and
+$$
+\var(X)_{i, j} = \operatorname{Cov}(X_i, X_j)
+$$
+is the \vocab{variance-covariance matrix}.
+
+Let $X_1, \dots, X_n$ be i.i.d random variables with $\EE[X_1] = \mu$ and $\var(X_1) = \sigma^2$. Then if we define the \vocab{sample mean} 
+$$
+S_n = \sum_i X_i, \quad \bar{x}_n = S_n/n.
+$$
+By linearity, $\EE[\bar{x}_n] = \mu$ and $\var(\bar{x}_n) = \sigma^2/n$.
+
+We define the \vocab{standard statistic}
+$$
+Z_n = \frac{S_n- n \mu}{\sigma \sqrt{n}} = \frac{\sqrt{n}(\hat{x_n} - \mu)}{\sigma}
+$$
+which has mean 0 and variance 1.
+
+
+The \vocab{moment generating function} of a random variable $X$ is the Laplace transform of the PDF, that is,
+$$
+M_X(t) = \EE[e^{tX}],
+$$
+provided that it exists for $t$ in some neighborhood of $0$. This has a nice relation to the moments of $X$, in that
+$$
+\EE[X^n] = \left.\frac{d^n}{dt^n} M_X(t) \right|_{t =0}.
+$$
+\end{document}
