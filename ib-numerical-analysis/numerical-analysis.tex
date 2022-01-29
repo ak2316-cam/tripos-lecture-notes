@@ -1,0 +1,175 @@
+\documentclass[a4paper]{scrartcl}
+
+\usepackage[
+    fancytheorems, 
+    fancyproofs, 
+    noindent, 
+]{adam}
+
+\usepackage{booktabs}
+\usepackage{mathdots}
+
+\title{Numerical Analysis}
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{\today}
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+% This is a short description of the course. It should give a little flavour of what the course is about, and what will be roughly covered in the notes.
+
+This article constitutes my notes for the `Numerical Analysis' course, held in Lent 2022 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+
+
+\tableofcontents
+
+
+\section{Polynomial Interpolation}
+
+\subsection{Lagrange and Newton Polynomials}
+
+Let $f:[a, b] \rightarrow \mathbb{R}$ be a real-valued continuous function defined on some interval $[a, b]$ and let $\left(x_{i}\right)_{i=0}^{n}$ be $n+1$ distinct points in $[a, b]$. We wish to construct a polynomial $p$ of degree $n$ which interpolates $f$ at these points, i.e., satisfies
+$$
+p\left(x_{i}\right)=f\left(x_{i}\right), \quad i=\overline{0, n}, \quad p \in \mathcal{P}_{n}
+$$
+
+\begin{theorem}[Existence and Uniqueness]
+Given $f \in C[a, b]$ and $n+1$ distinct points $\left(x_{i}\right)_{i=0}^{n} \in[a, b]$, there is exactly one polynomial $p \in \mathcal{P}_{n}$ such that $p\left(x_{i}\right)=f\left(x_{i}\right)$ for all $i$.
+\end{theorem}
+\begin{proof}
+  \emph{Existence}. There is at least one polynomial interpolant $p \in \mathcal{P}_{n}$, the one in the Lagrange form,
+  \begin{equation}\label{eq:1}
+p(x)=\sum_{i=0}^{n} f\left(x_{i}\right) \ell_{i}(x) \quad \text { with } \quad \ell_{i}(x):=\prod_{j=0 \atop j \neq i}^{n} \frac{x-x_{j}}{x_{i}-x_{j}}, i = 0, \dots, n,\tag{$\dagger$}
+  \end{equation}
+the $\ell_{i}$ s are called the \vocab{fundamental Lagrange polynomials}. Each $\ell_{i}$ is the product of $n$ linear factors, hence $\ell_{i} \in \mathcal{P}_{n}$. It also equals 1 at $x_{i}$ and vanishes at $x_{j} \neq x_{i}$, i.e., $\ell_{i}\left(x_{j}\right)=\delta_{i j}$. Therefore $p \in \mathcal{P}_{n}$ and
+$$
+p\left(x_{j}\right)=\sum_{i=0}^{n} f\left(x_{i}\right) \ell_{i}\left(x_{j}\right)=f\left(x_{j}\right) .
+$$
+\emph{Uniqueness}. There is at most one polynomial interpolant $p \in \mathcal{P}_{n}$ to $f$ on $\left(x_{i}\right)_{i=0}^{n}$. For if there are two, $p, q \in \mathcal{P}_{n}$, then the polynomial $r:=p-q$ is of degree $n$ and vanishes at $n+1$ points, whence $r \equiv 0$.
+\end{proof}
+
+Let us introduce the so-called \vocab{nodal polynomial}
+$$
+\omega(x)=\prod_{i=0}^{n}\left(x-x_{i}\right) .
+$$
+Then, in the expression \eqref{eq:1} for $\ell_{i}$, the numerator is simply $\omega(x) /\left(x-x_{i}\right)$ while the denominator is equal to $w^{\prime}\left(x_{i}\right)$. With that we arrive to a compact Lagrange form
+$$
+\boxed{
+  p(x)=\sum_{i=0}^{n} f\left(x_{i}\right) \ell_{i}(x)=\sum_{i=0}^{n} \frac{f\left(x_{i}\right)}{\omega^{\prime}\left(x_{i}\right)} \frac{\omega(x)}{x-x_{i}}
+}.
+$$
+The lagrange forms above and in \eqref{eq:1} for interpolating polynomials are easy to manipulate, but they are unsuitable for numerical evaluation. An alternative is the \emph{Newton form} which has an \emph{adaptive} nature.
+
+\begin{method}[Newton Form]
+For $k=0,1, \ldots, n$, let $p_{k} \in \mathcal{P}_{k}$ be the polynomial interpolant to $f$ on $x_{0}, \ldots, x_{k}$. Then two subsequent $p_{k-1}$ and $p_{k}$ interpolate the same values $f\left(x_{i}\right)$ for $i \leq k-1$, hence their difference is a polynomial of degree $k$ that vanishes at $k$ points $x_{0}, \ldots, x_{k-1}$. Thus
+$$
+p_{k}(x)-p_{k-1}(x)=A_{k} \prod_{i=0}^{k-1}\left(x-x_{i}\right),
+$$
+with some constant $A_{k}$ which is seen to be equal to the leading coefficient of $p_{k}$. 
+
+It follows that $p=p_{n}$ can be built step by step as one constructs the sequence $\left(p_{0}, p_{1}, \ldots\right)$, with $p_{k}$ obtained from $p_{k-1}$ by addition the term from the right-hand side of $(1.3)$, so that finally
+$$
+p(x)=p_{n}(x)=p_{0}(x)+\sum_{k=1}^{n}\left[p_{k}(x)-p_{k-1}(x)\right]=\sum_{k=0}^{n} A_{k} \prod_{i=0}^{k-1}\left(x-x_{i}\right).
+$$
+\end{method}
+
+\begin{definition}[Divided Difference]
+Given $f \in C[a, b]$ and $k+1$ distinct points $\left(x_{i}\right)_{i=0}^{k} \in[a, b]$, the \vocab{divided difference} $f\left[x_{0}, \ldots, x_{k}\right]$ of order $k$ is the leading coefficient of the polynomial $p_{k} \in \mathcal{P}_{k}$ which interpolates $f$ at these points. 
+\end{definition}
+
+The divided difference is a symmetric function of the variables $\left[x_{0}, \ldots, x_{k}\right]$, and if $f(x)=x^{m}, m \leq k$, then $f\left[x_{0}, \ldots, x_{k}\right]=\delta_{k m}$.
+
+With this definition we arrive at the \vocab{Newton formula} for the interpolating polynomial.
+
+\begin{theorem}[Newton Formula]
+Given $n+1$ distinct points $\left(x_{i}\right)_{i=0}^{n}$, let $p_{n} \in \mathcal{P}_{n}$ be the polynomial that interpolates $f$ at these points. Then it may be written in the Newton form
+\begin{align*}
+  p_{n}(x)=& f\left[x_{0}\right]+f\left[x_{0}, x_{1}\right]\left(x-x_{0}\right)+f\left[x_{0}, x_{1}, x_{2}\right]\left(x-x_{0}\right)\left(x-x_{1}\right)+\cdots \\
+  & \cdots+f\left[x_{0}, x_{1}, \ldots, x_{n}\right]\left(x-x_{0}\right)\left(x-x_{1}\right) \cdots\left(x-x_{n-1}\right),
+\end{align*}
+or, more compactly,
+$$
+p_{n}(x)=\sum_{k=0}^{n} f\left[x_{0}, \ldots, x_{k}\right] \prod_{i=0}^{k-1}\left(x-x_{i}\right)
+$$
+\end{theorem}
+
+To make this formula of any use, we need an expression for $f[x_0, \dots, x_k]$. One such can be derived from the Lagrange formula by identifying the leading coefficient of $p$. This turns out to be
+$$
+f\left[x_{0}, \ldots, x_{n}\right]=\sum_{i=0}^{n} \frac{f\left(x_{i}\right)}{\omega^{\prime}\left(x_{i}\right)}, \quad \omega(x):=\prod_{i=0}^{n}\left(x-x_{i}\right) .
+$$
+However, this expression has computational disadvantages as the Lagrange form itself. A useful way to calculate divided difference is again an adaptive (or recurrence) approach.
+
+\begin{theorem}[Recurrence Relation]
+  For distinct $x_0, x_1, \dots, x_k$ with $k > 1$, we have
+  $$
+  f[x_0, \dots, x_k] = \frac{f[x_1, \dots, x_k] - f[x_0, \dots, x_{k - 1}]}{x_k - x_0}.
+  $$
+\end{theorem}
+\begin{proof}
+  Let $q_0, q_1 \in \mathcal{P}_{k - 1}$ be the polynomials such that $q_0$ interpolates $f$ on $(x_0$, $x_1, \dots, x_{k - 1})$ and $q_1$ interpolates on $(x_1, \dots, x_k)$. Consider the polynomial
+  $$
+  p(x)=\frac{x-x_{0}}{x_{k}-x_{0}} q_{1}(x)+\frac{x_{k}-x}{x_{k}-x_{0}} q_{0}(x), \quad p \in \mathcal{P}_{k} .
+  $$
+  One readily sees that $p\left(x_{i}\right)=f\left(x_{i}\right)$ for all $i$, hence, $p$ is the $k$-th degree interpolating polynomial by $f$. Moreover, the leading coefficient of $p$ is equal to the difference of those of $q_{1}$ and $q_{0}$ divided by $x_{k}-x_{0}$, and that is exactly what the recurrence $(1.5)$ says.
+\end{proof}
+
+The recursive relation allows for the fast evaluation of the \vocab{divided difference table}
+\begin{center}
+  \begin{tabular}{cccccc}
+    \toprule
+    $x_i$ & $f_i$ & $f[*, *]$ & $f[*, *, *]$ & $\cdots$ & $f[*, \cdots,*]$\\
+    \midrule
+    $x_0$ & $f[x_0]$\\
+    & & $f[x_0, x_1]$\\
+    $x_1$ & $f[x_1]$ & & $f[x_0, x_1, x_2]$ \\
+    & & $f[x_1, x_2]$ & & $\ddots$\\
+    $x_2$ & $f[x_2]$ & & $f[x_2, x_3, x_4]$ & $\cdots$ & $f[x_0, x_1, \cdots, x_n]$\\
+    & & $f[x_2, x_3]$ & & $\iddots$\\
+    $x_3$ & $f[x_3]$ & & $\iddots$\\
+    $\vdots$ & $\vdots$ & $\iddots$ &\\
+    $x_n$ & $f[x_n]$\\
+    \bottomrule
+  \end{tabular}
+\end{center}
+This can be done in $\mathcal{O}\left(n^{2}\right)$ operations and the outcome is the numbers $\left\{f\left[x_{0}, \ldots, x_{k}\right]\right\}_{k=0}^{n}$ at the head of the columns which can be used in the Newton form.
+
+Finally evaluation of $p$ at a given point $x$ using Newton formula (provided that divided differences $A_k = f[x_0, \dots, x_k]$ are known) requires just $n$ multiplications, as long as we do it by the \vocab{Horner scheme}
+\begin{align*}
+p_{n}(x)=&\{\cdots\{\{A_{n} \times(x-x_{n-1})+A_{n-1}\} \times(x-x_{n-2})+A_{n-2}\} \\
+& \times(x-x_{n-3})+\cdots+A_{1}\} \times(x-x_{0})+A_{0} .
+\end{align*}
+
+\subsection{Examples}
+
+We will now look at some examples of these methods in use.
+
+\begin{example}[Interpolating Polynomial]
+  Given the data
+  \begin{center}
+    \begin{tabular}{c|r|r|r|r}
+      $x_{i}$ & 0 & 1 & 2 & 3 \\
+      \hline$f\left(x_{i}\right)$ & $-3$ & $-3$ & $-1$ & 9
+      \end{tabular}
+  \end{center}
+  we want to find the interpolating polynomial $p \in \mathcal{P}_3$ in both Lagrange and Newton forms.
+
+  \emph{Fundamental Lagrange polynomials}. We have 
+  \begin{align*}
+      \ell_{0}(x)&=\frac{(x-1)(x-2)(x-3)}{-6}=-\frac{1}{6}\left(x^{3}-6 x^{2}+11 x-6\right), \\
+      \ell_{1}(x)&=\frac{x(x-2)(x-3)}{2}=\frac{1}{2}\left(x^{3}-5 x^{2}+6 x\right), \\
+      \ell_{2}(x)&=\frac{x(x-1)(x-3)}{-2}=-\frac{1}{2}\left(x^{3}-4 x^{2}+3 x\right), \\
+      \ell_{3}(x)&=\frac{x(x-1)(x-2)}{6}=\frac{1}{6}\left(x^{3}-3 x^{2}+2 x\right) .
+  \end{align*}
+
+  \emph{Lagrange form}. Using the polynomials above, we can write
+  \begin{align*}
+      p(x) &=(-3) \cdot \ell_{0}(x)+(-3) \cdot \ell_{1}(x)+(-1) \cdot \ell_{2}(x)+9 \cdot \ell_{3}(x) \\
+      &=\left(\frac{1}{2}-\frac{3}{2}+\frac{1}{2}+\frac{3}{2}\right) x^{3}+\left(-3+\frac{15}{2}-2-\frac{9}{2}\right) x^{2}+\left(\frac{11}{2}-9+\frac{3}{2}+3\right) x-3 \\
+      &=x^{3}-2 x^{2}+x-3 .
+  \end{align*}
+\end{example}
+
+\end{document}
