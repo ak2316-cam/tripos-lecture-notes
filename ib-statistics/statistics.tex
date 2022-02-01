@@ -24,6 +24,7 @@ In this course we will focus on formal statistical inference.
 
 
 This article constitutes my notes for the `Statistics' course, held in Lent 2022 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+Note that familiarity with classical probability theory is assumed, and a recap is not included.
 
 
 \tableofcontents
@@ -44,109 +45,251 @@ We will use the observed $X = (X_1, \dots, X_n)$ to make inferences about the pa
 
 In this course we will usually assume that the distribution family of $X_1, \dots, X_n$ is known, and that the parameter is unknown. From time to time we will be able to make slightly more general statements.
 
-\subsection{A Recap on Probability}
+% \subsection{A Recap on Probability}
 
-Statistics makes heavy use of probability theory, and for that reason we will review some of the relevant material here.
+% Statistics makes heavy use of probability theory, and for that reason we will review some of the relevant material here.
 
-Let $\Omega$ be the \vocab{sample space} of outcomes in an experiment. A measurable subset of $\Omega$ is called an \vocab{event}, and the set of events is denoted $
-\FF$. 
+% Let $\Omega$ be the \vocab{sample space} of outcomes in an experiment. A measurable subset of $\Omega$ is called an \vocab{event}, and the set of events is denoted $
+% \FF$. 
 
-A \vocab{probability measure} $\PP: \FF \rightarrow [0, 1]$ is a function which satisfies
-\begin{enumerate}
-  \item $\PP(\emptyset) = 0$
-  \item $\PP(\Omega) = 1$
-  \item $\PP\left(\bigcup_{i = 1}^n A_i\right) = \sum_{i = 1}^n \PP(A_i)$ if $A_i$ is a sequence of disjoint events.
-\end{enumerate}
+% A \vocab{probability measure} $\PP: \FF \rightarrow [0, 1]$ is a function which satisfies
+% \begin{enumerate}
+%   \item $\PP(\emptyset) = 0$
+%   \item $\PP(\Omega) = 1$
+%   \item $\PP\left(\bigcup_{i = 1}^n A_i\right) = \sum_{i = 1}^n \PP(A_i)$ if $A_i$ is a sequence of disjoint events.
+% \end{enumerate}
 
-A \vocab{random variable} is a (measurable) function $X : \Omega \rightarrow \R$. 
-Note that the random variable is defined without reference to the probability measure.
+% A \vocab{random variable} is a (measurable) function $X : \Omega \rightarrow \R$. 
+% Note that the random variable is defined without reference to the probability measure.
 
-\begin{example}[Tossing a Coin]
-  Consider the experiment of tossing a coin. Here we have $\Omega = \{HH, HT, TH, TT\}$, and $\FF$ is the power set of $\Omega$. We can have a random variable $X$ to be the number of heads, with
+% \begin{example}[Tossing a Coin]
+%   Consider the experiment of tossing a coin. Here we have $\Omega = \{HH, HT, TH, TT\}$, and $\FF$ is the power set of $\Omega$. We can have a random variable $X$ to be the number of heads, with
+%   $$
+%   X(HH) = 2, \quad X(HT) = 1, \quad X(TH) = 1, \quad X(TT) = 0
+%   $$
+% \end{example}
+
+% The way that a random variable is linked to the probability measure is by considering it's \vocab{distribution}, that is $F_X: \R \rightarrow [0, 1]$ with
+% $$
+% F_X(x) = \PP(X \leq x).
+% $$
+
+% A discrete random variable is one which takes values in a countable set. It's \vocab{probability mass function} is given by 
+% $$p_X(x) = \PP(X = x).$$
+% We say that $X$ has a continuous distribution if it has a \vocab{probability density function} $f_X(x)$ which satisfies
+% $$
+% \PP(X \in A) = \int_A f_X(x) \dd x
+% $$
+% when $A$ is `sufficiently nice'.
+
+% The \vocab{expectation} of a random variable $X$ is defined to be
+% $$
+% \EE[X] = \sum_{x \in X} x \cdot p_X(x)
+% $$
+% when $X$ is discrete, and
+% $$
+% \EE[X] = \int_{\infty}^{\infty} x f_X(x) \dd x
+% $$
+% when $X$ is continuous. 
+
+% The \vocab{variance} of $X$ is given by
+% $$
+% \var(X) = \EE[(X - \EE[X])^2].
+% $$
+
+% We say that $X_1, \dots, X_n$ are \vocab{independent} if for all $x_1, \dots, x_n$ we have
+% $$
+% \PP(X_1 \leq x_1, \dots, X_n \leq x_n) = \PP(X_1 \leq x_1) \cdots \PP(X_n \leq x_n).
+% $$
+% If the variables have probability density functions (or probability mass functions) $f_{X_1}, \dots, f_{X_n}$ then the joint PDF (or PMF) is
+% $$
+% f_X(x) = \prod_i f_{X_i}(x_i).
+% $$
+
+
+% \begin{example}[Maximum of Random Variables]
+%   If $Y = \max\{X_1, \dots, X_n\}$ for independent random variables $X_1, \dots, X_n$, then
+% $$
+% F_Y(y) = \PP(Y \leq y) = \PP(X_1 \leq y, \dots, X_n \leq y) = \prod_i F_{X_i}(y),
+% $$
+% and then by differentiating we can obtain the PDF of $Y$ (if it exists).
+
+% \end{example}
+
+% We will now consider some linear transformations of random variables.
+% Let $a \in \R^n$ be a constant.
+% We have
+% \begin{align*}
+%   \EE[a_1X_1 + \cdots + a_n X_n] &= \EE[a^T X] = a^T \EE[X] \\
+%   \var(a^T X) &= \sum_{i, j} a_i a_j \operatorname{Cov}(X_i, X_j) = a^T \operatorname{Var}(X) a
+% \end{align*}
+% where $\operatorname{Cov}(X_i, X_j) = \EE[(X_i - \EE[X_i])(X_j - \EE[X_j])]$, and
+% $$
+% \var(X)_{i, j} = \operatorname{Cov}(X_i, X_j)
+% $$
+% is the \vocab{variance-covariance matrix}.
+
+% Let $X_1, \dots, X_n$ be i.i.d random variables with $\EE[X_1] = \mu$ and $\var(X_1) = \sigma^2$. Then if we define the \vocab{sample mean} 
+% $$
+% S_n = \sum_i X_i, \quad \bar{x}_n = S_n/n.
+% $$
+% By linearity, $\EE[\bar{x}_n] = \mu$ and $\var(\bar{x}_n) = \sigma^2/n$.
+
+% We define the \vocab{standard statistic}
+% $$
+% Z_n = \frac{S_n- n \mu}{\sigma \sqrt{n}} = \frac{\sqrt{n}(\hat{x_n} - \mu)}{\sigma}
+% $$
+% which has mean 0 and variance 1.
+
+
+% The \vocab{moment generating function} of a random variable $X$ is the Laplace transform of the PDF, that is,
+% $$
+% M_X(t) = \EE[e^{tX}],
+% $$
+% provided that it exists for $t$ in some neighborhood of $0$. This has a nice relation to the moments of $X$, in that
+% $$
+% \EE[X^n] = \left.\frac{d^n}{dt^n} M_X(t) \right|_{t =0}.
+% $$
+
+% Under broad conditions, $M_X = M_Y$ if and only if $F_X = F_Y$. Also, moment generating functions are useful for finding the distributions of sums of independent random variables.
+
+% \begin{example}[Sum of Independent Random Variables]
+%   Let $X_1, \dots, X_n$ be i.i.d Poisson random variables with parameter $\mu$. Then we have
+%   $$
+%     M_{X_i} (t) = \EE[e^{t X_i}]
+%      = \sum_{x = 0}^{\infty} e^{tx} \frac{e^{-\mu} \mu^x}{x!}  
+%      = e^{-\mu(1 - e^t)}.
+%      $$
+%   So if $S_n = X_1 + \cdots + X_n$, we can take
+%   $$
+%   M_{S_n}(t) = \EE[e^{t(X_1 + \cdots + X_n)}] = e^{-n \mu (1 - e^t)},
+%   $$
+%   so $S_n \sim \operatorname{Poisson}(\mu)$.
+% \end{example}
+
+% Now we can say something about the limits of random variables. The \vocab{weak law of large numbers} states that for all $\varepsilon > 0$,
+% $$
+% \PP(|\overline{X_n} - \mu| > \varepsilon) \rightarrow 0 \quad \text{as} \quad n \rightarrow \infty.
+% $$
+% The \vocab{strong law of large numbers} states that
+% $$
+% \PP(\overline{X_n} \rightarrow \mu \quad \text{as} \quad n \rightarrow \infty) = 1.
+% $$
+% Note that the weak law depends only on $X_1, \dots, X_n$ whereas the strong law depends on the whole sequence $(X_i)_{i \in \N}$.
+
+% We also have the \vocab{central limit theorem}, which states that
+% $Z_n$ is approximately $N(0, 1)$ when $n$ is large. That is,
+% $$
+% \PP(Z_n \leq z) \rightarrow \Phi(z)
+% $$
+% for all $z \in \R$, where $\Phi$ is the distribution function of a $N(0, 1)$ random variable.
+
+
+\subsection{Estimation}
+
+Suppose $X_1, \dots, X_n$ are i.i.d observations with a pdf (or pmf)
+$
+f_X(x \mid \theta)
+$
+where $\theta$ is an unknown parameter in a parameter space $\Theta$.
+
+\begin{definition}[Estimator]
+An \vocab{estimator} is a statistic or function of the data $T(X) = \hat{\theta}$ which does \emph{not} depend on $\theta$, and is used to approximate the true parameter $\theta$.
+\end{definition}
+
+
+The distribution of $T(x)$ is its \vocab{sampling distribution}.
+
+We can then go on to define the \emph{bias} of an estimator.
+
+\begin{definition}[Bias]
+  The \vocab{bias} of $\hat{\theta} = T(x)$ is
   $$
-  X(HH) = 2, \quad X(HT) = 1, \quad X(TH) = 1, \quad X(TT) = 0
+  \operatorname{bias}(\hat{\theta}) = \EE_{\theta} (\hat{\theta}) - \theta,
+  $$
+  where $\EE_\theta$ gives expectation in the model $X_i \sim f_X(\cdot \mid \theta)$.
+\end{definition}
+
+\begin{remark}
+  In general the bias is a function of the true parameter $\theta$, even though it is not explicit in the notation $\operatorname{bias}(\hat{\theta})$.
+\end{remark}
+
+\begin{definition}[Unbiased Estimator]
+  We say that $\hat{\theta}$ is \vocab{unbiased} if $\operatorname{bias}(\hat{\theta}) = 0$ for \emph{all} values of the true parameter $\theta$.  
+\end{definition}
+
+\begin{example}[Defining an Estimator]
+  Consider the i.i.d random variables $X_1, \dots, X_n \sim N(\mu, 1)$. Then we can define the estimator
+  $$
+  \hat{\mu} = T(x) = \frac{1}{n}\sum_{i} X_i = \overline{X_n}.
+  $$
+  The sampling distribution of $\hat{\mu}$ is $T(x) \sum N(\mu, 1/n)$.
+
+  We can see that $\hat{\mu}$ is an unbiased estimator since
+  $$
+  \EE_\theta(\hat{\mu}) = \EE_{\mu}(\overline{X_n}) = \mu,
+  $$
+  for all $\mu \in \R$.
+\end{example}
+
+One way of measuring `how far' $\hat{\theta}$ is from $\theta$ `on average' is given by the \emph{mean squared error} (mse).
+
+\begin{definition}[Mean Squared Error]
+The \vocab{mean squared error} of $\theta$ is defined to be
+$$
+\operatorname{mse}(\hat{\theta}) = \EE_{\theta}[(\hat{\theta} - \theta)^2].
+$$
+\end{definition}
+
+Again, note that $\operatorname{mse}(\hat{\theta})$ may depend on $\theta$, even though this dependence is omitted from the notation.
+
+\begin{method}[Bias-Variance Decomposition]
+  We can decompose the mean squared error of an estimator as follows.
+  \begin{align*}
+      \operatorname{mse}(\hat{\theta}) &=\mathbb{E}_{\theta}\left[(\hat{\theta}-\theta)^{2}\right] \\
+      &=\mathbb{E}_{\theta}\left[(\hat{e\theta}^{n}-\mathbb{E}_{\theta} \hat{\theta}+\underbrace{\left.\mathbb{E}_{\theta} \hat{\theta}-\theta\right)^{2}}]\right.\\
+      &=\underbrace{\operatorname{Var}_\theta(\hat{\theta})}_{\geqslant 0}+\underbrace{\operatorname{bias}_\theta^{2}(\hat{\theta})}_{\geqslant 0}
+  \end{align*}
+  This shows that there is a tradeoff between bias and variance in an estimator.
+\end{method}
+
+\begin{example}
+  Consider the random variable $X \sim \operatorname{Binomial}(n, \theta)$, and suppose $n$ is known, with $\theta \in [0, 1]$ being an unknown parameter. 
+
+  The standard estimator for this example would be
+  $$
+  T_u = \frac{X}{n},
+  $$
+  which can be thought of as the `proportion of successes observed'.
+  This estimator is clearly unbiased since
+  $$
+  \EE_\theta(T_u) = \frac{\EE_\theta{X}}{n} = \frac{n \theta}{n} = \theta.
+  $$
+  We can also compute that
+  $$
+  \operatorname{mse}(T_u) = \var_\theta(T_u) = \frac{\theta(1 - \theta)}{n}.
+  $$
+
+  Now consider another estimator
+  $$
+  T_B = \frac{X + 1}{n + 2} 
   $$
 \end{example}
 
-The way that a random variable is linked to the probability measure is by considering it's \vocab{distribution}, that is $F_X: \R \rightarrow [0, 1]$ with
-$$
-F_X(x) = \PP(X \leq x).
-$$
 
-A discrete random variable is one which takes values in a countable set. It's \vocab{probability mass function} is given by 
-$$p_X(x) = \PP(X = x).$$
-We say that $X$ has a continuous distribution if it has a \vocab{probability density function} $f_X(x)$ which satisfies
-$$
-\PP(X \in A) = \int_A f_X(x) \dd x
-$$
-when $A$ is `sufficiently nice'.
+\section{LECTURE 3 TBC}
 
-The \vocab{expectation} of a random variable $X$ is defined to be
-$$
-\EE[X] = \sum_{x \in X} x \cdot p_X(x)
-$$
-when $X$ is discrete, and
-$$
-\EE[X] = \int_{\infty}^{\infty} x f_X(x) \dd x
-$$
-when $X$ is continuous. 
+(TODO: Type this up)
 
-The \vocab{variance} of $X$ is given by
-$$
-\var(X) = \EE[(X - \EE[X])^2].
-$$
+\section{Lecture 4}
 
-We say that $X_1, \dots, X_n$ are \vocab{independent} if for all $x_1, \dots, x_n$ we have
-$$
-\PP(X_1 \leq x_1, \dots, X_n \leq x_n) = \PP(X_1 \leq x_1) \cdots \PP(X_n \leq x_n).
-$$
-If the variables have probability density functions (or probability mass functions) $f_{X_1}, \dots, f_{X_n}$ then the joint PDF (or PMF) is
-$$
-f_X(x) = \prod_i f_{X_i}(x_i).
-$$
+\begin{remark}
+  If $S$ and $T$ are minimal sufficient then they are in bijection, that is, $T(x) = T(y)$ if and only if $S(x) = S(y)$. 
+  So we can think of minimal sufficient statistics as being unique up to bijection.
+\end{remark}
 
+\begin{theorem}[Criterion for Minimal Sufficiency]
+  Suppose that $f_x(x | \theta ) / f_x(y \mid \theta)$ is constant in $\theta$ if and only if $T(x) = T(y)$. Then $T$ is minimal sufficient.
+\end{theorem}
 
-\begin{example}[Maximum of Random Variables]
-  If $Y = \max\{X_1, \dots, X_n\}$ for independent random variables $X_1, \dots, X_n$, then
-$$
-F_Y(y) = \PP(Y \leq y) = \PP(X_1 \leq y, \dots, X_n \leq y) = \prod_i F_{X_i}(y),
-$$
-and then by differentiating we can obtain the PDF of $Y$ (if it exists).
-
-\end{example}
-
-We will now consider some linear transformations of random variables.
-Let $a \in \R^n$ be a constant.
-We have
-\begin{align*}
-  \EE[a_1X_1 + \cdots + a_n X_n] &= \EE[a^T X] = a^T \EE[X] \\
-  \var(a^T X) &= \sum_{i, j} a_i a_j \operatorname{Cov}(X_i, X_j) = a^T \operatorname{Var}(X) a
-\end{align*}
-where $\operatorname{Cov}(X_i, X_j) = \EE[(X_i - \EE[X_i])(X_j - \EE[X_j])]$, and
-$$
-\var(X)_{i, j} = \operatorname{Cov}(X_i, X_j)
-$$
-is the \vocab{variance-covariance matrix}.
-
-Let $X_1, \dots, X_n$ be i.i.d random variables with $\EE[X_1] = \mu$ and $\var(X_1) = \sigma^2$. Then if we define the \vocab{sample mean} 
-$$
-S_n = \sum_i X_i, \quad \bar{x}_n = S_n/n.
-$$
-By linearity, $\EE[\bar{x}_n] = \mu$ and $\var(\bar{x}_n) = \sigma^2/n$.
-
-We define the \vocab{standard statistic}
-$$
-Z_n = \frac{S_n- n \mu}{\sigma \sqrt{n}} = \frac{\sqrt{n}(\hat{x_n} - \mu)}{\sigma}
-$$
-which has mean 0 and variance 1.
-
-
-The \vocab{moment generating function} of a random variable $X$ is the Laplace transform of the PDF, that is,
-$$
-M_X(t) = \EE[e^{tX}],
-$$
-provided that it exists for $t$ in some neighborhood of $0$. This has a nice relation to the moments of $X$, in that
-$$
-\EE[X^n] = \left.\frac{d^n}{dt^n} M_X(t) \right|_{t =0}.
-$$
 \end{document}
