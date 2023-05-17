@@ -1,0 +1,189 @@
+\documentclass[a4paper]{scrartcl}
+
+\usepackage[
+    fancytheorems, 
+    fancyproofs, 
+    noindent, 
+]{adam}
+
+
+\title{Number Theory}
+
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{\today}
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+% This is a short description of the course. It should give a little flavour of what the course is about, and what will be roughly covered in the notes.
+
+This article constitutes my notes for the `Number Theory' course, held in Michaelmas 2020 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+
+
+
+\tableofcontents
+
+\section{Introduction}
+
+Number theory studies the hidden properties of $\Z = \{0, \pm 1, \pm 2, \dots\}$ and $\Q =\{m/n \mid m, n \in Z, n \neq 0 \}$. It has always been an experimental science. Examining numerical data leads to conjectures, many of which are very old and still are unproven today.
+
+\subsection{Some Examples}
+
+Here are some examples of some easy to state but still unsolved problems in number theory.
+
+\begin{enumerate}
+  \item Let $N \geq 1$ be an integer of the form $8n + 5$, $8n + 6$ or $8n + 7$. Then does there exist right angled triangle of area $N$, all of whose sides have rational length?
+  \item Let $\pi(x)$ be the number of primes less than or equal to $x$, and let
+  $$
+  li(x) = \int_2^x \frac{\dd t}{\log t}
+  $$
+  be the logarithmic integral. Then for all $x \geq 3$, $|\pi(x) - li(x)| \leq \sqrt{x} \log x$.
+  \item There are infinitely many primes $p$ such that $p + 2$ is also prime.
+\end{enumerate}
+
+\section{Divisibility} 
+
+\subsection{Euclid's Algorithm}
+
+We begin by recalling some of the basic tools of number theory.
+
+\begin{theorem}[Division Algorithm]
+  Given $a, b \in \Z$ with $b > 0$, there exists $q, r \in \Z$ with $a = bq + r$ and $0 \leq r < b$.
+\end{theorem}
+\begin{proof}
+A natural candidate for $r$ would be the minimal non-negative element of $S = \{a - nb \mid n \in \Z\}$, which exists since this set contains \emph{some} non-negative element. Indeed this works since $r < b$ as otherwise $r - b \in S$ would contradict minimality. So $a - bq = r$ for some $q \in \Z$, or $a = bq + r$ as required.
+\end{proof}
+
+
+\begin{definition}[Divides]
+  We say that $a$ \vocab{divides} $b$, written $a \mid b$, if there exists $q \in \Z$ such that $b = aq$.
+\end{definition}
+
+Now given a bunch of integers $a_1, \dots, a_n \in \Z$, we can form the set $I = \{\lambda_1 a_1 + \cdots + \lambda n a_n \mid \lambda_i \in \Z\}$, and this is closed under linear combinations of elements. 
+
+\begin{lemma}
+  $I = d\Z = \{m d \mid m \in \Z\}$ for some $d > 0$.
+\end{lemma}
+\begin{proof}
+  Let $d$ be the minimal non-negative element of $I$. Then $d \Z \subset I$. Also for $a \in I$, we can write $a = qd + r$ for some $0 \leq r < d$. But then $a - qd \in I$ so $r \in I$ and since $d$ is minimal, we must have $r = 0$ and thus $a = qd$, and $a \in d \Z$, so $I = d\Z$.
+\end{proof}
+
+In particular, $d \mid a_i$ for all $i$, and if $c \mid a_i$ for all $i$ then $d\Z = I \subset c\Z$ and $c \mid d$.
+
+\begin{definition}[Greatest Common Divisor]
+  We write $d = \gcd(a_1, \dots, a_n) = (a_1, \dots, a_n)$, and say $d$ is the \vocab{greatest common divisor} of $a_1, \dots, a_n$.
+\end{definition}
+
+The construction of this set $I$ along with our definition of greatest common divisor gives us a nice way to handle linear equations involving integers.
+
+\begin{corollary}[Bézout's Lemma]
+  Suppose $a, b, c \in \Z$ with $a$ and $b$ ot both $0$. Then there exists $x, y \in \Z$ such that $ax + by = c$ if and only if $(a, b) \mid c$.
+\end{corollary}
+
+The process of actually finding suitable $x, y$ occurs through the use of Euclid's algorithm.
+
+\begin{theorem}[Euclid's Algorithm]
+Suppose we had $a, b \in \Z_+$ with $a > b$. Then letting $b = r_0$, we can apply the division algorithm repeatedly to get
+\begin{align*}
+  a &= q_1 r_0 + r_1 \\
+  b &= q_2 r_1 + r_2 \\
+  r_1 &= q_3 r_2 + r_3 \\
+  &\vdots \\
+  r_{k - 2} &= q_k r_{k - 1} + r_k \\
+  r_{k - 1} &= q_{k + 1}r_k + 0
+\end{align*}
+where $0 < r_i < r_{i - 1}$ for $i \leq k$. Then $r_k = (a, b)$.
+\end{theorem}
+\begin{proof}
+  Note that $r_k \mid r_0$ and $r_k \mid a$ so $r_k \mid (a, b)$. Also if there's $m$ such that $m \mid a$ and $m \mid b$, then $m \mid r_k$, hence $(a, b) \mid r_k$, and $r_k = (a, b)$.
+\end{proof}
+
+If $d = (a, b)$, then by Bézout's lemma there exists $r, s \in \Z$ such that $ra + sb = d$. Euclid's algorithm may be used not just to compute $d$ but also to find $r$ and $s$ such that this holds (by substituting backwards).
+
+% \begin{example}
+%   Let $a = 34$ and $b = 25$. We want to compute their greatest common divisor using the Euclidean algorithm. We have
+%   \begin{align*}
+%     34 &= 1 \cdot 25 + 9 \\
+%     25 &= 2 \cdot 9 + 7 \\
+%     9 &= 1 \cdot 7 + 2 \\
+%     7 &= 3 \cdot 2 + 1
+%   \end{align*}
+%   so we can see $(a, b) = 1$. We then substitute back up
+% \end{example}
+
+\subsection{Primes and the Fundamental Theorem of Arithmetic}
+
+The reader will be familiar with the notion of primality. 
+
+\begin{definition}[Prime]
+  An integer $n > 1$ is \vocab{prime} if its only positive divisors are 1 and $n$. Otherwise it's \vocab{composite}.
+\end{definition}
+
+It's well known that there is infinitely many primes, and a standard proof is that of Euclid.
+
+\begin{theorem}[Euclid]
+  There are infinitely many primes.
+\end{theorem}
+\begin{proof}
+  Suppose the set of primes was finite, say $\{p_1, \dots, p_k\}$. Then the number $N = p_1 \cdots p_k + 1$ is not divisible by any number in this set, which would imply that it's prime, but it's not in the set of primes, so we have a contradiction.
+\end{proof}
+
+A useful result when working with primes is \emph{Euclid's lemma}.
+
+\begin{lemma}[Euclid's Lemma]
+  Let $p$ be a prime and $a, b\in \Z$. Then $p \mid ab$ if and only if $p \mid a$ or $p \mid b$.
+\end{lemma}
+\begin{proof}
+  The forward direction is a matter of definitions. For the converse, suppose $p \mid ab$ and $p \nmid a$. Then $(a, p) \neq p$, but $(a, b) \mid p$, so $(a, b) = 1$. Then by Bézout's lemma we can write $ax + py = 1$ for some $x, y$. Then multiplying by $b$, we get $abx + pby = b$, and since $p$ divides the left side, $p \mid b$ as required.
+\end{proof}
+
+It turns out that this gives us unique factorisation.
+
+\begin{theorem}[Fundamental Theorem of Arithmetic]
+  Every $n > 1$ can be written as a product of primes, and this product is unique up to reordering.
+\end{theorem}
+\begin{proof}
+  Existence follows by strong induction. For uniqueness, suppose there is an integer $n$ with two distinct prime factorisations, $n = p_1 \cdots p_r = q_1 \cdots q_s$. Then $p_1 \mid q_i$ for some $i$, and by primality we have $p_1 = q_i$, and we can cancel both factors from our equation. Repeating this for $n/p_1$ and so on, we eventually must have that $\{p_1,\dots,p_r\} = \{q_1, \dots, q_s\}$, as required.
+\end{proof}
+
+We can use prime factorisations to write down the gcd of two numbers, in that if $n = \prod p_i^{a_i}$ and $m = \prod p_i^{b_i}$, then $(n, m) = \prod p_i^{\min\{a_i, b_i\}}$.
+This isn't really an efficient way to compute the gcd, but it's a good way to think about it. 
+
+\section{Congruences}
+
+\subsection{Modular Arithmetic}
+
+It is a common occurrence in number theory that we will consider numbers that differ by a common multiple of a fixed number to be equivalent. This is the idea of congruences (and modular arithmetic).
+
+\begin{definition}[Congruence]
+  Let $n \geq 1$ be an integer. We say that $a$ is \vocab{congruent} to $b$ \vocab{modulo $n$}, written $a \equiv b \pmod n$ if $n \mid a - b$.
+\end{definition}
+
+This definition naturally induces an equivalence relation on $\Z$, and we write $\Z/n\Z$ for the set of equivalence classes $a + n\Z$. It is easy to check that addition and multiplication are well defined on $\Z/n\Z$, giving rise to modular arithmetic.
+
+\subsection{Modular Inverses}
+
+A frequently used tool in modular arithmetic is that of multiplicative inverses (which more or less allow us to perform some kind of division). 
+
+\begin{definition}[Modular Inverse]
+  Let $a \in \Z/n\Z$. We say that $b$ is a \vocab{modular inverse} of $a$ if $ab \equiv 1 \pmod{n}$. If such an inverse exists, it is denoted $a^{-1}$.
+\end{definition}
+
+We have a straightforward method for knowing if a number has a modular inverse or not, which is quite natural.
+
+\begin{lemma}[Existence of Modular Inverses]
+  Let $a \in \Z$, then the following are equivalent:
+  \begin{enumerate}[label=(\roman*)]
+  \item $(a, n) = 1$
+  \item There exists $b \in \Z$ such that $ab \equiv 1 \pmod{n}$.
+  \item $a + n\Z$ is a generator of $(\Z/n\Z, +)$.
+  \end{enumerate}
+\end{lemma}
+\begin{proof} \emph{(i) implies (ii)}. 
+As $(a, n) = 1$, there exists $b, c \in \Z$ such that $ab + cn = 1$. Taking this modulo $n$ gives us our result. For the other direction, we have $ab = 1 + cn$ for some $c$, which implies $(a, n) = 1$ by Bezout.
+\end{proof}
+
+\end{document}
