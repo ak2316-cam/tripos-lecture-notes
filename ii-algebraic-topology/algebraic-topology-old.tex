@@ -1,0 +1,379 @@
+\documentclass[a4paper, 10pt, twocolumn]{amsart}
+
+\usepackage[nokoma,noindent,fancytheorems]{adam}
+\usepackage[margin=0.75in]{geometry}
+
+\setlist[enumerate]{leftmargin=8mm}
+\setlist[itemize]{leftmargin=8mm}
+
+\newcommand{\enumpre}{\vspace{-1.5\baselineskip}}
+
+
+
+% NOTE: for a more compact, black and white style for printing, use
+% the below.
+
+% \documentclass[a3paper, 10pt]{article}
+
+% \usepackage[nokoma, noindent]{adam}
+% \usepackage[landscape,margin=0.5in]{geometry}
+% \usepackage{multicol}
+
+% \setlist[enumerate]{leftmargin=8mm}
+% \setlist[itemize]{leftmargin=8mm}
+
+% \newcommand{\enumpre}{}
+% % \newcommand{\enumpre}{\vspace{-1.5\baselineskip}}
+% \renewcommand{\vocab}[1]{\emph{#1}}
+
+\usepackage{quiver}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\rel}{\operatorname{rel}}
+
+\title{Algebraic Topology}
+\author{Adam Kelly -- Part II}
+\date{\today. Email \texttt{ak2316@srcf.net}}
+
+\begin{document}
+% \begin{multicols*}{5}
+\maketitle
+
+\section{The Fundamental Group}
+
+\subsection{Homotopy}\ 
+% We first define a notion of one function on a space being deformed into another 
+
+\begin{definition}[Homotopy]
+Let $f, g: X \rightarrow Y$ be maps. A \vocab{homotopy} from $f$ to $g$ is a map
+  $
+  H: X \times I \rightarrow Y
+  $
+  such that
+  $
+  H(x, 0)=f(x)$, and $H(x, 1)=g(x)
+  $.
+
+  If such a $H$ exists, we say $f$ is \vocab{homotopic} to $g$, and write $f \simeq h$ or $f \simeq_H g$.
+\end{definition}
+
+\begin{definition}[Homotopy Relative to a Subspace]
+  We say $f$ is homotopic to $g$ \vocab{relative to $A$}, written $f \simeq g \rel A$ if for all $a \in A \subseteq X$, we have $H(a, t) = f(a) = g(a)$.
+\end{definition}
+
+
+\begin{proposition}
+  For spaces $X, Y$ and $A \subseteq X$, `homotopic $\rel A$' is an equivalence relation. In particular, when $A = \emptyset$, homotopy is an equivalence relation.
+\end{proposition}
+\begin{proof}
+  We check
+  \begin{enumerate}
+    \item \emph{Reflexivity}: $f \simeq f$ since $H(x, t)=f(x)$ is a homotopy.
+    \item \emph{Symmetry}: if $H(x, t)$ is a homotopy from $f$ to $g$, then $H(x, 1-t)$ is a homotopy from $g$ to $f$.
+    \item \emph{Transitivity}: Suppose $f, g, h: X \rightarrow Y$ and $f \simeq_H g \operatorname{rel} A, g \simeq_{H^{\prime}} h \operatorname{rel} A$. We want to show that $f \simeq h \operatorname{rel} A$. The idea is to "glue" the two maps together.
+    
+    We know how to continuously deform $f$ to $g$, and from $g$ to $h$. So we just do these one after another. We define $H^{\prime \prime}: X \times I \rightarrow Y$ by
+    $$
+    H^{\prime \prime}(x, t)= \begin{cases}H(x, 2 t) & 0 \leq t \leq \frac{1}{2} \\ H^{\prime}(x, 2 t-1) & \frac{1}{2} \leq t \leq 1\end{cases}
+    $$
+    It's well-defined since $H(x, 1)=g(x)=H^{\prime}(x, 0)$. This is also continuous by the gluing lemma. It is easy to check that $H^{\prime \prime}$ is a homotopy $\operatorname{rel} A$.
+  \end{enumerate}
+  \vspace{-1pc}
+\end{proof}
+
+\begin{definition}[Homotopy Equivalence]
+  A map $f: X \rightarrow Y$ is a \vocab{homotopy equivalence} if there exists a $g:Y \rightarrow X$ such that $f \circ g \simeq \id_Y$ and $g \circ f \simeq \id_X$. We call $g$ a \vocab{homotopy inverse} for $f$.
+
+  If a homotopy equivalence $f: X \rightarrow Y$ exists, we say $X$ and $Y$ are \vocab{homotopy equivalent}, and write $X \simeq Y$.
+\end{definition}
+
+
+\begin{lemma}
+  Consider the spaces and maps
+  % https://q.uiver.app/#q=WzAsMyxbMCwwLCJYIl0sWzEsMCwiWSJdLFsyLDAsIloiXSxbMCwxLCJmXzAiLDAseyJjdXJ2ZSI6LTJ9XSxbMSwyLCJnXzAiLDAseyJjdXJ2ZSI6LTJ9XSxbMCwxLCJmXzEiLDIseyJjdXJ2ZSI6Mn1dLFsxLDIsImdfMSIsMix7ImN1cnZlIjoyfV1d
+\[\begin{tikzcd}
+	X & Y & Z
+	\arrow["{f_0}", curve={height=-12pt}, from=1-1, to=1-2]
+	\arrow["{g_0}", curve={height=-12pt}, from=1-2, to=1-3]
+	\arrow["{f_1}"', curve={height=12pt}, from=1-1, to=1-2]
+	\arrow["{g_1}"', curve={height=12pt}, from=1-2, to=1-3]
+\end{tikzcd}\]
+If $f_0 \simeq_H f_1$ and $g_0 \simeq_{H'} g_1$, then $g_0 \circ f_0 \simeq g_1 \circ f_1$.
+\end{lemma}
+\begin{proof}
+  We will show that $g_0 \circ f_0 \simeq g_0 \circ f_1 \simeq g_1 \circ f_1$, and will then be done since homotopy is an equivalence relation. We write down two homotopies.
+  \begin{enumerate}
+    \item Consider the composition
+    % https://q.uiver.app/#q=WzAsMyxbMCwwLCJYXFx0aW1lcyBJIl0sWzEsMCwiWSJdLFsyLDAsIloiXSxbMCwxLCJIIl0sWzEsMiwiZ18wIl1d
+\[\begin{tikzcd}
+	{X\times I} & Y & Z
+	\arrow["H", from=1-1, to=1-2]
+	\arrow["{g_0}", from=1-2, to=1-3]
+\end{tikzcd}\]
+It is easy to check that this is teh first homotopy we need to show $g_0 \circ f_0 \simeq g_0 f_1$.
+\item The following composition is a homotopy from $g_0 \circ f_1$ to $g_1 \circ f_1$:
+% https://q.uiver.app/#q=WzAsMyxbMCwwLCJYXFx0aW1lcyBJIl0sWzEsMCwiWVxcdGltZXMgSSJdLFsyLDAsIloiXSxbMCwxLCJmXzEgXFx0aW1lcyBcXGlkX0kiXSxbMSwyLCJIJyJdXQ==
+\[\begin{tikzcd}
+	{X\times I} & {Y\times I} & Z
+	\arrow["{f_1 \times \id_I}", from=1-1, to=1-2]
+	\arrow["{H'}", from=1-2, to=1-3]
+\end{tikzcd}\]
+  \end{enumerate}
+  \vspace{-1pc}
+\end{proof}
+
+\begin{proposition}
+  Homotopy equivalence of spaces is an equivalence relation.
+\end{proposition}
+\begin{proof}
+  Symmetry and reflexivity are trivial. To show transitivity, let $f:X \rightarrow Y$ and $h: Y \rightarrow Z$ be homotopy equivalences, and $g: Y \rightarrow X$ and $k: Z \rightarrow Y$ be their homotopy inverses. We will show that $h \circ f : X \rightarrow Z$ is a homotopy equivalence with homotopy inverse $g \circ k$. We have
+  \begin{align*}
+  (h \circ f) \circ (g \circ k) = h \circ (f \circ g) \circ k \\
+  \simeq h \circ \id_y \circ k = h \circ k \simeq \id_Z.
+  \end{align*}
+  Similarily,
+  \begin{align*}
+(g \circ k) \circ(h \circ f)=g \circ(k \circ h) \circ f \\
+\simeq g \circ \operatorname{id}_Y \circ f=g \circ f \simeq \operatorname{id}_X,
+  \end{align*}
+  as required.
+\end{proof}
+
+\begin{definition}[Contractible]
+  If $X \simeq *$, the one point space, then $X$ is \vocab{contractible}.
+\end{definition}
+
+\begin{definition}[Retraction]
+  Let $A \subseteq X$ be a subspace. A \vocab{retraction} $r:X \rightarrow A$ is a map such that $r \circ \iota = \id_A$, where $\iota: A \hookrightarrow X$ is the inclusion. If such an $r$ exists, we call $A$ a \vocab{retract} of $X$.
+
+  The retraction $r$ is a \vocab{deformation retraction} if $\iota \circ r \simeq \id_X$. A deformation retraction is \vocab{strong} if we require this homotopy to be a homotopy $\rel A$.
+\end{definition}
+
+\subsection{Paths}\ 
+
+\begin{definition}[Path]
+  A \vocab{path} in a space $X$ is a map $\gamma: I \rightarrow X$. 
+  If $\gamma(0) = x_0$ and $\gamma(1) = x_1$, we say $\gamma$ is a path from $x_0$ to $x_1$, and write $\gamma: x_0 \leadsto x_1$. 
+  
+  If $\gamma(0) = \gamma(1)$, we say $\gamma$ is a \vocab{loop} (based at $x_0$).
+\end{definition}
+
+\begin{definition}[Concatenation and Inverses]
+  If we have two paths $\gamma_1$ from $x_0$ to $x_1$ and $\gamma_2$ from $x_1$ to $x_2$, we define the \vocab{concatenation} to be
+  $$
+  (\gamma_1 \cdot \gamma_2)(t) = \begin{cases}
+    \gamma_1(2t) & 0 \leq t \leq \frac{1}{2}\\
+    \gamma_2(2t - 1) & \frac{1}{2} \leq t \leq 1.
+  \end{cases}
+  $$
+  This is continuous by the gluing lemma.
+
+  The \vocab{inverse} of a path $\gamma: I \rightarrow X$ is defined by
+  $$
+  \gamma^{-1}(t) = \gamma(1 -t).
+  $$
+
+  The \vocab{constant path} at a point $x \in X$ is given by $c_x(t) = x$.
+\end{definition}
+
+\begin{definition}[Homotopy of Paths]
+  Paths $\gamma, \gamma': I \rightarrow X$ are \vocab{homotopic as paths} if they are homotopic $\rel\; \{0, 1 \} \subset I$, i.e. the end points are fixed. We write $\gamma \simeq \gamma'$.
+\end{definition}
+
+\begin{lemma}[Group Operation is Well-Defined]
+  Let $\gamma_1, \gamma_2: I \rightarrow X$ be paths with $\gamma_1(1) = \gamma_2(0)$. Then if $\gamma_1 \simeq \gamma_1'$ and $\gamma_2 \simeq \gamma_2'$, then $\gamma_1 \cdot \gamma_2 \simeq \gamma_1' \cdot \gamma_2'$.
+\end{lemma}
+\begin{proof}
+  Suppose that $\gamma_1 \simeq_{H_1} \gamma_1'$ and $\gamma_2 \simeq_{H_2} \gamma_2'$. Then we can construct the homotopy
+  $$
+  H(s, t)= \begin{cases}H_1(s, 2 t) & 0 \leq t \leq \frac{1}{2} \\ H_2(s, 2 t-1) & \frac{1}{2} \leq t \leq 1\end{cases}.
+  $$
+\end{proof}
+
+\begin{lemma}[Indeed a Group Operation]
+Let $\gamma_0: x_0 \leadsto x_1$, $\gamma_1: x_1 \leadsto x_2$, $\gamma_2: x_2 \leadsto x_3$ be paths.
+Then 
+\begin{enumerate}
+  \item $(\gamma_0 \cdot \gamma_1) \cdot \gamma_2 \simeq \gamma_0 \cdot (\gamma_1 \cdot \gamma_2)$.
+  \item $\gamma_0 \cdot c_{x_1} \simeq \gamma_0 \simeq c_{x_0} \cdot \gamma_0$.
+  \item $\gamma_0 \cdot \gamma_0^{-1} \simeq c_{x_0}$ and $\gamma_0^{-1} \cdot \gamma_0 \simeq c_{x_1}$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+  We first note that the composition of any path $\gamma$ and an order-preserving surjection $\phi: I \rightarrow I$ is homotopic to the original path via $H(s, t) = \gamma(t\phi(s) + (1 - t)s)$. Such a $\phi$ is a \vocab{reparameterisation}. 
+  \begin{enumerate}
+    \item Take $\phi$ to be the function
+    $$
+    \phi(t)=\begin{cases}
+      \frac{t}{2} & 0 \leq t \leq \frac{1}{2} \\
+      t - \frac{1}{4} & \frac{1}{2} \leq t \leq \frac{3}{4} \\
+      2t - 1 & \frac{3}{4} t \leq 1.
+    \end{cases}
+    $$
+    Then we have $(\gamma_0 \cdot \gamma_1) \cdot \gamma_2 \simeq ((\gamma_0 \cdot \gamma_1) \cdot \gamma_2) \circ \phi = \gamma_0 \cdot (\gamma_1 \cdot \gamma_2)$.
+    \item To see $\gamma_0 \cdot c_{x_1} \simeq \gamma_0$, reparameterise $\gamma_0$ with
+    $$
+t \mapsto \begin{cases}
+  2t & 0 \leq t \leq \frac{1}{2} \\
+  1 & \frac{1}{2} \leq t \leq 1,
+\end{cases}
+    $$
+    and the other side is analogous.
+    \item We have that $c_{x_0} \simeq \gamma_0 \cdot \gamma_0^{-1}$ via
+    $$
+H(s, t) = \begin{cases}
+  \gamma_0(2s) & 0 \leq s \leq \frac{t}{2} \\
+  \gamma_0(t) & \frac{t}{2} \leq s \leq 1  - \frac{t}{2} \\
+  \gamma_0^{-1}(2s - 1) & 1 - \frac{t}{2} \leq s \leq 1.
+\end{cases}
+    $$
+  \end{enumerate}
+  \vspace{-1pc} 
+\end{proof}
+
+\subsection{The Fundamental Group}
+
+We can now define one of our central objects of study.
+
+\begin{definition}[Fundamental Group]
+  Let $X$ be a space and $x_0 \in X$. The \vocab{fundamental group} of $X$ (based at $x_0$), denoted $\pi_1(X, x_0)$, is the set of homotopy classes of loops in $X$ based at $x_0$. 
+  
+  The group operation is defined to be $[\gamma_0][\gamma_1] = [\gamma_0 \cdot \gamma_1]$, and $[\gamma]^{-1} = [\gamma^{-1}]$ with the identity as teh constant path $e = [c_{x_0}]$.
+\end{definition}
+
+\begin{theorem}
+  The fundamental group is a group.
+\end{theorem}
+\begin{proof}
+  Immediate from our previous lemmas.
+\end{proof}
+
+
+\begin{definition}[Based Space]
+A \vocab{based space} is a pair $(X, x_0)$ of a space $X$ and a point $x_0 \in X$, the \vocab{basepoint}. A \vocab{map of based spaces} $f: (X, x_0) \rightarrow (Y, y_0)$ is a continuous map $f: X \rightarrow Y$ such that $f(x_0) = y_0$. A \vocab{based homotopy} is a homotopy $\rel$ $\{x_0\}$.
+\end{definition}
+
+\begin{proposition}[$\pi_1$ is a Functor]
+  To a based map $f: (X, x_0) \rightarrow (Y, y_0)$, there is an associated function
+  $f_* = \pi_1(f): \pi_1(X, x_0) \rightarrow \pi_1(Y, y_0)$, defined by $[\gamma] \mapsto [f \circ \gamma]$. Moreover it satisfies
+  \begin{enumerate}
+    \item $\pi_1(f)$ is a homomorphism of groups.
+    \item If $f \simeq f'$, then $\pi_1(f) = \pi_1(f')$. 
+    \item For any maps $(A, a) \stackrel{h}{\longrightarrow}(B, b) \stackrel{k}{\longrightarrow}(C, c)$, we have $\pi_1(k \circ h)=$ $\pi_1(k) \circ \pi_1(h)$.
+    \item $\pi_1(\id_X) = \id_{\pi_1(X, x_0)}$.
+  \end{enumerate}
+\end{proposition}
+
+
+We want to remove the basepoint dependence of the fundamental group. We will assume that $X$ is path connected.
+
+\begin{proposition}
+  A path $u: x_0 \leadsto x_1$ induces a group isomorphism $u_\#: \pi_1(X, x_0) \rightarrow \pi_1(X, x_1)$ by $[\gamma] \mapsto [u^{-1} \cdot \gamma \cdot u]$. This satisfies
+  \begin{enumerate}
+    \item If $u \simeq y'$, then $u_\# = u'_\#$.
+    \item $(c_{x_0})_\# = \id_{\pi_1(X, x_0)}$. 
+    \item If $v: x_1 \leadsto x_2$, then $(u \cdot v)_\# = v_\# \circ u_\#$.
+    \item If $f: X \rightarrow Y$ with $f(x_0) = y_0$ and $f(x_1) = y_1$, then
+    $$
+    (f\circ u)_\# \circ f_* = f_* \circ u_\#: \pi_1(X, x_0) \rightarrow \pi_1(Y, y_1).
+    $$
+    \item If $x_1 = x_0$, then $u_\#$ is an automorphism of $\pi_1(X, x_0)$ given by conjugation by $u$.
+  \end{enumerate}
+\end{proposition}
+
+So if $x_0$ and $x_1$ are in the same path connected component, then $\pi_1(X, x_0) \cong \pi_1(X, x_1)$.
+
+\begin{lemma}
+  The following diagram commutes.
+  % https://q.uiver.app/#q=WzAsMyxbMCwxLCJcXHBpXzEoWCwgeF8wKSJdLFsxLDAsIlxccGlfMShZLCBmKHhfMCkpIl0sWzEsMiwiXFxwaV8xKFksIGcoeF8wKSkiXSxbMCwxLCJmXyoiXSxbMSwyLCJ1X1xcIyJdLFswLDIsImdfKiIsMl1d
+\[\begin{tikzcd}
+	& {\pi_1(Y, f(x_0))} \\
+	{\pi_1(X, x_0)} \\
+	& {\pi_1(Y, g(x_0))}
+	\arrow["{f_*}", from=2-1, to=1-2]
+	\arrow["{u_\#}", from=1-2, to=3-2]
+	\arrow["{g_*}"', from=2-1, to=3-2]
+\end{tikzcd}\]
+That is, $g_* = u_\# \circ f_*$.
+\end{lemma}
+\begin{proof}
+Suppose we have a loop $\gamma: I \rightarrow X$ based at $x_0$.
+
+We need to check that
+$$
+g_*([\gamma])=u_{\#} \circ f_*([\gamma])
+$$
+In other words, we want to show that
+$$
+g \circ \gamma \simeq u^{-1} \cdot(f \circ \gamma) \cdot u
+$$
+To prove this result, we want to build a homotopy. 
+
+Consider the composition:
+$$
+F: I \times I \stackrel{\gamma \times \mathrm{id}_I}{\longrightarrow} X \times I \stackrel{H}{\longrightarrow} Y
+$$
+Our plan is to exhibit two homotopic paths $\ell^{+}$ and $\ell^{-}$ in $I \times I$ such that
+$$
+F \circ \ell^{+}=g \circ \gamma, \quad F \circ \ell^{-}=u^{-1} \cdot(f \circ \gamma) \cdot u
+$$
+This is in general a good strategy $-X$ is a complicated and horrible space we don't understand. So to construct a homotopy, we make ourselves work in a much nicer space $I \times I$.
+
+Our $\ell^{+}$ and $\ell^{-}$ are defined in a rather simple way. Precisely, $\ell^{+}$ is the path $s \mapsto(s, 1)$, and $\ell^{-}$ is the concatenation of the paths $s \mapsto(0,1-s), s \mapsto(s, 0)$ and $s \mapsto(1, s)$
+
+Note that $\ell^{+}$ and $\ell^{-}$ are homotopic as paths. If this is not obvious, we can manually check the homotopy
+$$
+L(s, t)=t \ell^{+}(s)+(1-t) \ell^{-}(s)
+$$
+This works because $I \times I$ is convex. Hence $F \circ \ell^{+} \simeq{ }_{F \circ L} F \circ \ell^{-}$as paths.
+
+Now we check that the compositions $F \circ \ell^{ \pm}$ are indeed what we want. We have
+$$
+F \circ \ell^{+}(s)=H(\gamma(s), 1)=g \circ \gamma(s)
+$$
+Similarly, we can show that
+$$
+F \circ \ell^{-}(s)=u^{-1} \cdot(f \circ \gamma) \cdot u(s)
+$$
+So done.
+\end{proof}
+
+\begin{theorem}
+  If $f: X \rightarrow Y$ is a homotopy equivalence, and $x_0 \in X$, then the induced map
+  $f_*: \pi_1(X, x_0) \rightarrow \pi_1(Y, f(x_0))$ is an isomorphism.
+\end{theorem}
+\begin{proof}
+  Let $g: Y \rightarrow X$ be a homotopy inverse. So $f \circ g \simeq_H \operatorname{id}_Y$ and $g \circ f \simeq_{H^{\prime}} \operatorname{id}_X$.
+
+  We have no guarantee that $g \circ f\left(x_0\right)=x_0$, but we know that our homotopy $H^{\prime}$ gives us $u^{\prime}=H^{\prime}\left(x_0, \cdot\right): x_0 \leadsto g \circ f\left(x_0\right)$.
+
+Applying our previous lemma with $\operatorname{id}_X$ for ``$f$'' and $g \circ f$ for ``$g$'', we get
+$$
+u_{\#}^{\prime} \circ\left(\mathrm{id}_X\right)_*=(g \circ f)_*
+$$
+Using the properties of the $*$ operation, we get that
+$$
+g_* \circ f_*=u_{\#}^{\prime}
+$$
+However, we know that $u_{\#}^{\prime}$ is an isomorphism. So $f_*$ is injective and $g_*$ is surjective.
+
+Doing it the other way round with $f \circ g$ instead of $g \circ f$, we know that $g_*$ is injective and $f_*$ is surjective. So both of them are isomorphisms.
+\end{proof}
+
+\begin{definition}[Simply Connected Space]
+  A space is \vocab{simply connected} if it is path connected and $\pi_1(X, x_0) \equiv 1$ for some (any) choice of $x_0 \in X$.
+\end{definition}
+
+\begin{lemma}
+  A path-connected space $X$ is simply connected if and only if for any $x_0, x_1 \in X$, there exists a unique homotopy class of paths $x_0 \leadsto x_1$.
+\end{lemma}
+\begin{proof}
+Suppose $X$ is simply connected, and let $u, v: x_0 \leadsto x_1$ be paths. Now note that $u \cdot v^{-1}$ is a loop based at $x_0$, it is homotopic to the constant path, and $v^{-1} \cdot v$ is trivially homotopic to the constant path. So we have
+$$
+u \simeq u \cdot v^{-1} \cdot v \simeq v
+$$
+On the other hand, suppose there is a unique homotopy class of paths $x_0 \leadsto x_1$ for all $x_0, x_1 \in X$. Then in particular there is a unique homotopy class of loops based at $x_0$. So $\pi_1\left(X, x_0\right)$ is trivial.
+\end{proof}
+
+% \end{multicols*}
+\end{document}

@@ -1,0 +1,1092 @@
+% \documentclass[a4, 10pt]{scrartcl}
+\documentclass[a4paper, 10pt, twocolumn]{amsart}
+
+% \usepackage[
+% % fancytheorems,
+% % fancyproofs
+% nokoma
+% ]{adam}
+
+
+\usepackage{enumerate}
+\usepackage{bbm}
+
+\newtheorem*{theorem}{Theorem}
+\newtheorem*{corollary}{Corollary}
+\newtheorem*{lemma}{Lemma}
+\newtheorem*{prop*}{Proposition}
+\newtheorem*{claim}{Claim}
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\newtheorem*{definitions}{Definitions}
+\newtheorem*{proposition}{Proposition}
+\newtheorem*{example}{Example}
+\newtheorem*{examples}{Examples}
+\newtheorem*{remark}{Remark}
+\newtheorem*{remarks}{Remarks}
+
+% \newtcolorbox{mybox}[3][]{colback=white!10!white,colframe=blue!75!black,title=Definition}
+
+\newcommand{\br}[1]{\left(#1 \right )}
+\newcommand{\bb}[1]{\mathbb{#1}}
+\newcommand{\gen}[1]{\langle #1 \rangle}
+\newcommand{\ord}[1]{\text{ord}#1}
+\newcommand{\stab}[1]{\text{stab}#1}
+\newcommand{\orb}[1]{\text{orb}#1}
+\newcommand{\eps}[0]{\varepsilon}
+\renewcommand{\ker}[1]{\text{Ker}(#1)}
+\newcommand{\im}[1]{\text{Im}(#1)}
+\newcommand{\x}[0]{\mathbf{x}}
+\newcommand{\y}[0]{\mathbf{y}}
+\newcommand{\z}[0]{\mathbf{y}}
+\renewcommand{\bf}[1]{\mathbf{#1}}
+\newcommand{\sbs}[0]{\subseteq}
+\renewcommand{\i}[0]{\text{int}}
+\newcommand{\Cl}[0]{\text{Cl}}
+\renewcommand{\c}[1]{#1^\circ}
+\renewcommand{\cal}[1]{\mathcal{#1}}
+\newcommand{\Span}[0]{\text{span}}
+\newcommand{\lbr}[1]{\langle #1 \rangle}
+\newcommand{\too}{\xrightarrow}
+\newcommand{\1}{\mathbbm{1}}
+\newcommand{\pdv}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\Var}[0]{\text{Var}}
+\newcommand{\dv}[2]{\frac{\mathrm{d} #1}{\mathrm{d} #2}}
+\newcommand{\interior}{\text{int}}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+
+\usepackage[margin=0.75in]{geometry}
+
+\title{Topics in Analysis}
+\author{Adam Kelly -- Mathematical Tripos Part II}
+\date{\today. Email \texttt{ak2316@cam.ac.uk}}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\emph{Familiarity with previous Analysis courses is assumed.}
+\end{center}
+
+\section{Basic Analysis}
+
+\begin{theorem}[Fundamental Theorem of Algebra]
+    If $P(z)$ is a polynomial with coefficients in $\bb{C}$, then $P$ has a root.
+\end{theorem}
+
+\begin{proof}
+    Write $P(z) = \sum_{j=0}^n a_j z^j$ (wlog $a_n = 1$). Note \[|P(z)| \ge |z|^n (|a_n|-|a_{n-1}||z|^{-1}-\ldots -|a_0||z|^{-n}).\] Hence if $R = 2\left(2+\sum_{j=0}^{n-1} |a_j|\right)$, whenever $|z|\ge R$ we have $|P(z)|>|z|^n/2$. Then $\overline{B}_R(0)$ is compact so $|P(z)|$ achieves a minimum on $B_R(0)$ at some $p_0 \in B_R(0)$. Since $|P(z)| \ge |z|^n/2 \ge R^n/2 > |a_0|$ for $|z|\ge R$, $p_0$ is a global minimum.  \\
+
+    Now by considering $P(z+p_0)$, we can assume $p_0 = 0$. By considering $e^{i\theta}P(z)$ we can assume $a_0 \in \bb{R}$ and $a_0 > 0$. By considering $P(e^{i\theta}z)$ we can assume $P(z) = a_0+a_mz^m + \sum_{m+1}^n a_j z^j$ for $a_0,a_m \in \bb{R}$, $a_0>0$ and $a_m<0$. Then $\frac{P(\delta)-P(0)}{\delta^m} \to a_m$ as $\delta\to 0$.\\
+
+    So the real part of $\frac{P(\delta)-P(0)}{\delta^m}$ tends to $a_m$ and the imaginary part tends to $0$. Hence if $\delta$ is sufficiently small and positive $|P(\delta)|<|P(0)|$. 
+\end{proof}
+
+\section{Laplace's Equation}
+
+\begin{definition}
+    \textit{Laplace's equation} is $\nabla^2 \phi = 0$.
+\end{definition}
+
+\begin{definition}[Boundary]
+    Let $(X,d)$ be a metric space, $E \sbs X$. \begin{enumerate}
+        \item The \textit{closure} $\overline{E} = \Cl(E)$ is the collection of points $x \in E$ such that there exists a sequence $(x_n)_{n\ge 1}$ in $E$ with $x_n \to x$.
+        \item The \textit{interior} $\interior(E)$ is the set of points $x \in E$ such that there exists $\delta>0$ with $B(x,\delta)\sbs E$. 
+        \item The \textit{boundary} $\partial E$ is defined by $\partial E = \Cl(E)\setminus \interior(E)$. 
+    \end{enumerate}
+\end{definition}
+
+For the remainder of this section: \begin{itemize}
+    \item We work in $\bb{R}^m$;
+    \item Let $\Omega \ne \emptyset$ be a bounded open set;
+    \item Let $\phi: \Cl(\Omega) \to \bb{R}$ be a continuous function which is twice differentiable on $\Omega$;
+    \item Let $f: \partial \Omega \to \bb{R}$ be a continuous function. 
+\end{itemize}
+We want to show that the problem $\nabla^2 \phi = 0$ on $\Omega$, $\phi = f$ on $\partial \Omega$ has at most one solution.
+
+\begin{lemma}
+    If $\nabla^2 \phi >0$ on $\Omega$, then $\phi$ achieves its maximum on $\partial \Omega$. 
+\end{lemma}
+
+\begin{remark}
+    The maximum must exist since $\Cl(\Omega)$ is closed and bounded.
+\end{remark}
+
+\begin{proof}
+    Suppose $\phi$ attains its maximum at $x^\ast \in \Omega$. Then there exists $\delta>0$ such that \[(x_1^\ast-\delta,x^\ast+\delta)\times \ldots \times (x_n^\ast-\delta,x^\ast+\delta) \sbs \Omega.\]
+    Define $f_j(t) = \phi(x_1^\ast,\ldots,x_{j-1}^\ast,x_j^\ast+t,x_{j+1}^\ast,\ldots,x_m^\ast)$. Then $f_j$ has a maximum at $0$ and $f_j$ is twice differentiable with $f_j''(0) \le 0$. Hence $\pdv{\phi(x^\ast)}{x_j^2} \le 0$ so $\nabla^2 \phi(x^\ast) \le 0$, a contradiction.
+\end{proof}
+
+\begin{theorem}
+    If $\nabla^2 \phi = 0$ on $\Omega$, then the maximum is achieved at $\partial \Omega$. 
+\end{theorem}
+
+\begin{proof}
+    Set $\phi_n(x) = \phi(x) +\frac{1}{n} \sum_{j=1}^m x_j^2$. Then $\nabla^2 \phi_n = \nabla^2 \phi + \frac{2m}{n} = \frac{2m}{n}$. Then by the previous lemma, $\phi_n$ has a maximum at $x_n^\ast \in \partial \Omega$. The boundary is closed and bounded so compact, hence we can find $x^\ast$ and a subsequence $(x_{n(j)}^\ast)_{j\ge 1}$ such that $x_{n(j)}^\ast \to x^\ast$. Then \[\phi(x_{n(j)}^\ast)+\frac{1}{n(j)} \sum_{i=1}^m (x_k^\ast)^2 \ge \phi(x) + \frac{1}{n(j)} \sum_{i=1}^m x_k^2 \ge \phi(x) \ \forall x \in \Cl(\Omega).\]
+    So let $n(j) \to \infty$ and use continuity of $\phi$ to obtain $\phi(x^\ast) \ge \phi(x)$ for all $x \in \Cl(\Omega)$.
+\end{proof}
+
+\begin{remark}
+    Now if $\nabla^2 \phi_1 = \nabla^2 \phi_2 = 0$ on $\Omega$ and $\phi_1=\phi_2=f$ on $\partial \Omega$, then $\phi_1-\phi_2 = 0$ on $\partial \Omega$ so $\phi_1-\phi_2\le 0$ on $\Cl(\Omega)$ by the previous theorem. Similarly $\phi_2-\phi_1 \le 0$ on $\Cl(\omega)$ so $\phi_1=\phi_2$. 
+\end{remark}
+
+
+
+
+
+What about existence? 
+
+\subsubsection*{Zaremba counterexample}
+
+Consider $\Omega = D \setminus \{0\} = \{x \in \bb{R}^2 : 0<||x||<1\}$. We'll show $\nabla^2 \phi = 0$, \[\phi(x) = \begin{cases} 0 & ||x||=1\\ 1 & x=0\end{cases}\] on $\partial \Omega$ has no solution. \\
+
+Indeed, let $R_\theta$ be a rotation through $\theta$ about $0$. If $\theta$ is a solution, then $x \mapsto \phi(R_\theta x)$ is a also a solution. So by uniqueness $\phi = \phi \circ R_\theta$, and we can write $\phi(x) = f(||x||)$ for some $f$. Now either $\nabla^2 \phi$ is aready known in radial terms, or \begin{align*}
+    \pdv{\phi}{x} &= \pdv{}{x} f(\sqrt{x^2+y^2}) = \frac{x}{\sqrt{x^2+y^2}} f'(\sqrt{x^2+y^2})\\
+    \pdv{^2\phi}{x^2} &=  \left(\frac{1}{\sqrt{x^2+y^2}} -\frac{x^2}{(x^2+y^2)^{3/2}} \right)f'(\sqrt{x^2+y^2}) + \frac{x^2}{x^2+y^2} f''(\sqrt{x^2+y^2})\\
+    \pdv{^2\phi}{y^2}&= \left(\frac{1}{r}-\frac{y^2}{r^3}\right) f'(r) + \frac{y^2}{r^2} f''(r)\\
+    &= \nabla^2\phi = \frac{1}{r} f'(r) + f''(r) = \frac{1}{r} \dv{}{r}(rf'(r))
+\end{align*}
+Now we solve $0 = \frac{1}{r}\dv{}{r}(rf'(r))$. This gives $A\log{r}+B = f(r)$. Since $\phi$ is continuous on $\Cl(E)$, $A=0$ (otherwise singularity at $0$). So $\phi$ is constant, a contradiction.
+
+\section{Brouwer's Fixed Point Theorem}
+
+\begin{theorem}[Brouwer's Fixed Point Theorem]
+    If $f: \overline{D} \to \overline{D}$ is continuous ($\overline{D} = \overline{D}(0,1) \sbs \bb{R}^2$) then there exists $x^\ast$ such that $f(x^\ast) = x^\ast$. 
+\end{theorem}
+
+\begin{remark}
+    This generalises to $\bb{R}^n$, with the proof essentially unchanged apart from one point (``Sperner's Lemma') where we have done a little simplification from the general case.
+\end{remark}
+
+The proof of the fixed point theorem is a long line of lemmas, most of which assert that two statements are equivalent.
+The first thing we'll do is show that the Fixed Point Theorem is equivalent to the ``No Retraction Theorem''.
+
+\begin{theorem}[No Retraction Theorem]
+    There does not exist a continuous map $g: \overline{D} \to \partial D$ such that $g(x) = x$ for $x \in \partial D$ (called a retraction). 
+\end{theorem}
+
+\begin{proof}[Proof of equivalence]
+    Suppose the Fixed Point Theorem is true, but there exists a retraction $g: \overline{D} \to \partial D$. Let $R$ be a rotation through $\pi$ about $0$. Then $R \circ g: \overline{D} \to \overline{D}$ has no fixed point, which is a contradiction.\\
+    
+    Now suppose the No Retraction Theorem holds, but $f: \overline{D} \to \overline{D}$ is continuous with no fixed points. Let $F: \overline{D}^2\setminus \{(x,x):x \in \overline{D}\} \to \overline{D} \to \partial D$ be defined so that $F(x,y)$ is the point of intersection between the (directed) line from $y$ to $x$ and $\interior \partial D$, we see $F$ is continuous. Now consider $g(x)= F(x,f(x))$. Since $f$ is continuous, $g$ is continuous, but $g(\overline{D}) \sbs \partial D$ and $g(x) = x$ for $x \in \partial D$, a contradiction. 
+\end{proof}
+
+Now we proceed through minor lemmas with unofficial titles.
+
+\begin{lemma}[Three Arcs Theorem]
+    If we consider $3$ equal arcs of $\partial D$ in polar coordinates, say $A = \{(1,\theta): 0\le \theta \le 2\pi/3\}$, $B = \{(1,\theta): 2\pi/3 \le \theta \le 4\pi/3\}$, $C = \{(1,\theta): 4\pi/3\le \theta \le 2\pi\}$, then there does not exist $f: \overline{D} \to \partial D$ such that $f(A) \sbs A$, $f(B) \sbs B$, $f(C) \sbs C$. 
+\end{lemma}
+
+We'll now show this is equivalent to the no retraction theorem \begin{proof}[Proof of equivalence]
+    Three arcs certainly proves no retraction as a special case. Conversely, if we did have a $3$ arcs function $f$ then letting $R$ be a rotation of $\pi$, the map $Rf$ would have no fixed points. 
+\end{proof}
+
+
+
+We now go from ``three arcs'' to ``three sides'':
+
+\begin{theorem}
+    If $\overline{\Delta}$ is an equilateral triangle with closed sides $I,J,K$, then there does not exist $f: \overline{\Delta} \to \partial \Delta$ continuous such that $f(I) \sbs I$, $f(J) \sbs J$, $f(K) \sbs K$. 
+\end{theorem}
+
+Now we show this is equivalent to the three arcs theorem:
+\begin{proof}[Proof of equivalence]
+    Consider the homeomorphism $Tx = r(x)x$ where $r(x)$ is the distance from $0$ to the point of intersection of the radius vector with $\partial \Delta$. This maps $\overline{D}$ to $\overline{\Delta}$. 
+\end{proof}
+
+\begin{lemma}[Three colours]
+    If $A,B,C$ closed, $A \cup B \cup C = \overline{\Delta}$, $A \supseteq I$, $B \supseteq J$, $C \supseteq K$ ($I,J,K$ closed sides of $\overline{\Delta}$) then $A \cap B \cap C \ne \emptyset$.
+\end{lemma}
+
+We show this is equivalent to the three sides theorem:
+
+\begin{proof}[Proof of equivalence]
+    If there exists $f: \overline{\Delta} \to \partial \Delta$ continuous with $f(I) \sbs I$, $f(J) \sbs J$, $f(K) \sbs K$, then take $A = f^{-1}(I)$, $B=f^{-1}(J)$ and $C = f^{-1}(K)$. Then $A,B,C$ are closed with $A \cup B \cup C = \overline{\Delta}$ and $A \cap B \cap C = f^{-1}(I \cap J \cap K) = \emptyset$, contradicting the three colour theorem. \\
+
+    Now suppose we could three colour with $A \cap B \cap C = \emptyset$. We embed $\overline{\Delta}$ in $\bb{R}^3$ as follows: \[\overline{\Delta} = \{(x,y,z)\in \bb{R}^3: x,y,z\ge 0, \ x+y+z = 1\}.\]
+    [Barycentric coordinates, invented by M\"obius.] Consider the map \begin{align*}
+        &Tx = \frac{1}{{d(x,A)+d(x,B)+d(x,C)}}\left( d(x,A), d(x,B),d(x,C)\right).
+    \end{align*}
+    This is well defined since $A \cap B \cap C$ and $A,B,C$ are closed. This maps $\overline{\Delta} \to \overline{\Delta}$ and is continuous since $x\mapsto d(x,A)$ is continuous. If $x\in I$ then $x \in A$ so $d(x,A) = 0$ and $Tx = (0,y,z) \in I$, so $f(I) \sbs I$ (similarly for $J,K$), contradicting three sides theorem.  
+\end{proof}
+
+Overall we have \[\text{FPT} \iff \text{RMT} \iff 3\text{ colouring theorem}.\]
+Now we show the 3 colouring theorem via Sperner's lemma:
+
+\begin{theorem}
+    Consider an equilateral triangle $\Delta$ cut into smaller triangles by $n$ equally spaced lines parallel to each of the sides. If we colour each vertex one of three colours R,B,G with one big side \begin{align*}
+        &T:RRR\ldots RB\\
+        &J:BBB\ldots BG\\
+        &K:GGG\ldots GR.
+    \end{align*}
+    Then one of the small triangles must have all its vertices differet colours.
+\end{theorem}
+
+\begin{proof}
+    If we look at one small triangle clockwise, we assign value $\theta$ to a side as follows \begin{align*}
+        \theta(RB) = 1&,\ \theta(BR) = -1\\
+        \theta(BG) = 1&,\ \theta(GB) = -1\\
+        \theta(GR) = 1&,\ \theta(RG) = -1\\
+        \theta(RR) = 0&,\ \theta(GG) = 0\\
+        \theta(BB) = 0 & 
+    \end{align*}
+    and each small triangle has value $\psi$ given by the sum of the values of its sides. Then $\psi = 0$ unless the triangle is 3 coloured. Now look at the sum of all $\psi$ of the small triangles. The interior sides cancel (counted once in each direction), so the total sum is the sum along the sides of the large triangle, which is an odd number (changes colour $3$ times) so there must be a $3$ coloured small triangle.
+\end{proof}
+
+Finally we prove the three colour theorem:
+
+\begin{proof}[Proof of three colour theorem]
+    Suppose $\overline{\Delta}$ is coloured $A,B,C$ as before. Cutting $\Delta$ into smaller triangles as above, colouring external vertices as for Sperners lemma (note $I \sbs A$ etc and make a choice of colour when its in multiple of $A,B,C$). Then Sperner's lemma says there's a small triangle with $3$ vertices of different colours, i,e there exist $a_n \in A$, $b_n \in B$, $c_n \in C$ such that $d(a_n,b_n),d(b_n,c_n),d(c_n,a_n) < 1/n$ (making triangles small enough). Then by compactness there exists a subsequence of $(a_n)$ converging to some $x \in \overline{\Delta}$. This automatically implies the corresponding subsequences for $(b_n)$ and $(c_n)$ converge to $x$, so $x \in A \cap B \cap C$ since $A,B,C$ are closed. 
+\end{proof}
+
+\section{Nash's Theorems}
+
+This section is mainly about applications of analysis in game theory and economics.\\
+
+Conside a two player game with two choices for each player [this generalises to $2$ players with $n,m$ choices respectively]. Suppose person $A$ has strategy $p=(p_1,p_2)=(p_1,1-p_1)$, i.e choose $1$ with probability $p_1$ and $2$ with probability $p_2$ and player $B$ has strategy $q = (q_1,q_2)$. The value of the game to $A$ is \[A(p,q) = \sum p_ia_{ij}q_j.\]
+And the value of the game to $B$ is \[B(p,q) = \sum p_ib_{ij}q_j.\]
+Where $a_{ij}$ and $b_{ij}$ are the gains to $A$ and $B$ respectively if $A$ plays $i$ and $B$ plays $j$. [In IB Optimisation we had $a_{ij} = -b_{ij}$, i.e the games were zero sum. We will not assume the game is zero sum.]\\
+
+Nash showed that there always exist $p^\ast,q^\ast$ such that $A(p^\ast,q^\ast) \ge A(p,q^\ast)$ and $B(p^\ast,q^\ast) \ge B(p^\ast,q)$, i.e neither $A$ nor $B$ have any incentive to change from $p^\ast,q^\ast$ respectively if they know each other's strategy. Such $p^\ast,q^\ast$ are called \textit{Nash stable points}.
+
+\begin{proof}
+    We work in $\bb{R}^4$ on \[\Gamma = \{(p_1,p_2,q_1,q_2) : p_1,p_2,q_1,q_2\ge 0, \ p_1+p_2=q_1+q_2=1\}.\]
+    We set $u_1(p,q) = \max\{A((1,0),q)-A((p_1,p_2),q),0\}$ so $u_1>0$ means ``moving $p_1$ towards $1$ is good'', $u_1=0$ means ``moving $p_1$ towards $1$ is not good''.\\
+
+    Set $u_2 = \max\{A((0,1),q)-A((p_1,p_2),q),0\}$ and define $v_1,v_2$ similarly for $B$. Set \[F(p,q) = \left(\frac{p_1+u_1(p,q)}{1+u_1(p,q)+u_2(p,q)},\frac{p_2+u_2(p,q)}{1+u_1(p,q)+u_2(p,1)},\ldots \right) \in \bb{R}^4\]
+    Then $F$ is continuous, $F(p,q) \in \Gamma$. Hence $F$ is a map from $\Gamma$ to itself, thus has a fixed point $(p^\ast,q^\ast)$. Since $u_1,u_2$ cannot both be non-zero, wlog $u_2=0$. Then at $(p^\ast,q^\ast)$, \[\frac{p_1+u_1}{1+u_1} = p_1.\]
+    So either $u_1=0$ or $p_1=1$.  
+\end{proof}
+
+
+
+
+
+Let us compute the Nash stable points for an example: 
+
+\begin{example}[Chicken]
+    A,B drive towards each other. If both swerve they both lose $1$ point. If one swerves and the other does not the swerver loses $5$ points, and the non-swerver gains $10$ points. If neither swerve both lose $100$ points. We want to find $A(p,q)$ (the value of the game to A) and then find $q$ such that A has no incentive to change. \[A(p,q) = -pq-5p(1-q)+10(1-p)q-100(1-p)(1-q).\]
+    Differentiating: \[\pdv{A}{p} = -q-5(1-q)-10q+100(1-q).\]
+    If we are at an interior point ($p,q \not \in \{0,1\}$) then we must have $\pdv{A}{p} = 0$. Substituting gives $0 = -q-5(1-q)-10q+100(1-q) = 95-106q$, i.e $q = 95/106$. By symmetry $(95/106,95/106)$ is a Nash point, and the only interior Nash point. There are other Nash points, namely $(1,0)$ and $(0,1)$. 
+\end{example}
+
+\subsection*{Cooperation}
+
+Consider $n$ parties negotiating in good faith. We have a list of assumptions:
+\begin{itemize}
+    \item $\Gamma \sbs \bb{R}^n$ is the set of possible choices $x = (x_1,\ldots,x_n)$, where $x_j$ corresponds to the outcome for $j$;
+    \item We make $\Gamma$ closed and bounded;
+    \item Suppose $\Gamma$ is convex (indeed could choose $a \in \Gamma$ with probability $p$ and $b \in \Gamma$ with probability $1-p$ so $pa+(1-p)b \in \Gamma$);
+    \item We say some $s \in \Gamma$ is the \textit{status quo} point, i.e the result if no agreement is reached;
+    \item Pareto optimality [secret of economics or politics is maximising $F:A \to \bb{R}$ makes sense but maximising $f:A \to \bb{R}^2$ does not]. We demand Parato optimality: $y \in \Gamma$ is \textit{Pareto optimal} if for $x \in \Gamma$, $x_j \ge y_j$ for all $j$ implies $x=y$;
+    \item Independence of unrelated alternatives: if $\Gamma' \supseteq \Gamma$ and $y$ is Nash optimal for $(\Gamma',s)$, then if $y \in \Gamma$, $y$ is Nash optimal for $(\Gamma,s)$;
+    \item Symmetry: if $\Gamma$ is such that if $(x_1,\ldots,x_n) \in \Gamma$, then $(x_{\sigma(1)},\ldots,x_{\sigma(n)}) \in \Gamma$ for all permutations $\sigma \in S_n$ and $s = (s,s,s,\ldots,s)$, then the Nash optimum is symmetric (i.e $(y,y,\ldots,y)$ for some $y \in \bb{R}$); 
+    \item If $T$ is an affine map $\bb{R}^n \to \bb{R}^n$, i.e $T(x_1,\ldots,x_n) = (a_1+\lambda_1 x_1,\ldots,a_n+\lambda_n x_n)$ with $\lambda_j>0$, then if $y$ is Nash optimal for $(\Gamma,s)$, $Ty$ is optimal for $(T\Gamma,Ts)$. 
+\end{itemize}
+
+We briefly justify the final assumption: translation should not affect the answer. So wlog we take $s=0$. 
+
+\begin{theorem}
+    Under all these assumptions there exists a Nash optimum and it is unique.
+\end{theorem}
+
+
+
+
+
+We first prove a preliminary lemma:
+
+\begin{lemma}
+    Suppose $s=0$, $(1,1,1,\ldots,1) \in \Gamma$ and $\prod x_i \le 1$ for all $x\in \Gamma$, $x_i \ge 0$. Then $x+1+x_2+\ldots+x_n \le n$ for all $x \in \Gamma$.
+\end{lemma}
+
+\begin{remark}
+    This is a consequence of a version of Hahn-Banach.
+\end{remark}
+
+\begin{proof}
+    Suppose $x \in \Gamma$, then since $(1,1,1,\ldots,1) \in \Gamma$ and by convexity of $\Gamma$, $\delta x+ (1-\delta)1 \in \Gamma$ fo all $0\le \delta\le 1$. So if $\delta$ is small and positive\[\prod_{i=1}^n \left(\delta x_i+(1-\delta)\right) \le 1.\]
+    By hypothesis. So \[1\ge \prod_{i=1}^n (1+\delta(x_i-1)) = 1+\delta \sum_{i=1}^n (x_i-1) + \delta^2 A(\delta),\]
+    for some $A(\delta)$ bounded as $\delta\to 0$. Thus $0\ge \sum_{i=1}^n (x_i-1) - \delta A(\delta)$ and so taking $\delta \to 0$, $\sum_{i=1}^n (x_i-1) \le 0$.  
+\end{proof}
+
+\begin{proof}[Proof of theorem]
+    By the above lemma we have $\{x \in \Gamma: x_i\ge 0\} \sbs \Sigma := \{x : x_i \ge 0, \ \sum_{i=1}^nx_i \le n\}$. If we look at the problem $(\Sigma,0)$, we need to find a point $x$ satisfying conditions: \begin{enumerate}[(a)]
+        \item Symmetry, i.e $x_1=x_2=\ldots=x_n$;
+        \item Pareto optimality, so $x_1=\ldots=x_n=1$.
+    \end{enumerate}
+    Now suppose the status quo (for the problem in $\Gamma$) is at $0$. Then $f(x) = \prod_{i=1}^n x_i$ is continuous so will attain a maximum on $\Gamma$ (by compactness of $\Gamma$), say at $y \in \Gamma$. Then for all $0\le x \in \Gamma$, $\prod_{i=1}^n (x_i/y_i) \le 1$. So by scaling there is a $y$ satisfying all our conditions. So there is always a solution.
+\end{proof}
+
+\section{Approximation by Polynomials}
+
+General principle - ``nice functions look like polynomials''. However there are limits to this view.
+
+\begin{example}[Cauchy example]
+    Consider the function $E: bb{R} \to \bb{R}$ defined by \[E(t) = \begin{cases} \exp(-1/t^2) & t>0\\ 0 & t\le 0\end{cases}.\]
+    If $t\ne 0$, then inductively $E^{(n)}$ exists and $E^{(n)} = P_n(1/t)E(t)$ for some polynomial $P_n$. Also inductively we have that $E^{(n)}(0)$ exists with value $0$. In particular all the coefficients of a Taylor expansion around $0$ are $0$, so $E$ is not analytic. 
+\end{example}
+
+Consider interpolation: for $f \in C[a,b]$ and $x_0,x_1,\ldots,x_n \in [a,b]$ distinct, there is a unique polynomial of degree at most $n$ such that $P(x_j) = f(x_j)$. \\
+
+Uniqueness: if two polynomials of degree $\le n$ agree on $x_0,\ldots,x_n$, they must be equal else their difference is a polynomial of degree $\le n$ with $n+1$ roots. \\
+
+Existence: define $e_j(t) = \frac{\prod_{i\ne j} (t-x_i)}{\prod_{i\ne j} (x_j-x_i)}$. Then $e_j(x_i) = 0$ for $i\ne j$ and $e_j(x_j) = 1$. Consider the polynomial $P(t) = \sum_{j=0}^n f(x_j)e_j(t)$. Then $P(x_k) = f(x_k)$ for all $k$.\\
+
+Denote by $\cal{P}_n$ the set of polynomials of degree at most $n$.\\
+
+Chebyshev Polynomials: there exists a polynomial $T_n \in \cal{P}_n$ such that $T_n(\cos{\theta}) = \cos(n\theta)$, and there exists $U_{n-1} \in \cal{P}_{n-1}$ such that $U_{n-1}(\cos{\theta}) = \frac{\sin(n\theta)}{\sin{\theta}}$. 
+
+
+
+
+
+We have \begin{align*}
+    \cos{n\theta} + i\sin{n\theta} &= (\cos{\theta}+i\sin{\theta})^n\\
+    & = \sum_{0\le 2r\le n} (-1)^r \binom{n}{2r} \cos^{n-2r}(\theta)\sin^{2r}(\theta)\\
+    & \ \ \ \ \ + i\sum_{0\le 2r+1\le n} (-1)^r\binom{n}{2r+1} \cos^{n-(2r+1)}(\theta)  \sin^{2r}(\theta) \cdot \sin{\theta}\\
+    &= \sum_{0\le 2r\le n} (-1)^r\binom{n}{2r} \cos^{n-2r}(\theta)
+     (1-\cos^2{\theta})^r \\
+    & \ \ \ \ \ + i\sin{\theta}\sum_{0\le 2r+1\le n} (-1)^r\binom{n}{2r+1} \cos^{n-(2r+1)}(\theta) (1-\cos^2{\theta})^r \\
+    &= T_n(\cos{\theta})+i\sin{\theta}U_{n-1}(\cos{\theta})
+\end{align*}
+with $T_n$ a polynomial of degree $n$ and $U_{n-1}$ a polynomial of degree $n-1$, $T_n(\cos{\theta}) = \cos{n\theta}$, $U_{n-1}(\cos{\theta}) = \frac{\sin{n\theta}}{\sin{\theta}}$. \\
+
+We look at the coefficient of $t^n$ in $T_n(t)$. Since \[T_n(\cos{\theta}) = \sum_{0\le 2r\le n} (-1)^r\binom{n}{2r} \cos^{n-2r}(\theta)
+(1-\cos^2{\theta})^r\]
+we have $T_n(t) = \sum_{0 \le 2r \le n} (-1)^r \binom{n}{2} t^{n-2r} (1-t^2)^r$. So the coefficient of $t^n$ is $\sum_{0\le 2r\le n} \binom{n}{2r} = \frac{1}{2}\left((1+1)^n+(1-1)^n\right) = 2^{n-1}$.\\
+
+Is it true that functions look like polynomials over some range and in some sense? 
+
+\begin{theorem}[Weierstrass]
+    If $f \in C([a,b])$ and $\eps>0$, there exists a polynomial $p$ such that $||f-p||_{\infty} < \eps$. 
+\end{theorem}
+
+We will use Bernstein's probabilist proof. 
+
+\begin{theorem}[Bernstein]
+    If $f \in C([0,1])$, let $F_n(t) = \sum_{r=0}^n \binom{n}{r} f\left(\frac{r}{n}\right)t^r (1-t)^{n-r}$. Then $F_n \to f$ uniformly.
+\end{theorem}
+
+\begin{proof}
+    Idea: let $X_1,X_2,\ldots,X_n$ be iid random variables with $\bb{P}(X_j=1) = t$, $\bb{P}(X_j=0) = 1-t$. Then writing $\bar{X} = \frac{X_1+\ldots+X_n}{n}$, we have \[\bb{E}f(\bar{X}) = \sum_{r=0}^n \bb{P}\left(\bar{X}=\frac{r}{n}\right) f\left(\frac{r}{n} \right) = \sum_{r=0}^n \binom{n}{r} t^r(1-t)^{n-r} f\left(\frac{r}{n}\right).\]
+    We have $\bb{E}X_1 = t$, $\bb{E}X_1^2= t$ so $\Var(X_1) = t(1-t) \le \frac{1}{4}$. Hence $\Var(\bar{X}) \le \frac{1}{4n}$. Since $f$ is continuous on $[0,1]$ it is also uniformly continuous. Hence given $\eps>0$ there exists $\delta>0$ such that $|f(x)-f(y)|<\eps$ whenever $|x-y|<\delta$. So $f$ is bounded by $||f||_\infty < \infty$. Now we have \begin{align*}
+        |\bb{E}f(\bar{X})-f(t)|&= |\bb{E}(f(\bar{X})-f(t))|\\
+        & \le |\bb{E}(\1_{|\bar{X}-t|\le \delta}|f(\bar{X})-f(t)|)| + |\bb{E}(\1_{|\bar{X}-t|>\delta}|f(\bar{X})-f(t)|)|\\
+        & \le \bb{E}(\1_{|\bar{X}-t| \le \delta }\eps) + \bb{E} (\1_{|\bar{X}-t|>\delta} 2||f||_\infty)\\
+        & \le \eps + 2||f||_\infty \bb{P}(|\bar{X}-t|>\delta)\\
+        &\le \eps + 2||f||_\infty \frac{\Var(\bar{X})}{\delta^2}\\
+        & \le \eps + ||f||_\infty \frac{1}{2n\delta^2}.
+    \end{align*}
+\end{proof}
+
+
+
+
+
+\begin{theorem}[Equiripple Theorem]
+    Let $f \in C([a,b])$. Then if $P \in \cal{P}_n$ has the following property: there exists $\zeta \in \{-1,1\}$ and $a\le x_0<x_1<\ldots<x_{n+1}=b$ such that $P(x_j)-f(x_j) = \zeta (-1)^j ||P-f||_\infty$, then $||P-f||_\infty \le ||Q-f||_\infty$ for all $Q \in \cal{P}_n$. 
+\end{theorem}
+
+\begin{remark}
+    This condition (called the Chebyshev condition) on $P$ is also necessary (see Example Sheet).
+\end{remark}
+
+\begin{proof}
+    Note that by replacing $f$ and $P$ by $-f$ and $-P$ if necessary, we can assume $\zeta=1$. So $P(x_j)-f(x_j) = (-1^j) ||P-f||_\infty$. Suppose there exists $Q \in \cal{P}_n$ with $||f-Q||_\infty < ||f-P||_\infty$.\\
+    
+    Then $P(x_{2j})-f(x_{2j}) = ||P-f||_\infty$ and $Q(x_{2j})-f(x_{2j}) < ||P-f||_\infty$. so $P(x_{2j})-Q(x_{2j}) > 0$. Similarly $P(x_{2j+1})-Q(x_{2j+1}) < 0$. So by the intermediate value theorem, for $1\le j\le n$ there exists $y_j$ with $y_j \in (x_{j},x_{j+1})$ such that $P(y_j)-Q(y_j) = 0$. So $P-Q \in \cal{P}_{n}$ has $n+1$ roots and is non-zero, a contradiction.
+\end{proof}
+
+Now look at Chebyshev polynomials: $T_n(t) = 2^{n-1}t^n-R(t)$ where $R \in \cal{P}_{n-1}$. Have $T_n(\cos{\theta}) = \cos{n\theta}$. So by the equiripple criterion $2^{-n+1}R(t)$ is the best uniform approximation to $t^n$ of degree at most $n-1$ on $[-1,1]$.
+
+\begin{lemma}
+    There exists $\eps_n>0$ such that if $P(t) = \sum_{j=0}^n a_jt^j$ on $[a,b]$ and $\max_j |a_j| \ge 1$, then $||P||_\infty \ge \eps_n$. 
+\end{lemma}
+
+\begin{proof}
+    We proceed by induction. It is true for $n=0$, suppose true for some $n \in \bb{N}$. Then let $P(t) = a_{n+1}t^{n+1}+ \sum_{j=0}^n a_j t^n$. If $|a_{n+1}| < \eps_n/2$ then $||P||_\infty > \eps_n-\eps_n/2 = \eps_n/2$. If $|a_{n+1}| > \eps_{n}/2$ then looking at $a_{n+1}\left(\sum_{j=0}^n \frac{a_{j}}{a_{j+1}} t^j\right)$ and using Chebyshev, $||P||_\infty \ge |a_{n+1}| K \ge \frac{\eps_{n}}{2} K$ where $K = 2^{-n+1}||T_n||_\infty$. 
+\end{proof}
+
+\subsection*{Gaussian Quadrature}
+
+Elementary observation: if $x_1,x_2,x_3,\ldots x_n$ are distinct points in $[a,b]$, then there exist unique $A_1,A_2,\ldots,A_n$ such that \[\int_{a}^b P(t) \mathrm{d}t = \sum_{j=1}^n A_jP(x_j) \text{ for all } P \in \cal{P}_{n-1}.\]
+
+Indeed, recall $e_j(t) = \prod_{i\ne j} \frac{t-x_i}{x_j-x_i}$. If $P \in \cal{P}_{n-1}$ then $P(t) = \sum_{j=1}^n P(x_j)e_j(t)$. Then we obtain the above with $A_j = \int_a^b e_j(t)\mathrm{d}t$. \\
+
+Furthermore, if $\int_a^b P(t)\mathrm{d}t = \sum_{j=1}^n A_j P(x_j)$ for all $P \in \cal{P}_{n-1}$, then $\int e_i(t)\mathrm{d}t = \sum_{j=1}^n A_k e_i(x_j) = \sum_{j=1}^n A_j \delta_{ij} = A_i$. So we have uniqueness of the $A_j$.\\
+
+If we take the $x_j$ to be equally spaced, as the degree increases $\sum_{j=1}^n |A_j|$ tends rapidly to infinity, making computation difficult.
+
+
+
+
+Gauss' idea: consider the Legendre polynomials, defined as follows.\\
+
+Observe that $\lbr{f,g}= \int_{-1}^1 f(t)g(t)\mathrm{d}t$ is an inner product on $C([-1,1])$. Let $p_0 = 1/2$ and define $p_n$ inductively by \[q_n = r_n - \sum_{m=0}^{n-1} \lbr{r_n,p_m}p_m\]
+where $r_n(t) = t^n$. So $q_n$ is a polynomial of degree exactly $n$ and leading term $t^n$. Also $q_n \perp p_j$ when $0\le j\le n-1$. So set $p_n = \frac{q_n}{||q_n||}$. Then this gives an orthonormal basis for $\cal{P}_n$, called the Legendre polynomials.
+
+\begin{lemma}
+    $p_n$ has $n$ distinct roots $x_1,\ldots,x_n \in [-1,1]$.
+\end{lemma}
+
+\begin{proof}
+Let $y_1,\ldots,y_m$ be the distinct roots of odd order lying in $[-1,1]$. Let $Q(t) = \prod_{j=1}^m (t-y_j)$, then $p_nQ$ takes the same sign on all of $[-1,1]$. If $\deg{Q} <n-1$ then $\lbr{p_n,Q} = \int_{-1}^1 p_n(t)Q(t)\mathrm{d}t$, which is impossible. Hence $\deg{Q}=n$ and so $m=n$ as required.
+\end{proof}
+
+Gauss' idea is to use the roots $x_1,\ldots,x_n$ of $p_n$ for the quadrature.
+
+\begin{lemma}
+    We have $\int_{-1}^1 = \sum_{m=1}^n A_jp(x_j)$ for all $p \in \cal{P}_{2n-1}$.
+\end{lemma}
+
+\begin{proof}
+    If $p \in \cal{P}_{2n-1}$ then $P = Qp_n+R$ for some $Q,R \in \cal{P}_{n-1}$. So \begin{align*}
+        \int_{-1}^1 p(t)\mathrm{d}t = \int_{-1}^1 (Q(t)p_n(t)+R(t))\mathrm{d}t &= \lbr{Q,p_n} + \int_{-1}^1 R(t)\mathrm{d}t = 0+\sum_{j=1}^n A_jR(x_j)\\
+        &= \sum_{j=1}^n A_j(Q(x_j)p_n(x_j)+R(x_j)) = \sum_{j=1}^n A_jp(x_j).
+    \end{align*}
+\end{proof}
+
+\begin{lemma}
+    For this quadrature, $A_j>0$ for all $j$.
+\end{lemma}
+
+\begin{proof}
+    Let $e_j(t) = \prod_{k\ne j} (t-x_k)^2$. Then $e_j \in \cal{P}_{2n-2}$ so \[0<\int_{-1}^1 e_j(t)\mathrm{d}t = \sum_{r=1}^n A_re_j(x_r) = A_je_j(x_j)\]
+    so $A_j>0$.
+\end{proof}
+
+\begin{theorem}
+    If $f \in C([-1,1])$ and $p \in \cal{P}_{2n-1}$ then \[\left| \int_{-1}^1 f(t)\mathrm{d}t - \sum_{j=1}^n A_jf(x_j)\right| \le 4||p-f||_\infty.\]
+    So in particular note \[\left| \int_{-1}^1 f(t)\mathrm{d}t - \sum_{j=1}^n A_jf(x_j)\right| \le 4\inf_{p \in \cal{P}_{2n-1}} ||f-p||_\infty.\]
+\end{theorem}
+
+\begin{proof}
+    \begin{align*}
+        \left| \int_{-1}^1 f(t)\mathrm{d}t - \sum_{j=1}^n A_jf(x_j)\right| &= \left| \int_{-1}^1 (f(t)-p(t))\mathrm{d}t - \sum_{j=1}^n A_j(f(x_j)-p(x_j))\right|\\
+        &\le \left|\int_{-1}^1 (f(t)-p(t))\mathrm{d}t \right| + \left|\sum_{j=1}^n A_j(f(x_j)-p(x_j)) \right|\\
+        &\le \int_{-1}^1 |f(t)-p(t)|\mathrm{d}t + \sum_{j=1}^n A_j|f(x_j)-p(x_j)|\\
+        &\le 2||f-p||_\infty + 2||f-p||_\infty = 4||f-p||_\infty.
+    \end{align*}
+\end{proof}
+
+\subsection*{Hausdorff Metric}
+
+The Hausdorff metric is a measure of similarity between compact sets. Throughout we work in $\bb{R}^n$ with the usual metric. The sets will be compact and non-empty.\\
+
+Recall $d(x,A) := \inf_{a \in A}||x-a||$. Since $x\mapsto ||x-a||$ is continuous, there is an $a^* \in A$ such that $d(x,a^\ast) = d(x,A)$. Note that $a^\ast$ need not be unique.\\
+
+If $A$ is convex, then $a^\ast$ is unique. Indeed suppose $u,v \in A$ are such that $||u-a|| = ||v-a||$. By convexity $\frac{u+v}{2}  \in A$ so $a,\frac{u+v}{2},v$ is a right-angled triangle with hypotenuse the side $a$ to $v$. Hence $\left\|a-\frac{u+v}{2}\right\| < ||a-u||$ unless $u=v$.
+
+
+
+
+
+\begin{lemma}
+    \ \begin{enumerate}[(i)]
+        \item If $A,B \sbs \bb{R}^n$ are non-empty and compact, then there exist $a^\ast \in A$, $b^\ast \in B$ such that $||a^\ast-b^\ast|| \le ||a-b||$ for all $a \in A$, $b \in B$;
+        \item If $A,B \sbs \bb{R}^n$ are non-empty, $A$ compact, $B$ closed, then there exist $a^\ast\in A$ and $b^\ast \in B$ such that $||a^\ast-b^\ast \le ||a-b||$ for all $a \in A$, $b \in B$;
+        \item (ii) need not be true if $A$ is only assumed to be closed.
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+    \ \begin{enumerate}[(i)]
+        \item $d: A \times B \to \bb{R}$ given by $d(a,b) = ||a-b||$ is continuous. Since $A \times B$ is compact, this map has a minimum $(a^\ast,b^\ast)$;
+        \item There exists $R>0$ such that $A \sbs \overline{B(0,R)}$ and $B\cap B(0,R) \ne\emptyset$. Set $B_R = B \cap \overline{B(0,3R)}$. Then there exists $a^\ast\in A,b^\ast \in B_R$ such that $||a^\ast-b^\ast|| \le ||a-b||$ for all $a\in A$, $b \in B_R$ by compactness of $B_R$ and (i). This implies $||a^\ast-b^\ast|| \le ||a-b||$ for all $a\in A$, $b \in B$;
+        \item If $A =\{(x,1/x):x>0\}$, $B = \{(-x,1/x):x>0\}$ then $A,B$ are closed but $\inf_{a\in A,b\in B}||a-b||=0$ while $||a-b|| \ne 0$ for all $a \in A$, $b \in B$. 
+    \end{enumerate}
+\end{proof}
+
+Now we try to get a distance on the collection of non-empty compact subsets of $\bb{R}^n$. Could first try $\tau(A,B) = \inf_{a\in A,b\in B} ||a-b||$. Then \begin{itemize}
+    \item $\tau(A,B) \ge 0$
+    \item $\tau(A,B) = \tau(B,A)$
+    \item If $\tau(A,B) =0$ then there exist $a^\ast \in A$, $b^\ast \in B$ such that $||a^\ast-b^\ast|| = 0$, so $A \cap B \ne \emptyset$. Conversely, if $A \cap B \ne \emptyset$ then $\tau(A,B) = 0$. 
+    \item In general $\tau$ does not obey the triangle inequality: e.g if $A = \{1\}$, $B = \{1,2\}$ and $C= \{2\}$ we have $\tau(A,C) = 1$ but $\tau(A,B)+\tau(B,C) = 0$.
+\end{itemize}
+
+So instead could try $\sigma(A,B) = \sup_{a \in A} d(a,B) = \sup_{a \in A} \inf_{b \in B} ||a-b||$. Then \begin{itemize}
+    \item $\sigma(A,B) \ge 0$ and $\sigma(A,B) = 0$ implies $\sup_{a \in A} d(a,B) = 0$ which implies $d(a,B) = 0$ for all $a \in A$, and so for all $a \in A$ there exists $b \in B$ such that $a=b$. So $A \sbs B$. Note that this is sufficient as well. So $\sigma(A,B) \ne \sigma(B,A)$ in general.
+\end{itemize}
+
+However, $\sigma$ does satisfy the triangle inequality: 
+
+\begin{lemma}
+    $\sigma(A,B)+\sigma(B,C) \ge \sigma(A,C)$ for all $A,B,C$ non-empty compact.
+\end{lemma}
+
+\begin{proof}
+    Let $a \in A$ and choose $b^\ast \in B$ such that $d(a,b^\ast) = d(a,B)$. Let $c \in C$. Then \[\sigma(a,c) \le d(a,b^\ast) + d(b^\ast,c) = d(a,B) + d(b^\ast,c).\]
+    Now take infima over $c \in C$ so \[d(a,C) \le d(a,B)+ d(b^\ast,C) \le \sigma(A,B) + \sigma(B,C).\]
+    Now take supremum over $a \in A$ to get \[\sigma(A,C) \le \sigma(A,B)+\sigma(B,C).\]
+\end{proof}
+
+\begin{theorem}
+    If we take $\rho(A,B) = \sigma(A,B)+\sigma(B,A)$, then $\rho$ is a metric on $\cal{K}$. the collection of non-empty compact subsets of $\bb{R}^n$.
+\end{theorem}
+
+\begin{proof}
+    We just check the conditions: \begin{itemize}
+        \item $\rho(A,B) = \sigma(A,B) + \sigma(B,A) \ge 0+0 =0$. We have $\rho(A,B) = 0$ iff $\sigma(A,B) = \sigma(B,A) = 0$, i.e $A \sbs B$ and $B \sbs A$ so $A=B$;
+        \item $\rho$ is clearly symmetric;
+        \item $\rho$ clearly satisfies the triangle inequality by the lemma.
+    \end{itemize}
+\end{proof}
+
+$\rho$ is called the \textit{Hausdorff metric} and is complete. The proof of completeness depends on two standard observations: \begin{enumerate}
+    \item If $(K_j \in \cal{K}: j\ge 1)$ is a sequence and $K_1\supseteq K_2\supseteq \ldots$, then $K := \bigcap_{j\ge 1} K_j \in \cal{K}$ and $\rho(K,K_j) \to 0$;
+    \item If $A,B$ are compact and non-empty then $A+B$ is compact.
+\end{enumerate}
+
+Indeed to prove these: 
+\begin{enumerate}
+    \item Choose $k_j \in K_j$ for each $j \in \bb{N}$. Since $K_1$ is compact, there exists $n(j) \to \infty$ such that $k_{n(j)} \to k$ for some $k$. Then $k \in K$ since each of the $K_j$ are closed. So $K$ is non-empty. A similar argument shows $\rho(K_j,K) \to 0$ for if not, there exists $\eps>0$ and $k_{n(j)} \in K_{n(j)}$ such that $d(k_{n(j)},k)>\eps$ for all $k \in K$. But there exists a subsequence of $k_{n(j)}$ which converges by compactness to something in $K$, a contradiction.
+    \item $A+B$ is clearly bounded. If $a_n+b_n \to c$, then there is a convergent subsequence $a_{n(j)} \to a$ for some $a \in A$, so $b_{n(j)} \to c-a \in B$, i.e $c \in A+B$. 
+\end{enumerate}
+
+Now we want to show the Hausdorff metric is complete. It is sufficient to show that if $(E_n \in \cal{K}:n \in \bb{N})$ is a sequence and $\rho(E_n,E_{n+1}) \le 100^{-n}$ for all $n$, then $E_n$ converges (this follows from a lemma from the beginning of the course). \\
+
+Set $K_n = E_n + \overline{B}(0,10\times 100^{-n})$. Since $E_n \sbs E_{n+1} + \overline{B}(0,100^{-n-1})$ we have $K_{n+1}\sbs K_n$. We have $K_n \too{\rho} K$ for some $K \in \cal{K}$ so $\rho(K_n,K) \to 0$. But $\rho(K_n,E_n) \le 10 \times 100^{-n} \to 0$, so $\rho(E_n,K) \to 0$. \\
+
+
+
+
+
+\section{Runge's Theorem}
+
+Does the Weierstrass polynomial approximation theorem apply in $\bb{C}$? Answer: no.\\
+
+Indeed, suppose $(P_n)_{n\ge 1}$ is a sequence of polynomials such that $P_n(z) \to \overline{z}$ uniformly on $\{z =|z| < 2\}$. Let $C$ be the contour $e^{i\theta}$ where $\theta$ runs fom $0$ to $2\pi$. Then \begin{align*}
+    2\pi ||P_n(z)-\overline{z}||_\infty \ge \left| \int_C (P_n(z)-\overline{z})\mathrm{d}z\right| &= \left|\int_C \overline{z}\mathrm{d}z\right|\\
+    & = \left| \int_{0}^{2\pi} e^{-i\theta} e^{i\theta}i\mathrm{d}\theta \right|\\
+    &= \left|\int_{0}^{2\pi} i \mathrm{d}\theta\right| = 2\pi.
+\end{align*}
+
+Throughout this section let $K \sbs \Omega \sbs \bb{C}$ with $K\ne \emptyset$ compact and $\Omega$ open.\\
+
+It turns out that it is not even sufficient to restrict to $f$ analytic (we certainly cannot have $f$ continuous in general since the uniform limit of analytic functions is analytic). Let $K = \partial B(0,1)$, $\Omega = B(0,2)\setminus\{0\}$, and define $f(z) = 1/z$ on $\Omega$. Then if $C$ is the contour $\{e^{i\theta}: 0\le \theta\le 2\pi\}$ and $P$ is a polynomial, then $\int_C (f(z)-P(z))\mathrm{d}z = 2\pi i$ so $||P-f||_\infty \ge 1$.
+
+\begin{theorem}[Runge's Theorem]
+    If $K^c$ is path-connected and $f: \Omega \to \bb{C}$ then there exists a sequence of polynomials $(P_n)_{n\ge 1}$ such that $P_n \to f$ uniformly on $K$. 
+\end{theorem}
+
+\begin{definition}
+    $E \sbs \bb{C}$ is \textit{path-connected} if given $z_1,z_2 \in E$ there exists $\gamma:[0,1]\to E$ continuous such that $\gamma(0) = z_1$, $\gamma(1) = z_2$. 
+\end{definition}
+
+Step 1: we would like to draw a contour $C$ enclosing all of $K$ and lying within $\Omega$ then look at $\int_C \frac{f(w)}{w-z} \mathrm{d}w$. We get around problems with this as follows.
+
+\begin{theorem}
+    If $K \sbs \Omega$, $K$ compact non-empty, $\Omega$ open, $f: \Omega \to \bb{C}$ analytic, we can find line segments $(l_r)_{r=1}^n$ such that $l^r \sbs K^c \cap \Omega$ \[f(z) = \sum_{r=1}^n \frac{1}{2\pi i} \int_{l_r} \frac{f(w)}{w-z}\mathrm{d}w.\]
+\end{theorem}
+
+\begin{proof}
+    Since $K$ is compact and $\Omega$ is open, $K \sbs \Omega$, we can find a $\delta>0$ such that $|k-u| \ge 100\delta$ for all $k \in K$, $u \in \Omega^c$. Consider $\Gamma$ consisting of the square contours $S$ joining $r\delta+s\delta i,(r+1)\delta+s\delta i,(r+1)\delta+(s+1)\delta i,r\delta+(s+1)\delta i$ with $r,s \in \bb{Z}$ and $S \sbs K+\overline{B}(0,50\delta)$.\\
+
+    Now consider $\sum_{S \in \Gamma} \int_S \frac{1}{2\pi i} \frac{f(w)}{w-z} \mathrm{d}w$ (contours anticlockwise). Suppose that $z$ does not lie on any side of a square $S \in \Gamma$, then $\int_S \frac{f(z)}{w-z} \mathrm{d}w = 0$ unless $z$ lies in $S$, and $\frac{1}{2\pi i} \int_S \frac{f(w)}{w-z} \mathrm{d}w = f(z)$ if $z$ lies in $S$. So summing gives \[f(z) = \sum_{S \in \Gamma} \frac{1}{2\pi i}\int_S \frac{f(w)}{w-z} \mathrm{d}w.\]
+    But interior sides of squares in $\Gamma$ will `cancel' so \[f(z) = \sum_{l_j} \frac{1}{2\pi i} \int_{l_j} \frac{f(w)}{w-z} \mathrm{d}w\]
+    where the $l_j$ are the sides of squares with no neighbour in $\Gamma$. Also $l_j \sbs K^c \cap \Omega$ by construction.\\
+
+    If $z$ is on a side of some $S \in \Gamma$ there are various possible arguments. Could just remove that side and keep the others, or:\\
+    
+    Observe that if $l_j$ is given by $\gamma:[0,1] \to \bb{C}$ continuous, then we can consider $F(z,t) = \frac{f(\gamma(t))}{z-\gamma(t)}$. Then $F: K \times [0,1] \to \bb{C}$ is continuous, and $K \times [0,1]$ is compact, so $F$ is uniformly continuous and $z\mapsto \int_0^1 F(z,t)\mathrm{d}t$ is continuous. So $\int_{l_j} \frac{f(w)}{w-z} \mathrm{d}w$ is continuous on $K$, and the sum of these agrees with $f$ on all of $K$ except possibly at $z$ which are sides of squares, so done.
+\end{proof}
+
+Now we only need to show $\sum_{j=1}^n \frac{1}{2\pi i} \int_{l_j} \frac{f(w)}{w-z} \mathrm{d}w$ can be approximated uniformly by polynomials on $K$. Thus we only need to show that $\int_{l} \frac{f(w)}{w-z}\mathrm{d}w$ can be uniformly approximated by polynomials on $K$. \\
+
+We claim that if $l$, $f$ are given and $\eps>0$, we can find $a_j \in \bb{C}$ such that \[\left|\int_{l} \frac{f(w)}{w-z} \mathrm{d}w - \sum_{j=1}^n \frac{a_j}{w_j-z} \right| < \eps \ \forall z \in K.\]
+
+\begin{proof}
+    Observe that $F: [0,1]\times K \to \bb{C}$ given by $F(t,z) =\frac{f(\gamma(t))}{\gamma(t)-z}$ is continuous, so uniformly continuous by compactness of $[0,1]\times K$. So if we write $F_m(t,z) = F\left(\frac{r}{m},z\right)$ for $t \in \left[\frac{r}{m},\frac{r+1}{m}\right)$ and $F_m(1,z) = F(1,z)$ then $|F_n-F| \to 0$ uniformly on $[0,1] \times K$. So $\int_0^1 F_m(t,z) \mathrm{d}t \to \int_0^1 F(t,z) \mathrm{d}t$ uniformly on $K$. Since $\int_0^1 F(t,z) \mathrm{d}t = \int_{l} \frac{f(w)}{w-z}\mathrm{d}w$ and $\int_0^1 F_m(t,z)\mathrm{d}t$ is of the form $\sum_{j=1}^m \frac{a_j}{w_j-z}$, we're done.
+\end{proof}
+
+
+
+
+Now let \[\Lambda = \{w\not \in K \text{ such that } 1/(w-z) \text{ can be uniformly approximated by polynomials on }K\}.\]
+
+\underline{Step 1}: there exists $R$ such that $\Lambda \supseteq \bb{C}\setminus B(0,R)$. 
+
+\begin{proof}
+    $K$ is compact so there exists $R$ such that $K \sbs B(0,R/2)$. If $|w|\ge R$, $\frac{1}{w-z} = \frac{1}{w(1-\frac{z}{w})} = \frac{1}{w} \sum_{n=0}^\infty (z/w)^n$ converges uniformly for $|z|\le R/2$.
+\end{proof}
+
+\underline{Step 2}: if $\delta>0$ is such that $B(w_0,4\delta) \cap K = \emptyset$ and $w_0 \in\Lambda$ and $|w_0-w_1|<\delta$ then $w_1 \in \Lambda$. 
+
+\begin{proof}
+    Have \[\frac{1}{w_1-z} = \frac{1}{(w_0-z)-(w_0-w_1)} = \frac{1}{w_0-z} \frac{1}{1-\frac{w_0-w_1}{w_0-z}} = \sum_{n=0}^\infty \frac{(w_0-w_1)^n}{(w_0-z)^{n+1}}.\]
+    So convergence is uniform on $|w_0-z| \le \delta$. So given $\eps>0$ there exists $a_0,a_1,\ldots,a_N$ such that \[\left|\frac{1}{w_1-z}-\sum_{n=0}^N \frac{a_j}{(w_0-z)^{n+1}} \right| < \eps/2.\]
+    Uniformly for $z \in K$. And choosing an appropriate polynomial we have \[\left|\frac{1}{w_1-z} -\sum_{n=0}^N a_jP(z)\right| < \eps\text{ for all } z \in K.\]
+\end{proof}
+
+\underline{Step 3}: if $w \not \in K$, choose $w_0$ with $|w_0|$ sufficiently large that we have $w_0 \in \Lambda$. Then there exists $\gamma:[0,1] \to K^c$ continuous such that $\gamma(0) = w_0$, $\gamma(1) =w_1$ (path-connectedness of $K^c$). Now $\gamma([0,1])$ is compact, $K$ is compact and disjoint from $\gamma([0,1])$. So there exists $\delta>0$ such that $B(\gamma(t),6\delta) \cap K = \emptyset$ for all $t \in [0,1]$. Furthermore $\gamma$ is uniformly continuous so there exists $N \in \bb{N}$ such that $|s-t|<z/N$ implies $|\gamma(s)-\gamma(t)|<\delta$. Setting $w_j = \gamma(j/N)$ we have $|w_j-w_{k+1}|<\delta$ and $d(w_j,K) \ge 4\delta$. $w_0 \in \Gamma$ so by induction $w_N = \gamma(1) \in \Gamma$.
+
+We have no proved Runge's theorem.\\
+
+We will use the theorem to show that the pointwise limit of analytic functions need not be analytic (or even continuous) [in contrast to uniform limits].
+
+\begin{example}
+    Let $f(re^{i\theta}) = r^{1/3} e^{i \theta/3}$ for $r\ge 0$, $0<\theta\le 2\pi$. We will show that there are polynomials $P_n$ such that $P_n(z) \to f(z)$ for all $|z|\le 1$.
+\end{example}
+
+\begin{proof}
+    Let $K_n = \overline{B}(0,2) \setminus \left(\left\{i/n +x : x\ge 0\right\} \cup B(0,1/(100n))\right)$. Let $f_n(z) = f(z-i/n)$. We can find a $P_n$ such that $|f_n(z)-P_n(z)|\le 2^{-n}$ for all $z\in K_n$ (Runge's theorem). Then it follows that $P_n(z) \to f(z)$ for all $z$.
+\end{proof}
+
+\section{Odd Numbers}
+
+\begin{theorem}
+    $e$ is irrational.
+\end{theorem}
+
+\begin{proof}
+    Suppose not. Then $e = p/q$ with $p,q \in \bb{N}$ coprime. Then \[\frac{p}{q} = \sum_{r=0}^\infty \frac{1}{r!} \implies p(q-1)! = q! \sum_{r=0}^\infty \frac{1}{r!}\]
+    \[\implies \bb{Z} \ni q! \sum_{r=0}^\infty \frac{1}{r!} \le \sum_{k=1}^\infty \frac{1}{(q+1)^k} = \frac{1}{q+1} \frac{1}{1-1/(q+1)} = \frac{1}{q} < 1.\]
+    Which is a contradiction.
+\end{proof}
+
+\begin{theorem}
+    $\pi$ is irrational.
+\end{theorem}
+
+\begin{proof}
+    Consider $\int_0^{\pi} (\pi-x)^nx^n\sin{x}\mathrm{d}x$, i.e $\int_0^\pi f_n(x)\sin{x}\mathrm{d}x$ where $f_n(x) = (\pi-x)^nx^n$. We have $f_n(x) =\sum_{r=0}^n \binom{n}{r} \pi^{n-r}x^{n+r}$ so $f_n^{(k)} = 0$ for $0\le k\le n-1$, $f_n^{(k)}(0)=0$ for $k\ge 2n+1$. Have $f_n^{(k)}(0) = n!\pi^{k(r)}A_k$ when $n\le k\le 2n$ for some $A_k \in \bb{Z}$ and $k(r) \in \bb{N}$. $f$ is symmetric about $\pi/2$ so $f^{(k)}(\pi) = \pm n! \pi^{k(r)}A_k$ for $n\le k\le 2n$ and $f^{(k)}(\pi) = 0$ otherwise. Now integrating by parts gives \begin{align*}
+        int_0^\pi f_n^{(r)}(t)\sin{t}\mathrm{d}t &= \left[-f_n^{(r)}(t)\cos{t}\right]_0^\pi + \int_0^\pi f_n^{(r+1)}(t)\cos{t}\mathrm{d}t\\
+        &= \left[f_n^{(r)}(\pi)+f_n^{(r)}(0)\right] + \int_0^\pi f_n^{(r+1)}(t)\cos{t}\mathrm{d}t
+    \end{align*}
+    and \[\int_0^\pi f_n^{(r)}(t)\cos{t}\mathrm{d}t = \left[f_n^{(r)}(t)\sin{t}\right]_0^\pi - \int_0^\pi f_n^{(r+1)}\sin{t}\mathrm{d}t.\]
+    Putting these results together, $\int_0^\pi x^n(\pi-x)^n \sin{x}\mathrm{d}x = n! P_n(\pi)$ where $P_n$ is a polynomial of degree $d\le n$ and of integer coefficients. Now estimate the integral \[0<\int_0^\pi x^n(\pi-x)^n\sin{x}\mathrm{d}x \le \int_0^\pi x^n(\pi-x)^n \mathrm{d}x < \int_0^\pi \left(\frac{\pi}{2}\right)^{2n}\mathrm{d}x = \pi\left(\frac{\pi}{2}\right)^{2n}.\]
+    Where the last inequality comes from AM-GM. Hence $0<n!P_n(\pi) \le \pi \left(\frac{\pi}{2}\right)^{2n}$. Suppose $\pi = p/q$ with $p,q \in \bb{N}$. Then we know that $0<n! q^n P_n(p/q)\le \pi(\pi/2)^{2n} q^n$ and $q^n P_n(p/q) \in \bb{N}$. So \[0<q^n P_n(p/q) \le \frac{1}{n!} \pi\left(\frac{\pi}{2}\right)^{2n} q^n \too{n \to \infty}0\]
+    which is a contradiction to $q^nP_n(p/q) \in \bb{N}$.  
+\end{proof}
+
+
+
+
+
+\begin{definition}
+    We say that $\alpha \in \bb{R}$ is \textit{algebraic} if we can find a non-zero polynomial with integer coefficients which has $\alpha$ as a root. If $\alpha$ is not algebraic, we say $\alpha$ is \textit{transcendental}.
+\end{definition}
+
+\begin{theorem}
+    Not all real numbers are algebraic.
+\end{theorem}
+
+Cantor gave the following proof:
+\begin{proof}
+    Note that the algebraic numbers are countable. Indeed, the set of integer-coefficient polynomials is countable, and each polynomial has finitely many roots. However the reals are uncountable, so the set of real algebraic numbers must be a strict subset of $\bb{R}$. 
+\end{proof}
+
+However the first proof that transcendental numbers exist is constructive and due to Liouville. 
+
+\begin{theorem}[Liouville's theorem]
+    If $\alpha$ is an irrational root of a polynomial $P$ of degree $n$ with integer coefficients then there exists $A(\alpha)>0$ such that $\left|\alpha-\frac{p}{q}\right| \ge \frac{A(\alpha)}{q^n}$ for all $p,q \in \bb{Z}$, $q\ne 0$. [In other words, irrational algebraic numbers cannot be well approximated by rationals.] 
+\end{theorem}
+
+\begin{proof}
+    Observe first that there exists $\delta>0$ such that $P$ has no other roots in $[\alpha-4\delta,\alpha+4\delta]$. Now by the Mean Value Theorem, there exists an $M$ such that $|P(t)-P(s)| \le M|t-s|$ for all $t,s \in [\alpha-4\delta,\alpha+4\delta]$. Now $|P(p/q)| = |P(\alpha)-P(p/q)| \le M\left|\alpha-\frac{p}{q}\right| $ whenever $p/q \in [\alpha-4\delta,\alpha+4\delta]$. Since $P(p/q) \ne 0$ whenever $p/q  \in [\alpha-4\delta,\alpha+4\delta]$, $q^n P(p/q)$ is a non-zero integer. So $|q^n P(p/q)| \ge 1$ and \[\left|\alpha-\frac{p}{q}\right| \ge \frac{1}{M} |P(p/q)| \ge \frac{1}{Mq^n}.\]
+    If $p/q  \not\in [\alpha-4\delta,\alpha+4\delta]$, then $\left|\frac{p}{q}-\alpha\right| \ge 4\delta\ge \frac{K'}{q^n}$ for some $K'$.
+\end{proof}
+
+\begin{theorem}
+    $\sum_{n=0}^\infty \frac{1}{10^{n!}}$ is transcendental.
+\end{theorem}
+
+\begin{proof}
+    Set $\gamma = \sum_{n\ge 0} 10^{-n!}$. Then \[\left|\gamma-\sum_{n=0}^N 10^{-n!} \right| = \sum_{N+1}^\infty 10^{-N!} \le \frac{2}{10^{(N+1)!}}.\]
+    Have $\sum_{n=0}^N \frac{1}{10^{n!}} = \frac{p}{10^{N!}}$ for some $p \in \bb{N}$ and for any $n\in \bb{N}$, $A>0$ we have $\left|\frac{2}{10^{(N+1)!}}\right|< \frac{A}{(10^{N!})^n}$ for all $N$ sufficiently large. So $\gamma$ cannot be algebraic by the previous theorem.
+\end{proof}
+
+\begin{remark}
+    Looking at $\sum_{n\ge 0} \frac{\eps_n}{10^{n!}}$ with $\eps_n \in \{1,2\}$ gives an uncountable collection of such numbers.
+\end{remark}
+
+
+
+
+
+\section{Baire Category Theorem}
+
+Informal statement: we work in $(X,d)$ a non-empty complete metric space. Suppose we have properties $P_1,P_2,P_3,\ldots$ for points such that $P_j$ is stable - i.e if $x$ has property $P_j$ then there exists $\delta>0$ such that all $y\in B(x,\delta)$ have property $P_j$, but the propety $\lnot P_j$ is unstable - i.e given $x\in X$ and $\delta>0$ there exists $y$ with $d(x,y) < \delta$ which has property $P_j$. Then there exists $z \in X$ which has all properties $P_1,P_2,\ldots$. 
+
+Formal statement:
+
+\begin{theorem}[Baire Category Theorem]
+    If $(X,d)$ is a complete and non-empty metric space, and $U_1,U_2,\ldots$ are open sets such that $U_j^c$ has empty interior (or equivalently $U_j$ is dense) for all $j$, then $\bigcap_{j\ge 1} U_j \ne \emptyset$. 
+\end{theorem}
+
+\begin{proof}
+    Choose $x_1 \in U_1$. There exists $\delta_1 > 0$ such that $B(x_1,4\delta_1) \sbs U_1$. Now proceed inductively. Suppose $x_n \in X$ and $\delta_n >0$. Since $U_{n+1}^c$ has empty interior, we can find $x_{n+1} \in U_{n+1}$ such that $d(x_n,x_{n+1}) < \delta_n$. Now choose $\delta_{n+1} \le \frac{1}{4} \delta_n$ such that $B(x_{n+1},4\delta_{n+1}) \sbs U_{n+1}$. Observe that $d(x_n,x_{n+1})  \le \delta_n/4 \le \ldots \le\delta_1/4^{n-2}$ so $\sum_{n=1}^\infty d(x_n,x_{n+1}) < \infty$ so $x_n$ converges to some $x \in X$. Also $d(x_n,x_m) \le \sum_{r=n}^{m-1} d(x_r,x_{r+1}) \le \delta_n\left(1+\frac{1}{4}+\ldots\right) \le 2\delta_n$ so $x \in U_n$. Hence $x \in \bigcap_{n\ge 1} U_n$.
+\end{proof}
+
+\begin{remark}
+    An equivalent formulation of the statement is: if $(X,d)$ is a complete non-empty metrix space and $F_1,F_2,\ldots$ are closed sets with empty interior, then $\bigcup F_j \ne X$. 
+\end{remark}
+
+\begin{definition}
+    We say that $E$ is of \textit{first category} if $E \sbs \bigcup_{j=1}^\infty F_j$ for some $F_j$ closed with empty interior.
+\end{definition}
+
+\begin{definition}
+    We say that $E$ is of \textit{second category} if it is not of first category. 
+\end{definition}
+
+\begin{remarks}
+    \ \begin{enumerate}[(i)]
+        \item If $E$ is of first category there exists $x \in E^c$;
+        \item The countable union of first category sets is of first category.
+    \end{enumerate}
+\end{remarks}
+
+\begin{definition}
+    Let $(X,d)$ be a metric space and $E \sbs X$. A point $e \in E$ is said to be \textit{isolated} in $E$ if there exists $\delta>0$ such that $B(e,\delta) \cap E = \{e\}$. 
+\end{definition}
+
+\begin{theorem}
+    If $(X,d)$ is a non-empty complete space with no isolated points then $X$ is uncountable. In particular, $\bb{R}$ is uncountable. 
+\end{theorem}
+
+\begin{proof}
+    Suppose $X$ is countable. Enumerate $X$ by $(x_n)_{n\ge 1}$. Set $F_n = \{x_n\}$. Then $F_n$ is closed and has empty interior (since $x_n$ is not isolated). Hence $\bigcup_{n\ge 1} F_n = \bigcup_{n\ge 1} \{x_n\} \ne X$, a contradiction.
+\end{proof}
+
+\begin{proposition}[Banach]
+    There exist nowhere differentiable functions. 
+\end{proposition}
+
+We make a key observation: 
+
+\begin{proposition}
+    if $f: [0,1] \to \bb{R}$ is continuous and differentiable at one point $x \in [0,1]$ then there exists an $M>0$ such that $|f(x)-f(s)| \le M|x-s|$ for all $s \in [0,1]$. 
+\end{proposition}
+
+\begin{proof}
+    We have $\frac{f(s)-f(x)}{s-x} \to f'(x)$ as $s \to 0$, so there exists $\delta>0$ such that $\left|\frac{f(s)-f(x)}{s-x}-f'(x)\right| \le 1$ for all $s \in [0,1]$, $|s-x|<\delta$. So $|f(x)-f(s)| \le (1+|f'(x)|)|s-x|$ for $s \in [0,1]$, $|s-x| < \delta$. Then $\frac{f(s)-f(x)}{s-x}$ is continuous on $[0,1]\setminus (x-\delta,x+\delta)$ so $|f(s)-f(x)| \le K|s-x|$ for all $s \in [0,1], |s-x|\ge \delta$.
+\end{proof}
+
+Note $(C([0,1]),||\cdot||_\infty)$ is a complete metric space. So if we can show $E_m = \{f \in C([0,1]): \exists x \in [0,1] : |f(x)-f(s)| \le m|x-s| \ \forall s \in [0,1]\}$ is closed and nowhere dense, then we know that $\bigcup_{n\ge 1}E_n$ is first category so there exists $f \not \in \bigcup_{n\ge 1} E_n$ and this $f$ will be nowhere differentiable by the previous proposition.\\
+
+\begin{proposition}
+    $E_m$ is closed.
+\end{proposition}
+
+\begin{proof}
+    Suppose $f_n \in E_m$ and $f_n \too{||\cdot||_\infty} f$. We want to show $f \in E_m$. Now for each $n$ there exists $x_n \in [0,1]$ such that $|f_n(x_n)-f(s)| \le m|x_n-s|$ for all $s \in [0,1]$. By compactness of $[0,1]$, by passing to a subsequence we can say $x_n \to x$ for some $x \in [0,1]$. Then \begin{align*}
+        |f(x)-f(s)| &\le |f(x)-f(x_r)| + |f(x_r)-f_r(x_r)| + |f_r(x_r)-f_r(s)|+|f_r(s)-f(s)|\\
+        &\le |f(x)-f(x_r)| + ||f-f_r||_\infty + m|x_r-s| + ||f-f_r||_\infty\\
+        &\to m|x-s|
+    \end{align*}
+\end{proof}
+
+
+
+
+\begin{proposition}
+    $E_n$ is nowhere dense. i.e if $f \in C([0,1])$ and $\eps>0$, there exists $h\not \in E_n$ such that $||h-f||_\infty<\eps$.
+\end{proposition}
+
+\begin{proof}
+    Idea: we move from $f$ to a `nice' function, then move from this nice function to a `bad' function.\\
+
+    By the Weierstrass approximation theorem, there exists $g$ smooth such that $||g-f||_\infty<\eps/2$. Since $g$ is continuously differentiable, $|g'(t)| \le M$ for all $t$ and some $M$. Hence $|g(s)-g(t)|\le M|s-t|$. \\
+
+    Now let $h(t) = g(t) +\frac{\eps}{2}\cos(2\pi Nt)$ for $N \in \bb{N}$ large. Then $||h-f||_\infty < \eps$. Suppose $x \in [0,1]$ is such that $\frac{r}{N} \le x \le \frac{r+1}{N}$. Then \begin{align*}
+        \left|h\left(\frac{r+1}{N}\right) - h(x)\right| + \left|h\left(\frac{r}{N}\right)-h(x)\right| &\ge \left|h\left(\frac{r+1}{N}\right)-h\left(\frac{r}{N}\right)\right|\\
+        &= \left|g\left(\frac{r+1}{N}\right)-g\left(\frac{r}{N}\right) \pm \eps\right|\\
+        &\ge \eps -\left|g\left(\frac{r+1}{N}\right)-g\left(\frac{r}{N}\right)\right| \\
+        &\ge \eps-\frac{M}{N}\\
+        & \ge \frac{\eps}{2} \ge \frac{2(n+1)}{N}.
+    \end{align*}
+    If $N$ is sufficiently large. Hence \[\max\left(\left|h\left(\frac{r+1}{N}\right) - h(x)\right|, \left|h\left(\frac{r}{N}\right)-h(x)\right|\right) \ge \frac{n+1}{N}> n\left|\frac{r+1}{N}-\frac{r}{N}\right|\]
+    i.e $h \not \in E_n$.
+\end{proof}
+
+Another example: 
+\begin{proposition}
+    There exists a closed nowhere dense set in $\bb{R}$ without isolated points.
+\end{proposition}
+
+We use the Hausdorff metric: for compact non-empty $K,L \sbs [0,1]$ the Hausdorff distance is $\sup_{l \in L} \sup_{k \in K} |k-l| + \sup_{k \in K} \inf_{l \in L} |k-l|$ which we have seen is complete. We show \begin{enumerate}[(i)]
+    \item The collection of dense sets with an isolated point is first category;
+    \item The collection of dense sets which are not nowhere dense is first category.
+\end{enumerate}
+Since the countable union of first category sets is of first category, this means that the collection of nowhere dense compact sets with no isolated points is the complement of a set of first category.\\
+
+Let $\cal{E}_n$ be the collection of $K \sbs [0,1]$ (compact non-empty) such that there exists $x$ with $(x-\frac{1}{n},x+\frac{1}{n})\cap K = \{x\}$ is of first category [then $\bigcup_{n\ge 1}\cal{E}_n$ is the set of compact sets with isolated points].
+
+\begin{proposition}
+    $\cal{E}_n$ is closed (in the Hausdorff metric).
+\end{proposition}
+
+\begin{proof}
+    Suppose $(E_m)_{m\ge 1}$ is a sequence in $\cal{E}_n$ with $E_m \to E$. Then there exists $x_m$ such that $(x_m-\frac{1}{n},x_m+\frac{1}{n}) \cap E_m  =\{x_m\}$ for each $m$. So by compactness of $[0,1]$, there exists a subsequence $(x_{m(r)})_{r\ge 1}$ and $x \in [0,1]$ such that $x_{m(r)} \to x$. Observe that $x \in E$.\\
+    
+    We claim that $(x-\frac{1}{n},x+\frac{1}{n}) \cap E = \{x\}$. Indeed, if not there exists $y \in E$ with $|x-y| < 1/n -4\delta$ for some $\delta>0$. Then we must have $y_m \in E_m$ such that $y_m \to y$. So $y_{m(r)} \to y$ and $|x_{m(r)}-y_{m(r)}| \to |x-y|$ and so $|x_{m(r)}-y_{m(r)}| < \frac{1}{n}-\delta$ for $r$ large, a contradiction.\\
+\end{proof}
+
+\begin{proposition}
+    $\cal{E}_n$ is nowhere dense.
+\end{proposition}
+
+\begin{proof}
+    If $E$ is a non-empty compact set and $\eps>0$ we can choose $N$ a large integer with $N>4\eps^{-1}$ and so $F = E \cup \{\frac{r}{N} : \left|\frac{r}{N} -y\right| \le \frac{2}{N}\text{ for some } y \in E\}$ is within distance $\eps$ of $E$ (Hausdorff metric), but $F \not\in \cal{E}_n$. Then $\cal{E}_n$ is nowhere dense.
+\end{proof}
+
+So we have shown $\cal{E}_n$ is of first category. Hence $\bigcup_{n\ge 1}\cal{E}_n$ is first category, i.e the collection of sets with isolated points is first category.\\
+
+To show that the collection $\cal{F}$ of somewhere dense subsets is of first category, observe that if $E$ is somewhere dense, $E \supseteq I$ for some interval $[a,b]$. Thus \[\cal{F} = \bigcup_{q \ge 1} \bigcup_{q\ge p\ge 0} \{E\text{ compact such that } E\supseteq \left[\frac{p}{q},\frac{p+1}{q}\right]\}\]
+so it is sufficient to show $\cal{F}_{p,q} = \{E\text{ compact such that } E\supseteq \left[\frac{p}{q},\frac{p+1}{q}\right]\}$ is of first category.
+
+
+
+
+
+\subsection*{Uniform convergence and boundedness}
+
+Recall from IB the ``Witch's hat'' $f_n:[0,1] \to \bb{R}$ defined by 
+\[f_n(x) = \begin{cases}
+    2^{n+1}x & 0 \le x\le 2^{-(n+1)} \\ 2-2^{n+1}x & 2^{-(n+1)} < x \le 2^{-n} \\ 0&\text{otherwise}
+\end{cases}\]
+then $f_n \to 0$ pointwise but $||f_n||_{\infty} = 1$ for all $n$, so $f_n$ doesn't converge uniformly.
+
+\begin{lemma}
+    There exists $g_n:[0,1] \to \bb{R}$ with $||g_n||_\infty \le 1$, $g_n(x) \to 0$ for all $x \in [0,1]$ but $g_n$ fails to converge uniformly on any non trivial interval $I\sbs [0,1]$.
+\end{lemma}
+
+\begin{proof}
+    Enumerate the subintervals with rational endpoints as $[a_n,b_n] \sbs I$ and let $p_1,p_2,\ldots$ be distinct primes. Set \[g_{p_k^r}(x)=\begin{cases}
+        2^{-k}f_r\left(\left(\frac{x-a_n}{b_n-a_n}\right)\right) & x \in [a_n,b_n]\\
+        0 & \text{otherwise}
+    \end{cases}.\]
+    and $g_m(x) = 0$ if $m$ is not equal to $p_k^r$ for any $k,r$. Now $g_n$ is continuous, $||g_n||_\infty \le 1$. $g_{p_k^r}$ does not converge uniformly on $[a_k,b_k]$ as $r\to \infty$ so $g_n$ does not converge uniformly on any interval $[a_k,b_k]$, so not on any non-trivial interval.\\
+
+    On the other hand, if $\eps>0$ we can choose an $N$ such that $2^{-k} \le \eps$ for all $k\ge N$ so $||g_{p_k^r}(x)| \le \eps$ for all $k\ge N$ and for all $r$. We know that $g_{p_k^r} \to 0$ pointwise for $k \le N$ and $g_m(x) = 0$ if $m$ is not a power of $p_k$ so $g_m(x) \to 0$ pointwise.
+\end{proof}
+
+\begin{theorem}
+    If $f_n \in C([0,1])$ and $f_n \to 0$ pointwise then given $\eps>0$ there exists an interval $I$ and $N$ such that $|f_n(x)|\le \eps$ for all $n\ge N$ and for all $x\in I$. 
+\end{theorem}
+
+\begin{proof}
+    Let \begin{align*}
+        E_n &= \{x \in [0,1]: |f_m(x)|\le \eps \ \forall m\ge n\}\\
+        &= \bigcap_{p=n}^\infty \{x \in [0,1]: |f_p(x)| \le \eps\}.
+    \end{align*}
+    Then $E_n$ is closed as an intersection of closed sets. But $\bigcup_{n\ge 1}E_n = [0,1]$ as $f_n \to 0$ pointwise. So by Baire's theorem, there must exist an $m$ such that $E_m$ is not first category, i.e not nowhere dense, so $E_m$ contains an interval. 
+\end{proof}
+
+\section{Continued Fractions}
+
+If $x$ is irrational and $0<x<1$ then \[x= \frac{1}{\floor{\frac{1}{x}}+\left(\frac{1}{x}-\floor{\frac{1}{x}}\right)}\]
+so $x =\frac{1}{a+x'}$ with $a \in \bb{N}$, $0<x'<1$. So writing $Nx = \floor{\frac{1}{x}}$ and $Tx =\frac{1}{x}-\floor{\frac{1}{x}}$, we have $x = \frac{1}{Nx+Tx}$. We have $0<Tx<1$ so we can write \[x= \frac{1}{Nx+Tx}= \frac{1}{Nx+\frac{1}{NTx+T^2x}} = \frac{1}{Nx+\frac{1}{NTx+\frac{1}{NT^2x+T^3x}}}=\ldots .\]
+Consider continued fractions \[a_0+\frac{1}{a_1+\frac{1}{a_2+\frac{1}{a_3+\frac{1}{a_4+\frac{1}{a_5+\frac{1}{\ddots}}}}}}\]
+where $a_0 \in \bb{Z}$, $a_j \in \bb{N}$ for all $j\ge 1$. Can we make numerical sense of continued fractions? \\
+
+We shall often only consider continued fractions for irrationals but the same idea applies to rationals. For example, consider \begin{align*}
+    \frac{100}{37} = 2+\frac{26}{37} = 2+\frac{1}{\frac{37}{26}} = 2+\frac{1}{1+\frac{11}{26}} &= 2+\frac{1}{1+\frac{1}{\frac{26}{11}}}\\
+    &= 2+\frac{1}{1+\frac{1}{2+\frac{4}{11}}}\\
+    &= 2+\frac{1}{1+\frac{1}{2+\frac{1}{\frac{11}{4}}}}\\
+    &=2+\frac{1}{1+\frac{1}{2+\frac{1}{2+\frac{3}{4}}}}\\
+    &= 2+\frac{1}{1+\frac{1}{2+\frac{1}{2+\frac{1}{\frac{4}{3}}}}}\\
+    &= 2+\frac{1}{1+\frac{1}{2+\frac{1}{2+\frac{1}{1+\frac{1}{3}}}}}.
+\end{align*}
+Looking at what we have done, we see that starting from $\frac{r_m}{s_m}$ with $0<r_m<s_m$ and $(r_m,s_m) = 1$ we form $\frac{s_m}{r_m} = \frac{a_mr_m+s_{m+1}}{r_m} = a_m + \frac{s_{m+1}}{r_m}$ with $r_m,s_{m+1}$ coprime. So we are producing the pairs $(s_m,r_m)$ in Euclid's algorithm. So the process terminates [as $(r_m)_{m\ge 1}$ and $(s_m)_{m\ge 1}$ are strictly decreasing sequences in $\bb{N}$].\\
+
+\begin{theorem}
+    $\sqrt{2}$ is irrational. 
+\end{theorem}
+
+\begin{proof}
+    Look at the continued fraction expansion. Have \begin{align*}
+        \sqrt{2} &= 1+(\sqrt{2}-1) = 1+\frac{1}{1+\sqrt{2}}\\
+        &= 1+\frac{1}{2+(\sqrt{2}-1)}\\
+        &= 1+\frac{1}{2+\frac{1}{1+\sqrt{2}}}\\
+        &\ \ \vdots
+    \end{align*}
+    so the continued fraction expansion doesn't terminate. 
+\end{proof}
+
+Note that if $x \in (0,1)$, $Dx =\floor{10x}$ and $Sx =10x-\floor{10x}$, the sequence $Dx,DSx,DS^2x,DS^3x,\ldots$ represents the decimal expansion of $x$.
+
+
+
+
+From one point of view, writing $x$ as a continued fraction (for $x\in (0,1)$ irrational) is just a mechanism for producting a sequence of integers $Tx,T^2x,T^3x$ where $Tx = \frac{1}{x} -\floor{\frac{1}{x}}$. We know that $X \mapsto SX$ takes uniformly distributed $X$ to uniformly distributed $X$ on $[0,1]$. Gauss observed that if we use the probability density \[f(x) = \frac{1}{\log{2}}\frac{1}{1+x}, \ x\in [0,1]\]
+then if $X$ has this density, so does $TX$.
+
+\begin{proof}
+    If $X$ has density $f$ then \begin{align*}
+        \bb{P}(TX \le a) &= \bb{P}\left(\frac{1}{X} -\floor{\frac{1}{X}} \le a\right)\\
+        &=\sum_{n=1}^\infty \bb{P}\left(n\le \frac{1}{X} \le n+a\right)\\
+        &= \sum_{n=1}^\infty \bb{P}\left(\frac{1}{n} > X \ge \frac{1}{n+a}\right)\\
+        &= \sum_{n=1}^\infty \frac{1}{\log{2}} \int_{\frac{1}{n+a}}^{\frac{1}{n}} \frac{1}{1+x} \mathrm{d}x\\
+        &=\sum_{n=1}^\infty \frac{1}{\log{2}} \left(\log\left(1+\frac{1}{n}\right)-\log\left({1+\frac{1}{n+a}}\right)\right)\\
+        &=\frac{1}{\log{2}} \lim_{N \to \infty} \sum_{n=1}^N \left(\log(n+1)-\log{n}-\log(1+n+a)-\log(n+a)\right)\\
+        &=\frac{1}{\log{2}} \lim_{N\to \infty} \left(\log(N+1)-\log(1+N+a)+\log(1+a)\right)\\
+        &=\frac{1}{\log{2}} \log(1+a).
+    \end{align*}
+\end{proof}
+
+Observe that \begin{align*}
+    \bb{P}(NT^r X = j) = \bb{P}(NX=j) &= \frac{1}{\log{2}} \int_{\frac{1}{j+1}}^{\frac{1}{j}} \frac{1}{1+x} \mathrm{d}x  \\
+    &= \frac{1}{\log{2}}\left( \log\left(1+\frac{1}{j}\right)-\log\left(1+\frac{1}{j+1}\right)\right)\\
+    &= \frac{1}{\log{2}} \log\left(\frac{(j+1)^2}{j(j+2)}\right)\\
+    &= \frac{1}{\log{2}} \sim \frac{1}{\log{2}} \frac{1}{j^2}\text{ for }j\text{ large}.
+\end{align*}
+
+It is not true that $NX,NTX,NT^2X,\ldots$ are independent, but it can be shown that if $X$ is chosen randomly with density $f$ (or indeed uniform density) the proportion of times $j$ appears in the first $N$ iterations converges to \[\frac{1}{\log{2}} \int_{\frac{1}{j+1}}^{\frac{1}{j}} \frac{1}{1+t}\mathrm{d}t \text{ as } M \to \infty.\]
+
+We return to the question of evaluating \[a_0+\frac{1}{a_1+\frac{1}{a_2+\frac{1}{a_3+\frac{1}{a_4+\frac{1}{a_5+\frac{1}{\ddots}}}}}}.\]
+Start of by trying to find \[\frac{p_n}{q_n} = a_0+\frac{1}{a_1+\frac{1}{a_2+\frac{1}{a_3+\frac{1}{a_4+\frac{1}{a_5+\frac{1}{\ddots \frac{1}{a_n}}}}}}}\]
+where $p_n,q_n$ are coprime. We start by evaluating things from the bottom up \[\frac{r_m}{s_m} = a_m + \frac{1}{a_{m+1}+\frac{1}{a_{m+2}+\frac{1}{\ddots +\frac{1}{a_n}}}}\]
+where again $r_m,s_m$ are coprime. Then \[\frac{r_m}{s_m} = a_m+\frac{1}{\frac{r_{m+1}}{s_{m+1}}} = a_m + \frac{s_{m+1}}{r_{m+1}} = \frac{a_mr_{m+1}+s_{m+1}}{r_{m+1}}\]
+so $s_m = r_{m+1}$, $r_m = a_m r_{m+1} +s_{m+1}$ (observe $r_m,s_m$ remain coprime as in Euclid's algorithm).\\
+
+Thus \[\begin{pmatrix} r_m \\ s_m \end{pmatrix} = \begin{pmatrix} a_m & 1 \\ 1 & 0 \end{pmatrix} \begin{pmatrix} r_{m+1} \\ s_{m+1} \end{pmatrix}.\]
+And have $\begin{pmatrix} r_n \\ s_n \end{pmatrix} = \begin{pmatrix} a_n \\ 1\end{pmatrix}$. So \[\begin{pmatrix} p_n \\ q_n \end{pmatrix} =\begin{pmatrix}
+    r_0 \\s_0
+\end{pmatrix} = \begin{pmatrix} a_0 & 1 \\ 1 & 0 \end{pmatrix} \begin{pmatrix} a_1 & 1 \\ 1 & 0 \end{pmatrix} \ldots \begin{pmatrix} a_{n-1} & 1 \\ 1 & 0 \end{pmatrix} \begin{pmatrix} a_n \\ 1 \end{pmatrix} \]
+and
+\begin{align*}
+    \begin{pmatrix} p_{n-1}\\q_{n-1} \end{pmatrix} &= \begin{pmatrix} a_0 & 1 \\ 1 & 0 \end{pmatrix} \begin{pmatrix} a_1 & 1 \\ 1 & 0 \end{pmatrix} \ldots \begin{pmatrix} a_{n-1} \\ 1 \end{pmatrix} \\
+&= \begin{pmatrix} a_0 & 1 \\ 1 & 0 \end{pmatrix} \begin{pmatrix} a_1 & 1 \\ 1 & 0 \end{pmatrix} \ldots \begin{pmatrix} a_{n-1} & 1 \\ 1 & 0 \end{pmatrix} \begin{pmatrix}  1 \\  0 \end{pmatrix} 
+\end{align*}
+which implies \[\begin{pmatrix}
+    p_n & p_{n-1} \\ q_n & q_{n-1}
+\end{pmatrix} = \begin{pmatrix} a_0 & 1 \\ 1 & 0 \end{pmatrix} \begin{pmatrix} a_1 & 1 \\ 1 & 0 \end{pmatrix} \ldots \begin{pmatrix} a_n & 1 \\ 1 & 0 \end{pmatrix} .\]
+This formula gives lots of results: \begin{enumerate}
+    \item \[\begin{pmatrix} p_{n+1} & p_n \\ q_{n+1} & q_n \end{pmatrix} = \begin{pmatrix} p_n & p_{n-1} \\ q_n & q_{n-1} \end{pmatrix} \begin{pmatrix} a_{n+1} & 1 \\ 1 & 0 \end{pmatrix} \]
+    from which we see $p_{n+1} = p_n a_{n+1}+p_{n-1}$ and $q_{n+1} = q_na_{n+1}+q_{n-1}$.
+    \item Taking determinants \begin{align*}
+        \det \begin{pmatrix}
+        p_n & p_{n-1} \\ q_n & q_{n-1}
+    \end{pmatrix} = \det \begin{pmatrix} a_0 & 1 \\ 1 & 0 \end{pmatrix} \det \begin{pmatrix} a_1 & 1 \\ 1 & 0 \end{pmatrix} \ldots \det \begin{pmatrix} a_n & 1 \\ 1 & 0 \end{pmatrix} & = (-1)^{n+1} 
+    \end{align*}
+    so $p_nq_{n-1}-q_np_{n-1} =(-1)^{n+1}$ and $\frac{p_n}{q_n}-\frac{p_{n-1}}{q_{n-1}} = (-1)^{n+1} \frac{1}{q_nq_{n-1}}$. 
+\end{enumerate}
+
+
+
+
+We have $\frac{p_n}{q_n}-\frac{p_{n-1}}{q_{n-1}} = (-1)^{n+1} \frac{1}{q_nq_{n-1}}$. We shall use repeatedly the observation that $\frac{1}{a} \ge \frac{1}{a+t}$ if $t\ge 0$. This gives \[\frac{p_0}{q_0} \le \frac{p_2}{q_2} \le \ldots \]
+\[\frac{p_1}{q_1} \ge \frac{p_3}{q_3} \ge \ldots\]
+
+Thus since a bounded increasing sequence converges, $\frac{p_{2n}}{q_{2n}} \to \alpha$ for some $\alpha$. Since $q_n \to \infty$ and $\left|\frac{p_n}{q_n}-\frac{p_{n-1}}{q_{n-1}}\right| \le \frac{1}{q_nq_{n-1}}$ we have $\frac{p_{2n+1}}{q_{2n+1}} \to \alpha$. So continued fractions converge in the obvious way.\\
+
+If we form a continued fraction starting from $x$ as shown earlier, then $\frac{p_{2n}}{q_{2n}} \le x\le \frac{p_{2n-1}}{q_{2n-1}}$ so $\alpha =x$ and the fraction converges to $x$.\\
+
+\begin{lemma}
+    If $\left|\frac{u}{v} - \frac{p_{n+1}}{q_{n+1}}\right| \le \frac{1}{q_nq_{n+1}}$ for some $u,v \in \bb{Z}$ with $v \le q_n$, then we have $v = q_n$ and $u = p_n$.
+\end{lemma}
+
+\begin{proof}
+    If $v< q_n$ have $\left|\frac{u}{v} - \frac{p_{n+1}}{q_{n+1}}\right| \ne 0$ as $p_{n+1},q_{n+1}$ are coprime, and $\left|\frac{u}{v}-\frac{p_{n+1}}{q_{n+1}}\right| = \left|\frac{uq_{n+1}-vp_{n+1}}{vq_{n+1}} \right|\ge \frac{1}{vq_{n+1}} > \frac{1}{q_nq_{n+1}}$. \\
+
+    If $v = q_n$ then \[\left|\frac{u}{q_n}-\frac{p_{n+1}}{q_{n+1}}\right| = \frac{|uq_{n+1}-q_np_{n+1}}{q_nq_{n+1}} > \frac{1}{q_nq_{n+1}}\]
+    unless $|uq_{n+1}-q_np_{n+1}| = 1$ so $u=p_n$.
+\end{proof}
+
+If we consider the continued fraction associated with $x$ then $x$ lies between $\frac{p_n}{q_n}$ and $\frac{p_{n+1}}{q_{n+1}}$ so since $\frac{p_n}{q_n}$ is the closest fraction of the form $\frac{u}{v}$ with $v\le q_n$ to $x$, i.e $\left|x-\frac{p_n}{q_{n}}\right| \le\left|x-\frac{u}{v}\right|$ for all $u,v \in \bb{Z}$ with $0<v<q_n$.\\\
+
+Furthermore $\left|x-\frac{p_n}{q_n}\right|\le \frac{1}{q_nq_{n+1}}$ (in particular $\left|x-\frac{p_n}{q_n}\right| \le \frac{1}{q_n^2}$).\\
+
+There is a certain interest attached to ``badly approximable numbers'', which we take to mean that the $a_j$ are small. In particular we may look at \[\tau = \frac{1}{1+\frac{1}{1+\frac{1}{1+\frac{1}{1+\ddots}}}}\]
+Then $\tau = 1+\frac{1}{\tau}$, so $\tau^2-\tau-1=0$, and $\tau = \frac{1\pm \sqrt{5}}{2}$ so $\tau = \frac{1+\sqrt{5}}{2}$.\\
+
+We also have $p_n = p_{n-1}+p_{n-2}$ and $q_n = q_{n-1} + q_{n-2}$ with $p_0 = 1,p_1 = 2$, $q_0 = 1,q_1=1$. If we introduce the Fibonacci numbers $F_0=0,F_1=1$, $F_n = F_{n-1}+F_{n-2}$ then $p_n = F_{n+2}$, $q_n = F_{n+1}$. $F_n = F_{n-1}+F_{n-2}$ is a difference equation and has indicial equation $m^2=m+1$ with roots $m = \tau, -\tau^{-1}$. So $F_n = A\tau^n + B(-1)^n \tau^{-n}$, and $F_0 = A+B = 0$, $F_1 = A\tau-B\tau^{-1} = 1$, giving $A= 1$, $B=-1$. Therefore $F_n=\tau^n+(-1)^{n+1} \tau^{-n}$.\\
+
+Observe that $|\tau^{-1}|<1$ so $F_n \sim \tau^n$ as $n \to \infty$. Hence \begin{align*}
+    \left|\tau-\frac{p_n}{q_n}\right| &= \left|\tau - \frac{F_{n+2}}{F_{n+1}}\right|\\
+    &=\left|\tau-\frac{\tau^{n+2}+(-1)^{n+3}\tau^{-(n+2)}}{\tau^{n+1}+(-1)^{n+2}\tau^{-(n+1)}}\right|\\
+    &=\left|\frac{\tau^{n+2}+\tau^{-n}(-1)^{n+2}-\tau^{n+2}-(-1)^{n+3}\tau^{-n-2}}{\tau^{n+1}+(-1)^{n+2}\tau^{-(n+1)}}\right|\\
+    &=\left|\frac{\tau^{-n}(-1)^{n+2}+(-1)^{n+2} \tau^{-n-2}}{\tau^{n+1}+(-1)^{n+2}\tau^{-(n+1)}}\right|\\
+    &\sim \frac{\tau^{-n}+\tau^{-n-2}}{\tau^{n+1}} = \frac{\tau^2+1}{\tau^{2n+3}}
+\end{align*}
+
+Have $p_nq_{n+1}-q_np_{n+1} = (-1)^n$, $\frac{p_n}{q_n} = \frac{F_{n+2}}{F_{n+1}}$, $F_{n+2}^2-F_{n+1}F_{n+3} = (-1)^n$.
+
+
+
+
+
+\section{Winding numbers}
+
+\begin{lemma}
+    If $\gamma:[0,1] \to \{z: \Re(z)>0\}$ is continuous and $\gamma(0)$ is real and positive, there exists a unique $\theta:[0,1] \to \bb{R}$ continuous with $\theta(0) = 0$ and $\gamma(t) = e^{i\theta(t)}|\gamma(t)|$.  
+\end{lemma}
+
+\begin{proof}
+    Let $\theta(t) = \arctan(y(t)/x(t))$.
+\end{proof}
+
+By rotation we deduce that if $\gamma:[0,1] \to \bb{C}$ is continuous and $|\gamma(t)-\gamma(0)| < |\gamma(0)|$ then there exists a continuous $\theta:[0,1] \to \bb{R}$ such that $\gamma(t) = e^{i\theta(t)}|\gamma(t)|$ and $\theta(0) = \theta'$ with $\gamma(0) = e^{i\theta'}|\gamma(0)|$. \\
+
+It follows that if $\gamma:[0,1] \to \bb{C}$ is such that $\gamma(t) \ne 0$ for all $t$ then if $\gamma(0) = e^{i\theta_0} |\gamma(0)|$ then there exists a $\theta:[0,1] \to \bb{R}$ continuous with $\gamma(t) = |\gamma(t)|e^{i\theta(t)}$.
+
+\begin{proof}
+    Since $[0,1]$ is compact and $\gamma$ continuous, $\gamma([0,1])$ is compact so there exists $\delta>0$ such that $|\gamma(t)| \ge \delta$ for all $t \in [0,1]$. Choose $N$ such that $|\gamma(s)-\gamma(t)| < \delta$ for all $|s-t|\le 1/N$ (as $\gamma$ is uniformly continuous) then we can successively define $\theta: [\frac{r}{N},\frac{r+1}{N}] \to \bb{R}$ continuous with $\gamma(t) = e^{i\theta(t)}|\gamma(t)|$ for $t \in [\frac{r}{N},\frac{r+1}{N}]$.\\
+\end{proof}
+
+We observe that if $\gamma(t) = e^{i\theta_1(t)}|\gamma(t)| = e^{i\theta_2(t)}|\gamma(t)|$ with $\gamma,\theta_1,\theta_2$ continuous then $e^{\theta_1(t)-\theta_2(t)} = 1$ so $\theta_1(t)-\theta_2(t) \in 2\pi\bb{Z}$ so by continuity $\theta_1(t) = \theta_2(t) + 2\pi n$ for some $n \in \bb{Z}$ and all $t\in [0,1]$.\\
+
+From now on we take $\gamma$ closed (i.e $\gamma(0) = \gamma(1)$) so $\gamma$ is continuous, $\gamma(t) \ne 0$ for all $t\in [0,1]$, $\gamma:[0,1] \to \bb{C}$ continuous. 
+
+\begin{definition}
+    The \textit{winding number} is defined as \[W(\gamma,0) = \frac{\theta(1)-\theta(0)}{2\pi}.\]
+    Where $\gamma(t) = |\gamma(t)|e^{i\theta(t)}$, $\theta$ continuous. 
+\end{definition}
+If $\gamma_1,\gamma_2$ are closed curves around zero, $\gamma_1(t) = |\gamma_1(t)|e^{i\theta_1(t)}$, $\gamma_2(t) = |\gamma_2(t)|e^{i\theta_2(t)}$ then $\gamma_1(t)\gamma_2(t) = |\gamma_1(t)\gamma_2(t)|e^{i(\theta_1(t)+\theta_2(t))}$ so $W(\gamma_1\gamma_2,0) = W(\gamma_1,0)+W(\gamma_2,0)$. \\
+
+This enables us to prove
+
+\begin{lemma}[`Dog walking lemma']
+    If $\gamma_1,\gamma_2$ are closed loops not through zero and $|\gamma_1(t)|>|\gamma_2(t)|$ for all $t$ then $W(\gamma_1+\gamma_2,0) = W(\gamma_1,0)$. 
+\end{lemma}
+
+\begin{proof}
+    \[W(\gamma_1+\gamma_2,0) = W(\gamma_1(1+\frac{\gamma_2}{\gamma_1}),0) = W(\gamma_1,0) + W(1+\frac{\gamma_1}{\gamma_2},0).\]
+    But $1+\frac{\gamma_2(t)}{\gamma_1(t)} \in \{z : \Re(z) > 0\}$ for all $t \in [0,1]$ so $W(1+\frac{\gamma_1}{\gamma_2},0)=0$.
+\end{proof}
+
+We now introduce the notion of homotopy. 
+\begin{definition}
+    Two closed curves $\gamma_1,\gamma_2$ (not passing through $0$) are said to be \textit{homotopic} if there exists $H:[0,1]^2 \to \bb{C} \setminus \{0\}$ continuous such that $H(0,t) = \gamma_1(t)$, $H(1,t) = \gamma_2(t)$ and $H(s,0) = H(s,1)$ for all $s,t \in [0,1]$. 
+\end{definition}
+
+
+\begin{proposition}[`Dog walking along a canal']
+    If $\gamma_0$,$\gamma_1$ are homotopic (not through $0$) then $W(\gamma_0,0) = W(\gamma_1,0)$. 
+\end{proposition}
+
+\begin{proof}
+    Let $H:[0,1]^2 \to \bb{C} \setminus \{0\}$ be a homotopy from $\gamma_0$ to $\gamma_1$. Since $H$ is continuous and $[0,1]^2$ is compact, $|H(s,t)|$ attains a minimum, say $|H(s_0,t_0)| \ne 0$. So there exists $\delta>0$ such that $H(s,t) \ge 8\delta$ for all $(s,t) \in [0,1]^2$. Also $H$ is uniformly continuous so we can find an $N$ such that $|H(s,t)-H(s',t')|<\delta$ for all $|s'-s'|,|t-t'| \le 2/N$. \\
+
+    Define $\tau_r(t) = H(r/N,t)$ so $|\tau_r(t)-\tau_{r+1}(t)| \le \delta$ for all $t$ so $W(\tau_r,0) = W(\tau_{r+1},0)$. In particular $W(\gamma_0,0) = W(\tau_0,0) = W(\tau_{1},0) = \ldots = W(\tau_N,0) = W(\gamma_1,0)$.
+\end{proof}
+
+\begin{corollary}
+    Suppose $f: \overline{D}(0,R) \to \bb{C}$ is continuous and the winding number of $t\mapsto f(Re^{2\pi it})$ is non-zero. Then $f$ must have a zero.
+\end{corollary}
+
+\begin{proof}
+    If $f$ has no zero, $H(s,t) = f(Rse^{2\pi it})$ is a homotopy avoiding $0$ from $t\mapsto f(0)$ to $t\mapsto f(Re^{2\pi it})$. But $t \mapsto f(0)$ certainly has winding number $0$, so this is a contradiction.
+\end{proof}
+
+\begin{remark}
+    Since the dog walking lemma shows that if $P(z) = z^n+ \sum_{j=0}^{n-1} a_jz^j$ then $t \mapsto P(Re^{2\pi it})$ has non-zero winding number, this corollary gives the Fundamental Theorem of Algebra.
+\end{remark}
+
+Finally, we give a second proof of the no-retraction theorem.
+
+\begin{theorem}
+    There does not exist a continuous $f: \overline{D} \to \partial D$ continuous such that $f(z) = z$ for all $z \in \partial D$. 
+\end{theorem}
+
+\begin{proof}
+    Suppose such an $f$ did exist. Define $H(s,t) = f(se^{2\pi it})$ $s,t \in [0,1]$. Then $t\mapsto H(1,t) = e^{2\pi it}$ has winding number $1$ and $t\mapsto H(0,1) = 0$ has winding number $0$ and $|H(s,t)| =1 \ne 0$ for all $s>0$. But $H$ is a homotopy not passing through $0$, contradiction. 
+\end{proof}
+
+
+
+\end{document}

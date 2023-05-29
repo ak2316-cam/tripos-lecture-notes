@@ -1,0 +1,219 @@
+\documentclass[a4paper]{amsart}
+
+\usepackage[nokoma]{adam}
+% \usepackage[margin=0.75in]{geometry}
+\usepackage{tikz-cd}
+
+\setlist[enumerate]{leftmargin=8mm}
+\setlist[itemize]{leftmargin=8mm}
+
+\newcommand{\enumpre}{\vspace{-1.5\baselineskip}}
+
+
+
+% NOTE: for a more compact, black and white style for printing, use
+% the below.
+
+% \documentclass[a3paper, 10pt]{amsart}
+
+% \usepackage[nokoma, noindent]{adam}
+% \usepackage[landscape,margin=0.5in]{geometry}
+% \usepackage{tikz-cd}
+% \usepackage{multicol}
+
+% \setlist[enumerate]{leftmargin=8mm}
+% \setlist[itemize]{leftmargin=8mm}
+
+% \newcommand{\enumpre}{}
+% % \newcommand{\enumpre}{\vspace{-1.5\baselineskip}}
+% \renewcommand{\vocab}[1]{\emph{#1}}
+
+\title{Quantum Information and Computation}
+\author{Adam Kelly -- Mathematical Tripos Part II}
+\date{\today. Email \texttt{ak2316@srcf.net}}
+
+\usepackage{physics}
+\usepackage{qcircuit}
+% \usepackage{complexity}
+
+\begin{document}
+% \begin{multicols*}{5}
+\maketitle
+
+\tableofcontents
+
+% Familiarity with the basic gates, notation and
+
+% \section{Pauli Operations and Basic Gates}
+
+% We define the following basic single qubit quantum gates:
+% \begin{align*}
+%   H = \frac{1}{\sqrt{2}} \begin{pmatrix}
+%     1 & 1 \\ 1 & - 1
+%   \end{pmatrix}, \; X = \begin{pmatrix}
+%     0 & 1 \\ 1 & 0
+%   \end{pmatrix}, \; Y = \begin{pmatrix}
+%     0 & 1 \\ -1 & 0
+%   \end{pmatrix},\; \\
+%   Z = \begin{pmatrix}
+%     1 & 0 \\ 0 & -1
+%   \end{pmatrix}, \;
+%   P(\theta) = \begin{pmatrix}
+%     1 & 0 \\ 0 & e^{i \theta}
+%   \end{pmatrix}.
+% \end{align*}
+% We also define the two qubit gates
+% \begin{align*}
+%   CX = \begin{pmatrix}
+%     1 & 0 & 0 & 0 \\
+%     0 & 1 & 0 & 0 \\
+%     0 & 0 & 0 & 1 \\
+%     0 & 0 & 1 & 0
+%   \end{pmatrix}, \; CZ = \begin{pmatrix}
+%     1 & 0 & 0 & 0 \\
+%     0 & 1 & 0 & 0 \\
+%     0 & 0 & 1 & 0 \\
+%     0 & 0 & 0 & -1 
+%   \end{pmatrix}
+% \end{align*}
+% The gates mentioned are related to the Pauli operators by $X = \sigma_x$, $Y = i \sigma_y$, $Z = \sigma_z$.
+
+\section{The No Cloning Theorem}
+
+A \emph{cloning process} to clone the state $\ket{\psi}$ is
+$$
+\ket{\psi}_A \ket{0}_B \ket{M_0}_M \longrightarrow \ket{\psi}_A \ket{\psi}_B \ket{M_\psi}_M.
+$$
+
+\begin{theorem}[No Cloning Theorem]
+  Let $S$ be any set of states of $A$ that contains at least one non-orthogonal pair of states. Then no unitary\footnote{Or process more generally, by the deferred measurement principle and letting $M$ absorb any ancilla.} cloning process exists that achieves cloning for all states in $S$.
+\end{theorem}
+\begin{proof}
+Let $\ket{\xi} \neq \ket{\eta}$ be non-orthogonal states in $S$. Then our process must have
+\begin{align*}
+  \ket{\xi}_A \ket{0}_B \ket{M_0}_M \longmapsto \ket{\xi}_A \ket{\xi}_B \ket{M_\xi}_M, \\
+  \ket{\eta}_A \ket{0}_B \ket{M_0}_M \longmapsto \ket{\eta}_A \ket{\eta}_B \ket{M_\eta}_M.
+\end{align*}
+Then since unitary operations preserve inner products, taking the inner product of the two above states gives
+\begin{align*}
+\ip{\xi}{\eta} \ip{0}{0} \ip{M_0}{M_0} = \ip{\xi}{\eta}\ip{\xi}{\eta} \ip{M_\xi}{M_\eta},
+\end{align*}
+which, taking absolute values, implies that 
+$$1 = \abs{\ip{\xi}{\eta}} \abs{\ip{M_\xi}{M_\eta}},$$
+but $|\ip{\xi}{\eta}| < 1$ and $\abs{\ip{M_\xi}{M_\eta}} \leq 1$, so this is a contradiction.
+\end{proof}
+
+\section{Quantum Dense Coding}
+
+\begin{definition}[Bell States]
+  The Bell states is an orthonormal basis for the state space of two qubits, given by
+  \begin{align*}
+    \ket{\varphi^+} &= \frac{\ket{00} + \ket{11}}{\sqrt{2}}, \quad \ket{\varphi^-} = \frac{\ket{00} - \ket{11}}{\sqrt{2}}, \\
+    \ket{\psi^+} &= \frac{\ket{01} + \ket{10}}{\sqrt{2}}, \quad \ket{\psi^-} = \frac{\ket{01} - \ket{10}}{\sqrt{2}}.
+  \end{align*}
+\end{definition}
+
+A notable property of these states is that they can all be achieved from $\ket{\varphi^+}$ by a local operation on the first qubit, with
+\begin{align*}
+  \ket{\varphi^-} = Z \otimes I \ket{\varphi^+}, \;
+  \ket{\psi^+} = X \otimes I \ket{\varphi^+}, \;
+  \ket{\psi^-} = Y \otimes I \ket{\varphi^+}.
+\end{align*}
+This fact gives us the \emph{quantum dense coding protocol}.
+
+\begin{method}[Quantum Dense Coding]
+  Suppose $A$ and $B$ hold one qubit of the state $\ket{\varphi^+}$. Then if $A$ wants to send two bits of classical information, for the messages 00, 01, 10, 11 they can apply the gates $I$, $Z$, $X$, $Y$ to their qubit, making the states $\ket{\varphi^+}, \ket{\varphi^-}, \ket{\psi^+}, \ket{\psi^-}$ respectively. They can then send their qubit to $B$, who can measure the whole system in the Bell basis to then distinguish the message. 
+\end{method}
+
+
+\section{Quantum Teleportation}
+
+Suppose $A$ and $B$, separated in space, hold one qubit of the state $\ket{\varphi^+}$. $A$ also has a single qubit state $\ket{\alpha}$ they would like to send to $B$ by only performing local operations and communicating with classical information. They can do this with \emph{quantum teleportation}.
+
+\begin{method}[Quantum Teleportation]
+  The state $\ket{\alpha}$ can be `teleported' by $A$ and $B$ performing the following operations.
+  $$
+  \Qcircuit @C=1.4em @R=1em {
+    \lstick{\ket{\alpha}} & \ctrl{1}
+  & \gate{H}  & \meter  & 
+  \cw & \cw & \cw & \control \cw \cwx[2] \\
+    & \targ & \qw & \meter &  \cw & \control \cw \cwx[1] & & & \\
+    & \qw & \qw & \qw & \qw & \gate{X} & \qw & \gate{Z} & \qw & \ket{\alpha} 
+  \inputgroupv{2}{3}{0.7em}{1.1em}{\ket{\varphi^{+}}} \\
+  }
+  $$
+  where $A$ sends the outcome of their measurements $B$ classically so the $X$ and $Z$ gates can be applied if necessary.
+\end{method}
+
+% \section{Computational Complexity}
+
+% \begin{definition}[Decision Problem]
+%   Given an input of an integer $n$ (the \emph{input size}), a bit string $x \in \{0, 1\}^n$, and a collection of bit strings $L$, a decision problem is the computational task to give a one-bit output that decides whether $x \in L$.
+% \end{definition}
+
+% We will look at decision problems for classical and quantum computers. 
+
+% \begin{definition}[Classical Algorithm]
+%   A classical computation or algorithm is a prescribed sequence $C_n$ indexed by the input size $n$ consisting of AND, OR and NOT\footnote{We note these operations are \emph{universal} for classical computation, in that they can represent any Boolean functions.}.
+% \end{definition}
+
+% \begin{definition}[Classical Complexity Classes]
+%   The class $P$ (poly-time) is the decision problems that admit a deterministic polynomial-time algorithm. The class $BPP$ (bounded-error probabilistic poly-time) is those which admit a probabilistic polynomial time algorithm such that the probability of a correct answer uniformly exceeds a fixed constant strictly greater than $1/2$.
+% \end{definition}
+
+
+% We similarly talk about a set of quantum operations that allow us to reproduce any unitary operations.
+
+% \begin{definition}[Universal Gate Set]
+%   A set of quantum gates is \emph{universal} if we can reproduce any unitary operation on the string of qubits from a sequence of them.
+% \end{definition}
+
+% For example, the set of gates consisting of $CX$ and all 1-qubit gates is universal. However, we usually only want to use finitely many gates.
+
+% \begin{definition}[Approximately Universal]
+%   A set of gates $\mathcal{G}$ on $N$ qubits is \emph{approximately universal} if, for any $\varepsilon > 0$ and any unitary operator $U$ on $n$-qubits, there is a circuit $\tilde{U}$ made from gates in $\mathcal{G}$ such that $\norm{U - \tilde{U}}_\text{op}$.
+% \end{definition}
+
+% The gate set $\mathcal{G} = \{H, CX, T = P(\pi/4)\}$ is approximately universal.
+
+% \begin{definition}[Quantum Complexity Class]
+%   The complexity class $BQP$ (bounded-error quantum poly-time) of decision problems consists of those that can be solved with a polynomial-sized quantum circuit family (indexed by input size as before) with success probability uniformly exceeding a fixed constant strictly greater than $1/2$. 
+% \end{definition}
+
+\section{Oracle Problems}
+
+\subsection{Query Complexity}. We have some `Oracle' $O_f$ that computes some boolean function $f: B_m \rightarrow B_n$ (we might have knowledge or `promises' about this function). We consider problems about if $f$ has certain properties.
+
+\begin{definition}
+  The \emph{query complexity} of the algorithm is the number of times that the oracle needs to be used in order to solve the problem. The total time complexity is the total size of the circuit where we count each oracle use as a single gate.
+\end{definition}
+
+\subsection{Deutsch-Jozsa Algorithm}
+
+We consider a Boolean function $f: B_n \rightarrow B_1$ that is either `constant' or `balanced' (in the sense that exactly half of its values is zero). The problem is to decide whether $c$ is constant with certainty. 
+
+Obviously, classically $2^{n - 1} + 1$ queries is sufficient and necessary. With a quantum circuit, a single query suffices.
+
+\begin{method}[Deutsch-Jozsa]
+  Given an oracle $O_f$ for a Boolean function $f: B_n \rightarrow B_1$ (that's constant or balanced), which performs the transformation $\ket{x} \ket{y} \mapsto \ket{x} \ket{y \oplus f(x)}$, we perform the following circuit:
+  $$
+  \Qcircuit @C=1em @R=.7em {
+   \lstick{\ket{0}} & /^n \qw & \gate{H^{\otimes n}} & \multigate{1}{O_f} & \gate{H^{\otimes n}}	& \meter & \cw \\
+   \lstick{\ket{1}} & \qw     & \gate{H}             & \ghost{U_f}        & \qw
+  }
+$$
+Then if we measure all zeros, the function is constant, otherwise it is balanced.
+\end{method}
+
+\section{Quantum Fourier Transform}
+
+\begin{definition}
+  Suppose we have a $N$-dimensional state space with computational basis $\{\ket{n} \mid n \in \Z/N\Z\}$. The quantum Fourier transform modulo $N$, written QFT$_N$ on the space is the the linear operator which takes the basis state $\ket{a}$ to
+  $$
+\frac{1}{\sqrt{N}} \sum_{b \in \Z/N\Z} e^{2 \pi i a b/N} \ket{b}.
+  $$
+\end{definition}
+
+
+% \end{multicols*}
+\end{document}

@@ -1,189 +1,627 @@
-\documentclass[a4paper]{scrartcl}
+\documentclass[a4paper, 10pt, twocolumn]{amsart}
 
-\usepackage[
-    fancytheorems, 
-    fancyproofs, 
-    noindent, 
-]{adam}
+\usepackage[nokoma,noindent,fancytheorems,fancyproofs]{adam}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{tikz-cd}
+
+\setlist[enumerate]{leftmargin=8mm}
+\setlist[itemize]{leftmargin=8mm}
+
+\newcommand{\enumpre}{\vspace{-1.5\baselineskip}}
 
 
 \title{Number Theory}
-
-\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
-\date{\today}
-
-\allowdisplaybreaks
+\author{Adam Kelly -- Mathematical Tripos Part II}
+\date{\today. Email \texttt{ak2316@cam.ac.uk}}
 
 \begin{document}
 
 \maketitle
 
-% This is a short description of the course. It should give a little flavour of what the course is about, and what will be roughly covered in the notes.
+\begin{center}
+\emph{Familiarity with IA Numbers and Sets is assumed.}
+\end{center}
 
-This article constitutes my notes for the `Number Theory' course, held in Michaelmas 2020 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+\section{Divisibility}
+\ 
 
+% \begin{definition}[$\N$ and $\Z$]
+%     We denote by $\N$ the set of \emph{natural numbers} $1, 2, 3, \dots$ and by $\Z$ the set of \emph{integers}.
+% \end{definition}
 
-
-\tableofcontents
-
-\section{Introduction}
-
-Number theory studies the hidden properties of $\Z = \{0, \pm 1, \pm 2, \dots\}$ and $\Q =\{m/n \mid m, n \in Z, n \neq 0 \}$. It has always been an experimental science. Examining numerical data leads to conjectures, many of which are very old and still are unproven today.
-
-\subsection{Some Examples}
-
-Here are some examples of some easy to state but still unsolved problems in number theory.
-
-\begin{enumerate}
-  \item Let $N \geq 1$ be an integer of the form $8n + 5$, $8n + 6$ or $8n + 7$. Then does there exist right angled triangle of area $N$, all of whose sides have rational length?
-  \item Let $\pi(x)$ be the number of primes less than or equal to $x$, and let
-  $$
-  li(x) = \int_2^x \frac{\dd t}{\log t}
-  $$
-  be the logarithmic integral. Then for all $x \geq 3$, $|\pi(x) - li(x)| \leq \sqrt{x} \log x$.
-  \item There are infinitely many primes $p$ such that $p + 2$ is also prime.
-\end{enumerate}
-
-\section{Divisibility} 
-
-\subsection{Euclid's Algorithm}
-
-We begin by recalling some of the basic tools of number theory.
+% \begin{definition}[Division]
+%     For $a, b \in \N$, we say that $b$ \emph{divides} $a$ if there exists $c \in \N$ such that $a = bc$. We then write $b \mid a$. If $b$ does not divide $a$, we write $b \nmid a$. 
+% \end{definition}
 
 \begin{theorem}[Division Algorithm]
-  Given $a, b \in \Z$ with $b > 0$, there exists $q, r \in \Z$ with $a = bq + r$ and $0 \leq r < b$.
+    Given $a, b \in \Z$ with $b > 0$, there exists $q, r \in \Z$ with $a = bq + r$ and $0 \leq r < b$.
 \end{theorem}
 \begin{proof}
-A natural candidate for $r$ would be the minimal non-negative element of $S = \{a - nb \mid n \in \Z\}$, which exists since this set contains \emph{some} non-negative element. Indeed this works since $r < b$ as otherwise $r - b \in S$ would contradict minimality. So $a - bq = r$ for some $q \in \Z$, or $a = bq + r$ as required.
+  Let $S=\{a-n b: n \mathbb{Z}\}$, then $S$ contains some nonnegative integer. Let the smallest be $r$. Then $r<b$, as otherwise $r-b \in S$ would be nonnegative and smaller than $r$. So $a-q b=r$ for some $q \in \mathbb{Z}$, or $a=q b+r$.
 \end{proof}
 
-
-\begin{definition}[Divides]
-  We say that $a$ \vocab{divides} $b$, written $a \mid b$, if there exists $q \in \Z$ such that $b = aq$.
+\begin{definition}
+  If $r = 0$, we write $b \mid a$ (``$b$ \emph{divides} $a$''), otherwise we write $b \nmid a$.
 \end{definition}
 
-Now given a bunch of integers $a_1, \dots, a_n \in \Z$, we can form the set $I = \{\lambda_1 a_1 + \cdots + \lambda n a_n \mid \lambda_i \in \Z\}$, and this is closed under linear combinations of elements. 
+Given $a_1, \dots, a_n \in \Z$ not all zero, let $I = \{\lambda_1 a_1 + \cdots + \lambda_n a_n \mid \lambda_i \in \Z\}$. Then for $a, b \in I$ and $l, m \in \Z$, we have $la + mb \in I$.
 
 \begin{lemma}
-  $I = d\Z = \{m d \mid m \in \Z\}$ for some $d > 0$.
+  $I = d \Z = \{md \mid m \in \Z\}$ for some $d > 0$.
 \end{lemma}
 \begin{proof}
-  Let $d$ be the minimal non-negative element of $I$. Then $d \Z \subset I$. Also for $a \in I$, we can write $a = qd + r$ for some $0 \leq r < d$. But then $a - qd \in I$ so $r \in I$ and since $d$ is minimal, we must have $r = 0$ and thus $a = qd$, and $a \in d \Z$, so $I = d\Z$.
+  Let $d$ be the least positive element in $I$. Then $d\Z \subset I$. Conversely, if $a \in I$, write $a = qd + r$ for some $0 \leq r < a$. If $r = 0$, then $a \in d \Z$. Otherwise, $r = a - qd \in I$ is positive and smaller than $d$, contradiction.
 \end{proof}
 
-In particular, $d \mid a_i$ for all $i$, and if $c \mid a_i$ for all $i$ then $d\Z = I \subset c\Z$ and $c \mid d$.
+In particular, $d \mid a_i$ for all $i$; Conversely, if $c \mid a_i$ for all $i$, then $d \Z = I \subset c \Z$, hence $c \mid d$.
 
-\begin{definition}[Greatest Common Divisor]
-  We write $d = \gcd(a_1, \dots, a_n) = (a_1, \dots, a_n)$, and say $d$ is the \vocab{greatest common divisor} of $a_1, \dots, a_n$.
+\begin{definition}
+  We write $d = \gcd(a_1, \dots, a_n)$ or $(a_1$, $\dots$, $a_n)$ and say $d$ is the \emph{greatest common divisor} of $a_1, \dots, a_n$.
 \end{definition}
 
-The construction of this set $I$ along with our definition of greatest common divisor gives us a nice way to handle linear equations involving integers.
-
-\begin{corollary}[Bézout's Lemma]
-  Suppose $a, b, c \in \Z$ with $a$ and $b$ ot both $0$. Then there exists $x, y \in \Z$ such that $ax + by = c$ if and only if $(a, b) \mid c$.
+\begin{corollary}[Bézout]
+  Suppose $a, b, c \in \Z$ and $a, b$ not both 0. There exists $x, y \in \Z$ such that $ax + by = c$ if and only if $(a, b) \mid c$.
 \end{corollary}
 
-The process of actually finding suitable $x, y$ occurs through the use of Euclid's algorithm.
+% \begin{definition}
+%     The \emph{greatest common divisor} $(a, b)$ of natural numbers $a, b$ is the largest integer $d$ such that $d\mid a$ and $d\mid b$.
+% \end{definition}
+
+% \begin{theorem}
+%     \begin{enumerate}[label=(\roman*)]
+%         \item Every common divisor of $a$ and $b$ divides their greatest common divisor $(a, b)$. 
+%         \item Every common multiple of $a$ and $b$ is a multiple of the least common multiple $[a, b]$.
+%     \end{enumerate}
+% \end{theorem}
+% \begin{proof}
+%     We prove (ii) first. Set $m = [a, b]$ and suppose $\ell > m$ is another common multiple of $a$ and $b$. Then we can write $\ell = qm + r$. If $r \neq 0$, then $r$ is a common multiple of $a$ and $b$ with $r < m$, which is a contradiction. For (i), set $d = (a, b)$ and suppose that $e \mid a$ and $e \mid b$. Then $a$ is a common multiple of $d$ and $e$, so by (ii) it is a multiple of $[d, e]$, as is $b$. Now $[d, e]\mid a$, $[d, e] \mid b$ together with $[d, e] \geq d$ implies $[d, e]=d$. Consequently, $e \mid d$.
+% \end{proof}
+
+% \begin{theorem}
+%     For $a, b \in \N$, $(a, b)[a ,b] = ab$.
+% \end{theorem}
+% \begin{proof}
+%     $ab/(a, b)$ is a common multiple of $a$ and $b$, and so $[a, b] = ab/(a, b)k$ for some $k \in \N$. Then $(a, b)k \mid a$ and $(a, b)k \mid b$ hence $k = 1$. 
+% \end{proof}
+
+% \begin{theorem}\label{thm:4}
+%     If $(a, b) = 1$ and $a \mid bc$, then $a \mid c$.
+% \end{theorem}
+% \begin{proof}
+%     Observe that $bc$ is a common multiple of $a$ and $b$ so $[a, b] \mid bc$ implies $ab \mid bc$, and thus $a \mid c$.
+% \end{proof}
+
+% \begin{theorem}
+%     $S = \{ax + by \mid x, y \in \Z\}$ is precisely the set of multiple of $(a, b)$.
+% \end{theorem}
+% \begin{proof}
+%     Denote by $d$ the smallest element of $S$. Note that if $s, s' \in S$, then $s \pm s' \in S$ and $\lambda s \in S$ for $\lambda \in \Z$. It then follows from the division algorithm that $S$ is precisely the set of multiples of $d$. Then $d \mid a$, $d\mid b$ and $(a, b) \mid ax + by = d$, so $d = (a, b)$.
+% \end{proof}
 
 \begin{theorem}[Euclid's Algorithm]
-Suppose we had $a, b \in \Z_+$ with $a > b$. Then letting $b = r_0$, we can apply the division algorithm repeatedly to get
+Given $a, b\in \N$ with $a > b$, setting $b = r_0>0$ we can repeatedly apply the division algorithm to get
 \begin{align*}
   a &= q_1 r_0 + r_1 \\
   b &= q_2 r_1 + r_2 \\
   r_1 &= q_3 r_2 + r_3 \\
-  &\vdots \\
-  r_{k - 2} &= q_k r_{k - 1} + r_k \\
-  r_{k - 1} &= q_{k + 1}r_k + 0
+  \vdots \\
+  r_{k-1} &= q_{k+1} r_{k} + 0,
 \end{align*}
-where $0 < r_i < r_{i - 1}$ for $i \leq k$. Then $r_k = (a, b)$.
+where $0 < r_i < r_{i - 1}$ for $i \leq k$.
+Then $r_k = (a, b)$.
 \end{theorem}
 \begin{proof}
-  Note that $r_k \mid r_0$ and $r_k \mid a$ so $r_k \mid (a, b)$. Also if there's $m$ such that $m \mid a$ and $m \mid b$, then $m \mid r_k$, hence $(a, b) \mid r_k$, and $r_k = (a, b)$.
+  Note that $r_k \mid r_0$ and $r_k \mid a$, so $r_k \leq (a, b)$. Also if $m \mid a$ and $m \mid b$ then $m\mid r_k$. Hence $(a, b) \leq r_k$, and $(a, b) = r_k$.
 \end{proof}
-
-If $d = (a, b)$, then by Bézout's lemma there exists $r, s \in \Z$ such that $ra + sb = d$. Euclid's algorithm may be used not just to compute $d$ but also to find $r$ and $s$ such that this holds (by substituting backwards).
-
-% \begin{example}
-%   Let $a = 34$ and $b = 25$. We want to compute their greatest common divisor using the Euclidean algorithm. We have
-%   \begin{align*}
-%     34 &= 1 \cdot 25 + 9 \\
-%     25 &= 2 \cdot 9 + 7 \\
-%     9 &= 1 \cdot 7 + 2 \\
-%     7 &= 3 \cdot 2 + 1
-%   \end{align*}
-%   so we can see $(a, b) = 1$. We then substitute back up
-% \end{example}
-
-\subsection{Primes and the Fundamental Theorem of Arithmetic}
-
-The reader will be familiar with the notion of primality. 
-
-\begin{definition}[Prime]
-  An integer $n > 1$ is \vocab{prime} if its only positive divisors are 1 and $n$. Otherwise it's \vocab{composite}.
-\end{definition}
-
-It's well known that there is infinitely many primes, and a standard proof is that of Euclid.
-
-\begin{theorem}[Euclid]
-  There are infinitely many primes.
-\end{theorem}
-\begin{proof}
-  Suppose the set of primes was finite, say $\{p_1, \dots, p_k\}$. Then the number $N = p_1 \cdots p_k + 1$ is not divisible by any number in this set, which would imply that it's prime, but it's not in the set of primes, so we have a contradiction.
-\end{proof}
-
-A useful result when working with primes is \emph{Euclid's lemma}.
 
 \begin{lemma}[Euclid's Lemma]
-  Let $p$ be a prime and $a, b\in \Z$. Then $p \mid ab$ if and only if $p \mid a$ or $p \mid b$.
+  Let $p$ be a prime and let $a, b\in \Z$. Then $p \mid ab$ if and only if $p \mid a$ or $p \mid b$.
 \end{lemma}
 \begin{proof}
-  The forward direction is a matter of definitions. For the converse, suppose $p \mid ab$ and $p \nmid a$. Then $(a, p) \neq p$, but $(a, b) \mid p$, so $(a, b) = 1$. Then by Bézout's lemma we can write $ax + py = 1$ for some $x, y$. Then multiplying by $b$, we get $abx + pby = b$, and since $p$ divides the left side, $p \mid b$ as required.
+  The ``if'' direction is clear. Conversely, suppose $p \mid a b$ yet $p \nmid a$, then $(a, p) \neq p$ but $(a, p) \mid p$ and $p$ is prime, so $(a, p)=1$, therefore there are some integers $n, y$ such that $a x+p y=1$. Now $b=b(a x+p y)=x(a b)+(b y) p \implies p \mid b$
 \end{proof}
 
-It turns out that this gives us unique factorisation.
-
-\begin{theorem}[Fundamental Theorem of Arithmetic]
-  Every $n > 1$ can be written as a product of primes, and this product is unique up to reordering.
+\begin{theorem}[Fundamental Theorem of Arithmetic] 
+  Every $n>1$ can be written a a product of primes. Furthermore, this is unique up to reordering.
 \end{theorem}
 \begin{proof}
-  Existence follows by strong induction. For uniqueness, suppose there is an integer $n$ with two distinct prime factorisations, $n = p_1 \cdots p_r = q_1 \cdots q_s$. Then $p_1 \mid q_i$ for some $i$, and by primality we have $p_1 = q_i$, and we can cancel both factors from our equation. Repeating this for $n/p_1$ and so on, we eventually must have that $\{p_1,\dots,p_r\} = \{q_1, \dots, q_s\}$, as required.
+  Existence follows easily by strong induction. For uniqueness we also use induction. Suppose that $n$ has two prime factorisations $n=p_1 \cdots p_k=q_1 \cdots q_l$. We have $p_1 \mid q_1 \cdots q_k$, so $p_1 \mid q_i$ for some $i$. We can label that prime $q_1$. Hence $p_1=q_1$. So $n / p_1=p_2 \cdots p_k=q_2 \cdots q_l$, and by induction $k=l$ and $p_2=q_2, p_3=q_3$, etc.
 \end{proof}
+% \begin{definition}[Prime]
+% A natural number $n > 1$ is \emph{prime} if it is divisible only by $1$ and itself.
+% \end{definition}
 
-We can use prime factorisations to write down the gcd of two numbers, in that if $n = \prod p_i^{a_i}$ and $m = \prod p_i^{b_i}$, then $(n, m) = \prod p_i^{\min\{a_i, b_i\}}$.
-This isn't really an efficient way to compute the gcd, but it's a good way to think about it. 
+% \begin{theorem}[Fundamental Theorem of Arithmetic]
+%     Every natural number $> 1$ has a unique factorisation into prime numbers. 
+% \end{theorem}
+% \begin{proof}[Proof Sketch]
+% Existence is constructive. For uniqueness, we use \autoref{thm:4} and induction.
+% \end{proof}
+
+\begin{theorem}[Euclid]
+    The number of primes is infinite.
+\end{theorem}
+\begin{proof}
+  If there was finitely many primes, say $p_1, \dots, p_k$, then the number $N = p_1 p_2 \cdots p_k + 1$ would have no prime factors which is a contradiction.
+\end{proof}
 
 \section{Congruences}
 
-\subsection{Modular Arithmetic}
+\ 
 
-It is a common occurrence in number theory that we will consider numbers that differ by a common multiple of a fixed number to be equivalent. This is the idea of congruences (and modular arithmetic).
-
-\begin{definition}[Congruence]
-  Let $n \geq 1$ be an integer. We say that $a$ is \vocab{congruent} to $b$ \vocab{modulo $n$}, written $a \equiv b \pmod n$ if $n \mid a - b$.
+\begin{definition}
+Let $n \geq 1$ be an integer. We say $a$ is \emph{congruent} to $b$ modulo $n$, written $a \equiv b \pmod{n}$, if $n \mid a - b$.
 \end{definition}
 
-This definition naturally induces an equivalence relation on $\Z$, and we write $\Z/n\Z$ for the set of equivalence classes $a + n\Z$. It is easy to check that addition and multiplication are well defined on $\Z/n\Z$, giving rise to modular arithmetic.
-
-\subsection{Modular Inverses}
-
-A frequently used tool in modular arithmetic is that of multiplicative inverses (which more or less allow us to perform some kind of division). 
-
-\begin{definition}[Modular Inverse]
-  Let $a \in \Z/n\Z$. We say that $b$ is a \vocab{modular inverse} of $a$ if $ab \equiv 1 \pmod{n}$. If such an inverse exists, it is denoted $a^{-1}$.
-\end{definition}
-
-We have a straightforward method for knowing if a number has a modular inverse or not, which is quite natural.
-
-\begin{lemma}[Existence of Modular Inverses]
-  Let $a \in \Z$, then the following are equivalent:
-  \begin{enumerate}[label=(\roman*)]
-  \item $(a, n) = 1$
-  \item There exists $b \in \Z$ such that $ab \equiv 1 \pmod{n}$.
-  \item $a + n\Z$ is a generator of $(\Z/n\Z, +)$.
-  \end{enumerate}
-\end{lemma}
-\begin{proof} \emph{(i) implies (ii)}. 
-As $(a, n) = 1$, there exists $b, c \in \Z$ such that $ab + cn = 1$. Taking this modulo $n$ gives us our result. For the other direction, we have $ab = 1 + cn$ for some $c$, which implies $(a, n) = 1$ by Bezout.
+\begin{theorem}
+  There exists $x$ such that $ax \equiv 1 \pmod{n}$ if and only if $(a, n) = 1$.
+\end{theorem}
+\begin{proof}
+    The ``only if'' direction is clear. For the ``if'' direction, by Bézout we can write $ax + ny = 1$ for some $d$, and so $ax \equiv 1 \pmod{n}$ as required.
 \end{proof}
+
+\begin{theorem}[Chinese Remainder Theorem]
+    Given $m_1$, $\dots$, $m_k \in \N$ pairwise coprime, the set of congruences $x \equiv a_i \pmod{m_i}$, $1 \leq i \leq k$, has a unique solution $x$ modulo $M = m_1 \cdots m_k$.
+\end{theorem}
+\begin{proof}
+  Write $M_i=M / m_i$, then $\left(m_i, M_i\right)=1$ for all $i$. Therefore for each $i$ there is a $b_i$ such that $M_i b_i \equiv 1\pmod{m_i}$. We also have $M_i b_i \equiv 0 \pmod{m_j}$ for all $j \neq i$. Take $x=\sum_i a_i b_i M_i$. For uniqueness, if $x, y$ satisfies the system, then $m_i \mid x-y$ for all $i$, therefore $M \mid x-y$ since there is no prime that divides two distinct $m_i$'s.
+\end{proof}
+
+\begin{theorem}[Fermat's Little Theorem]
+  If $a, p \in \Z$ with $p$ prime, then $a^p \equiv a \pmod{p}$.
+\end{theorem}
+\begin{proof}
+  For $p = 2$ this is true. Then for $p \neq 2$, $a^p - (a-1)^p \equiv 1 \pmod{p}$ by the binomial theorem. 
+\end{proof}
+
+\begin{definition}[Euler Totient Function]
+Let $\phi(n)$ denote the number of integers $a$, $1 \leq a \leq n$, with $(a, n) = 1$.
+\end{definition}
+
+\begin{remark}
+  Directly from the definition we get that $\phi(p^k) = p^k - p^{k-1}$ for $p$ prime, that $\phi(n)$ is multiplicative and thus $\phi(n) = n \prod_{p \mid n} (1 - 1/p)$.
+\end{remark}
+
+\begin{theorem}[Euler-Fermat]
+  If $a, n \in \Z$ have $(a, n) = 1$, then $a^{\phi(n)} \equiv 1 \pmod{p}$.
+\end{theorem}
+\begin{proof}
+By Lagrange's theorem (on groups), the order of $a$ in $(\Z/n\Z)^\times$ divides the order of the group, $\phi(n)$.
+\end{proof}
+
+\begin{theorem}[Wilson]
+$(p - 1)! \equiv -1 \pmod{p}$.
+\end{theorem}
+\begin{proof}
+  We can pair up terms in the product $(p-1)!$ with their inverses which then multiply to one, but this leaves only $1$ and $p - 1$ unpaired.
+\end{proof}
+
+\begin{theorem}[Lagrange]
+  Let $p$ be a prime and let $f(x)$ be an integer polynomial of degree $n$. Then $f(x) \equiv 0 \pmod{p}$ has at most $n$ solutions modulo $p$.
+\end{theorem}
+
+\begin{definition}
+  For $a, n \in \Z$ with $n > 0$, the \emph{order} of $a$ modulo $n$ is the least positive integer $d$ such that $a^d \equiv 1 \pmod{n}$. We say that $a$ is a \emph{primitive root} if its order is $\phi(n)$.
+\end{definition}
+
+\begin{theorem}
+There exists a primitive root $\pmod{n}$ if and only if $n = 2, 4, p^j$ or $2p^j$, where $p$ is an odd prime.
+\end{theorem}
+\begin{proof}
+For $n = 2, 4$ this is easy. Suppose $n = p$, a prime. Let $\psi(n)$ count the number of $1, 2, \dots, p - 1$ of order $d$ modulo $p$. Observe that $\psi(d) = 0$ if $d \nmid p - 1$, so $\sum_{d \mid p -1} \psi(d) = p - 1$. If $a$ has order $d$, $\{a, a^2, \dots, a^d\}$ are solutions to $x^d \equiv 1 \pmod{p}$ and hence are all of them by Lagrange. So $\psi(d) \leq \phi(d)$. But $\sum_{d \mid n} \phi(d) = n$ as $\phi(d)$ counts $\{m \mid (m, n) = n/d\}$. Thus $\psi(d) = \phi(d)$ for all $d$. In particular, there are $\phi(p - 1)$ elements of order $p - 1$. Let $g$ be one of them.
+
+If $n = p^j$, $j > 1$, suppose $g$ has orders $p^ks$ modulo $n$, $s \mid p - 1$. By Fermat's Little Theorem $g^{p^k s} \equiv g^s \pmod{p}$, so $s = p - 1$. $g^{p - 1} \equiv 1 \pmod{p^2}$ implies $(g + p)^{p - 1} \equiv 1 + (p - 1)g^{p - 2}p \not \equiv 1 \pmod{p^2}$, so WLOG $g^{p -1} \not \equiv 1 \pmod{p^2}$, thus $g$ is a primitive root mod $p^2$. $g^{p^{j -2} (p - 1)} = (1 + \ell p)^{p^{j - 2}} \equiv 1 + \ell p ^{j - 1} \not \equiv 1 \pmod{p^j}$, so $g$ is also a primitive root mod $p^j$ for all $j \geq 2$. One of $g, g+p^j$ is odd, and thus also serves as a primitive root mod $2p^j$, noting $\phi(2p^j) = \phi(p^j)$.
+
+For the other direction, for $n$ not a prime power, 
+$n = rs$ with $(r, s) = 1$ and $\phi(r), \phi(s)$ both even. $a^{\phi(n)}/2 \equiv a^{\phi(r) \phi(s)/2} \equiv 1$ modulo $r$ and $s$. So $a^{\phi(n)/2} \equiv 1 \pmod{n}$. 
+For $n = 2^j$, $j \geq 3$, $a^2 \equiv 1 \pmod{8}$ for all odd $a$, thus $a^{2^{k + 1}} \equiv (a^2)^{2^k} \equiv 1 \pmod{2^{k + 3}}$.
+\end{proof}
+
+
+\section{Quadratic Residues}
+\ 
+\begin{definition}
+We call $a$ a \emph{quadratic residue} modulo $n$ if there exists $x$ such that $x^2 \equiv a \pmod{n}$.
+\end{definition}
+
+\begin{lemma}
+  Let $p$ be an odd prime. Then there are exactly $(p-1)/2$ quadratic residues modulo $p$.
+\end{lemma}
+\begin{proof}
+  Take $g$ to be a primitive root modulo $p$. Then the set of quadratic residues is exactly $\{g^{2n} \bmod p \mid n \in \Z\}$ which has size $(p-1)/2$.
+\end{proof}
+
+\begin{definition}
+Let $p$ be an odd prime and $a \in \mathbb{Z}$. The \emph{Legendre symbol} is defined as
+  $$
+  \left(\frac{a}{p}\right)=\begin{cases}
+    0 & \text{if } p \mid a, \\
+  1 & \text{if } a \text { is a quadratic residue modulo } p, \\
+  -1 & \text{otherwise}.
+   \end{cases}
+  $$
+\end{definition}
+
+\begin{theorem}[Euler's Criterion]
+  Let $p$ be an odd prime, and $a \in \mathbb{Z}$, then
+  $$
+  \left(\frac{a}{p}\right) \equiv a^{\frac{p-1}{2}} \pmod{p}.
+  $$
+\end{theorem}
+\begin{proof}
+    If $a$ is a quadratic residue, we can write $x^2 \equiv a \pmod{p}$ and then $a^{(p-1)/2}\equiv x^{p-1} \equiv 1\pmod{p}$, as required. 
+    By Lagrange, $a^{(p-1)/2} \equiv 1 \pmod{p}$ has at most $(p-1)/2$ solutions, so if $a$ is not a quadratic residue, we must have $a^{(p-1)/2} \equiv -1 \pmod{p}$. 
+\end{proof}
+
+\begin{corollary}
+  Let $p$ be an odd prime and let $a, b \in \mathbb{Z}$, then
+$$
+\left(\frac{a b}{p}\right)=\left(\frac{a}{p}\right)\left(\frac{b}{p}\right).
+$$
+\end{corollary}
+\begin{corollary}
+  Let $p$ be an odd prime, then
+  $$
+  \left(\frac{-1}{p}\right)=\begin{cases}
+    1 & \text{if } p \equiv 1 \pmod{4}, \\
+  -1 & \text{if } p \equiv 3 \pmod{4}
+   \end{cases}
+  $$
+\end{corollary}
+
+\begin{definition}
+    The \emph{numerically least residue} $a'$ of $a \pmod n$ to $a' \equiv a$ with $-n/2 < a' \leq n/2$. 
+\end{definition}
+
+\begin{theorem}[Gauss' Lemma]
+given an odd prime $p$ and $a$ with $(a, p) = 1$, let $a_j$ denote the numerically least residue of $a_j \pmod{p}$. Then $(a/p) = (-1)^\ell$, where $\ell = |\{j \leq (p-1)/2 \mid a_j < 0\}|$.
+\end{theorem}
+\begin{proof}
+    We have $a_j = \pm a_k$ if and only if $j = \pm k$, so $|a_j|$ takes all values $1, \dots, (p-1)/2$. Hence $\prod_{j \leq (p-1)/2} a_j = (-1)^\ell r!$, so $a^{(p-1)/2} \equiv (-1)^\ell \pmod{p}$. The result then follows from Euler's Criterion.
+\end{proof}
+
+\begin{theorem}[Law of Quadratic Reciprocity]
+If $p, q$ are distinct odd primes, $(p/q) = (q/p)$ unless $p \equiv q \equiv 3 \pmod{4}$, in which case $(p/q) = -(q/p)$. More concisely, $(p/q)(q/p) = (-1)^{((p-1)/2)((q-1)/2)}$.
+\end{theorem}
+\begin{proof}
+    By Gauss' lemma, $(p/q) = (-1)^\ell$, where $\ell$ is the number of lattice points $(x, y)$ satisfying $0 < x< q/2$, $-q/2 < px - qy < 0$. For such points $q(y - 1/2) < px$, so $y < p/2 + 1/2$/ We therefore lose nothing in imposing the extra symmetrising condition $0 < y < p/2$. Similarly $(q/p) = (-1)^m$ where $m$ is the number of lattice points in the rectangle $0 < x < q/2$. $0 < y < p/2$, satisfying $-p/2 < qx - py < 0$ or equivalently $0 < px - qy < p/2$. Now it suffices to prove that $((p-1)/2)((q-1)/2) - (\ell + m)$ is even. But $((p-1)/2)((q-1)/2)$ is just the number of lattice points in our rectangle and we have a bijection between such points with $px - qy \leq -q/2$ and those with $px - qy \geq p/2$ by means of transformation $x' = (q+1)/2 - x$, $y' = (p + 1)/2 - y$. (This does \emph{not} fix the line $px - qy = 0$, so we cannot say the same for our original sets.
+\end{proof}
+
+\begin{definition}
+    For $n$ odd, $(m, n) = 1$, we define the \emph{Jacobi symbol} $(m/n)$ by 
+    $$
+    \left(\frac{m}{p_1^{\alpha_1} \cdots p_k^{\alpha_k}}\right)
+    = \left(\frac{m}{p_1}\right)^{\alpha_1} \cdots \left(\frac{m}{p_k}\right)^{\alpha_k}
+    $$
+    in terms of Legendre symbols.
+\end{definition}
+
+\begin{remark}
+    All of our previously stated theorems hold for Jacobi symbols, though Jacobi symbols are not a test for quadratic residuality, only a computational technique. 
+\end{remark}
+
+\section{Quadratic Forms}
+\ 
+
+\begin{definition}
+    A \emph{binary quadratic form} is a function $f(x, y) = ax^2 + byx + cy^2$, $a, b, c \in \Z$. This may sometimes be represented more simply as $(a, b, c)$. Note that
+    $$
+    f(x, y) = 
+    \begin{pmatrix}
+        x & y
+    \end{pmatrix}
+    \begin{pmatrix}
+        a & b/2 \\ b/2 & c
+    \end{pmatrix} 
+    \begin{pmatrix}
+        x \\ y
+    \end{pmatrix}.
+    $$
+\end{definition}
+
+\begin{definition}
+    A \emph{unimodular substitution} is a transformation $X = px + qy$, $Y = rs + sy$ with $ps - qr = 1$. Equivalently, $\begin{pmatrix}
+        X & Y
+    \end{pmatrix}^\intercal = A \begin{pmatrix}
+        x & y
+    \end{pmatrix}^\intercal,$ with $A \in \SL_2(\Z)$.
+\end{definition}
+
+\begin{definition}
+    Two binary quadratic forms $f$ and $f'$ are \emph{equivalent} of they are related by a unimodular substitution. We then write $f \sim f'$.
+\end{definition}
+
+\begin{definition}
+    $4a f(x, y) = (2ax + by)^2 - dy^2$ where $d = \operatorname{disc}(f) = b^2 - 4ac$ is the \emph{discriminant} of $f$.
+\end{definition}
+
+\begin{theorem}
+    Equivalent forms have the same discriminant.
+\end{theorem}
+\begin{proof}
+We have
+\begin{align*}
+    \operatorname{disc}(f) &= -4\left| \begin{pmatrix}
+        a & b/2 \\ b/2 & c
+    \end{pmatrix}\right|\\ &= -4 \left|\begin{pmatrix}
+        p & q \\ r & s
+    \end{pmatrix}^{\intercal} \begin{pmatrix}
+        a & b/2 \\ b/2 & c
+    \end{pmatrix} \begin{pmatrix}
+        p & q \\ r & s
+    \end{pmatrix}\right|
+\end{align*}
+as $(ps - qr)^2 = 1$, and this is equal to $\operatorname{disc}(f')$.
+\end{proof}
+
+\begin{definition}
+    A binary quadratic form with $d \neq 0$ is \emph{positive definite} if $f(x, y) \geq 0$ for all $x, y$.
+    It's \emph{negative definite} if $f(x, y) \leq 0$, and \emph{indefinite} otherwise. 
+\end{definition}
+
+\begin{theorem}
+    A positive definite form $(a, b, c)$ is equivalent to some \emph{reduced} form satisfying $-a < b \leq a < c$ or $0 \leq b \leq a = c$.
+\end{theorem}
+\begin{proof}
+    Using unimodular substitution $S: (a, b, c) \mapsto (c, -b, a)$ and $T_{\pm}: (a, b, c) \rightarrow (a, b \pm 2a, a \pm b + c)$, if $a > c$. i.e. $S$ to decrease $a$ while keeping $|b|$ fixed. If $a < c$ and $|b| > a$, then use $T_+$ or $T_-$ to decrease $|b|$ whilst keeping $a$ fixed, noting all the while that $a + |b|$ is strictly decreasing so this process must stop. Finally if $b = -a$, apply $T_+$ to get $+a$ and if $a = c$, apply $S$ to get $b > 0$.
+\end{proof}
+
+\begin{theorem}
+    The smallest integer $\neq 0$ represented by a reduced positive definite form $(a, b, c)$ all coprime are $a, c$ and $a - |b| + c$ in that order.
+\end{theorem}
+\begin{proof}
+    $f(0, 0) = 0$. $f(1, 0) = a$, $f(0, 1)= c$, $0 < a \leq c$ since $f$ is reduced. Now, for $|x| \geq |y| > 0$, $f(x, y) \geq a|x|^2 - |b||x|^2 + c|y|^2 = (a - |b|)|x|^2 + c|y|^2 \geq a - |b\ + c$. Similarly if $|y| \geq |x| > 0$, and we can only achieve equality at $(\pm 1, \pm 1)$ and indeed we do.
+\end{proof}
+
+\begin{theorem}
+    No two reduced forms are equivalent.
+\end{theorem}
+
+\begin{proof}
+    By our result on the smallest represented integer, $f \sim f'$ implies $a = a'$ and $c = c'$. Then by equivalent forms having the same discriminant, $d = d'$ hence $b = \pm b'$. If $b = 0$ or $b = b'$ we are done, so suppose $b > 0$ and $(a, b, c) \sim (a, -b, c)$. Then both reduced implies $a < c$ and $|b| < a$, or $b = -a$ (which cannot happen). Now $f, f'$ both satisfy $f(x, y) = a$ if and only if $(x, y) = (\pm 1, 0)$ and $f(x, y) = c$ if and only if $(x, y) = (0, \pm 1)$. so if they are equivalent under substitution $\begin{pmatrix}
+        p & q \\ r & s
+    \end{pmatrix}$ we must have $\begin{pmatrix}
+        p & q \\ r & s
+    \end{pmatrix}\begin{pmatrix}
+        \pm 1 \\ 0
+    \end{pmatrix} = \begin{pmatrix}
+        \pm 1 \\ 0
+    \end{pmatrix}$
+    implying $p = \pm 1, r = 0$ and $\begin{pmatrix}
+        p & q \\ r & s
+    \end{pmatrix}\begin{pmatrix}
+       0 \\ \pm 1
+    \end{pmatrix} = \begin{pmatrix}
+        0 \\\pm 1
+    \end{pmatrix}$ implying $q = 0$, $s = \pm 1$. $\det \begin{pmatrix}
+        p & q \\ r & s
+    \end{pmatrix} = \pm I$ implies $f = f'$ as required.
+\end{proof}
+
+\begin{theorem}
+    There are finitely many reduced forms with discriminant $d$. Indeed, $|b| \leq a \leq \sqrt{d/2}$.
+\end{theorem}
+\begin{proof}
+    $d = b^2 - 4ac \leq ac - 4ac \leq -3a^2$ which implies our claim. $c = (b^2 - d)/4a$.
+\end{proof}
+
+% \begin{definition}
+%     The \emph{class number} $h(d)$ of $d$ is the number of reduced forms of discriminan
+% \end{definition}
+
+\begin{theorem}
+    Given $n \in \N$, $n$ is properly represented by a form $f$, that is $f(x,y) = n$ for some coprime $x, y$
+if and only if $f$ is equivalent to a form $(n, w, c)$ with first coefficient $n$.
+    \end{theorem} 
+\begin{proof}
+    If $f$ is equivalent to this form $f \sim f'$, $f'(1, 0) = n$ so $f(x, y) = n$ properly represented as coprimality is preserved under $\SL_2(\Z)$. 
+    If $f(x, y) = n$ with $(x, y) = 1$ then there exists $q, s$ such that $xs - qy = 1$. Then
+    $$
+    \begin{pmatrix}
+        x \\ y
+    \end{pmatrix} = \begin{pmatrix}
+        x & q \\ y & s
+    \end{pmatrix} \begin{pmatrix}
+        1 \\ 0
+    \end{pmatrix},
+    $$ 
+    so applying this matrix being in $\SL_2(\Z)$ to $f$, we get $f'$ with $f'(1, 0) = n$.
+\end{proof}
+
+\begin{theorem}
+    Given $n \in \N$, $n$ is properly represented by some form of discriminant $d$ if and only if there is a solution $w$ to $w^2 = d\pmod{4n}$. 
+\end{theorem}
+\begin{proof}
+    By the previous theorem, $w^2 - 4nc = d$. Conversely, $w^2 \equiv d\pmod{4n}$ implies there exists $c$ such that $w^2 = d + 4nc$ implies $(n, w, c)$ has discriminant $d$.
+\end{proof}
+
+% primes of the form x^2 + y^2? s
+
+\section{Prime Numbers}
+\ 
+
+\begin{definition}
+The \emph{prime counting function} is $\pi(x)$, the number of primes $\leq x$.
+\end{definition}
+
+\begin{definition}
+    The \emph{Möbius function} $\mu(n)$, $n \in \N$ is such that $\mu(n) = 0$ if $n$ is not squarefree, and $\mu(n) = (-1)^r$ if $n$ is a product of $r$ distinct primes. 
+\end{definition}
+
+Observe that $\sum_{d \mid n} \mu(d) = 0$ for $n> 1$.
+
+\begin{theorem}[Legendre's Formula]
+$\pi(x) - \pi(\sqrt{x}) + 1 = \sum_{d \mid P} \mu(d) \lfloor x/d\rfloor$, where $P$ denotes the product $P = p_1 \cdots p_k$ of primes $\leq \sqrt{x}$.
+\end{theorem}
+\begin{proof}
+    The Eratosthenes sieve up to $\sqrt{x}$ applied to $\{1$, $2$, $\dots$, $x\}$ crosses out all multiples of $p_1, \dots, p_k$ leaving behind only primes $p$ with $\sqrt{x} < p \leq x$ and $1$. The result now follows by the Inclusion-Exclusion principle.
+\end{proof}
+
+\begin{theorem}
+    $\sum_{i = 1}^{\infty} 1/p_i$ diverges.
+\end{theorem}
+\begin{proof}
+    Otherwise, there exists $k$ such that the truncated series $\sum_{i > k} 1/p_i < 1/2$. Set $P = p_1 \cdots p_k$ and observe that every number equivalent to $1\pmod{p}$ can be factorised as a product of $j$ of the primes $P_{k+1}, p_{k+2}, \dots$ for some $j$. Hence
+    $$
+    \sum_{n \equiv 1 \bmod{p}} \frac{1}{n} \leq \sum_{j = 1}^{\infty} \left(\sum_{i = k + 1}^{\infty} \frac{1}{p_i}\right)^j \leq \sum_{j = 1}^{\infty} \left(\frac{1}{2}\right)^j = 1,
+$$
+which is a contradiction.
+\end{proof}
+
+
+\begin{theorem}
+    $\prod_{p \leq n} p \leq 4^n$.
+\end{theorem}
+\begin{proof}
+The proof is by induction, observing 
+$$
+\prod_{n < p \leq 2n} p \mid \binom{2n}{n} \leq 2^{2n} = 4^n.
+$$
+\end{proof}
+
+\begin{corollary}
+    $\pi(x) \leq x \log 4/\log x$.
+\end{corollary}
+
+\begin{theorem}[Prime Number Theorem]
+$\pi(x) \sim \frac{x}{\log x}$.
+\end{theorem}
+
+\begin{definition}
+    The \emph{Riemann zeta function} is defined for $s = \sigma + it$ for $\sigma > 1$ by
+        $\zeta(s) = \sum_{n = 1}^\infty n^{-s}$.
+\end{definition}
+
+\begin{theorem}[Euler Product]
+$\zeta(s) = \prod_p (1 - p^{-s})^{-1}$, $\sigma > 1$.
+\end{theorem}
+\begin{proof}
+    For any $N$, $\prod_{p \leq N} (1 - p^{-s})^{-1} = \prod_{p \leq N} (1 + p^{-s}+ p^{-2s} + \cdots) = \sum_m m^{-s}$, where $m$ runes through all integers with no prime factors $> N$. the difference between this and $\sum_{n \leq N} n^{-s}$ is bounded in absolute value by $\sum_{n > N} n^{-\sigma} \rightarrow 0$ as $N \rightarrow \infty$.
+\end{proof}
+
+\begin{theorem}
+There are infinitely many primes in the arithmetic progression $a$, $a + d$, $\dots$ provided $(a, d) = 1$.   
+\end{theorem}
+
+\section{Diophantine Approximation}
+\ 
+
+\begin{theorem}[Dirichlet]
+Given $\theta \in \R$, $N \in \N$, there exists integers $p, q$ with $q \leq N$ such that $|\theta - p/q| \leq 1/q^N \leq 1/q^2$.
+\end{theorem}
+\begin{proof}
+    Two of $\theta$, $2\theta$, $\dots$, $N\theta$ must differ by $\leq 1/N$ modulo 1. Their difference $q \theta$ differs from some $p$ by $\leq 1/N$.
+\end{proof}
+
+\begin{definition}
+    Given $\theta \in \R$, define $a_0 = \lfloor \theta \rfloor$, $\theta_1 = \frac{1}{\theta - a_0}$, $a_1 = \lfloor \theta_1 \rfloor$, $\theta_2 = \frac{1}{\theta_1 - a_1}$, etc. terminating if some $\theta_i$ is an integer. Then
+    $$
+    \theta = a_0 + \frac{1}{a_1 + \frac{1}{a_2 +\cdots}}
+    $$
+    is the \emph{continued fraction} representation of $\theta$. The integers $a_i$ are called \emph{partial quotients} of $\theta$, and we write $\theta = [a_0, a_1, \dots]$. $p_n/q_n = [a_0, a_1, \dots, a_n]$ are called \emph{convergents}.
+\end{definition}
+
+\begin{theorem}
+    (i) The $p_n, q_n$ satisfy the recurrence relations
+    \begin{align*}
+        p_n &= a_n p_{n-1} + p_{n-2}, \\
+        q_n &= a_n q_{n - 1} + q_{n-2},
+    \end{align*}
+    with $p_0 = a_0$ and $q_0 = 1$, $p_1 = a_0 a_1 + 1$ and $q_1 = a_1$. 
+    (ii) $|p_{n-1}/q_{n-1} - p_n/q_n| = \frac{1}{q_{n - 1}q_n}$. (iii) $\theta$ lies in $[p_{n-1}/q_{n-1}, p_n/q_n]$ and thus $|\theta - p_n/q_n| \leq 1/q_n^2$.
+\end{theorem}
+\begin{proof}
+    (i) We check this is true for $n = 2$.
+    Then supposing it is true for $n = m - 1 \geq 2$, we observe $p_j/q_j = a_0 + q_j'/p_j'$, where $p_j'/q_j' = [a_1, a_2, \dots, a_j]$. Then $p_j = a_0 p_j' + q_j'$ and $q_j = p_j'$ expanded implies our result. (ii) $p_n q_{n +1} - p_{n+1}q_n = (-1)^{n + 1}$ follows from (i) by induction.
+    (iii) Observe $\theta = [a_0, a_1, \dots, a_n, \theta_{n + 1}]$ and $0 < 1/\theta_{n + 1} \leq 1/a_{n + 1}$ so $\theta$ lies in the interval $[p_n/q_n$, $p_{n +1}/q_{n+1}]$ and this with the other results gives the stated bound.
+\end{proof}
+
+\begin{theorem}
+    The continued fractions process terminates if $\theta$ is rational.
+\end{theorem}
+\begin{proof}
+    If $\theta = a/b$ then $1/q_n^2 \geq |\theta - p_n/q_n| \geq 1/q_n b$ for $p_n/q_n \neq a/b$, so $q_n$ may never exceed $b$. The partial quotients $a_0, a_1, \dots$ are in fact the $q_i$ of Euclid's algorithm on $(a, b)$.
+\end{proof}
+
+\begin{theorem}
+$\theta = \frac{p_n \theta_{n + 1} + p_{n - 1}}{q_n \theta_{n + 1} + q_{n - 1}}$ from $\theta = [a_0$, $\dots$, $a_n$, $\theta_{n + 1}]$. The $p_n/q_n$ give successively better approximations of $\theta$ as $n$ increases.  
+\end{theorem}
+\begin{proof}
+  Multiplying up $|q_n \theta - p_n|$, we find that it equals $(q_n \theta_{n + 1}+q_{n - 1})^{-1}$ and the denominator of the latter exceeds $q_n + q_{n - 1} = (a_n + 1)q_{n - 1} + q_{n - 2} > q_{n - 1} \theta_n + q_{n - 2}$.
+\end{proof}
+
+\begin{theorem}
+  If $0 < q< q_{n + 1}$, $|q \theta - p| \geq |q_n \theta - p_n|$.
+\end{theorem}
+\begin{proof}
+  Define $u$, $v$ by $p = u p_n + v p_{n + 1}$, $q = u q_n + v q_{n + 1}$. Solving by multiplying the former by $q_{n + 1}$ and the latter by $p_{n + 1}$ and $q_n$, $p_n$ respectively observe that $u, v$ are integers. $|q \theta -  p| = |u(q_n \theta - p_n) + v(q_{n + 1} \theta - p_{n + 1})| \geq |q_n \theta - p_n|$ as $u \neq 0$ and $\operatorname{sgn}(v) \neq \operatorname{sgn}(u)$.
+\end{proof}
+
+\begin{theorem}
+  If rational $p/q$ satisfies $|\theta - p/q| < \frac{1}{2q^2}$, then it is convergent to $\theta$.
+\end{theorem}
+\begin{proof}
+  Suppose $q_n < q< q_{n + 1}$. Then $|p/q - p_n/q_n| \leq |\theta - p/q| + |\theta - p_n /q_n| \leq 2 |q \theta - p|/q_n < 1/q q_n$, which is a contradiction.
+\end{proof}
+
+\begin{definition}
+  The equation $x^2 - dy^2 = 1$, where $d$ is a positive integer which is not a square is known as \emph{Pell's equation}.
+\end{definition}
+
+\begin{theorem}
+  If $(x, y)$ is a solution to the Pell equation $x^2 - dy^2 = 1$, then $x/y$ must be a convergent to $\sqrt{d}$.
+\end{theorem}
+\begin{proof}
+  $(x - y \sqrt{d})(x + y \sqrt{d}) = 1$ implies $x - y \sqrt{d} = \frac{1}{x + y \sqrt{d}}$. Certainly $x > y \sqrt{d}$, whence $x - y \sqrt{d} < \frac{1}{2y \sqrt{d}}$ and thus $|\sqrt{d} - x/y| < \frac{1}{2y^2}$. The previous theorem hen gives us our result.
+\end{proof}
+
+\begin{theorem}
+  If $(x, y)$ is the solution of $x^2 - dy^2 = 1$ with $x + y \sqrt{d}$ minimal, then every solution is given by $(x_n, y_n)$, where $x_n + y_n \sqrt{d} = (x + y \sqrt{d})^n$ for some $n$.
+\end{theorem}
+\begin{proof}
+  Denoting $x + y \sqrt{d} \in \R$ by $\varepsilon > 1$, suppose to the contrary we have a solution $(a, b)$ with $\varepsilon^k < a + b \sqrt{d} < \varepsilon^{k + 1}$. Define $N(a + b\sqrt{d}) = a^2 - db^2$ and observe that $N(\alpha \beta) = N(\alpha)N(\beta)$, $N(\varepsilon) = 1 = N(\varepsilon^{-k}(a + b \sqrt{d}))$, where $\varepsilon^{-1} = x - y \sqrt{d}$, which gives us a contradiction.
+\end{proof}
+
+\begin{definition}
+  $\alpha \in \R$ or $\C$ is \emph{algebraic} if it is the root of a polynomial with integer coefficients. If $P(\alpha) = 0$ with $P$ irreducible and $\deg P = n$ then $\alpha$is said to have \emph{degree} $n$. Non-algebraic numbers are called \emph{trancendental}.
+\end{definition}
+
+\begin{theorem}[Liouville's Theorem]
+If $\alpha \in \R$ is algebraic of degree $n > 1$, there exists $c$ depending on $\alpha$ such that $|\alpha - p/q| > c/q^n$ for all $p/q \in \Q$.
+\end{theorem}
+\begin{proof}
+  Observe $P(\alpha) - P(p/q) = (\alpha - p/q)p'(\xi)$ for some $\xi$ between $\alpha$ and $p/q$. Choose $P$ to be the minimal polynomial of $\alpha$, so $P(\alpha) = 0$ and $P$ irreducible implies $0 \neq |P(p/q)| \geq 1/q^n$. WLOG $|\alpha - p/q| < p$ and choose $C$ so that $|P'(\xi)| < C$ for $|\xi - \alpha| < 1$. Then $|\alpha - p/q| \geq c/q^n$ with $c = 1/C$.
+\end{proof}
+
+\section{Primality Testing}
+\ 
+
+\begin{definition}
+    If $n$ is an odd composite number and $(b, n) = 1$, then $n$ is a \emph{Fermat pseudoprime} to the base $b$ if $b^{n - 1} \equiv 1 \pmod{n}$. If it is a pseudoprime to every $b$, then it is a \emph{Carmichael number}.
+\end{definition}
+
+\begin{theorem}
+  Let $N >1$. If $N$ is not a Fermat pseudoprime to some base $b_0$, then it is not a Fermat pseudoprime to base $b$ for at least half of $b$ coprime to $N$.
+\end{theorem}
+\begin{proof}
+The set $B$ of integers $1 \leq b < N$ such that $(b, N) = 1$ where $N$ is a Fermat pseudoprime to base $b$ is clearly a subgroup of $(\mathbb{Z} / N Z)^{\times}$. It's proper as $b_0 \in(\mathbb{Z} / N Z)^{\times}$is not in $B$. Consequently $|B| \leq\left|(\mathbb{Z} / N Z)^{\times}\right| / 2$ which concludes the proof.
+\end{proof}
+
+\begin{definition}
+Let $b \in \mathbb{N}$. An odd composite integer $N>1$ is said to be an Euler pseudoprime to base $b$ if $b^{(N-1) / 2} \equiv\left(\frac{b}{N}\right) \mod{N}$.
+\end{definition}
+
+\begin{theorem}
+ Let $N >1$. If $N$ is not an Euler pseudoprime to some base $b_0$, then it is not a Euler pseudoprime to base $b$ for at least half of $b$ coprime to $N$. 
+\end{theorem}
+\begin{proof}
+  Same as the corresponding theorem for Fermat pseudoprimes.
+\end{proof}
+
+% \begin{theorem}
+%     If $n$ is Carmichael, then it is squarefree and for every $p \mid n$, $p-1\mid n-1$.
+% \end{theorem}
+
+
 
 \end{document}
