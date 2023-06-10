@@ -1,0 +1,583 @@
+\documentclass[a4paper]{scrartcl}
+
+\usepackage[
+    fancytheorems, 
+    fancyproofs, 
+    noindent, 
+]{adam}
+
+
+\title{Logic and Set Theory}
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{\today}
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+% This is a short description of the course. It should give a little flavour of what the course is about, and what will be roughly covered in the notes.
+
+This article constitutes my notes for the `Logic and Set Theory' course, held in Lent 2023 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+
+
+
+\tableofcontents
+
+\section{Propositional Logic}
+
+\subsection{Languages}
+
+We begin our study of logic by looking at \emph{propositional logic}.
+
+\begin{definition}[Language]
+  Let $P$ be a set of \vocab{primitive propositions}. Unless otherwise stated, $P = \{p_1$, $p_2, \dots\}$. The \vocab{language} $L$ or $L(P)$ is defined inductively by
+  \begin{enumerate}
+    \item If $p \in P$, then $p \in L$.
+    \item $\bot \in L$ (where we read $\bot$ as `false')
+    \item If $p, q \in L$ then $(p \Rightarrow q) \in L$.
+  \end{enumerate}
+\end{definition}
+
+We note every \vocab{proposition} (member of $L$) is a finite string of symbols from the alphabet $\{(,),\Rightarrow, \bot, p_1, p_2, \dots\}$. Brackets here are only given for clarity.
+
+When we define the above inductively, we are more precisely doing the following. Let $L_1 = P \cup \{\bot\}$. We then define $L_{n + 1} = L_n \cup \{(p \Rightarrow q) \mid p, q \in L_n\}$. We then set $L = \bigcup_{n = 1}^{\infty} L_n$. We can then note that the introduction rules for the language are injective and have disjoint ranges, so there is exactly one way in which any element of the language can be constructed from the rules above.
+
+We can then introduce the abbreviations $\lnot$ (not), $\land$ (and), and $\lor$ (or) defined by 
+$$
+\lnot p = (p \Rightarrow \bot); \quad p \land q = \lnot(p \Rightarrow \lnot q); \quad p \lor q = \lnot p \Rightarrow q.
+$$
+
+\subsection{Semantic Implication}
+
+We are now going to think about assigning some sort of `true' or `false' values to propositions. We will do this through a \emph{valuation function}.
+
+\begin{definition}[Valuation]
+  A \vocab{valuation} is a function $v : L \rightarrow \{0, 1\}$ (where we think of $0$ as false and 1 as true) such that
+  \begin{enumerate}
+    \item $v(\bot) = 0$
+    \item $v(p \Rightarrow q) = 0$ if $v(p) = 1$ and $v(q) = 0$, and $1$ otherwise.
+  \end{enumerate}
+\end{definition}
+
+% \begin{remark}
+%   We could put a structure on $\{0, 1\}$ where we define the constant $\bot = 0$ and define the operation $\Rightarrow$ in the obvious way. Then a valuation would be a homomorphism from $L$ to this structure on $\{0, 1\}$. 
+% \end{remark}
+
+One would imagine that it is sufficient to know how a valuation acts on the primitives as they then build up our language, in a similar way to how linear maps have their action pinned down by basis vectors. This is indeed the case.
+
+\begin{proposition}[Valuations Defined on Primitives]~
+  \vspace{-1.5\baselineskip}
+  \begin{enumerate}[label=(\roman*)]
+    \item Let $v, v' : L \rightarrow \{0, 1\}$ be valuations that agree on the primitives $p_i$. Then $v = v'$.
+    \item Any function $w: P \rightarrow \{0, 1\}$ extends to a valuation.
+  \end{enumerate}
+\end{proposition}
+\begin{proof}(i) Clearly $v, v'$ agree on $L_1$. Then if they agree on $p, q$, they agree on $p \Rightarrow q$. So by induction they agree on $L_n$ for all $n$, and hence on $L$.
+
+  (ii) Let $v(p) = w(p)$ for all $p \in P$, and $v(\bot) = 0$ to obtain $v$ on the set $L_1$. Assuming $v$ is defined on $p, q$ we can define it at $p\Rightarrow q$ in the obvious way. This defines $v$ on all of $L$.
+\end{proof}
+
+\begin{definition}[Tautology]
+  A \vocab{tautology} is an element $t \in L$ such that $v(t) = 1$ for any valuation $v$. We write $\models t$.
+\end{definition}
+
+Some examples of tautologies are $p \Rightarrow (q \Rightarrow p)$ and $\lnot \lnot p \Rightarrow p$.
+
+\begin{definition}[Semantic Implication]
+  Let $S \subseteq L$ and $t \in L$. We say $S$ \vocab{entails} or \vocab{semantically implies} $t$, written $S \models t$, if $v(t) = 1$ whenever $v(s) = 1$ for all $s \in S$.
+\end{definition}
+\begin{definition}[Model]
+  We say that $v$ is a \vocab{model} of $S$ in $L$ if $v(s) = 1$ for all $s \in S$.
+\end{definition}
+
+So the statement $S \models t$ is the statement that every model of $S$ is also a model of $t$. We also note that the notation $\models t$ is equivalent to $\emptyset \models t$.
+
+\subsection{Syntactic Implication}
+
+For a notion of proof, we require a system of axioms and deduction rules.
+
+\begin{axiom}[Axiom Scheme]~
+  \vspace{-1.5\baselineskip}
+  \begin{enumerate}
+    \item $p \Rightarrow (q \Rightarrow p)$ for all $p, q \in L$;
+    \item $[p \Rightarrow (q \Rightarrow r)] \Rightarrow [(p \Rightarrow q) \Rightarrow (p \Rightarrow r)]$ for all $p, q \in L$;
+    \item $(\lnot \lnot p) \Rightarrow p$ for all $p \in L$.
+  \end{enumerate}
+\end{axiom}
+
+Each of the axioms above are really axiom schemes, since each is actually a set of axioms. Each of these are also tautologies, as one would hope.
+
+For our deduction rules, we will only have \vocab{modus ponens}: from each $p$ and $p \Rightarrow q$ we can deduce $q$.
+
+\begin{definition}[Syntactic Implication/Proof]
+  For $S \subseteq L$, and $t \in S$ we say $S$ \vocab{proves} or \vocab{syntactically implies} $t$, written $S \vdash t$, if there exists a sequence $t_1, \dots, t_n$ with $t_n = t$ in $L$ such that every $t_i$ is either an axiom, a member of $S$ or $q$ where $t_j = p$ and $t_k = p \Rightarrow q$ and $j, k < i$.
+
+  We say that $S$ is the set of \vocab{premises} or \vocab{hypotheses}, and $t$ is the \vocab{conclusion}.
+\end{definition}
+
+\begin{example}
+  We will prove $\{p\Rightarrow q, q \Rightarrow r\} \vdash p \Rightarrow r$.
+
+  \begin{enumerate}
+    \item $q \Rightarrow r$ (hypothesis)
+    \item $(q \Rightarrow r) \Rightarrow(p \Rightarrow(q \Rightarrow r))$ (axiom 1)
+    \item $p \Rightarrow(q \Rightarrow r)$ (modus ponens on lines 2, 3)
+    \item $[p \Rightarrow(q \Rightarrow r)] \Rightarrow[(p \Rightarrow q) \Rightarrow(p \Rightarrow r)]$ (axiom 2)
+    \item $(p \Rightarrow q) \Rightarrow(p \Rightarrow r)$ (modus ponens on lines 3, 4)
+    \item $p \Rightarrow q$ (hypothesis)
+    \item $p \Rightarrow r$ (modus ponens on lines 5, 6$)$
+  \end{enumerate}
+\end{example}
+
+\begin{definition}[Theorem]
+  If $\emptyset \vdash t$, we say that $t$ is a \vocab{theorem}, written $\vdash t$.
+\end{definition}
+
+\begin{example}
+  We will prove the theorem $\vdash (p \Rightarrow p)$.
+
+  \begin{enumerate}
+    \item $(p \Rightarrow((p \Rightarrow p) \Rightarrow p)) \Rightarrow((p \Rightarrow(p \Rightarrow p)) \Rightarrow(p \Rightarrow p))$ (axiom 2)
+    \item $p \Rightarrow((p \Rightarrow p) \Rightarrow p)$ (axiom 1)
+    \item $(p \Rightarrow(p \Rightarrow p)) \Rightarrow(p \Rightarrow p)$ (modus ponens on lines 1, 2)
+    \item $p \Rightarrow(p \Rightarrow p)$ (axiom 1)
+    \item $p \Rightarrow p$ (modus ponens on lines 3, 4)
+  \end{enumerate}
+\end{example}
+
+\subsection{The Deduction Theorem}
+
+Often, showing $S \vdash p$ is made easier by the idea that provability corresponds to the connective `$\Rightarrow$' in $L$. This is formalised in the deduction theorem.
+
+\begin{theorem}[Deduction Theorem]
+  Let $S \subseteq L$ and $p, q \in L$. Then $S \vdash (p \Rightarrow q)$ if and only if $S \cup \{p\} \vdash q$. 
+\end{theorem}
+\begin{proof}
+  Proof. For the forward direction, given a proof of $p \Rightarrow q$ from $S$, add the line $p$ by hypothesis and deduce $q$ from modus ponens, to obtain a proof of $q$ from $S \cup\{p\}$.
+
+Conversely, suppose we have a proof of $q$ from $S \cup\{p\}$. Let $t_1, \ldots, t_n$ be the lines of the proof. We will prove that $S \vdash\left(p \Rightarrow t_i\right)$ for all $i$.
+\begin{itemize}
+  \item If $t_i$ is an axiom, we write $t_i$ (axiom); $t_i \Rightarrow\left(p \Rightarrow t_i\right.$) (axiom 1); $p \Rightarrow t_i$ (modus ponens).
+  \item If $t_i \in S$, we write $t_i$ (hypothesis); $t_i \Rightarrow\left(p \Rightarrow t_i\right.$) (axiom 1); $p \Rightarrow t_i$ (modus ponens).
+  \item If $t_i=p$, we write the proof of $\vdash p \Rightarrow p$ given above.
+  \item Suppose $t_i$ is obtained by modus ponens from $t_j$ and $t_k=t_j \Rightarrow t_i$. We may assume by induction that $S \vdash p \Rightarrow t_k$ and $S \vdash p \Rightarrow\left(t_j \Rightarrow t_i\right)$. We write
+  \begin{enumerate}
+    \item $\left(p \Rightarrow\left(t_j \Rightarrow t_i\right)\right) \Rightarrow\left(\left(p \Rightarrow t_j\right) \Rightarrow\left(p \Rightarrow t_i\right)\right)$ (axiom 2)
+    \item $\left(p \Rightarrow t_j\right) \Rightarrow\left(p \Rightarrow t_i\right)$ (modus ponens)
+    \item $p \Rightarrow t_i$ (modus ponens)
+  \end{enumerate}
+  giving $S \vdash p \Rightarrow t_i$.
+\end{itemize}
+\end{proof}
+
+\begin{example}[Using the Deduction Theorem]
+  To show $\{p \Rightarrow q, q \Rightarrow r\} \vdash p \Rightarrow r$, the deduction theorem says that it's sufficient to show that $\{p, p\Rightarrow q, q \Rightarrow r\} \vdash r$, which is just modus ponens twice.
+\end{example}
+
+\subsection{The Completeness Theorem}
+
+A natural question is how are $\models$ and $\vdash$ related? This is answered by the \emph{completeness theorem}, which says that $S \models t \iff S \vdash t$. This is made up of the \emph{soundness} statement, $S \vdash t \Rightarrow S \models t$ (which informally says `our axioms and deduction rule are not silly'), and the \emph{adequacy statement}, $S \models t \Rightarrow S \vdash t$ (which informally says `our axioms are strong enough to deduce from $S$ every semantic consequence of $S$').
+
+\begin{proposition}[Soundness]
+  Let $S \subseteq L$, $t \in L$. Then $S \vdash t$ implies that $S \models t$.
+\end{proposition}
+\begin{proof}
+  We have a proof $t_1, \dots, t_n$ of $t$ from $S$. So we must show that every model of $S$ is a model of $t$. So let $v$ be a valuation with $v(s) = 1$ for all $s \in S$. Then $v(p) = 1$ for each axiom $p$, and for each $p \in S$< whenever $v(p) = v(p \Rightarrow q) = 1$, we have $v(q)$. So $v(t_i) = 1$ for all $i$ (by induction).
+\end{proof}
+
+Now let's think about adequacy in the case of $t = \bot$. If our axioms are adequate, $S \models \bot$ implies $S \vdash \bot$, so $S \not \vdash \bot$. We say that $S$ is \vocab{consistent} if $S \not \vdash \bot$. Therefore, in an adequate system, if $S$ has no models then $S$ is inconsistent.
+Equivalently, if $S$ is consistent then it has a model.
+
+The idea that consistent axiom sets have a model actually implies adequacy in general. Indeed, if $S \models t$, then $S \cup \{\lnot t\}$ has no models, and so it is inconsistent by assumption. Then $S \cup \{\lnot t\} \vdash \bot$, so $S \vdash \not t \Rightarrow \bot$ by the deduction theorem, giving $S \vdash t$ by our third axiom.
+
+So we want to construct a model of $S$, given that we know that $S$ is consistent. We would like to write down $v(t) = 1$ if $t \in S$ and $0$ otherwise, but this doesn't work on the set $S = \{p_1, p_1 \Rightarrow p_2 \}$ (as it would evaluate $p_2$ to false). It seems like we have a closure issue.
+
+\begin{definition}[Deductive Closure]
+  We say a set $S \subseteq L$ is \vocab{deductively closed} if $p \in S$ whenever $S \vdash p$. Any set $S$ has a \vocab{deductive closure}, which is the (deductively closed) set of statements $\{t \in L \mid S \vdash t\}$ that $S$ proves. 
+\end{definition}
+
+If $S$ is consistent, then the deductive closure of $S$ is also consistent. Computing the deductive closure before the valuation solves the problem for our problematic example above, but if a primary proposition $P$ is not in $S$ but $\not p$ is not in $S$, this technique still does not work (as it would assign false to both $p$ and $\lnot p$). This is our only other issue it turns out, and to fix it we try to extend $S$ by `swallowing up', for each $p$, one of $p$ and $\lnot p$.
+
+\begin{lemma}
+[Model Existence]
+Every consistent $S \subseteq L$ has a model.
+\end{lemma}
+\begin{proof}
+  First we note that for any consistent $S \subseteq L$ and $p \in L$, $S \cup \{p\}$ or $S \cup \{\lnot p\}$ is consistent\footnote{If not, then $S \cup \{p\} \vdash \bot$ and $S \cup \{\lnot p\} \vdash \bot$ so $S \vdash (p \Rightarrow \bot)$, that is, $S \vdash (\lnot p)$. Hence from $S \cup \{\lnot p\} \vdash \bot$ we obtain $S \vdash \bot$.}. Now since $L$ is countable, we can list it as $t_1, t_2, \dots$ Let $S_0 = S$, $S_1 = S_0 \cup \{t_1\}$ or $S_0 \cup \{\lnot t_1\}$ (so that $S_1$ is consistent), and continue on. Then set $\overline{S} = S_0 \cup S_1 \dots$. Then for all $t \in L$, either $t \in \overline{S}$ or $(\not t) \in \overline{S}$.
+
+  We can easily see inductively (since proofs are finite) that $\overline{S}$ is consistent, and also that $\overline{S}$ is deductively closed (as otherwise we'd have introduced an inconsistency). So we now define $v: L \rightarrow \{0, 1\}$ by
+  $$
+  v(t) = \begin{cases}
+        1 & t \in \overline{S}\\
+        0 & \text{otherwise}
+       \end{cases}.
+  $$
+We are then left only to show that $v$ is indeed a valuation. To see $v(\bot) = 0$, we note $\overline{S}$ consistent implies that $\bot \not \in \overline{S}$. 
+
+Suppose $v(p)=1, v(q)=0$. Then $p \in \bar{S}$ and $q \notin \bar{S}$, and we want to show $(p \Rightarrow q) \notin \bar{S}$. If this were not the case, we would have $(p \Rightarrow q) \in \bar{S}$ and $p \in \bar{S}$, so $q \in \bar{S}$ as $\bar{S}$ is deductively closed.
+
+Now suppose $v(q)=1$, so $q \in \bar{S}$, and we need to show $(p \Rightarrow q) \in \bar{S}$. Then $\bar{S} \vdash q$, and by axiom 1 , $\bar{S} \vdash q \Rightarrow(p \Rightarrow q)$. Therefore, as $\bar{S}$ is deductively closed, $(p \Rightarrow q) \in \bar{S}$.
+
+Finally, suppose $v(p)=0$, so $p \notin \bar{S}$, and we want to show $(p \Rightarrow q) \in \bar{S}$. We know that $\neg p \in \bar{S}$, so it suffices to show that $p \Rightarrow \bot \vdash p \Rightarrow q$. By the deduction theorem, this is equivalent to proving $\{p, p \Rightarrow \bot\} \vdash q$, or equivalently, $\bot \vdash q$. But by axiom $1, \bot \Rightarrow(\neg q \Rightarrow \bot)$ where $(\neg q \Rightarrow \bot)=\neg \neg q$, so the proof is complete by axiom 3.
+\end{proof}
+
+\begin{corollary}[Adequacy]
+  Let $S \subseteq L$, $t \in L$. Then $S \models t$ implies that $S \vdash t$. 
+\end{corollary}
+
+And with this we have shown our desired result.
+
+\begin{theorem}[Completeness Theorem for Propositional Logic]
+  Let $S \subseteq L$ and $t \in L$. Then $S \models t$ if and only if $S \vdash t$.
+\end{theorem}
+\begin{proof}
+  Follows from soundness and adequacy.
+\end{proof}
+
+From the completeness theorem we get with no work a series of interesting consequences.
+
+\begin{theorem}[Compactness Theorem]
+  Let $S \subseteq L$ and $t \in L$ with $S \models t$. Then there exists a finite subset $S' \subseteq S$ such that $S' \models t$.
+\end{theorem}
+\begin{proof}
+  This follows directly from the completeness theorem, since proofs depend on only finitely many hypotheses in $S$.
+\end{proof}
+
+\begin{corollary}[Compactness Theorem Equivalent Form]
+  Let $S \subseteq L$. Then if every finite subset $S' \subseteq S$ has a model, then $S$ has a model. 
+\end{corollary}
+
+\begin{theorem}[Decidability]
+  Let $S \subseteq L$ and $t \in L$. Then there is an algorithm to decide (in finite time) if $S \vdash t$.
+\end{theorem}
+\begin{proof}
+  Trivial by replacing $\vdash$ with $\models$, by drawing the relevant truth tables.
+\end{proof}
+
+
+\section{Well Ordering and Ordinals}
+
+\subsection{Well Orderings}
+
+Time to jump away from logic for a bit and look at some set theory. We will begin by talking about orderings on sets.
+
+\begin{definition}[Total Order]
+  A \vocab{total order} or \vocab{linear order} is a pair $(X, <)$ where $X$ is a set, and $<$ is a relation on $X$ that is
+  \begin{enumerate}[label=(\roman*)]
+    \item \emph{irreflexive}: for all $x \in X$, $x \not< x$;
+    \item \emph{transitive}: for all $x, y, z \in X$, $x < y$ and $y < z$ implies $x < z$;
+    \item \emph{trichotomous}: for all $x, y \in X$, either $x < y$, $y < x$ or $x = y$. 
+  \end{enumerate}
+\end{definition}
+
+We also use the standard notation $y > x$ to mean $x < y$, and $x \leq y$ if $x < y$ or $x = y$. We can instead have defined a total order in terms of $\leq$ in the obvious way (with reflexivity, transitivity, antisymmetry and trichotomy). We say that two total orders $X$, $Y$ are \vocab{isomorphic} if there exists a bijection $f: X \rightarrow Y$ such that $x < y$ if and only if $f(x) < f(y)$.
+
+\begin{example}[Examples and Non-Examples of Total Orders]
+  $(\N, <)$, $(\Q, \leq)$ and $(\R, \leq)$ are all total orders. $\N^+$ under `divides' is \emph{not} a total order, and neither is $(\mathcal{P}(S), \subseteq)$.
+\end{example}
+
+\begin{definition}[Well Ordering]
+  A total order $(X, <)$ is a \vocab{well ordering} if every (non-empty) subset of $X$ has a least element.
+\end{definition}
+
+\begin{example}[Examples and Non-Examples of Well-Orderings]
+$(\N, <)$ is a well ordering, but $(\Z, <)$, $(\Q, <)$ and $(\R, <)$ are not. $[0, 1] \subseteq \R, <$ is not a well ordering. $\{1/2, 2/3, 3/4, \dots \} \subseteq \R$ is well ordered, as is $\{1/2, 2/3, 3/4, \dots \} \cup \{1\}$.
+\end{example}
+
+Note that $(X, <)$ is a well ordering if and only if there does not exist an infinite strictly decreasing sequence.
+
+
+\begin{proposition}[Induction]
+  Let $X$ be well ordered and let $S \subseteq X$ be such that whenever $y \in S$ for all $y < x$ then $x \in S$. Then $S = X$. Equivalently, if $p(x)$ is a property such that $p(y)$ for all $y < x$ implies $p(x)$, then $p(x)$ for all $x \in X$.
+\end{proposition}
+\begin{proof}
+  Suppose $S \neq X$. Then there is a least $x \in X \backslash S$. Then $y \in S$ for all $y < x$ but $x \not \in S$ which is a contradiction.
+\end{proof}
+
+\begin{proposition}
+  Let $X, Y$ be isomorphic well orderings. Then there exists a unique isomorphism.
+\end{proposition}
+\begin{proof}
+  % Let $f, g: X \rightarrow Y$ be isomorphisms. We show that $f(x)=g(x)$ for all $x$ by induction on $x$. Suppose $f(y)=g(y)$ for all $y<x$. We must have that $f(x)=a$, where $a$ is the least element of $Y \backslash\{f(y) \mid y<x\}$. Indeed, if not, we have $f\left(x^{\prime}\right)=a$ for some $x^{\prime}>x$ by bijectivity, contradicting the order-preserving property. Note that the set $Y \backslash\{f(x) \mid y<x\}$ is nonempty as it contains $f(x)$. So $f(x)=a=g(x)$, as required.
+  {\color{red} TODO: Write this proof}
+\end{proof}
+
+\subsection{Initial Segments}
+
+%We have setup induction for well ordered sets, now we want to setup recursion for totally ordered sets.
+\vspace{\baselineskip}
+
+\begin{definition}[Initial Segment]
+  A subset $I$ of a totally ordered set $X$ is a \vocab{initial segment} if $x \in I$ implies $y \in I$ for all $y < x$.
+\end{definition}
+
+For example, in any total ordering $X$ and $x \in X$, the set $I_x = \{y \mid y < x\}$ is an initial segment. Not all initial segments are of this form (for example $\{x \mid x \leq 3\}$ in $\R$ or $\{x \mid x > 0, x^2 < 2\}$ in $\Q$).
+
+In a well ordering, every proper initial segment is of this form, indeed $I = \{y \mid y < x\}$ where $x$ is the least element of $X \backslash I$.
+
+Our aim is to show that every subset of a well-ordering $X$ is isomorphic to an initial segment of $X$.
+
+\begin{theorem}[Definition by Recursion]
+Let $X$ be a well-ordering and let $Y$ be any set. Take $G: \mathcal{P}(X \times Y) \rightarrow Y$ (i.e a `rule'). Then there exists a function $f: X \rightarrow Y$ such that $f(x) = G\left(\left.f\right|_{I_x}\right)$ for all $x \in X$. Moreover, $f$ is unique.
+\end{theorem}
+\begin{proof}
+Say that $h$ is an `attempt' if $h : I \rightarrow Y$ for some initial segment $I$ of $X$, and for all $x \in I$ we have $h(x) = G\left(\left.h\right|_{I_x}\right)$. 
+
+% If we have two attempts $h, h'$ both defined at $x$, then they must agree, by induction on $x$.
+
+% Also, for all $x$, there exists an attempt defined at $x$, by induction on $x$. Indeed, by induction we can assume there exists an attempt $h_y$ defined at $y$ for all $y<x$, and then we can define $h$ to be the union of the $h_y$. This is an attempt with domain $I_x$, so the attempt $h^{\prime}=h \cup\{x, G(h)\}$ is an attempt defined at $x$. Therefore, there is an attempt defined at each $x$, so we can define the function $f: X \rightarrow Y$ by setting $f(x)$ to be the value of $h(x)$ where $h$ is some attempt defined at $x$.
+
+% For uniqueness, we apply induction on $x$. If $f, f^{\prime}$ agree below $x$, then they must agree at $x$ since $f(x)=G\left(\left.f\right|_{I_x}\right)=G\left(\left.f^{\prime}\right|_{I_x}\right)=f^{\prime}(x)$
+{\color{red} TODO: Write this proof}
+\end{proof}
+
+\begin{proposition}[Subset Collapse]
+  Any subset $Y$ of a well-ordering $X$ is isomorphic to a unique initial segment of $X$.
+\end{proposition}
+\begin{proof}
+  % If $f$ is some such isomorphism, we must that $f(x)$ is the least element of $x$ not of the form $f(y)$ for $y < x$. We define $f$ in this way by recursion, and this is an isomorphism as required. Note that this is always well-defined as $f(y) \leq y$, so there is always some element of $X$ (namely, $x$) not of the form $f(y)$ for $y < x$. Uniqueness follows by induction.
+  {\color{red} TODO: Write this proof}
+\end{proof}
+
+\subsection{Relating Well-Orderings}
+
+We now want to be able to talk more about the structure of well orderings.
+
+\begin{definition}
+  For well-orderings $X, Y$, we will write $X \leq Y$ if $X$ is isomorphic to an initial segment of $Y$.
+\end{definition}
+
+Note that $X \leq Y$ if and only if $X$ is isomorphic to some subset of $Y$. 
+
+\begin{proposition}
+  Let $X$, $Y$ be well-orderings. Then either $X \leq Y$ or $Y \leq X$.
+\end{proposition}
+\begin{proof}
+  % Suppose $Y \not\leq X$, and we will show $X \leq Y$. By recursion we define the function $f: X \rightarrow Y$ by letting $f(x)
+  {\color{red} TODO: Write this proof}
+\end{proof}
+
+\begin{proposition}
+  Let $X$, $Y$ be well-orderings, and suppose $X \leq Y$ and $Y \leq X$. Then $X$ is isomorphic to $Y$.
+\end{proposition}
+\begin{proof}
+  {\color{red} TODO: Write this proof}
+\end{proof}
+
+\subsection{Constructing Larger Well-Orderings}
+
+For well orderings $X$, $Y$, we say $X < Y$ if $X \leq Y$ and $X$ is not isomorphic to $Y$. Equivalently if and only if $X$ is isomorphic to a proper initial segment of $Y$.
+
+Given a well-ordering, we can construct a `bigger one'.
+
+\begin{definition}[Successor]
+  Given a well-ordering $X$, pick some $x \not \in X$ and well order $X \cup \{x\}$ by setting $y < x$ for all $y \in X$. Thi sis a well-ordering and is $> X$. We say this is the \vocab{successor} of $X$, written $X^+$.  
+\end{definition}
+
+We can also `stick a bunch of well-orderings together'.
+
+\begin{definition}[Extending Well-Orderings]
+  Given well orderings $(X, <_X)$ and $(Y, <_Y)$ we say $Y$ \vocab{extends} $X$ if $X \subseteq Y$ and $\left.<_Y\right|_X = <_X$, and $X$ is an initial segment of $(Y, <_Y)$. 
+We say a collection of well orderings $\{X_i\}$ are \vocab{nested} if for all $i, j$ one of $X_i$ and $X_j$ extends the other.
+\end{definition}
+
+\begin{proposition}
+  Let $\{X_i\}$ be a nested set of well-orderings. Then there exists a well-ordering $X$ such that $X \geq X_i$ for all $i$.
+\end{proposition}
+\begin{proof}
+  Let $X = \bigcup_i X_i$ with the ordering given by $<_X = \bigcup_i <_i$. That is, $x < y$ in $X$ if there exists $i$ such that $x, y \in X_i$ and $x <_i y$.
+
+  Given $S \subseteq X$ non-empty, we have $S \cap X_i$ non-empty for some $i\in I$. Let $x$ be the least element in this (under $<_i$). Then $x$ is the least element of $S$ in $X$ since $X_i$ is an initial segment of $X$, by nestedness. So $X$ is a well ordering, and $X \geq X_i$ for all $i$.
+\end{proof}
+
+
+
+\subsection{Ordinals}
+
+With what we have looked at so far, a natural question is whether the collection of al well-orderings itself form a well ordering? To look at this, we are going to discuss the kinds of well ordered sets that can occur by defining \emph{ordinals}.
+
+\begin{definition}[Ordinal]
+  An \vocab{ordinal} is a well-ordered set, where we regard two ordinals as equal if they are isomorphic.
+\end{definition}
+
+\begin{definition}[Order Type]
+  Let $X$ be a well-ordering corresponding to an ordinal $\alpha$. Then, we say that $X$ has \vocab{order type} $\alpha$.
+\end{definition}
+
+The order type of the unique well-ordering on a collection of $k \in \N$ points is named $k$. The order type of $(\N, <)$ is named $\omega$. 
+
+\begin{example}[Examples of Order Types]
+  In the reals, the order type of the set $\{-2, 3, \pi, 5\}$ is 4, and the set $\{1/2, 2/3, 3/4, \dots \}$ has order type $\omega$.
+\end{example}
+
+We will write $\alpha \leq \beta$ if $X \leq Y$ where $X$ has order type $\alpha$ and $Y$ has order type $\beta$. Note that this does not depend on the choice of representative $X$ or $Y$. We also define $\alpha < \beta$ and $\alpha^+$ in the obvious ways. Hence for all ordinals $\alpha, \beta$, we have $\alpha \leq \beta$ or $\beta \leq \alpha$. Also if $\alpha \leq \beta$ and $\beta \leq \alpha$ then $\alpha = \beta$.
+
+\begin{proposition}
+  For any ordinal $\alpha$, the ordinals $<\alpha$ form a well-ordered set of order type $\alpha$. 
+\end{proposition}
+\begin{proof}
+  Let $X$ have order type $\alpha$. Then the well-ordered sets $<$ $X$ are precisely (up to isomorphism) the proper iniital segments of $X$. These order biject with $X$ itself via $I_x \mapsto x$. So for any $\alpha$, we have $I_\alpha = \{\beta \mid \beta < \alpha\}$ a well-ordered set of order-type $\alpha$.
+\end{proof}
+
+\begin{proposition}
+  Every non-empty set $S$ of ordinals has a least element.
+\end{proposition}
+\begin{proof}
+  Choose $\alpha \in S$. If $\alpha$ is minimal in $S$ we are done. Otehrwise $S \cap I_\alpha$ is non-empty, so has a least element in $I_\alpha$ since $I_\alpha$ is well-ordered, and this element is least in all of $S$.
+\end{proof}
+
+However:
+
+\begin{theorem}[Burali-Forti Paradox]
+  The ordinals do not form a set.
+\end{theorem}
+\begin{proof}
+  Suppose $X$ was the set of all ordinals. Then since it's well ordered it has an order type say $\alpha$. Thus $X$ is order-isomorphic to $I_\alpha$, so $X$ is order-isomorphic to a proper initial subset of itself, which is a contradiction.
+\end{proof}
+
+\begin{remark}
+  Given a set $S = \{\alpha_i \mid i \in I\}$ of ordinals, there exists an upper bound $\alpha$ for $S$, so $\alpha_i \leq \alpha$ for all $i \in I$, by considering the nested family of well-orderings $I_{\alpha_i}$. Hence, by the previous proposition, there exists a least upper bound, as $I_\alpha$ is a set. We write $\alpha = \sup S$. 
+
+  For example, $\sup \{2, 4, 6, \dots\} = \omega$. 
+\end{remark}
+
+\subsection{Examples of Ordinals}
+
+We have
+$$
+0, 1, 2, 3, \dots, \omega.
+$$
+Writing $\alpha + 1$ for the successor $\alpha^+$ of $\alpha$, we get
+$$
+\omega+1, \omega+2, \dots, \omega + \omega = \omega \cdot 2,
+$$
+where $\omega + \omega = \omega \cdot 2$ is defined by $\sup \{\omega, \omega + 1, \dots, \}$.
+$$
+\omega\cdot 2 + 1, \omega \cdot 2 + 2, \dotsm \omega \cdot 3, \omega \cdot 4, \dots, \omega \cdot \omega = \omega^2,
+$$
+where we define $\omega \cdot \omega = \sup \{\omega \cdot 2, \omega \cdot 3, \dots\}$.
+$$
+\omega^2 + 1, \omega^2 + 2, \dots, \omega^2 + \omega, \dots, \omega^2 + \omega \cdot 2, \dots, \omega^2 + \omega^2 = \omega^2 \cdot 2,
+$$
+and continuing on we get
+$$
+\omega^2 \cdot 3, \omega^2 \cdot 4, \dots, \omega^3
+$$
+where $\omega^3 = \sup \{\omega^2 \cdot 2, \omega^2 \cdot 3, \dots\}$.
+$$
+\omega^3 + \omega^2 \cdot 7 + \omega \cdot 4 + 13, \dots, \omega^4, \omega^5, \dots, \omega^{\omega},
+$$
+where $\omega^\omega = \sup\{\omega, \omega^2, \omega^3, \dots\}$.
+$$
+\omega^\omega \cdot 2, \omega^\omega \cdot 3, \ldots, \omega^\omega \cdot \omega=\omega^{\omega+1}
+$$
+$$
+\omega^{\omega+2}, \ldots, \omega^{\omega \cdot 2}, \omega^{\omega \cdot 3}, \ldots, \omega^{\omega^2}, \ldots, \omega^{\omega^3}, \ldots, \omega^{\omega^\omega}, \ldots, \omega^{\omega^\omega}, \ldots, \omega^{\omega^{\omega \cdots}}=\varepsilon_0
+$$
+where $\varepsilon_0=\sup \left\{\omega, \omega^\omega, \omega^{\omega^\omega}, \ldots\right\}$.
+$$
+\varepsilon_0+1, \varepsilon_0+\omega, \varepsilon_0+\varepsilon_0=\varepsilon_0 \cdot 2, \ldots, \varepsilon_0^2, \varepsilon_0^3, \ldots, \varepsilon_0^{\varepsilon_0}
+$$
+where $\varepsilon_0^{\varepsilon_0}=\sup \left\{\varepsilon_0^\omega, \varepsilon_0^{\omega^\omega}, \ldots\right\}$.
+$$
+\varepsilon_0^{\varepsilon_0^{\varepsilon_0^{\cdots}}}=\varepsilon_1
+$$
+
+We note that all of these ordinals are countable, since each operation only takes a countable union of countable sets. We might then wonder if there is an uncountable ordinal? That is, we can well-order $\N$, we can well order $\Q$ (biject with $\N$), can we well-order $\R$? The answer is amazingly yes and we can prove it (though we can't write it down).
+
+\begin{theorem}[Existence of an Uncountable Ordinal]
+  There is an uncountable ordinal.
+\end{theorem}
+\begin{proof}
+  Let $A = \{R \in \mathcal{P}(\omega \times \omega) \mid \text{$R$ is a well-ordering of a subset of $\omega$}$. Let $B = \{\operatorname{ordertype}(R) \mid r \in A\}$. So $\alpha \in B$ if and only if $\alpha$ is a countable ordinal. Let $\omega_1 = \sup B$. We must have $\omega_1$ countable, as if it was countable then it would be the greatest element of $B$, contradicting $\omega_1 < \omega_1^+$ since $\omega_1^+$ is countable.
+\end{proof}
+
+\begin{remark}
+  Alternatively having the set $B$, we could say that $B$ isn't all ordinals since the set of ordinals is not a set (Burali-Forti), so there exists an uncountable ordinal. Also, $\omega_1$ is the \emph{least} uncountable ordinal by the definition of $B$.
+\end{remark}
+
+The ordering $\omega_1$ has some remarkable properties. For example
+\begin{enumerate}
+  \item $\omega_1$ is countable but $\{\beta \mid \beta < \alpha\}$ is countable for all $\alpha < \omega_1$.
+  \item Any seqeuence $\alpha_1, \alpha_2, \dots$ in $I_{\omega_1}$ is bounded. Namely by $\sup\{\alpha_1, \alpha_2, \dots\}$ which is countable as a countable union of countable sets.
+\end{enumerate}
+
+The same argument allows us to find ordinals that don't inject into any given set.
+\begin{theorem}[Hartogs' Lemma]
+  For every set $X$, there exists an ordinal $\alpha$ that does not inject into $X$.
+\end{theorem}
+
+We call the least such ordinal as in Hartogs' Lemma $\gamma(X)$. So $\gamma(\omega) = \omega_1$.
+
+\begin{definition}[Limits and Successors]
+  We say $\alpha$ is a \vocab{successor} if there exists $\beta$ such that $\alpha = \beta^+$. Otherwise we say that $\alpha$ is a \emph{limit}.
+\end{definition}
+
+Note that $\alpha$ has a greatest element if and only if it is a successor. So $\alpha$ is a limit if and only if it has no greatest element. 
+
+\begin{example}
+  $5$ is successor: $4^+$. $\omega + 2$ is a successor: $(\omega^+)^+$. $\omega$ is not a successor as it has no greatest element. 0 is also a limit.
+\end{example}
+
+\subsection{Ordinal Arithmetic}
+
+We will now describe how to do arithmetic with ordinals.
+
+We define $\alpha + \beta$ by induction on $\beta$ (with $\alpha$ fixed) by:
+\begin{enumerate}
+  \item $\alpha + 0 = \alpha$;
+  \item $\alpha + (\beta^+) = (\alpha + \beta)^+$;
+  \item $\alpha + \lambda = \sup\{\alpha + \gamma \mid \gamma < \lambda\}$ for $\lambda$ a non-zero limit.
+\end{enumerate}
+
+\begin{example}
+  $\omega + 1 = \omega + 0^+ = (\omega + 0)^+ = \omega^+$. $1 + \omega = \sup \{1 + \gamma \mid \gamma < \omega\} = \omega$. Note that this shows that our operation $+$ is \emph{not} commutative.
+\end{example}
+
+In this definition, since ordinals do not form a set, to define $\alpha + \beta$ we really define $\alpha + \gamma$ on $\{\gamma \mid \gamma \leq \beta\}$, which is a set. 
+
+\begin{proposition}
+  For all ordinals $\alpha, \beta, \gamma$, we have $\alpha + (\beta + \gamma) = (\alpha + \beta) + \gamma$.
+\end{proposition}
+\begin{proof}
+  Proof. We proceed by induction on $\gamma(\alpha, \beta$ fixed). If $\gamma=0: \alpha+(\beta+0)=$ $\alpha+\beta=(\alpha+\beta)+0$
+Successors:
+$$
+\begin{aligned}
+\alpha+\left(\beta+\gamma^{+}\right) & =\alpha+(\beta+\gamma)^{+} \\
+& =(\alpha+(\beta+\gamma))^{+} \\
+& =((\alpha+\beta)+\gamma)^{+} \\
+& =(\alpha+\beta)+\gamma^{+}
+\end{aligned}
+$$
+$\lambda$ a non-zero limit:
+$$
+\begin{aligned}
+(\alpha+\beta)+\lambda & =\sup \{(\alpha+\beta)+\gamma: \gamma<\lambda\} \\
+& =\sup \{\alpha+(\beta+\gamma): \gamma<\lambda\} .
+\end{aligned}
+$$
+We claim that $\beta+\lambda$ is a limit. Indeed, have $\beta+\lambda=\sup \{\beta+\gamma: \gamma<\lambda\}$. But for every $\gamma<\lambda$, there exists $\gamma^{\prime}<\lambda$ with $\gamma<\gamma^{\prime}$ ( $\lambda$ a limit), so $\beta+\gamma<\beta+\gamma^{\prime}$. Thus there is no greatest element of $\{\beta+\gamma: \gamma<\lambda\}$, so $\beta+\lambda=\sup \{\beta+\gamma: \gamma<\lambda\}$ is a limit.
+
+Therefore $\alpha+(\beta+\lambda)=\sup \{\alpha+\delta: \delta<\beta+\lambda\}$. So need to show $\sup \{\alpha+(\beta+\gamma)$ : $\gamma<\lambda\}=\sup \{\alpha+\delta: \delta<\beta+\lambda\}$. Indeed, $\gamma<\lambda$ implies $\beta+\gamma<\beta+\lambda$ so $\{\alpha+(\beta+\gamma): \gamma<\lambda\} \subseteq\{\alpha+\delta: \delta<\beta+\lambda\}$. Conversely, for all $\delta<\beta+\lambda$, we have $\delta \leq \beta+\gamma$ for some $\gamma<\lambda$ (definition of $\beta+\lambda$ ) so $\alpha+\delta \leq \alpha+(\beta+\gamma)$. So each member of right hand set is at most some member of the left hand set.
+{\color{red} TODO: clean this up}.
+\end{proof}
+
+
+
+
+\section{Posets and Zorn's Lemma}
+
+\section{Predicate Logic}
+
+\section{Set Theory}
+
+\section{Cardinals}
+
+
+
+
+
+\end{document}
