@@ -1,0 +1,466 @@
+% NOTE: for a more compact, black and white style for printing, use
+% the below.
+
+\documentclass[a3paper, 10pt]{article}
+
+\usepackage[nokoma, noindent]{adam}
+\usepackage[landscape,margin=0.5in]{geometry}
+\usepackage{tikz-cd}
+\usepackage{multicol}
+
+\setlist[enumerate]{leftmargin=8mm}
+\setlist[itemize]{leftmargin=8mm}
+
+\newcommand{\enumpre}{}
+% \newcommand{\enumpre}{\vspace{-1.5\baselineskip}}
+\renewcommand{\vocab}[1]{\emph{#1}}
+
+
+% \documentclass[10pt]{amsart}
+
+% \usepackage[
+% % fancytheorems, 
+% % fancyproofs,
+% noindent, 
+% nokoma
+% %spacingfix, 
+% ]{adam}
+
+% \usepackage[margin=0.75in]{geometry}
+
+% \usepackage{ulem}
+% \DeclareRobustCommand{\hsout}[1]{\texorpdfstring{\sout{#1}}{#1}}
+
+\usepackage{cancel}
+
+% \usepackage{titling}
+% \setlength{\droptitle}{-4em}
+
+
+\title{Graph Theory -- Main Results}
+\author{Mathematical Tripos Part II}
+\date{\today}
+
+\begin{document}
+
+\begin{multicols*}{5}
+
+\maketitle
+
+% \tableofcontents
+
+\section{Planar Graphs}
+
+\begin{definition}[Face]
+    Let $G$ be a planar graph (with an associated planar diagram). Then one of the finitely many connected components of $\R^2 \backslash G$ is a \vocab{face}.
+\end{definition}
+
+\begin{theorem}[Euler]
+    Let $G$ be a connected planar graph where the planar drawing has $F$ faces. Then $V - E + F = 2$.
+\end{theorem}
+\begin{proof}
+    Induct on $E$. If $E= 0$, we have $V =F = 1$. Now if $G$ is acyclic, then $G$ is a tree and $V = E + 1$, and $F = 1$ so we are done. Now if $G$ has a cycle, remove an edge in the cycle then we still have a connected graph but have reduced the number of faces by 1, and then we are done by induction.
+\end{proof}
+
+\begin{definition}[Subdivision]
+    A \vocab{subdivision} of a graph $G$ is a new graph where some of the edges are replaced by (disjoint) paths.
+\end{definition}
+
+\begin{theorem}[Kuratowski]
+    $G$ is planar if and only if it contains no subdivision of $K_{3, 3}$ or $K_5$.
+\end{theorem}
+
+\section{Hall's Theorem}
+
+\begin{definition}[Matching]
+    Let $G = (X \sqcup Y, E)$ be a bipartite graph. A \vocab{matching} from $X$ to $Y$ is a set of edges $E' = \{x y_x \mid x \in X, y_x \in Y\} \subseteq E$ such that the map $x \mapsto y_x$ is injective.
+\end{definition}
+
+\begin{theorem}[Hall]
+    Let $G = (X \sqcup Y, E)$ be a bipartite graph. There exists a matching from $X$ to $Y$ if and only if \vocab{Hall's criterion} holds: $|A| \leq |N(A)|$ for all $A \subseteq X$.
+\end{theorem}
+\begin{proof}
+    The condition is clearly needed, so for sufficient, we induct on $|X|$. If there's $A \subsetneq X$ such that $|A| = |N(A)|$, then Hall's condition holds on $A \sqcup N(A)$ and $X\backslash \sqcup Y\backslash N(A)$ so we can take matchings on both of these by induction. If no such $A$ exists, we can just pick any edge $xy$ and add it to our matching, and Hall still holds on the remaining graph so we can complete our matching by induction. 
+\end{proof}
+
+\section{Connectivity}
+
+\begin{definition}[Vertex Connectivity]
+The \vocab{vertex connectivity parameter} $\kappa$ of $G$ is the least number of vertices needed to be removed from $G$ to make it either disconnected or a single vertex.
+
+We say $G$ is \vocab{$k$-connected} if $k \leq \kappa$.
+\end{definition}
+
+\begin{definition}
+    Let $G$ be a graph with $a \neq b \in V(G)$, where $a \not \sim b$. We say $S \subseteq V(G) \backslash \{a, b\}$ is a \vocab{$a$-$b$ separator} if $G - S$ disconnects $a$ and $b$.
+\end{definition}
+
+\begin{theorem}[Menger, Form 1]
+    Let $G$ be a connected graph with $a \neq b \in V(G)$, where $a \not \sim b$.
+    The minimum size of an $a$-$b$ separator is maximum number of disjoint paths from $a$ to $b$. Equivalently, if all $a$-$b$ separators have size at least $k$, then there exist $k$ disjoint $a$-$b$ paths.
+\end{theorem}
+\begin{proof}
+    We will prove the equivalent condition. For $k = 1$, this is trivial so assume $k \geq 2$.
+
+    Pick a minimal counterexample in both $k$ and $e(G)$, and let $S$ be our $a$-$b$ separator.
+
+    Suppose $S \not \subset N(a)$ or $S \not \subset N(b)$.
+    Then we can construct two graphs $G_a$ and $G_b$ where we replace the $a$ and $b$ component of $G \backslash S$ with a single point $a'$ and $b'$ respectively, connected to every point in $S$. Then minimality of $e(G)$ implies we then have $k$ disjoint paths from $b$ (resp. $a$) to the vertices in $S$. We can then take these paths and join them to get $k$ disjoint paths from $a$ to $b$ in our original graph, which contradicts us having a counterexample. 
+
+    So we must have $S$ contained in one of these neighborhoods. We first note that it can't be both, as $N(a) \cap N(b) = \emptyset$ (as otherwise we could take a point in the neighborhood and remove it to get a smaller counterexample for $k - 1$). 
+
+    Now take the shortest $a$-$b$ path, say $a x_1 x_2 \dots x_r b$, where $r \geq 2$. Consider $G - x_1 x_2$. Then we have separators of size $k - 1$ in $G - x_1 x_2$, by minimality, say $S'$. Then $S' \cup \{x_1\}$ and $S' \cup \{x_2\}$ are separators in $G$. Now $x_1 \not \in N(b)$ implies $S' \cup \{x_1\} \subset N(a)$, and $x_2 \not \in N(a)$ implies $S' \cup \{x_2\} \subset N(b)$. But then $S' \subset N(a) \cap N(b) = \emptyset$, which is a contradiction. So no such counterexample exists.
+\end{proof}
+
+\begin{corollary}[Menger, Form 2]
+    Let $G$ be a connected graph with $|G| \geq 2$. Then $G$ is $k$-connected if and only if all pairs of distinct vertices $a, b$ admit $k$ disjoint $a$-$b$ paths.
+\end{corollary}
+\begin{proof}
+    $k$-connected from having $k$ disjoint $a$-$b$ paths is trivial. For the other direction, we just need to check the case of $a \sim b$ (and possibly remove this edge) and apply the previous form of Menger's theorem.
+\end{proof}
+
+\begin{definition}[Edge Connectivity]
+    The \vocab{edge connectivity parameter} $\lambda$ of $G$ is the least number of edges that need to be removed to disconnect $G$.
+
+    We say $G$ is \vocab{$k$-edge connected} if $k \leq \lambda(G)$.
+\end{definition}
+
+\begin{theorem}[Menger -- Edge Version, Form 1]
+Let $G$ be a connected graph, and $a \neq b$ be vertices. Then, if every $W \subseteq E(G)$ that separates $a$ from $b$ has size at least $k$, then there exist $k$ edge-disjoint $a-b$ paths.
+\end{theorem}
+\begin{proof}
+    Let $G'$ be the \emph{line graph}\footnote{The graph on the edges of $G$ with two adjacent if they share an endpoint} of $G$, along with the distinguished vertices $a'$ and $b'$ which are connected to the edges incident to $a$ and $b$ respectively. Then there's an $a$-$b$ path in $G$ if and only if there's an $a'$-$b'$ path in $G'$. So we can then apply the vertex form of Menger to $G'$ to get our edge disjoint $a$-$b$ paths in $G$.
+\end{proof}
+
+\begin{theorem}[Menger -- Edge Version, Form 2]
+    Let $G$ be a connected graph. Then $\lambda(G) \geq k$ if and only if all all pairs of vertices $a \neq b$ admit $k$ edge-disjoint $a-b$ paths.
+\end{theorem}
+\begin{proof}
+    Analogous to the second form of vertex Menger.
+\end{proof}
+
+\section{Vertex Colouring}
+
+\begin{proposition}[Six Colour Theorem]
+    Let $G$ be planar. Then $G$ admits a 6-colouring.
+\end{proposition}
+\begin{proof}
+    We note that $G$ planar implies $\delta(G) \leq 5$. Then we just apply induction to $G$. So we induct on $|G|$. If $|G| \leq 6$ we're done. Otherwise there's a vertex $v$ of degree at most 5. Take a 6-colouring of $G - x$, then $x$ has at most 5 neighbours so there's a free colour left for $x$.
+\end{proof}
+
+\begin{proposition}[Five Colour Theorem]
+    Let $G$ be planar. Then $G$ admits a 5-colouring.
+\end{proposition}
+\begin{proof}
+As before, take $|G| > 5$, and let $x \in G$ with $d(x) \leq 5$. Take a $5$-colouring of $G - x$. We are then done unless $d(x) = 5$ and all 5 colours appear in $N(x)$.
+
+So lets say $N(x)$ is $x_1, \dots, x_5$ (clockwise) with $x_i$ having colour $i$. 
+
+If there is no 1-3 path from $x_1$ to $x_3$ (going through vertices which are coloured 1 and 3 alternately), then we can take the $1$-$3$ component of $x_1$, $H$ and swap the colours $1$ and $3$. We then still have a valid colouring of $G -x$ and we can colour $x$ 1.
+
+If there is such a path, there must be no $2-4$ path from $x_2$ to $x_4$ (as it would have to meet the $1-3$ path by planarity), so we just finish then as before.
+\end{proof}
+
+Now we consider colourings in general.
+
+\begin{theorem}
+    If $G$ is not a regular graph, then $\chi(G) \leq \Delta(G)$.
+\end{theorem}
+\begin{proof}
+    Start with a vertex $x$ with $\deg x \leq \Delta(G)$. Then perform a breath first search of the graph starting at this vertex. Label the vertices $v_i$ by the order in which they are encountered (with $v_1 = v$). Now colour the vertices in backwards order.
+
+    For each vertex $v_i$, at most $\Delta(G) - 1$ neighbors are among the $v_{i + 1}, \dots, v_n$ that receive a colour before $v_i$, so we can just pick a (say minimal) missing colour. 
+\end{proof}
+
+\begin{theorem}[Brooks]
+    Let $G$ be a connected graph. If $G$ is not an odd cycle or a complete graph, $\chi(G) \leq \Delta(G)$.
+\end{theorem}
+\begin{proof}
+    By the previous theorem we can assume that $G$ is regular, and also that $\Delta(G) \geq 3$ (as the other cases are trivial). 
+    WLOG, $G$ is 2-connected (as otherwise we could take a cut vertex $x$ and colour the components of $G - x$ with $x$, colouring $x$ some fixed colour in all of them). 
+
+    \emph{Case 1}. $G$ is 3-connected.
+
+    We want an ordering of the vertices such that each vertex is adjacent to an edge later in the list (other than the last) but so that the last vertex has two neighbours of the same colour.
+
+    Pick any $x_n$, and then there must be $x_1, x_2 \in N(x_n)$ not adjacent (otherwise we get a $K_{\Delta + 1}$). Now $G - \{x_1, x_2\}$ is connected, so order its vertices as before using breath first search starting with $x_3$. Then run our previous algorithm on this ordering and we use at most $\Delta$ colours.
+
+    \emph{Case 2}. $G$ is not 3-connected.
+
+    Choose a separator $\{x, y\}$, and let $G_i$ be the components of $G - \{x, y\}$, together with $x$ and $y$. Then each $G_i$ has a $\Delta$-colouring (since $d_{G_i}(x) \leq \Delta - 1$).
+
+    If $x \sim y$, then $x$and $y$ have different colours in the colouring of $G_i$ for each $i$, so we can recolour and combine to form a $\Delta$-colouring of $G$.
+    
+    So take $x \not \sim y$. Then if each $G_i$ has at least one of $d_{G_i}(x), d_{G_i}(y) \leq \Delta - 2$, we can recolor to ensure $x$ and $y$ have different colours in $G_i$ and then combine to form a full colouring.
+
+So we are done unless some $G_i$ has $d_{G_i}(x) = d_{G_i}(y) = \Delta - 1$, say $i = 1$. Then in $G_2$ they have degree 1, say $N_{G_2}(X) = \{u\}$ and $N_{G_2}(y) = \{v\}$. Then $\{x, v\}$ is a separator not of this form so we can use our previous argument.
+\end{proof}
+
+\section{Edge Colouring}
+
+\begin{theorem}[Vizing]
+    Let $G$ be a graph. Then $\chi'(G) = \Delta(G)$ or $\Delta(G) + 1$.
+\end{theorem}
+\begin{proof}
+    We first observe that if we have $\Delta + 1$ colours, then every vertex in the graph has at least one free colour. Also, if two adjacent vertices share a free colour then we can switch the current edge colour with the free colour and won't break the colouring.
+
+    Now take an edge $x v_1$, and colour $G - x v_1$ using $\Delta + 1$ colours (which we can assume is possible by induction).
+
+    We define a sequence of vertices $v_1, \dots, v_k \in N(x)$ and corresponding colours $c_1, \dots, c_k$ such $c_i$ is free at $v_i$ and the colour of edge $x y_{i + 1}$ is $c_i$. This chain continues until we find a colour free at $x$, or repeat a colour.
+    
+    If we find a colour free at $x$, we can re-colour $x v_k$ with $c_k$ for all $k$ (starting at the end of the chain) and we are done. 
+
+    Otherwise, suppose that $c_k = c_i$ for some $i < k$. Note that we can take $i = 1$ by uncolouring $xv_{i - 1}$ and performing the process above.
+    
+    Now let $c_0$ be free at $x$. If $v_1$ is not in the same $\{c_0, c_1\}$ component as $x$, then we can swap the colours on the $\{c_0, c_1\}$ component containing $v_1$ so that $c_0$ is also missing at $v_1$. We can then colour $x v_1$ $c_0$ and we are done. 
+
+    Similarly, if $v_k$ is not in the same $\{c_0, c_1\}$ component as $x$ we can swap the colours on the $\{c_0, c_1\}$ component containing $v_k$ and colour $xv_k$ by $c_1$, and then $x y_i$ by $c_i$ as before.
+
+    If this all fails, then $x, v_1$ and $v_k$ are in the same $\{c_0, c_1\}$ component, but each is missing one of $\{c_0, c_1\}$. Also the $\{c_0, c_1\}$ component is made up of disjoint paths, even cycles and isolated vertices. So we'd need each of these vertices to be the endpoint of a path which is a contradiction since we have only 2 endpoints.
+\end{proof}
+
+\section{Colouring Graphs on Surfaces}
+
+\begin{fact}[Euler Characteristic]
+    For $G$ on a surface of genus $g$ (a sphere with $g$ handles attached) we have $n - m + f \geq E$, where $E = 2 - 2g$ is the \vocab{Euler characteristic}.
+\end{fact}
+
+\begin{theorem}[Heawood's Theorem]
+    Let $G$ be a graph drawn on a surface of Euler characteristic $E \leq 0$. Then
+    $$
+    \chi(G) \leq H(E) = \left\lfloor\frac{7 + \sqrt{49 - 24E}}{2}\right\rfloor.
+    $$
+\end{theorem}
+\begin{proof}
+    Let $G$ be an edge minimal graph drawn on the surface, with $\chi(G) = k$.
+    Then $\delta(G) \geq k - 1$ by minimality and $n \geq k$. 
+
+    From the Euler characteristic (and say counting $(e, f)$ pairs in two ways) we get that $m \leq 3(n - E)$. So the sum of all degrees is $2m \leq 6(n - E)$. Thus $\delta(G) \leq 6 - 6E/n$.
+
+    Thus $k - 1 \leq \delta(G) \leq 6 - 6E/n \leq 6 - 6E/k$ (as $n \geq k$ and $E \leq 0$). So $k^2 - k \leq 6k - 6E$, that is, $k^2 - 7k + 6E \leq 0$. The result follows. 
+\end{proof}
+
+
+\section{Hamiltonian Cycles}
+
+\begin{theorem}[Dirac's Theorem]
+    Let $G$ be a graph on $n \geq 3$ vertices. Then if $\delta (G) \geq n/2$, $G$ is Hamiltonian.
+\end{theorem}
+\begin{proof}
+    We first note that $G$ must be connected as otherwise we couldn't have the minimal degree condition. 
+    Now consider the longest path $x_0 x_1 \cdots x_k$ in $G$.
+    We note that $N(x_0)$ and $N(x_k)$ are contained in this path as otherwise we could extend it.
+
+    We find a cycle as follows. Define 
+    \begin{align*}
+        A &= \{i \in [k] \mid x_0 \sim x_i \} \\
+        B &= \{i \in [k] \mid x_k \sim x_{i - 1}\}.
+    \end{align*}
+    Then if $A \cap B \neq \emptyset$, we get a cycle. To see that this must be the case, note $|A \cup B| \leq k < n$, but $|A| + |B| \geq \frac{n}{2} + \frac{n}{2} = n$.
+
+    Now we have a cycle $v_0 v_1 \cdots v_i v_0$ of length $k + 1$. So to get a Hamiltonian cycle, we need only to have $k = n - 1$. If this was not the case, there would be $v_i$ in the cycle with $w \sim v_i$ and $w$ not in the cycle. But then $w u_i u_{i + 1} \cdots u_{i - 1}$ is a path of length $k + 1$ which contradicts maximality.
+\end{proof}
+
+\section{Forcing Triangles}
+
+\begin{theorem}[Mantel's Theorem]
+    Let $G$ be a graph on $n$ vertices, and $n^2/4 < e(G)$. Then $G$ contains a triangle.
+\end{theorem}
+\begin{proof}
+    Suppose the graph contains no triangles, and assume $n \geq 3$. Let $x, y \in V(G)$ such that $x \sim y$. Then $\deg x + \deg y \leq n - 2 + 2 = n$. Then since $x \mapsto x^2$ is convex, we have
+    \begin{align*}
+        e(G) &= \frac{1}{2} \sum_{x \sim y} 1 \\
+        &\geq \frac{1}{2n} \sum_{x \sim y} \deg x + \deg y = \frac{1}{n} \sum_x \deg^2 x\\
+        &\geq \frac{1}{n} \left(\frac{1}{n} \sum_x \deg x\right)^2 = \frac{1}{n} \left(\frac{2e(G)}{n}\right)^2,
+    \end{align*}
+    and $n^2/4 \geq e(G)$.
+\end{proof}
+
+\section{Forcing Cliques}
+
+\begin{theorem}[Turan, Form 1]
+    Let $G$ be a graph on $n$ vertices, and $(1 - \frac{1}{r}) \frac{n^2}{2} < e(G)$ for $r \geq 1$. Then $G$ contains a subgraph of the form $K_{r + 1}$.
+\end{theorem}
+\begin{proof}
+    For a given $r$, we will induct on $n$ (assuming that it holds for all lower values of $r$) and will then induct on $r$.
+
+    Let $G$ be a graph that contains no $(r + 1)$-clique. Suppose $r \geq 2$ (otherwise the result is trivial). Then we can find an $r$-clique by induction on $r$. Let $K$ be such a clique. Then each vertex in $V(G) \backslash K$ has at most $r - 1$ neighbours in $K$, otherwise we could expand $K$ to an $(r + 1)$-clique. So
+    \begin{align*}
+    e(G) &\leq \binom{r}{2} + (r - 1)(n - r) + e(G\backslash K) \\
+    &\leq \binom{r}{2} + (r - 1)(n - r) + \left(1 - \frac{1}{r}\right)\frac{(n - 1)^2}{2} \\
+    &= \left(1 - \frac{1}{r}\right)\frac{n^2}{2}.
+    \end{align*}
+\end{proof}
+
+\begin{definition}
+    The \vocab{Turán graph} $T_{r, n}$ is the complete $r$-partite graph $K_{n_1, \dots, n_r}$ where $\sum n_i = n$ and $n_1, \dots, n_r$ differ by at most 1.
+\end{definition}
+
+\begin{proposition}
+    Let $G$ be an $r$-partite graph on $n$ vertices. Then $e(G) \leq e(T_{r, n})$.
+\end{proposition}
+\begin{proof}
+    To have maximal edges we must be complete, and then we can check that making the parts as equal as possible maximizes the number of edges (by say smoothening).
+\end{proof}
+
+We will skim over the details in the next theorem.
+
+\begin{theorem}[Turán, Form 2]
+    Let $G$ be a graph on $n$ vertices and $r \geq 2$. Then if $G$ does not contain an $(r + 1)$-clique, $e(G) \leq e(T_{r, n})$.
+\end{theorem}
+\begin{proof}
+    Induct on $n$.
+    Suppose $e(G) \geq e(T_{r, n})$, and $n > r + 1$. Then we can delete edges to form a subgraph $H$ with $|H| = n$ and $e(G) = e(T_{r, n})$, with $K_{r + 1} \not \subset H$. Let $v \in H$ have minimal degree, and let $K = H - v$. We know that $|H| = |T_{r, n}|$ and $e(H) = e(T_{r, n})$, so $H$ and $T_{r, n}$ have the same average degree. But the degrees in $T_{r, n}$ are as equal as possible by construction. So $\delta(H) < \delta(T_{r, n})$. 
+
+    Thus $|K| = n - 1$, $K_{r - 1} \not \subset K$ and
+    \begin{align*}
+e(K) &= e(H) - \delta(H) \geq e(H) - \delta(T_{r, n}) \\
+&= |e(T_{r, n})| - \delta(T_{r, n}) = e(T_{r, n-1}).
+    \end{align*}
+    So by induction, we have $K \cong T_{r, n - 1}$, and so to recover $H$ we must add a vertex and $e(T_{r, n}) - e(T_{r, n - 1})$ edges to $K$ without creating a $K_{r + 1}$, which forces $H \cong T_{r, n}$. But then we can't add any edges to $H$ without creating a $K_{r + 1}$ by our previous proposition, so $G \cong T_{r, n}$.
+\end{proof}
+
+\section{Zarankiewicz Problem}
+
+Now Turán for bipartite graphs.
+
+\begin{definition}
+    The \vocab{Zarankiewicz number} $Z(n, t)$ is the maximum number of edges in a bipartite graph $G = (X \sqcup Y, E)$ with $|X| = |Y| = n$ such that $G$ does not contain a $K_{t, t}$.
+\end{definition}
+
+\begin{theorem}[Zarankiewicz Upper Bound]
+    For $t \geq 2$, $Z(n, t) \leq n^{2 - 1/t} t^{1/t} + nt$. In particular, $Z(n, t) \leq 2n^{2 - 1/t}$ for $n$ sufficiently large.
+\end{theorem}
+\begin{proof}
+    Note we can assume that $\deg y \geq t - 1$ for all $y \in Y$, as otherwise we could add a vertex and preserve that $G$ has no $K_{t, t}$. We now note that if $x_1, \dots, x_t \in X$ are distinct vertices, then $|N(x_1) \cap \cdots N(x_t)| \leq t - 1$, otherwise we would have a $K_{t, t}$. Now we apply Jensens.
+    \begin{align*}
+        (t - 1) \binom{n}{t} &\geq \sum_{x_1, \dots, x_t \text{ distinct}} |N(x_1) \cap \cdots \cap N(x_t)| \\
+        &= \sum_{y} \binom{\deg y}{t} \\
+        &\geq n \binom{\overline{d}}{t},
+    \end{align*}
+    where $\overline{d} = e(G)/n$, using that $\deg y \geq t - 1$ implies $x \mapsto \binom{x}{t}$ is convex. So
+    \begin{align*}
+        (t - 1)\binom{n}{t} &\geq n \binom{\overline{d}}{t} \\
+\implies \frac{t n^t}{t!} &\geq \frac{n(\overline{d} - t)^t}{t!} \\
+\implies t^{\frac{1}{t}}n^{2 - \frac{1}{t}} + tn &\geq e(G),
+    \end{align*}
+    as required.
+\end{proof}
+
+We can use the probabilistic method for the lower bound.
+
+\begin{theorem}[Zarankiewicz Lower Bound]
+    Let $t \geq 2$. Then $Z(n, t) \geq \frac{1}{2} n^{2 - \frac{2}{t + 1}}$.
+\end{theorem}
+\begin{proof}
+Consider a random bipartite graph $G = (X \sqcup Y, E)$ with $|X| = |Y| = n$, and each edge included with probability $p = n^{- \frac{2}{t - 1}}$. We construct from this a $K_{t, t}$ free graph by removing an edge from each $K_{t, t}$ until there's no such subgraphs. Call this modified graph $\tilde{G}$. It then suffices to show that $\EE[e(\tilde{G})]$ is at least our desired lower bound. 
+
+We have
+\begin{align*}
+    \EE[e(\tilde G)] &\geq \EE[e(G)] - \EE[\# K_{t, t} \subset G] \\
+    &= p n^2 - \binom{n}{t}^2 p^{t^2} \geq p n^2 - \frac{n^{2t}}{2} p^{t^2} \\
+    &= \frac{1}{2} n^{2 - \frac{2}{t + 1}},
+\end{align*}
+as required.
+\end{proof}
+
+
+\section{Erd\"os-Stone}
+
+\begin{definition}
+    Let $H$ be a fixed graph, and $n \in \N$. Then we define the \vocab{extremal number} $\operatorname{ex}(n, H) = \max \{e(G) \mid |G| = n, H \not \subset G\}$.
+\end{definition}
+
+
+\begin{theorem}[Erd\"os-Stone]
+    Let $H$ be a fixed nonempty graph. Then
+    \begin{align*}
+        \lim_{n \to \infty} \frac{\ex(n, H)}{\binom{n}{2}} = 1 - \frac{1}{\chi(H) - 1}.
+    \end{align*}
+\end{theorem}
+
+\section{Ramsey Theory}
+
+\begin{definition}
+    We define $R(s, t)$ to be the minimal $n$ such that every $2$-edge colouring of $K_n$ contains either a red $K_s$ or a blue $K_t$. We define $R(s) = R(s, s)$ to be the \vocab{$s$th Ramsey number}.
+\end{definition}
+
+\begin{theorem}[Ramsey]
+    For all $s, t$, the Ramsey number $R(s, t)$ exists and $R(s, t) \leq R(s - 1, t) + R(s, t - 1)$.
+\end{theorem}
+\begin{proof}
+    Induct on $s + t$. For $s, t \leq 2$ this holds. Now for $s + t > 2$, consider $K_n$ where $n = a + b$ with $a = R(s - 1, t)$ and $b = R(s, t - 1)$. Pick a vertex $v$. Then $v$ has $a + b - 1$ edges, and so has either $a$ red edges or $b$ blue edges. WLOG take $a$ red edges, and consider the subgraph of vertices $v$ is adjacent to via red edges. Then $a = R(s - 1, t)$, so either we get a monochromatic $K_{s - 1}$ red subgraph (to which we adjoin $v$ and are done), or a monochromatic $K_t$ blue subgraph, and we are then also done.
+\end{proof}
+
+\begin{corollary}[Ramsey Upper Bound]
+For all $s, t \geq 2$, $R(s, t) \leq 2^{s + t}$, so $R(s) \leq 4^s$.
+\end{corollary}
+\begin{proof}
+    Induct on $s + t$ and use the previous result.
+\end{proof}
+
+We can use the probabilistic method to get a lower bound (though we can construct $R(s) > (s - 1)^2$ easily).
+
+\begin{theorem}[Erd\"os Lower Bound for Ramsey Numbers]
+    Let $s \geq 3$. Then $R(s) \geq 2^{s/2}$.    
+\end{theorem}
+\begin{proof}
+    Take $G = K_n$ for $n \leq 2^{s/2}$, and colour each edge red or blue with $1/2$ probability. Then we compute the probability of having a monochromatic $K_s$ is upper bounded by
+    \begin{align*}
+    &    \PP\left(\bigcup_{K \in [n]^{(s)}} \{K \text{ monochromatic}\}\right) \\
+    &\leq \binom{n}{2} 2 \cdot 2^{- \binom{s}{2}} \\
+    &< 2\left(\frac{n}{(s!)^{\frac{1}{s}}} 2^{- \frac{s - 1}{2}}\right) \\
+    &\leq 2 \left(\frac{2^{1/2}}{(s!)^{1/s}}\right)^s \leq 1,
+    \end{align*}
+    and since this probability is less than 1, there must exist a colouring that has no monochromatic $K_s$.
+\end{proof}
+
+\begin{theorem}[Infinite Ramsey]
+    Whenever the edges of $K_{\infty}$ are $k$-coloured, we have a monochromatic $K_{\infty}$ subgraph.
+\end{theorem}
+\begin{proof}
+Take $v_1 \in K_{\infty}$. The vertex $v_1$ is in infinitely many edges, so infinitely many edges from $v_1$ are the same colour. Let $A_1$ be an infinite set of vertices of $K_{\infty}$ such that for all $u \in A_1, v_1 u$ has colour $c_1$. Now pick $v_2 \in A_1$. Similarly, we can find an infinite $A_2 \subset A_1$ such that all edges $v_2 u$ for $\left(u \in A_2\right)$ have colour $c_2$. Keep going. We get infinite sequences $v_1, v_2, v_3, \ldots$ of vertices, $c_1, c_2, c_3, \ldots$ of colours and $A_1 \supset A_2 \supset A_3 \supset \ldots$ such that
+\begin{enumerate}
+    \item for $i \geq 2, v_i \in A_{i-1}$
+    \item for $i \geq 1$, for all $u \in A_i, v_i u$ is an edge of colour $c_i$.
+\end{enumerate}
+In particular, if $i<j$ then $v_i v_j$ has colour $c_i$. Now, infinitely many of the $c_i$ are the same. Say $i_1<i_2<i_3<\ldots$ such that $c_{i_1}=c_{i_2}=c_{i_3}=\ldots$. Consider $v_{i_1}, v_{i_2}, v_{i_3}, \ldots$ Any edge between two of these vertices has colour $c_{i_1}$. So we have a monochromatic $K_{\infty}$
+\end{proof}
+
+\section{Graphs of Large Girth and Chromatic Number}
+
+\begin{definition}
+    The \vocab{girth} of a graph is the length of the shortest cycle.
+\end{definition}
+
+\begin{proposition}
+    Let $G$ be a graph. Then $\chi(G) \geq |G|/\alpha(G)$, where $\alpha(G)$ is the size of the largest independent set (non-adjacent vertices) in $G$.
+\end{proposition}
+\begin{proof}
+    Let $c$ be a colouring of $G$ with $k = \chi(G)$ vertices. Let $C_i$ be the set of vertices coloured $i$, each of which is independent. Then $|G| = |C_1| + \cdots + |C_k| \leq k \alpha(G) = \chi(G) \alpha(G)$.
+\end{proof}
+
+\begin{theorem}
+    For all $k$, $g \geq 3$, there exists a graph $G$ with $\chi(G) \geq k$ and girth at least $g$.
+\end{theorem}
+\begin{proof}
+    Let $G \sim \mathcal{G}(n, p)$ with $p = n^{-1 + 1/g}$.
+    Let $X_i$ be the number of cycles of length $i$. Let $X = X_{3} + \cdots + X_{g - 1}$. Note that $\PP(X \geq \frac{n}{2}) \leq \frac{2}{n}\EE[X]$. Now we compute 
+    \begin{align*}
+        \EE[X] &= \sum_{i = 3}^{g - 1} \EE[X_i] = \sum_{i = 3}^{g - 1} \binom{n}{i} \frac{i!}{i} p^i \\
+        &\leq \sum_{i = 3}^{g - 1} (np)^i = \sum_{i = 3}^{g - 1} n^{\frac{i}{g}} \\
+        &\leq cn^{-\frac{1}{g}} < \frac{1}{2}, 
+    \end{align*}
+    for some constant $c$. Now let $Y$ be the number of independent sets of $s = n/2k$ vertices (up to rounding). Then
+    \begin{align*}
+        \PP(Y \geq 1) &\leq \EE[Y] = \binom{n}{s} (1 - p)^{\binom{s}{2}} \\ 
+        & \leq n^s e^{-p \binom{s}{2}} = \left(n^2 e^{-p(s - 1)}\right)^{\frac{s}{2}} \\
+    &\leq \left(2n^2 e^{-\frac{n^{\frac{1}{g}}}{2k}}\right)^{\frac{s}{2}} < 1/2
+    \end{align*}
+    for $n$ sufficiently large. Thus $G$ has at most $n/2$ cycles of length at most $g - 1$ with probability at least $1/2$, and $G$ has $\alpha(G) \leq n/2k$ with probability at least $1/2$. Hence there is a graph $G$ with both probabilities. Let $\tilde{G}$ be $G$ with a vertex deleted from each cycle of length less than $g$. Then $\tilde G$ has girth at least $G$, and $\chi(\tilde G) \geq |\tilde G|/\alpha(\tilde G) \geq k$, as needed.
+\end{proof}
+
+\end{multicols*}
+
+
+\end{document}
