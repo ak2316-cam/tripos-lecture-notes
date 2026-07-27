@@ -571,7 +571,7 @@ Suppose Bob receives $x \in \{0,1\}^n$. What should he guess was sent? There are
 	Let $C$ be a binary $[n,m]$-code.
 	\begin{itemize}
 		\item The \vocab{ideal observer} rule decodes $x$ as the codeword $c \in C$ maximising $\PP(c \text{ sent} \mid x \text{ received})$.
-		\item The \vocab{maximum likelihood} rule decodes $x$ as the $c \in C$ maximising $\PP(x \text{ received} \mid c \text{ sent})$.
+		\item The \vocab{maximum likelihood} rule decodes $x$ as the $c \in C$ maximising the probability $\PP(x \text{ received} \mid c \text{ sent})$.
 		\item The \vocab{minimum distance} rule decodes $x$ as the $c \in C$ minimising the Hamming distance $d(x,c)$,
 		$$d(x,y) = \abs{\{i : x_i \ne y_i\}}.$$
 	\end{itemize}
@@ -952,10 +952,14 @@ The idea is that we agree to encode faithfully only the messages in $A_n$, which
 
 Before going further, a piece of notation which is easy to misread. If $X$ is a discrete random variable with probability mass function $p_X(x) = \PP(X = x)$, then $p(X)$ denotes the composite $p_X \circ X$, that is, the random variable
 $$\omega \mapsto \PP\bigl(X = X(\omega)\bigr).$$
-It is the `probability of what actually happened'. Similarly for a tuple $X^{(n)} = (X_1, \dots, X_n)$ we write $p(X^{(n)})$ for the random variable $\omega \mapsto \PP(X_1 = X_1(\omega), \dots, X_n = X_n(\omega))$. With this notation, $H(X) = \EE[-\log p(X)]$.
+It is the `probability of what actually happened'. Similarly, for a tuple $X^{(n)} = (X_1, \dots, X_n)$ we write $p(X^{(n)})$ for the random variable
+$$\omega \mapsto \PP\bigl(X_1 = X_1(\omega), \dots, X_n = X_n(\omega)\bigr).$$
+With this notation, $H(X) = \EE[-\log p(X)]$.
 
 \begin{example}
-	Let $\Ac = \{A,B,C\}$ and suppose $X^{(2)} = (X_1,X_2)$ takes the values $AB, AC, BC, BA, CA, CB$ with probabilities $0.3, 0.1, 0.1, 0.2, 0.25, 0.05$. Then $p_{X^{(2)}}(AB) = 0.3$ and so on, so the random variable $p(X^{(2)})$ takes the value $0.3$ with probability $0.3$, the value $0.1$ with probability $0.2$ (the two ways of getting a probability-$0.1$ outcome), the value $0.2$ with probability $0.2$, and so on.
+	Let $\Ac = \{A,B,C\}$ and suppose that $X^{(2)} = (X_1,X_2)$ takes the six values
+	$$AB,\quad AC,\quad BC,\quad BA,\quad CA,\quad CB$$
+	with probabilities $0.3$, $0.1$, $0.1$, $0.2$, $0.25$, $0.05$ respectively. Then $p_{X^{(2)}}(AB) = 0.3$ and so on, so the random variable $p(X^{(2)})$ takes the value $0.3$ with probability $0.3$, the value $0.1$ with probability $0.2$ (there are two outcomes of probability $0.1$), the value $0.2$ with probability $0.2$, and so on.
 \end{example}
 
 Recall from IA Probability that $X_n \to L$ \vocab{in probability}, written $X_n \xrightarrow{\PP} L$, if $\PP(\abs{X_n - L} > \varepsilon) \to 0$ for every $\varepsilon > 0$, and that the weak law of large numbers says that if $Y_1, Y_2, \dots$ are i.i.d.\ real random variables with finite mean then $\frac1n \sum_{i \le n} Y_i \xrightarrow{\PP} \EE[Y_1]$.
@@ -1169,7 +1173,8 @@ Now for the key estimate. Think of $X$ as what was sent and $Y$ as what was deco
 	If $Z = 0$ then $X = Y$, so $H(X\mid Y=y,Z=0) = 0$. If $Z=1$ then $X$ is one of the $m-1$ values other than $y$, so $H(X\mid Y=y,Z=1)\le\log(m-1)$. Hence
 	\begin{align*}
 		H(X\mid Y,Z) &= \sum_{y\in\Ac}\sum_{z\in\{0,1\}}\PP(Y=y,Z=z)\,H(X\mid Y=y,Z=z)\\
-		&\le \sum_{y\in\Ac}\PP(Y=y,Z=1)\log(m-1) = \PP(Z=1)\log(m-1) = p\log(m-1). \qedhere
+		&\le \sum_{y\in\Ac}\PP(Y=y,Z=1)\log(m-1)\\
+		&= \PP(Z=1)\log(m-1) = p\log(m-1). \qedhere
 	\end{align*}
 \end{proof}
 
@@ -1202,7 +1207,8 @@ We shall prove the inequality `operational $\le$ information' in general, and th
 	\begin{enumerate}[label=(\roman*)]
 		\item \emph{The binary symmetric channel with error probability $p$.} Let $\PP(X=0)=\alpha$. Given $X$, the output differs from the input with probability $p$ regardless, so $H(Y\mid X=0)=H(Y\mid X=1)=H(p)$ and hence $H(Y\mid X) = H(p)$. Also $\PP(Y=0) = \alpha(1-p)+(1-\alpha)p$. Therefore
 		\begin{align*}
-			C &= \max_\alpha\bigl[H(Y)-H(Y\mid X)\bigr] = \max_\alpha \bigl[H\bigl(\alpha(1-p)+(1-\alpha)p\bigr)-H(p)\bigr] = 1-H(p),
+			C &= \max_\alpha\bigl[H(Y)-H(Y\mid X)\bigr]\\
+			&= \max_\alpha \bigl[H\bigl(\alpha(1-p)+(1-\alpha)p\bigr)-H(p)\bigr] = 1-H(p),
 		\end{align*}
 		the maximum being at $\alpha = \tfrac12$, when the argument of the outer $H$ is $\tfrac12$. So
 		$$C = 1 + p\log p + (1-p)\log(1-p).$$
@@ -1517,9 +1523,9 @@ The minimum distance can also be read off from $H$, which is often the most conv
 	\end{array}$$
 	There are $8$ syndromes and only $6$ patterns of weight at most $1$, so two cosets need leaders of weight $2$; the last two columns give such a choice. Note the choice is not unique -- the syndrome $101$ also arises from $11000$, and $111$ from $01100$ -- which is Lemma~\ref{lem:mindist} telling us that a code with $d = 3$ cannot correct two errors.
 
-	Let us decode. Suppose we receive $x = 10111$. Then
-	$$Hx = (1+1,\ 1+1,\ 1+1)^\top \cdot \text{(reading off columns } 1,3,4,5) = 001,$$
-	more carefully: the columns of $H$ in positions $1,3,4,5$ are $(1,1,0),(1,0,0),(0,1,0),(0,0,1)$, which sum to $(0,0,1)$. Looking up $001$ in the table gives $z = 00001$, so we decode $x$ as $10111 + 00001 = 10110$, a codeword as required.
+	Let us decode. Suppose we receive $x = 10111$. Since $Hx$ is the sum of the columns of $H$ in the positions where $x$ is nonzero, namely $1,3,4,5$, we compute
+	$$Hx = (1,1,0)+(1,0,0)+(0,1,0)+(0,0,1) = (0,0,1).$$
+	Looking up $001$ in the table gives $z = 00001$, so we decode $x$ as $10111+00001 = 10110$, which is a codeword as required.
 \end{example}
 
 \subsection{Hamming Codes}
@@ -1587,7 +1593,9 @@ Note $W_C(1,1) = \abs{C}$ and $W_C(1,0) = 1$, and that $d(C)$ is the least $i>0$
 There is a beautiful and useful relation between the weight enumerator of a code and that of its dual, which comes from Fourier analysis on $\F_2^n$.
 
 \begin{lemma}[Poisson Summation]\label{lem:poisson}
-	Let $C \le \F_2^n$ be linear and let $f\colon \F_2^n \to \R$, with Fourier transform $\hat f(v) = \sum_{u \in \F_2^n}(-1)^{u\cdot v}f(u)$. Then
+	Let $C \le \F_2^n$ be linear and let $f\colon \F_2^n \to \R$ have Fourier transform
+	$$\hat f(v) = \sum_{u \in \F_2^n}(-1)^{u\cdot v}f(u).$$
+	Then
 	$$\sum_{v \in C}\hat f(v) = \abs{C}\sum_{u \in C^\perp}f(u).$$
 \end{lemma}
 
@@ -2336,15 +2344,15 @@ $$c \equiv m^e \pmod N, \qquad m \equiv c^d\pmod N.$$
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
 	\node[font=\small] (A) at (0,0) {Alice};
-	\node[font=\small] (B) at (8,0) {Bob};
+	\node[font=\small] (B) at (5.6,0) {Bob};
 	\draw[thin] (0,-0.4) -- (0,-4.3);
-	\draw[thin] (8,-0.4) -- (8,-4.3);
-	\node[font=\scriptsize,anchor=west,align=left] at (8.35,-0.9)
-		{chooses $p,q$, sets $N=pq$\\ picks $e$, finds $d$ with $de\equiv1$};
-	\draw[<-,thin] (0.15,-1.8) -- node[above,font=\scriptsize] {public key $(N,e)$} (7.85,-1.8);
-	\node[font=\scriptsize,anchor=east,align=right] at (-0.35,-2.6) {has message $m$\\ computes $c\equiv m^e$};
-	\draw[->,thin] (0.15,-3.4) -- node[above,font=\scriptsize] {ciphertext $c$} (7.85,-3.4);
-	\node[font=\scriptsize,anchor=west,align=left] at (8.35,-4.0) {computes $c^d\equiv m$};
+	\draw[thin] (5.6,-0.4) -- (5.6,-4.3);
+	\node[font=\scriptsize,anchor=west,align=left] at (5.95,-0.9)
+		{chooses $p,q$, sets $N=pq$\\ picks $e$, finds $d$};
+	\draw[<-,thin] (0.15,-1.8) -- node[above,font=\scriptsize] {public key $(N,e)$} (5.45,-1.8);
+	\node[font=\scriptsize,anchor=east,align=right] at (-0.35,-2.6) {has message $m$\\ forms $c\equiv m^e$};
+	\draw[->,thin] (0.15,-3.4) -- node[above,font=\scriptsize] {ciphertext $c$} (5.45,-3.4);
+	\node[font=\scriptsize,anchor=west,align=left] at (5.95,-4.0) {recovers $c^d\equiv m$};
 \end{tikzpicture}
 \end{center}
 
@@ -2438,16 +2446,16 @@ The discrete logarithm problem gives a completely different route to public key 
 \begin{center}
 \begin{tikzpicture}[x=1cm,y=1cm]
 	\node[font=\small] at (0,0) {Alice};
-	\node[font=\small] at (8,0) {Bob};
+	\node[font=\small] at (6,0) {Bob};
 	\draw[thin] (0,-0.4) -- (0,-4.1);
-	\draw[thin] (8,-0.4) -- (8,-4.1);
+	\draw[thin] (6,-0.4) -- (6,-4.1);
 	\node[font=\scriptsize,anchor=east] at (-0.35,-1.0) {picks $\alpha$};
-	\node[font=\scriptsize,anchor=west] at (8.35,-1.0) {picks $\beta$};
-	\draw[->,thin] (0.15,-1.8) -- node[above,font=\scriptsize] {$g^\alpha \bmod p$} (7.85,-1.8);
-	\draw[<-,thin] (0.15,-2.6) -- node[above,font=\scriptsize] {$g^\beta \bmod p$} (7.85,-2.6);
+	\node[font=\scriptsize,anchor=west] at (6.35,-1.0) {picks $\beta$};
+	\draw[->,thin] (0.15,-1.8) -- node[above,font=\scriptsize] {$g^\alpha \bmod p$} (5.85,-1.8);
+	\draw[<-,thin] (0.15,-2.6) -- node[above,font=\scriptsize] {$g^\beta \bmod p$} (5.85,-2.6);
 	\node[font=\scriptsize,anchor=east] at (-0.35,-3.4) {$(g^\beta)^\alpha = k$};
-	\node[font=\scriptsize,anchor=west] at (8.35,-3.4) {$(g^\alpha)^\beta = k$};
-	\node[font=\scriptsize,color=gray] at (4,-3.6) {Eve sees $g^\alpha, g^\beta$ only};
+	\node[font=\scriptsize,anchor=west] at (6.35,-3.4) {$(g^\alpha)^\beta = k$};
+	\node[font=\scriptsize,color=gray] at (3,-3.75) {Eve sees $g^\alpha, g^\beta$ only};
 \end{tikzpicture}
 \end{center}
 
@@ -2537,7 +2545,10 @@ and accepts if $v = s_1$.
 
 \begin{proof}
 	From the definition of $s_2$ we get $(m+xs_1)w \equiv (m+xs_1)s_2^{-1}\equiv k \pmod q$. Since $g$ has order $q$ modulo $p$, exponents of $g$ only matter modulo $q$, so
-	$$v = \bigl(g^{mw}g^{xs_1w}\bmod p\bigr)\bmod q = \bigl(g^{(m+xs_1)w}\bmod p\bigr)\bmod q = \bigl(g^k\bmod p\bigr)\bmod q = s_1. \qedhere$$
+	\begin{align*}
+		v &= \bigl(g^{mw}g^{xs_1w}\bmod p\bigr)\bmod q = \bigl(g^{(m+xs_1)w}\bmod p\bigr)\bmod q\\
+		&= \bigl(g^k\bmod p\bigr)\bmod q = s_1. \qedhere
+	\end{align*}
 \end{proof}
 
 As with ElGamal, reusing $k$ is fatal: if Alice signs $m_1$ and $m_2$ with the same $k$ then $s_1$ repeats and subtracting the two congruences for $s_2$ recovers $k$, hence $x$.
