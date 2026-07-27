@@ -12,6 +12,8 @@
 
 \newcommand{\inp}[2]{\langle #1, #2 \rangle}
 \newcommand{\half}{\tfrac{1}{2}}
+\newcommand{\ptr}[1]{\operatorname{tr}_{#1}}
+\newcommand{\Ry}{\mathrm{Ry}}
 
 \title{Principles of Quantum Mechanics}
 \author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
@@ -168,8 +170,9 @@ Finally, we will need the trace.
 \begin{proof}
     For cyclicity, insert a complete set of states in the middle:
     $$
-    \tr(AB) = \sum_n \mel{n}{AB}{n} = \sum_{n,m}\mel{n}{A}{m}\mel{m}{B}{n} = \sum_{m,n} B_{mn}A_{nm} = \sum_m \mel{m}{BA}{m} = \tr(BA).
+    \tr(AB) = \sum_n \mel{n}{AB}{n} = \sum_{n,m}\mel{n}{A}{m}\mel{m}{B}{n} = \sum_{m,n} B_{mn}A_{nm} = \sum_m \mel{m}{BA}{m},
     $$
+    which is $\tr(BA)$.
     Basis independence now follows: any other orthonormal basis is $\ket{n'} = U\ket{n}$ for some unitary $U$, and
     $$
     \sum_n \mel{n'}{A}{n'} = \sum_n \mel{n}{U^\dagger A U}{n} = \tr(U^\dagger A U) = \tr(A U U^\dagger) = \tr A. \qedhere
@@ -507,7 +510,11 @@ $$
 Time evolution simply attaches a phase to each energy eigenstate. In particular a state which starts as an energy eigenstate stays one, acquiring only an overall phase -- these are the \vocab{stationary states}, physically unchanging.
 
 \begin{remark}[Time-Dependent Hamiltonians]
-    If $H = H(t)$, the formula $U(t) = \exp(-\frac{i}{\hbar}\int_0^t H(t')\dd t')$ is \emph{wrong} in general, because $H(t_1)$ and $H(t_2)$ need not commute. The correct expression is a time-ordered exponential, obtained by iterating the integral equation $U(t) = I - \frac{i}{\hbar}\int_0^t H(t')U(t')\dd t'$. We will construct the first two terms of this series when we do time-dependent perturbation theory in \S\ref{sec:tdpt}. Unitarity of $U(t)$, however, holds regardless, by the norm-conservation argument above.
+    If $H = H(t)$, the formula
+    $$
+    U(t) = \exp\left(-\frac{i}{\hbar}\int_0^t H(t')\dd t'\right)
+    $$
+    is \emph{wrong} in general, because $H(t_1)$ and $H(t_2)$ need not commute. The correct expression is a time-ordered exponential, obtained by iterating the integral equation $U(t) = I - \frac{i}{\hbar}\int_0^t H(t')U(t')\dd t'$. We will construct the first two terms of this series when we do time-dependent perturbation theory in \S\ref{sec:tdpt}. Unitarity of $U(t)$, however, holds regardless, by the norm-conservation argument above.
 \end{remark}
 
 \subsection{The Heisenberg Picture}
@@ -1558,6 +1565,71 @@ So the recipe is: restrict the perturbation to the degenerate subspace and diago
 \end{tikzpicture}
 \end{center}
 
+\subsection{Atoms in Fields: Fine Structure, Zeeman and Stark}
+
+The classic applications of perturbation theory are all to hydrogen, and they are all degenerate. The spectrum found in IB, $E_n = -\Ry/n^2$ with $\Ry = 13.6\,\mathrm{eV}$, is spectacularly degenerate -- the level $n$ has $n^2$ orbital states, and $2n^2$ once spin is counted -- so \emph{everything} we have so far neglected perturbs a degenerate level. Happily, the recipe of the previous subsection is usually easier to apply than it looks, because of the principle of \S\ref{sec:symmetry}: if the perturbation commutes with certain observables, we should choose the zeroth-order basis to diagonalise those, and then $\mathcal{V}$ is diagonal (or at worst block diagonal) with no work at all.
+
+Three neglected effects, all of the same relative size $\alpha^2 \approx 5\times10^{-5}$, where
+$$
+\alpha = \frac{e^2}{4\pi\epsilon_0 \hbar c} \approx \frac{1}{137}
+$$
+is the \vocab{fine structure constant}, make up the \vocab{fine structure} of the spectrum.
+\begin{enumerate}[label=(\roman*)]
+    \item \emph{The relativistic correction to the kinetic energy.} Expanding the exact expression,
+    $$
+    \sqrt{p^2c^2 + m^2c^4} - mc^2 = \frac{p^2}{2m} - \frac{p^4}{8m^3c^2} + \cdots,
+    $$
+    so the leading correction is $V_{\mathrm{rel}} = -P^4/8m^3c^2$.
+    \item \emph{Spin--orbit coupling.} In the electron's instantaneous rest frame the proton orbits it, producing a magnetic field which couples to the electron's magnetic moment. Including the relativistic factor of $\half$ from Thomas precession, this gives
+    $$
+    V_{\mathrm{SO}} = \frac{1}{2m^2c^2}\frac{1}{r}\frac{\dd U}{\dd r}\,\vv L \cdot \vv S = \frac{e^2}{8\pi\epsilon_0 m^2c^2}\,\frac{\vv L\cdot\vv S}{r^3},
+    $$
+    the operator we already met in \S5.4.
+    \item \emph{The Darwin term}, $V_D = \frac{\hbar^2}{8m^2c^2}\nabla^2 U = \frac{\hbar^2e^2}{8\epsilon_0m^2c^2}\delta^{(3)}(\vv x)$, a relativistic smearing of the electron over a Compton wavelength which affects only the states with $\ell = 0$, the only ones with $\psi(0)\neq0$.
+\end{enumerate}
+
+Now, which basis? The terms $V_{\mathrm{rel}}$ and $V_D$ are scalars: they are built from $P^2$ and $r$, and commute with every component of $\vv L$ and of $\vv S$. The spin--orbit term does not commute with $L_z$ or $S_z$ separately, but writing it as
+$$
+\vv L \cdot \vv S = \half\left( J^2 - L^2 - S^2 \right)
+$$
+shows that it commutes with $L^2, S^2, J^2$ and $J_z$. Hence all three perturbations are simultaneously diagonal in the \emph{coupled} basis $\ket{n\,\ell\,j\,m_j}$, and the correct zeroth-order states are those of definite total angular momentum. Not a single matrix has to be diagonalised.
+
+Evaluating the shifts then needs the radial expectation values $\expval{r^{-2}}$ and $\expval{r^{-3}}$ in hydrogen. That algebra is unedifying and we shall not reproduce it; what is worth knowing is that the three contributions conspire into something startlingly simple.
+
+\begin{theorem}[Fine Structure of Hydrogen]
+    To first order in $\alpha^2$, the energy levels of hydrogen are
+    $$
+    E_{n j} = -\frac{\Ry}{n^2}\left[ 1 + \frac{\alpha^2}{n^2}\left( \frac{n}{j+\half} - \frac34 \right) \right],
+    $$
+    depending on $n$ and on the total angular momentum $j$, but not on $\ell$.
+\end{theorem}
+
+The shift is always negative, and it lifts the degeneracy in $\ell$ only partially: states with the same $j$ but different $\ell$ -- such as $2s_{1/2}$ and $2p_{1/2}$, in the spectroscopic notation $n\ell_j$ -- remain exactly degenerate. This is a peculiarity of the Coulomb potential, and it survives an exact treatment: solving the Dirac equation for hydrogen gives a spectrum depending only on $n$ and $j$. The degeneracy is finally broken by quantum electrodynamics, producing the tiny \vocab{Lamb shift} of about $4\times10^{-6}\,\mathrm{eV}$ between $2s_{1/2}$ and $2p_{1/2}$ -- whose measurement in 1947 was one of the founding experiments of QED.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+% unperturbed n = 2
+\draw[very thick] (0,1.5) -- (1.9,1.5);
+\node[left] at (-0.1,1.5) {$E_2$};
+\node[above] at (0.95,1.58) {\small $8$ states};
+\node at (0.95,-0.15) {\small Bohr};
+% fine structure levels
+\draw[very thick, color=blue] (4.3,2.15) -- (6.0,2.15);
+\node[right, color=blue] at (6.1,2.15) {\small $2p_{3/2}$ \; ($j=\tfrac32$, $4$ states)};
+\draw[very thick, color=blue] (4.3,0.75) -- (6.0,0.75);
+\node[right, color=blue] at (6.1,0.88) {\small $2s_{1/2},\,2p_{1/2}$};
+\node[right, color=blue] at (6.1,0.5) {\small ($j=\tfrac12$, $4$ states)};
+\draw[dashed, gray, thin] (1.9,1.5) -- (4.3,2.15);
+\draw[dashed, gray, thin] (1.9,1.5) -- (4.3,0.75);
+\node at (5.15,-0.15) {\small fine structure};
+% splitting label
+\draw[<->, color=examplefg] (4.65,2.13) -- (4.65,0.77);
+\node[right, color=examplefg] at (4.75,1.45) {\scriptsize $\sim\!\alpha^2\Ry$};
+\end{tikzpicture}
+\end{center}
+
+With the internal structure understood, we can put the atom into an external field.
+
 \begin{example}[The Normal Zeeman Effect]
     Put a hydrogen atom in a uniform magnetic field $\vv B = B \vv e_3$. The orbital motion of the electron gives a magnetic moment $\vv\mu = -\frac{e}{2m_e}\vv L$, so (ignoring spin for the moment)
     $$
@@ -1569,6 +1641,30 @@ So the recipe is: restrict the perturbation to the degenerate subspace and diago
     $$
     and each $\ell$-multiplet splits into $2\ell+1$ equally spaced levels. This is exactly the degeneracy-versus-symmetry story of \S\ref{sec:symmetry} run in reverse: the field picks out an axis, breaking $SO(3)$ down to rotations about $\vv e_3$, and the degeneracy protected by the larger group is destroyed.
 \end{example}
+
+The splitting is linear in $B$, and it is easiest to picture by plotting the levels against the field strength.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+\draw[->] (0,-1.85) -- (0,1.75) node[above] {\small $E$};
+\draw[->] (0,-1.7) -- (5.1,-1.7) node[right] {\small $B$};
+% the three fanning levels
+\draw[thick, color=blue] (0,0) -- (4.4,1.25);
+\draw[thick, color=blue] (0,0) -- (4.4,0);
+\draw[thick, color=blue] (0,0) -- (4.4,-1.25);
+\node[right, color=blue] at (4.5,1.25) {\small $m=+1$};
+\node[right, color=blue] at (4.5,0.0) {\small $m=0$};
+\node[right, color=blue] at (4.5,-1.25) {\small $m=-1$};
+% spacing indicator
+\draw[<->, color=examplefg] (3.4,0.968) -- (3.4,0.03);
+\node[left, color=examplefg] at (3.3,0.5) {\scriptsize $\mu_B B$};
+\draw[<->, color=examplefg] (3.4,-0.03) -- (3.4,-0.968);
+\node[left, color=examplefg] at (3.3,-0.5) {\scriptsize $\mu_B B$};
+% unperturbed
+\node[left] at (-0.1,0) {\small $E_n$};
+\node at (2.5,-2.25) {\small an $\ell = 1$ level in a magnetic field};
+\end{tikzpicture}
+\end{center}
 
 \begin{remark}[The Anomalous Zeeman Effect]
     Including spin, the moment is $\vv \mu = -\frac{e}{2m_e}(\vv L + 2\vv S)$ -- the factor of $2$ being the electron's $g$-factor, a prediction of the Dirac equation -- so
@@ -1604,7 +1700,7 @@ Perturbation theory needs a nearby solvable problem. When there is none, the fol
     with equality if and only if $\ket\psi$ is a ground state.
 \end{theorem}
 \begin{proof}
-    Expand in an orthonormal basis of eigenstates, $\ket\psi = \sum_n a_n \ket n$ with $\sum_n \abs{a_n}^2 = 1$. Then
+    Expand in an orthonormal basis of energy eigenstates, so that $\ket\psi = \sum_n a_n \ket n$ with coefficients satisfying $\sum_n \abs{a_n}^2 = 1$. Then
     $$
     \mel{\psi}{H}{\psi} = \sum_n E_n \abs{a_n}^2 \geq E_0 \sum_n \abs{a_n}^2 = E_0,
     $$
@@ -1803,9 +1899,9 @@ Without $V$ the problem separates into two hydrogen-like atoms with $Z=2$, whose
 \draw[very thick, color=examplefg] (5.8,1.85) -- (7.4,1.85);
 \node[right, color=examplefg] at (7.5,1.85) {\small $1s2p$};
 % splitting indicator for 1s2s
-\draw[dashed, gray, thin] (3.0,1.5) -- (5.7,1.5);
-\draw[<->, gray] (5.3,1.5) -- (5.3,0.9);
-\node[left, gray] at (5.2,1.2) {\scriptsize $2J$};
+\draw[dashed, gray, thin] (3.0,1.5) -- (7.4,1.5);
+\draw[<->, gray] (6.6,1.48) -- (6.6,0.92);
+\node[left, gray] at (6.5,1.2) {\scriptsize $2J$};
 % ground state
 \draw[very thick] (1.4,-0.6) -- (3.0,-0.6);
 \node[left] at (1.3,-0.6) {\small $1s^2$};
@@ -1988,5 +2084,360 @@ The probability now grows \emph{linearly} in time, at a constant rate -- exactly
     $$
     Transitions violating these are not strictly impossible -- higher multipole terms in the expansion can allow them -- but they are enormously slower, and the corresponding excited states are `metastable'. This is why orthohelium, which cannot decay to the parahelium ground state without flipping a spin, is long-lived enough to have been mistaken for a separate substance.
 \end{remark}
+
+\section{Density Operators and Mixed States}\label{sec:density}
+
+Everything so far has assumed that we know which state the system is in. It may be a superposition, but it is a definite vector $\ket\psi$. Yet there are two quite different reasons one might be unable to predict the result of a measurement, and only one of them is described by a vector.
+
+The first is intrinsic. A spin in $\frac{1}{\sqrt2}(\ket\uparrow + \ket\downarrow)$ has no definite value of $S_z$, and no further information about it exists: this is a complete description, and the state \emph{is} an eigenstate of $S_x$. The second is ordinary classical ignorance. Suppose the laboratory tossed a fair coin and prepared $\ket\uparrow$ or $\ket\downarrow$ accordingly, without telling us. Measuring $S_z$ now also gives $\pm\frac\hbar2$ with equal probabilities; but measuring $S_x$ gives $\pm\frac\hbar2$ with equal probabilities too, whereas in the superposition it gives $+\frac\hbar2$ with certainty. The two situations are physically different, and no vector in $\mathcal{H}$ describes the second one.
+
+The fix is to enlarge the notion of state slightly, replacing vectors by operators.
+
+\subsection{The Density Operator}
+
+\begin{definition}[Density Operator]
+    Suppose a system is prepared in the normalised state $\ket{\psi_i}$ with probability $p_i$, where $p_i \geq 0$ and $\sum_i p_i = 1$. Such an \vocab{ensemble} is described by the \vocab{density operator}
+    $$
+    \rho = \sum_i p_i \ket{\psi_i}\bra{\psi_i}.
+    $$
+    A density operator of the form $\rho = \ket\psi\bra\psi$ is called \vocab{pure}; any other is \vocab{mixed}.
+\end{definition}
+
+Note carefully that the $\ket{\psi_i}$ are \emph{not} required to be orthogonal, and that the sum is a sum of \emph{operators}, weighted by classical probabilities -- not a superposition of states. A pure state $\ket\psi$ is recovered as the ensemble in which one outcome has probability $1$, and the projector $\ket\psi\bra\psi$ carries exactly the same information as $\ket\psi$ except for the (unphysical) overall phase, which is a small bonus.
+
+\begin{proposition}
+    A density operator satisfies
+    $$
+    \rho^\dagger = \rho, \qquad \rho \geq 0 \; \text{ (i.e.\ } \mel{\phi}{\rho}{\phi}\geq0 \text{ for all } \ket\phi), \qquad \tr \rho = 1.
+    $$
+    Conversely, every operator with these three properties is the density operator of some ensemble.
+\end{proposition}
+\begin{proof}
+    Each $\ket{\psi_i}\bra{\psi_i}$ is Hermitian and positive, with trace $\braket{\psi_i}{\psi_i} = 1$; the properties follow since the $p_i$ are non-negative reals summing to $1$. Conversely, given such a $\rho$, the spectral decomposition gives $\rho = \sum_n \lambda_n \ket{n}\bra{n}$ with $\{\ket n\}$ orthonormal, $\lambda_n = \mel{n}{\rho}{n}\geq0$ and $\sum_n\lambda_n = \tr\rho = 1$: an ensemble.
+\end{proof}
+
+So the density operators form a convex set -- any probabilistic mixture $t\rho_1 + (1-t)\rho_2$ of density operators is one -- whose extreme points, as we are about to see, are exactly the pure states. Everything we can measure is computed from $\rho$ by taking a trace.
+
+\begin{proposition}
+    In the ensemble described by $\rho$, the expectation value of an observable $A$ is
+    $$
+    \expval{A}_\rho = \tr(\rho A),
+    $$
+    and a measurement of $A$ returns the eigenvalue $\lambda_n$ with probability $\tr(\rho P_n)$.
+\end{proposition}
+\begin{proof}
+    Using $\tr\big(\ket\phi\bra\psi A\big) = \mel{\psi}{A}{\phi}$,
+    $$
+    \tr(\rho A) = \sum_i p_i \tr\big( \ket{\psi_i}\bra{\psi_i}A \big) = \sum_i p_i \mel{\psi_i}{A}{\psi_i},
+    $$
+    which is the average over the ensemble of the quantum expectation values -- exactly what the two layers of uncertainty demand. The second claim is the case $A = P_n$.
+\end{proof}
+
+This has an immediate and slightly unsettling consequence: \emph{two ensembles with the same density operator are indistinguishable by any experiment whatsoever}. The decomposition $\rho = \sum_i p_i\ket{\psi_i}\bra{\psi_i}$ is therefore not physical data; only $\rho$ is.
+
+\begin{example}[The Same Mixture Twice Over]
+    Toss a fair coin and prepare $\ket\uparrow$ or $\ket\downarrow$. Then
+    $$
+    \rho = \half\ket\uparrow\bra\uparrow + \half\ket\downarrow\bra\downarrow = \half I.
+    $$
+    Now instead toss a fair coin and prepare $\ket{\rightarrow} = \frac{1}{\sqrt2}(\ket\uparrow+\ket\downarrow)$ or $\ket\leftarrow = \frac{1}{\sqrt2}(\ket\uparrow - \ket\downarrow)$. Then
+    $$
+    \rho' = \half\ket\rightarrow\bra\rightarrow + \half\ket\leftarrow\bra\leftarrow = \half I
+    $$
+    as well, since the cross terms cancel. The two preparation procedures are completely different, and yet no measurement can tell them apart. This $\rho = \half I$ is the \vocab{maximally mixed state} of a qubit: every observable has expectation $\half\tr A$, and every measurement is a fair coin toss.
+\end{example}
+
+\begin{proposition}[Purity]
+    For any density operator $\tr(\rho^2)\leq1$, with equality if and only if $\rho$ is pure.
+\end{proposition}
+\begin{proof}
+    Diagonalise, $\rho = \sum_n\lambda_n\ket n\bra n$. Then $\tr\rho^2 = \sum_n\lambda_n^2 \leq \left(\sum_n\lambda_n\right)^2 = 1$, since the $\lambda_n$ are non-negative and the cross terms are non-negative. Equality forces all but one $\lambda_n$ to vanish, so $\rho = \ket n\bra n$ for a single $n$.
+\end{proof}
+
+The number $\tr\rho^2$ is called the \vocab{purity}, and runs from $1$ (pure) down to $1/\dim\mathcal{H}$ (maximally mixed). Equivalently, $\rho$ is pure iff $\rho^2 = \rho$, that is iff $\rho$ is a projector.
+
+Finally, dynamics. If each member of the ensemble evolves by the Schr\"odinger equation, $\ket{\psi_i(t)} = U(t)\ket{\psi_i(0)}$, then $\rho(t) = U(t)\rho(0)U(t)^\dagger$, and differentiating:
+
+\begin{proposition}[Von Neumann Equation]
+    $$
+    i\hbar\frac{\dd \rho}{\dd t} = \left[ H, \rho \right].
+    $$
+\end{proposition}
+
+Note the sign, which is \emph{opposite} to Heisenberg's equation of motion $i\hbar \dot A_H = [A_H, H]$. There is no contradiction: $\rho$ is a state, not an observable, and it evolves like one. A stationary $\rho$ is one commuting with $H$ -- for instance any function of $H$, which is why the thermal state $\rho \propto e^{-\beta H}$ of Statistical Physics is an equilibrium state.
+
+Measurement is described just as before. If $A$ is measured and the outcome $\lambda_n$ is observed, then
+$$
+\rho \longmapsto \frac{P_n \rho P_n}{\tr(\rho P_n)};
+$$
+and if the measurement is made but the result is discarded -- a very natural thing to happen when the `apparatus' is the surrounding environment -- then averaging over outcomes with their probabilities gives
+$$
+\rho \longmapsto \sum_n P_n \rho P_n,
+$$
+which simply deletes all the off-diagonal blocks of $\rho$ in the eigenbasis of $A$. This is \vocab{decoherence}: an unobserved interaction with the environment turns a superposition into a mixture, destroying the relative phases that produce interference, and it is the reason that large objects are never seen in superpositions of macroscopically distinct states.
+
+\begin{example}[The Qubit and the Bloch Ball]
+    Any Hermitian $2\times2$ matrix is a real combination of $I$ and the Pauli matrices, and $\tr\sigma_i = 0$, so the trace condition fixes the coefficient of $I$:
+    $$
+    \rho = \half\left( I + \vv{n}\cdot\vv\sigma \right), \qquad \vv n \in \R^3.
+    $$
+    The eigenvalues of $\vv n \cdot \vv\sigma$ are $\pm\abs{\vv n}$, so those of $\rho$ are $\half(1\pm\abs{\vv n})$, and positivity holds exactly when $\abs{\vv n}\leq1$. Moreover
+    $$
+    \expval{\vv S}_\rho = \frac{\hbar}{2}\tr(\rho\,\vv\sigma) = \frac{\hbar}{2}\vv n, \qquad \tr\rho^2 = \half\left(1 + \abs{\vv n}^2\right),
+    $$
+    so $\vv n$ -- the \vocab{Bloch vector} -- is just the mean spin direction, and $\rho$ is pure precisely when $\abs{\vv n} = 1$. The states of a qubit therefore fill a solid ball of radius $1$, with the pure states of \S4.3 on its surface (the Bloch sphere) and the maximally mixed state $\half I$ at its centre.
+\end{example}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.5]
+% the ball
+\fill[color=blue!7] (0,0) circle (1);
+\draw[thick] (0,0) circle (1);
+\draw[dashed, gray] (-1,0) arc (180:360:1 and 0.3);
+\draw[gray] (1,0) arc (0:180:1 and 0.3);
+% a mixed state inside
+\draw[->, very thick, color=blue] (0,0) -- (0.42,0.45);
+\node[color=blue] at (0.30,0.66) {\small $\vv n$};
+\fill[color=blue] (0.42,0.45) circle (0.032);
+% centre
+\fill[color=examplefg] (0,0) circle (0.032);
+\node[color=examplefg, left] at (-0.06,-0.13) {\small $\tfrac12 I$};
+% pure state on the surface
+\fill (0,1) circle (0.032);
+\node[above] at (0,1.02) {\small $\ket\uparrow$};
+\fill (0,-1) circle (0.032);
+\node[below] at (0,-1.02) {\small $\ket\downarrow$};
+\node[right] at (1.05,0.55) {\small pure: $\abs{\vv n} = 1$};
+\node[right] at (1.05,-0.55) {\small mixed: $\abs{\vv n} < 1$};
+\end{tikzpicture}
+\end{center}
+
+\subsection{Subsystems and the Reduced Density Operator}
+
+The second, and more important, reason density operators are unavoidable is that \emph{a subsystem of a system in a pure state need not itself have a pure state}. This is where the tensor product of \S\ref{sec:tensor} takes its revenge.
+
+Suppose the composite system $\mathcal{H}_1\otimes\mathcal{H}_2$ is in the state $\rho$, and we have access only to subsystem $1$. The observables available to us are those of the form $A \otimes I$, and we would like a $\rho_1$ on $\mathcal{H}_1$ reproducing all their expectation values.
+
+\begin{definition}[Partial Trace]
+    Let $\{\ket{a}_2\}$ be an orthonormal basis of $\mathcal{H}_2$. The \vocab{reduced density operator} of subsystem $1$ is
+    $$
+    \rho_1 = \ptr{2}\rho := \sum_a \left( I \otimes \bra{a}_2 \right)\rho\left( I \otimes \ket{a}_2 \right),
+    $$
+    an operator on $\mathcal{H}_1$, and similarly for $\rho_2 = \ptr{1}\rho$.
+\end{definition}
+
+\begin{proposition}
+    $\rho_1$ is a density operator on $\mathcal{H}_1$, independent of the basis chosen, and
+    $$
+    \tr\big( \rho\, (A\otimes I) \big) = \tr\left( \rho_1 A \right) \qquad \text{for every observable } A \text{ on } \mathcal{H}_1.
+    $$
+\end{proposition}
+\begin{proof}
+    Hermiticity and positivity are inherited termwise, and $\tr\rho_1 = \tr\rho = 1$ because tracing over $\mathcal{H}_1$ and then $\mathcal{H}_2$ is the same as tracing over the product. For the displayed identity, evaluate the full trace in a product basis $\ket{i}_1\ket{a}_2$:
+    $$
+    \tr\big(\rho(A\otimes I)\big) = \sum_{i,a}\mel{i,a}{\rho\,(A\otimes I)}{i,a} = \sum_i \mel{i}{\left(\sum_a \bra{a}\rho\ket{a}\right)A}{i} = \tr(\rho_1 A).
+    $$
+    Basis independence follows, since the left-hand side does not mention the basis of $\mathcal{H}_2$. \qedhere
+\end{proof}
+
+\begin{example}[The Singlet]
+    Let the pair of spins be in the pure singlet state $\ket{0\,0} = \frac{1}{\sqrt2}(\ket{\uparrow\downarrow}-\ket{\downarrow\uparrow})$, so
+    $$
+    \rho = \half\Big( \ket{\uparrow\downarrow}\bra{\uparrow\downarrow} - \ket{\uparrow\downarrow}\bra{\downarrow\uparrow} - \ket{\downarrow\uparrow}\bra{\uparrow\downarrow} + \ket{\downarrow\uparrow}\bra{\downarrow\uparrow} \Big).
+    $$
+    Tracing out the second spin with the basis $\ket\uparrow_2, \ket\downarrow_2$, the two cross terms die (they have orthogonal states in slot $2$), and
+    $$
+    \rho_1 = \half\ket\uparrow\bra\uparrow + \half\ket\downarrow\bra\downarrow = \half I.
+    $$
+    The first spin is in the \emph{maximally mixed} state: we know everything there is to know about the pair, and nothing whatsoever about either member of it. Its purity is $\half$, the smallest possible.
+\end{example}
+
+This is the sharpest statement of what entanglement is, and it is worth recording.
+
+\begin{proposition}
+    Let $\ket\Psi \in \mathcal{H}_1\otimes\mathcal{H}_2$ be a pure state. Then $\ket\Psi$ is a product state if and only if $\rho_1 = \ptr{2}\ket\Psi\bra\Psi$ is pure.
+\end{proposition}
+\begin{proof}
+    If $\ket\Psi = \ket\psi\otimes\ket\omega$ then $\rho = \ket\psi\bra\psi\otimes\ket\omega\bra\omega$ and $\rho_1 = \ket\psi\bra\psi$, which is pure. Conversely, if $\rho_1 = \ket\psi\bra\psi$ is pure then, expanding $\ket\Psi = \sum_{i} \ket{i}_1\ket{\chi_i}_2$ in an orthonormal basis of $\mathcal{H}_1$ containing $\ket\psi$, one computes $\rho_1 = \sum_{ij}\braket{\chi_j}{\chi_i}\ket{i}\bra{j}$; purity forces every $\ket{\chi_i}$ with $\ket i \neq \ket\psi$ to vanish, leaving $\ket\Psi = \ket\psi\otimes\ket{\chi_\psi}$.
+\end{proof}
+
+So the mixedness of $\rho_1$ measures how entangled the pair is, and one can turn this into a number (the \emph{entropy of entanglement}, $-\tr\rho_1\log\rho_1$), which is the starting point of quantum information theory. For us the important corollary is about signalling.
+
+\begin{proposition}[No Signalling]
+    Suppose Bob, who holds subsystem $2$, applies any unitary to it, or measures any observable on it and does not tell Alice the outcome. Then Alice's reduced state $\rho_1$ is unchanged.
+\end{proposition}
+\begin{proof}
+    For a unitary, $\rho \mapsto (I\otimes U)\rho(I\otimes U^\dagger)$, and taking the partial trace over $\mathcal{H}_2$ we may cycle $U^\dagger$ round to meet $U$ within that factor, giving $\rho_1$ again. For an unrecorded measurement, $\rho\mapsto\sum_n (I\otimes P_n)\rho(I\otimes P_n)$; cycling in the same way turns this into $\ptr{2}\big[(I\otimes \sum_n P_n)\rho\big] = \ptr{2}\rho = \rho_1$.
+\end{proof}
+
+This modest-looking result is what reconciles the rest of this course with special relativity: however strongly two separated systems are correlated, nothing Bob does can alter the statistics of \emph{any} measurement Alice makes. Correlation is not communication. Keep it in mind, because in the next section the correlations are going to look very much like communication indeed.
+
+\section{The EPR Paradox and Bell's Inequality}\label{sec:epr}
+
+We close by asking what quantum mechanics says about the world, rather than about the outcomes of experiments. The formalism is fixed by now and nothing in it will change; what is at stake is whether it can be regarded as a complete description of reality, or merely as a statistical summary of some deeper theory. Remarkably, this apparently metaphysical question turns out to have an experimental answer.
+
+\subsection{The EPR Argument}
+
+Prepare two spin-$\half$ particles in the singlet state
+$$
+\ket{0\,0} = \frac{1}{\sqrt2}\left( \ket{\uparrow\downarrow} - \ket{\downarrow\uparrow} \right),
+$$
+and let them fly apart -- to Alice on the left and Bob on the right, arbitrarily far away. Alice measures $S_z$ on her particle. She gets $\pm\frac\hbar2$ with equal probability; but whatever she gets, she knows with \emph{certainty} that Bob will get the opposite, since the state contains no $\ket{\uparrow\uparrow}$ or $\ket{\downarrow\downarrow}$ term.
+
+Now recall from \S5.4 that the singlet is rotationally invariant. Consequently the same argument works along \emph{any} axis: Alice may equally measure $S_x$, and then predict Bob's $S_x$ with certainty. This is the observation of Einstein, Podolsky and Rosen (1935). Their argument runs as follows.
+
+\begin{enumerate}[label=(\roman*)]
+    \item \emph{Locality.} Alice's measurement cannot physically affect Bob's distant particle. (The two events can be arranged to be spacelike separated.)
+    \item \emph{Reality.} `If, without in any way disturbing a system, we can predict with certainty the value of a physical quantity, then there exists an element of physical reality corresponding to that quantity.'
+    \item Alice can predict Bob's $S_z$ with certainty, so Bob's $S_z$ has a definite value. She could instead have chosen to predict his $S_x$, so his $S_x$ has a definite value too. By locality, which choice she makes cannot matter to Bob's particle; so \emph{both} values are real.
+    \item But no quantum state assigns definite values to both $S_x$ and $S_z$, since $[S_x, S_z]\neq0$.
+\end{enumerate}
+
+The conclusion EPR drew is that quantum mechanics, while correct as far as it goes, is \emph{incomplete}: there must be additional variables -- traditionally written $\lambda$ and called \vocab{hidden variables} -- which fix the outcomes of all measurements in advance, and of which the quantum state is only a coarse-grained average. On this view the randomness of quantum mechanics is like the randomness of a coin toss, a statement about our ignorance rather than about the coin.
+
+It is a good argument. Bohr's reply at the time amounted to rejecting (ii), and for thirty years the matter was regarded as a question of taste. What nobody noticed until Bell (1964) was that the two views make \emph{different experimental predictions}.
+
+\subsection{Local Hidden Variables and the CHSH Inequality}
+
+Let us say exactly what a hidden-variable theory is. Alice chooses a direction $\vv a$ and measures $\vv a \cdot \vv\sigma$, getting $\pm1$; Bob chooses $\vv b$ and gets $\pm1$. A \vocab{local hidden variable} (LHV) theory posits
+\begin{enumerate}[label=(\roman*)]
+    \item a hidden variable $\lambda$, distributed according to some probability density $p(\lambda)$ fixed by the preparation;
+    \item functions $A(\vv a, \lambda) = \pm 1$ and $B(\vv b, \lambda) = \pm 1$ giving the outcomes.
+\end{enumerate}
+The locality assumption is buried in the notation, and is the whole content of the theorem: $A$ does not depend on $\vv b$, and $B$ does not depend on $\vv a$. Alice's outcome is not allowed to know what Bob chose to measure.
+
+The measurable quantity is the \vocab{correlation}
+$$
+E(\vv a, \vv b) = \int A(\vv a,\lambda)B(\vv b, \lambda)\,p(\lambda)\dd\lambda,
+$$
+the average of the product of the two outcomes, which is $+1$ for perfect correlation and $-1$ for perfect anticorrelation.
+
+\begin{theorem}[CHSH Inequality]
+    In any local hidden variable theory, and for any four directions $\vv a, \vv a', \vv b, \vv b'$,
+    $$
+    S := E(\vv a, \vv b) - E(\vv a, \vv b') + E(\vv a', \vv b) + E(\vv a', \vv b') \quad \text{satisfies} \quad \abs{S} \leq 2.
+    $$
+\end{theorem}
+\begin{proof}
+    Fix $\lambda$ and abbreviate $A = A(\vv a,\lambda)$, $A' = A(\vv a',\lambda)$, $B = B(\vv b,\lambda)$, $B' = B(\vv b',\lambda)$, each of which is $\pm1$. Then
+    $$
+    AB - AB' + A'B + A'B' = A\left( B - B' \right) + A'\left( B + B' \right).
+    $$
+    Since $B, B' \in \{\pm1\}$, either $B = B'$, in which case the first bracket vanishes and the second is $\pm2$; or $B = -B'$, in which case the second vanishes and the first is $\pm2$. Either way the whole expression is $\pm2$. Averaging over $\lambda$ with the probability density $p$, which has total mass $1$, gives $\abs{S}\leq2$.
+\end{proof}
+
+The proof is three lines and uses nothing about quantum mechanics -- indeed nothing about physics. It says only that if each particle carries with it a predetermined answer to every question it might be asked, then four particular correlations cannot all be large at once. It is very hard to see how any theory of the EPR type could evade it.
+
+\subsection{The Quantum Prediction}
+
+Now compute the same four numbers in quantum mechanics, in the singlet state.
+
+\begin{proposition}
+    In the singlet state of two spin-$\half$ particles,
+    $$
+    E(\vv a, \vv b) = \expval{\left( \vv a \cdot \vv\sigma^{(1)}\right)\left( \vv b \cdot \vv\sigma^{(2)}\right)} = - \vv a \cdot \vv b = -\cos\theta_{ab},
+    $$
+    where $\theta_{ab}$ is the angle between the two directions.
+\end{proposition}
+\begin{proof}
+    Write $C_{ij} = \expval{\sigma_i^{(1)}\sigma_j^{(2)}}$. The singlet is annihilated by every component of $\vv J = \vv S^{(1)} + \vv S^{(2)}$, so it is invariant under simultaneous rotations of both spins, under which $C_{ij}$ transforms as a rank-two tensor; the only rotationally invariant such tensor is a multiple of $\delta_{ij}$, so $C_{ij} = c\,\delta_{ij}$. To find $c$, use $J^2 = 0$:
+    $$
+    0 = \left(\vv S^{(1)}+\vv S^{(2)}\right)^2 = \frac{3\hbar^2}{4}+\frac{3\hbar^2}{4} + 2\vv S^{(1)}\cdot\vv S^{(2)} \quad\Longrightarrow\quad \vv S^{(1)}\cdot\vv S^{(2)} = -\frac{3\hbar^2}{4},
+    $$
+    that is $\expval{\vv\sigma^{(1)}\cdot\vv\sigma^{(2)}} = -3$, so $3c = -3$ and $c = -1$. Hence $E(\vv a,\vv b) = a_ib_jC_{ij} = -\vv a \cdot \vv b$.
+\end{proof}
+
+For those who prefer to see the arithmetic, the joint probabilities are
+$$
+\PP(\pm,\pm) = \half\sin^2\frac{\theta_{ab}}{2}, \qquad \PP(\pm,\mp) = \half\cos^2\frac{\theta_{ab}}{2},
+$$
+whose difference is $\sin^2\frac\theta2 - \cos^2\frac\theta2 = -\cos\theta$, as claimed. At $\theta = 0$ the outcomes are perfectly anticorrelated (the EPR observation), and at $\theta = \pi$ perfectly correlated.
+
+\begin{corollary}[Bell's Theorem]
+    Quantum mechanics violates the CHSH inequality, and therefore no local hidden variable theory can reproduce its predictions.
+\end{corollary}
+\begin{proof}
+    Take all four directions in a plane, at angles $0$, $\frac\pi2$, $\frac\pi4$, $\frac{3\pi}{4}$ for $\vv a, \vv a', \vv b, \vv b'$ respectively. Then $\vv a$ makes an angle $\frac\pi4$ with $\vv b$ and $\frac{3\pi}{4}$ with $\vv b'$, while $\vv a'$ makes an angle $\frac\pi4$ with each of $\vv b, \vv b'$. So
+    $$
+    S = -\cos\frac\pi4 + \cos\frac{3\pi}{4} - \cos\frac\pi4 - \cos\frac\pi4 = -\frac{4}{\sqrt2} = -2\sqrt2,
+    $$
+    and $\abs{S} = 2\sqrt2 \approx 2.83 > 2. \qedhere$
+\end{proof}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+% source
+\fill[color=examplefg] (0,0) circle (0.13);
+\node[below] at (0,-0.25) {\small source};
+\node[above] at (0,0.25) {\small $\ket{0\,0}$};
+% particles flying apart
+\draw[->, thick] (-0.3,0) -- (-2.5,0);
+\draw[->, thick] (0.3,0) -- (2.5,0);
+\node[above] at (-1.4,0.05) {\small particle $1$};
+\node[above] at (1.4,0.05) {\small particle $2$};
+% Alice's analyser
+\draw[thick, color=blue] (-3.5,-0.75) rectangle (-2.6,0.75);
+\draw[->, very thick, color=blue] (-3.05,0) -- (-3.05+0.42,0.42);
+\node[color=blue] at (-2.38,0.70) {\small $\vv a$};
+\node[below] at (-3.05,-1.0) {\small Alice};
+\node[left] at (-3.6,0.35) {\small $\pm1$};
+% Bob's analyser
+\draw[thick, color=blue] (2.6,-0.75) rectangle (3.5,0.75);
+\draw[->, very thick, color=blue] (3.05,0) -- (3.05+0.30,-0.50);
+\node[color=blue] at (3.78,-0.72) {\small $\vv b$};
+\node[below] at (3.05,-1.0) {\small Bob};
+\node[right] at (3.6,0.35) {\small $\pm1$};
+\end{tikzpicture}
+\end{center}
+
+The two Stern--Gerlach analysers may be light years apart, and the settings $\vv a$, $\vv b$ chosen at the last moment, so that no signal travelling at or below the speed of light can carry Alice's choice to Bob's apparatus. Yet the correlations between the two columns of $\pm1$s are stronger than any pre-agreed strategy could produce. The following picture, of the correlation as a function of the angle between the settings, shows where the extra strength comes from.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+\draw[ultra thin, color=lightgray] (0,-1.3) grid[xstep=1, ystep=0.65] (4,1.3);
+\draw[->] (-0.2,0) -- (4.6,0) node[right] {\small $\theta$};
+\draw[->] (0,-1.55) -- (0,1.7) node[above] {\small $E(\theta)$};
+% quantum correlation, with x = 4\theta/\pi
+\draw[thick, color=blue, samples=160, smooth, domain=0:4] plot (\x, {-1.3*cos(45*\x)});
+% the linear hidden-variable model
+\draw[thick, color=examplefg] (0,-1.3) -- (4,1.3);
+% axis ticks
+\node[left] at (-0.07,1.3) {\scriptsize $+1$};
+\node[left] at (-0.07,-1.3) {\scriptsize $-1$};
+\draw (2,-1.3) -- (2,-1.44);
+\draw (4,-1.3) -- (4,-1.44);
+\node[below] at (2,-1.42) {\scriptsize $\tfrac{\pi}{2}$};
+\node[below] at (4,-1.42) {\scriptsize $\pi$};
+% legend
+\draw[thick, color=blue] (0.15,-2.35) -- (0.85,-2.35);
+\node[right] at (0.95,-2.35) {\small $-\cos\theta$ \; (quantum mechanics)};
+\draw[thick, color=examplefg] (0.15,-2.8) -- (0.85,-2.8);
+\node[right] at (0.95,-2.8) {\small $-1+2\theta/\pi$ \; (a hidden-variable model)};
+\end{tikzpicture}
+\end{center}
+
+The straight line is the correlation produced by the most obvious hidden-variable model -- each pair carries a random direction $\vv\lambda$, and each particle answers according to which side of the plane perpendicular to its analyser $\vv\lambda$ falls on. It agrees with quantum mechanics at $\theta = 0, \frac\pi2, \pi$ and is wrong in between; and the CHSH combination is precisely designed to probe the region where the cosine bulges away from the line.
+
+\subsection{What the Experiments Say}
+
+Everything above is theory. The experiment has been done, repeatedly and with increasing care: by Freedman and Clauser (1972), decisively by Aspect and collaborators in the early 1980s using rapidly switched analysers, and in `loophole-free' form in 2015 with the detector settings chosen by fast random number generators at spacelike separation and essentially every photon detected. The answer is unambiguous, and it is $2\sqrt2$. Nature violates the CHSH inequality, in quantitative agreement with quantum mechanics; the 2022 Nobel Prize was awarded for this work.
+
+So one of the assumptions of Bell's theorem is false. Since the derivation used only realism (outcomes determined by $\lambda$) and locality (Alice's outcome does not depend on Bob's setting), at least one of these must be abandoned. The overwhelmingly standard view is to abandon realism: the outcome of Alice's measurement simply does not exist before she makes it, and the perfect anticorrelation of the singlet is not explained by a pre-arranged agreement, because there is nothing to arrange. Quantum mechanics is not a statistical approximation to a deeper deterministic theory of the EPR kind.
+
+Three remarks are worth making, to guard against over-interpretation.
+
+\begin{remark}[No Signalling, Again]
+    It is tempting to read the violation as instantaneous influence, and thus as a conflict with relativity. It is not, and the reason is the proposition of \S\ref{sec:density}: Bob's reduced density operator is $\half I$ whatever Alice does, so the statistics he sees are the statistics of a fair coin no matter what she measures or whether she measures at all. The correlations only become visible when the two lists of outcomes are brought together and compared, which requires a classical channel and therefore takes time. Quantum mechanics is \emph{non-local} in the sense that no local hidden variable theory can reproduce it, and yet perfectly \emph{causal}.
+\end{remark}
+
+\begin{remark}[Tsirelson's Bound]
+    Quantum mechanics does not violate CHSH as much as it logically could: a hypothetical theory with $\PP(\text{same}) = 1$ or $0$ chosen at will would give $\abs{S} = 4$ while still forbidding signalling. That quantum mechanics stops at $\abs{S}\leq2\sqrt2$ -- Tsirelson's bound, which follows from $\left(\vv a\cdot\vv\sigma\right)^2 = I$ and a short calculation -- is a genuine and somewhat mysterious feature of the theory.
+\end{remark}
+
+\begin{remark}[Entanglement as a Resource]
+    Modern quantum information theory takes exactly the correlations that troubled Einstein and puts them to work: they are what makes quantum key distribution secure, and what makes teleportation and superdense coding possible. This is the subject of the Part II course Quantum Information and Computation, and it is a fine advertisement for taking the formalism seriously rather than apologising for it.
+\end{remark}
+
+It is a good place to stop. We began by throwing away the wavefunction in favour of a vector in a Hilbert space, and found that almost everything -- the oscillator spectrum, the quantisation of angular momentum, the existence of spin, conservation laws, degeneracies, selection rules -- follows from a handful of commutators and the representation theory they generate. We end with the discovery that this abstract structure is not merely a convenient calculus but a statement about the world, and one which the world has been measured to obey.
 
 \end{document}
