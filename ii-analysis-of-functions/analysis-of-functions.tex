@@ -1341,4 +1341,600 @@ Putting the pieces together we obtain the theorem we shall use.
 	Step (v) is what connects minimisation to differential equations, and we carry it out in Section \ref{sec:pde}.
 \end{remark}
 
+\section{The Fourier Transform}\label{sec:fourier}
+
+The Fourier transform converts differentiation into multiplication, and so converts constant-coefficient differential equations into algebra. That single fact is worth a whole course. What we want here is a clean functional-analytic account: on which spaces is the transform defined, what are its mapping properties, and can it be inverted.
+
+\subsection{The transform on \texorpdfstring{$L^1$}{L1}}
+
+\begin{definition}[Fourier transform]
+	For $f \in L^1(\R^n)$ we define $\FF f = \hat f : \R^n \to \C$ by
+	$$\hat f (\xi) = \int_{\R^n} f(x) e^{-i (x\cdot\xi)}\dd x.$$
+\end{definition}
+
+Since $|f(x)e^{-i(x\cdot\xi)}| = |f(x)| \in L^1$, the integral converges absolutely for every $\xi$, and $\norm{\hat f}_{L^\infty}\le \norm{f}_{L^1}$. (There are several conventions in circulation, differing by factors of $2\pi$ in the exponent or in front of the integral. We use this one; it makes the differentiation rule clean at the cost of a constant $(2\pi)^n$ in the inversion formula.)
+
+\begin{lemma}[Riemann--Lebesgue]\label{lem:riemannlebesgue}
+	Let $f \in L^1(\R^n)$. Then $\hat f \in C^0(\R^n)$ with $\norm{\hat f}_{L^\infty}\le\norm{f}_{L^1}$, and $\hat f(\xi)\to 0$ as $|\xi|\to\infty$.
+\end{lemma}
+
+\begin{proof}
+	If $\xi_m \to \xi$ then $f(x)e^{-i(x\cdot\xi_m)}\to f(x)e^{-i(x\cdot\xi)}$ pointwise, dominated by $|f| \in L^1$, so $\hat f(\xi_m)\to\hat f(\xi)$ by dominated convergence; and the sup bound is immediate. For the decay, let $\varepsilon > 0$ and use Corollary \ref{cor:ccinftydense} to find $f_\varepsilon \in C_c^\infty(\R^n)$ with $\norm{f - f_\varepsilon}_{L^1}<\varepsilon$. Integrating by parts (there are no boundary terms, as $f_\varepsilon$ has compact support),
+	$$\hat f_\varepsilon(\xi) = \int_{\R^n} f_\varepsilon(x) \operatorname{div}_x\!\left( \frac{\xi}{-i|\xi|^2}e^{-i(x\cdot\xi)}\right) \dd x = \int_{\R^n}\frac{\xi \cdot Df_\varepsilon(x)}{i|\xi|^2}e^{-i(x\cdot\xi)}\dd x,$$
+	so that $|\hat f_\varepsilon(\xi)|\le |\xi|^{-1}\norm{Df_\varepsilon}_{L^1} < \varepsilon$ once $|\xi|$ is large enough. Then $|\hat f(\xi)|\le|\hat f - \hat f_\varepsilon|+|\hat f_\varepsilon| < 2\varepsilon$ for such $\xi$.
+\end{proof}
+
+So $\FF$ maps $L^1(\R^n)$ into the space $C_0(\R^n)$ of continuous functions vanishing at infinity. It is not onto -- the image is a dense proper subspace -- and this is one reason $L^1$ is not the natural home for the transform.
+
+\begin{example}\label{ex:fouriereg}
+	Take $n = 1$.
+	\begin{enumerate}[label=(\roman*)]
+		\item $f = \ii_{(-1,1)}$ has $\hat f(\xi) = \int_{-1}^1 e^{-ix\xi}\dd x = \dfrac{2\sin\xi}{\xi}$ for $\xi \ne 0$, and $\hat f(0)=2$.
+		\item $f(x) = e^{-|x|}$ has $\hat f(\xi) = \dfrac{2}{1+\xi^2}$.
+		\item $f(x) = \dfrac{1}{1+x^2}$ has $\hat f(\xi) = \pi e^{-|\xi|}$ -- the transform of (ii), up to constants, which is the inversion theorem at work.
+		\item $f(x) = e^{-x^2/2}$ has $\hat f(\xi)=\sqrt{2\pi}e^{-\xi^2/2}$. To see this, note $f' = -xf$, so by Theorem \ref{thm:ftderiv} below $i\xi \hat f = -(\hat f)'\cdot(-1)^{-1}$, giving $(\hat f)' = -\xi\hat f$; solving this ODE with $\hat f(0) = \int e^{-x^2/2} = \sqrt{2\pi}$ gives the claim. The Gaussian is (up to scaling) the unique fixed point of $\FF$, which is why it appears everywhere in this subject.
+	\end{enumerate}
+	The first example is worth drawing, since it shows both the smoothing and the delocalisation.
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+	\begin{scope}
+		\draw[<->] (-2.6,0) -- (2.6,0);
+		\draw[<->] (0,-0.35) -- (0,1.5);
+		\draw[thick, color=blue] (-2.5,0) -- (-1,0);
+		\draw[thick, color=blue] (-1,1) -- (1,1);
+		\draw[thick, color=blue] (1,0) -- (2.5,0);
+		\draw[color=blue] (-1,0) circle (0.055);
+		\draw[color=blue] (1,0) circle (0.055);
+		\fill[color=blue] (-1,1) circle (0.055);
+		\fill[color=blue] (1,1) circle (0.055);
+		\node[below] at (1,-0.05) {\small $1$};
+		\node[below] at (-1,-0.05) {\small $-1$};
+		\node[color=blue] at (1.9,1.05) {\small $f$};
+	\end{scope}
+	\begin{scope}[yshift=-3.4cm]
+		\draw[<->] (-5.9,0) -- (5.9,0);
+		\draw[<->] (0,-0.9) -- (0,2.0);
+		\begin{scope}[xscale=0.45, yscale=0.85]
+			\draw[thick, color=blue] plot coordinates {
+			(-12,-0.0894) (-11.5,-0.1529) (-11,-0.1818) (-10.5,-0.1676)
+			(-10,-0.1088) (-9.5,-0.0158) (-9,0.0916) (-8.5,0.1879)
+			(-8,0.2473) (-7.5,0.2501) (-7,0.1877) (-6.5,0.0662)
+			(-6,-0.0931) (-5.5,-0.2565) (-5,-0.3836) (-4.5,-0.4344)
+			(-4,-0.3784) (-3.5,-0.2004) (-3,0.0941) (-2.5,0.4788)
+			(-2,0.9093) (-1.5,1.3300) (-1,1.6829) (-0.5,1.9177)
+			(0,2) (0.5,1.9177) (1,1.6829) (1.5,1.3300) (2,0.9093)
+			(2.5,0.4788) (3,0.0941) (3.5,-0.2004) (4,-0.3784)
+			(4.5,-0.4344) (5,-0.3836) (5.5,-0.2565) (6,-0.0931)
+			(6.5,0.0662) (7,0.1877) (7.5,0.2501) (8,0.2473)
+			(8.5,0.1879) (9,0.0916) (9.5,-0.0158) (10,-0.1088)
+			(10.5,-0.1676) (11,-0.1818) (11.5,-0.1529) (12,-0.0894)};
+		\end{scope}
+		\node[color=blue] at (3.4,1.1) {\small $\hat f(\xi) = \dfrac{2\sin\xi}{\xi}$};
+	\end{scope}
+\end{tikzpicture}
+\end{center}
+	Note that $\hat f$ is smooth (indeed real-analytic) but decays only like $|\xi|^{-1}$, and in particular is not integrable. Compact support has been traded for smoothness, and vice versa; this trade-off is a theme.
+\end{example}
+
+\subsection{Basic properties}
+
+Write $e_y(x) = e^{i(x\cdot y)}$ and recall $\tau_y f(x) = f(x-y)$ and $\check f(x) = f(-x)$.
+
+\begin{lemma}\label{lem:ftbasic}
+	Let $f, g \in L^1(\R^n)$, $y \in \R^n$ and $\mu > 0$.
+	\begin{enumerate}[label=(\roman*)]
+		\item Writing $f_\mu(x) = \mu^{-n}f(\mu^{-1}x)$, we have $\widehat{f_\mu}(\xi) = \hat f(\mu\xi)$.
+		\item $\widehat{e_y f} = \tau_y \hat f$ and $\widehat{\tau_y f} = e_{-y}\hat f$.
+		\item $f * g \in L^1(\R^n)$ and $\widehat{f*g} = \hat f \hat g$.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	(i) and (ii) are changes of variable. For (iii), Tonelli gives $\norm{f*g}_{L^1}\le\norm{f}_{L^1}\norm{g}_{L^1}$, so $f * g \in L^1$, and then by Fubini
+	$$\widehat{f*g}(\xi) = \int\!\!\int f(y)g(x-y)e^{-i(x\cdot\xi)}\dd y \dd x = \int f(y)e^{-i(y\cdot\xi)}\left( \int g(z)e^{-i(z\cdot\xi)}\dd z\right)\dd y = \hat f(\xi)\hat g(\xi). \qedhere$$
+\end{proof}
+
+Part (iii) is the reason the Fourier transform is useful for differential equations: it turns the awkward, non-local operation of convolution into pointwise multiplication.
+
+\begin{theorem}\label{thm:ftderiv}
+	\begin{enumerate}[label=(\roman*)]
+		\item Suppose $f \in C^1(\R^n)$ with $f, D_jf \in L^1(\R^n)$ for each $j$. Then $\widehat{D_jf}(\xi) = i\xi_j \hat f(\xi)$.
+		\item Suppose $(1+|x|)f \in L^1(\R^n)$. Then $\hat f \in C^1(\R^n)$ and $D_j \hat f(\xi) = \widehat{-ix_jf}(\xi)$.
+	\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+	(i) Given $\varepsilon > 0$ choose $f_\varepsilon \in C_c^\infty(\R^n)$ with $\norm{f - f_\varepsilon}_{L^1}+\sum_j \norm{D_jf - D_jf_\varepsilon}_{L^1}<\varepsilon$ (mollify and cut off). For compactly supported smooth functions, integration by parts gives
+	$$\widehat{D_jf_\varepsilon}(\xi) = \int e^{-i(x\cdot\xi)}D_jf_\varepsilon(x)\dd x = i\xi_j \int e^{-i(x\cdot\xi)}f_\varepsilon(x)\dd x = i\xi_j\hat f_\varepsilon(\xi).$$
+	Hence
+	$$|\widehat{D_jf}(\xi)-i\xi_j\hat f(\xi)| \le \norm{D_jf - D_jf_\varepsilon}_{L^1}+|\xi|\norm{f-f_\varepsilon}_{L^1}<(1+|\xi|)\varepsilon,$$
+	and letting $\varepsilon \to 0$ with $\xi$ fixed gives the identity.
+
+	(ii) By hypothesis $x_jf \in L^1$, so $\widehat{-ix_jf}$ is defined and continuous. For $h \ne 0$,
+	$$\frac{\hat f(\xi+he_j)-\hat f(\xi)}{h} = \int f(x)e^{-i(x\cdot\xi)}\frac{e^{-ix_jh}-1}{h}\dd x,$$
+	and the integrand converges pointwise to $-ix_jf(x)e^{-i(x\cdot\xi)}$, dominated by $|x_jf(x)| \in L^1$ since $|e^{i\theta}-1| = 2|\sin(\theta/2)|\le|\theta|$. Dominated convergence finishes the proof.
+\end{proof}
+
+In words: \emph{decay of $f$ controls smoothness of $\hat f$, and smoothness of $f$ controls decay of $\hat f$}. A space on which both hold to all orders would be mapped to itself by $\FF$, and this is exactly the definition of the next space.
+
+\subsection{The Schwartz space}
+
+\begin{definition}[Schwartz space]
+	A function $\varphi \in C^\infty(\R^n)$ is \vocab{rapidly decreasing} if
+	$$p_N(\varphi) = \sup_{x \in \R^n, |\alpha|\le N}\left| (1+|x|)^N D^\alpha \varphi(x)\right| < \infty$$
+	for every $N \in \N$. The set of such functions is the \vocab{Schwartz space} $\Sch(\R^n)$, and we equip it with the topology generated by the separating family of seminorms $\{p_N : N \in \N\}$.
+\end{definition}
+
+Since the family is countable, $\Sch(\R^n)$ is metrisable, and in fact it is complete, so it is a Fr\'echet space. Concretely, $\varphi_j \to 0$ in $\Sch(\R^n)$ if and only if $\sup_x |(1+|x|)^N D^\alpha \varphi_j(x)|\to 0$ for every $N$ and $\alpha$. One may equally use the seminorms $\sup_{|\alpha|,|\beta|\le N}|x^\beta D^\alpha \varphi(x)|$; they generate the same topology.
+
+\begin{example}
+	$\varphi(x) = e^{-|x|^2}$ is in $\Sch(\R^n)$, and so is every element of $C_c^\infty(\R^n)$. The function $(1+|x|^2)^{-1001}$ is not, since it fails to decay faster than every polynomial. Thus
+	$$C_c^\infty(\R^n)\subsetneq\Sch(\R^n)\subsetneq C^\infty(\R^n),$$
+	with each inclusion continuous.
+\end{example}
+
+\begin{corollary}\label{cor:fschwartz}
+	$\FF$ maps $\Sch(\R^n)$ continuously into itself.
+\end{corollary}
+
+\begin{proof}
+	First note the elementary bound, for any $f$ with $(1+|x|)^{n+1}f$ bounded,
+	$$\norm{f}_{L^1}=\int_{\R^n}\frac{|f|(1+|x|)^{n+1}}{(1+|x|)^{n+1}}\dd x \le C_n \sup_{x}\left( |f(x)|(1+|x|)^{n+1}\right), \quad C_n = \int_{\R^n}\frac{\dd x}{(1+|x|)^{n+1}}<\infty.$$
+	If $\varphi \in \Sch(\R^n)$ then $D^\alpha(x^\beta\varphi) \in L^1(\R^n)$ for all multi-indices, so applying Theorem \ref{thm:ftderiv} repeatedly gives $\left|\widehat{D^\alpha(x^\beta \varphi)}(\xi)\right| = \left|\xi^\alpha D^\beta \hat\varphi(\xi)\right|$ up to signs, whence
+	$$\sup_\xi \left| \xi^\alpha D^\beta \hat\varphi(\xi)\right| \le \norm{D^\alpha(x^\beta\varphi)}_{L^1}\le C_{\alpha,\beta}\sup_{x, |\delta|\le|\alpha|}(1+|x|)^{|\beta|+n+1}|D^\delta \varphi(x)|.$$
+	The right-hand side is finite, so $\hat\varphi\in\Sch(\R^n)$; and if $\varphi_j \to 0$ in $\Sch$ then the same estimate gives $\hat\varphi_j\to 0$ in $\Sch$, which is continuity.
+\end{proof}
+
+\subsection{Inversion}
+
+\begin{theorem}[Fourier inversion]\label{thm:ftinv}
+	Suppose $f, \hat f \in L^1(\R^n)$. Then for almost every $x$,
+	$$f(x) = \frac{1}{(2\pi)^n}\int_{\R^n}\hat f(\xi)e^{i(x\cdot\xi)}\dd \xi.$$
+	If $f$ is in addition continuous, the identity holds for every $x$.
+\end{theorem}
+
+\begin{proof}
+	The naive computation -- substitute the definition of $\hat f$ and swap the integrals -- fails, because $e^{i((x-y)\cdot\xi)}$ is not integrable in $\xi$. The standard repair is to insert a Gaussian convergence factor.
+
+	Let $G(\xi) = e^{-|\xi|^2/2}$ and recall from Example \ref{ex:fouriereg}(iv) (applied in each variable) that $\hat G = (2\pi)^{n/2}G$. For $\varepsilon > 0$ consider
+	$$I_\varepsilon(x) = \frac{1}{(2\pi)^n}\int_{\R^n} \hat f(\xi)G(\varepsilon\xi)e^{i(x\cdot\xi)}\dd\xi.$$
+	Since $|\hat f(\xi)G(\varepsilon\xi)|\le|\hat f(\xi)| \in L^1$ and $G(\varepsilon\xi)\to 1$ pointwise, dominated convergence gives $I_\varepsilon(x) \to (2\pi)^{-n}\int \hat f(\xi)e^{i(x\cdot\xi)}\dd\xi$ as $\varepsilon\to 0$, for every $x$.
+
+	On the other hand, everything in sight is now absolutely integrable in $(\xi,y)$ jointly, so Fubini applies:
+	$$I_\varepsilon(x) = \frac{1}{(2\pi)^n}\int_{\R^n} f(y)\left( \int_{\R^n}G(\varepsilon\xi)e^{i((x-y)\cdot\xi)}\dd\xi\right)\dd y = \int_{\R^n}f(y)k_\varepsilon(x-y)\dd y,$$
+	where, by Lemma \ref{lem:ftbasic}(i) and $\hat G = (2\pi)^{n/2}G$,
+	$$k_\varepsilon(z) = \frac{1}{(2\pi)^n}\int_{\R^n}G(\varepsilon\xi)e^{i(z\cdot\xi)}\dd\xi = \frac{1}{(2\pi)^{n/2}\varepsilon^n}e^{-|z|^2/(2\varepsilon^2)}.$$
+	This is precisely an approximate identity: $k_\varepsilon \ge 0$, $\int k_\varepsilon = 1$, and $k_\varepsilon$ concentrates at the origin as $\varepsilon \to 0$. (It is not compactly supported, but the proof of Theorem \ref{thm:mollify} used only the normalisation and the concentration, and goes through verbatim.) Hence $I_\varepsilon = k_\varepsilon * f \to f$ in $L^1$, and so along a subsequence almost everywhere. Comparing the two limits gives the result, and if $f$ is continuous then both sides are continuous and agree a.e., hence everywhere.
+\end{proof}
+
+\begin{corollary}\label{cor:fsiso}
+	$\FF : \Sch(\R^n)\to\Sch(\R^n)$ is a topological isomorphism, with $\FF^2 f = (2\pi)^n\check f$ and $\FF^4 = (2\pi)^{2n}\id$.
+\end{corollary}
+
+\begin{proof}
+	If $\varphi \in \Sch$ then $\varphi, \hat\varphi \in L^1$ and $\varphi$ is continuous, so Theorem \ref{thm:ftinv} applies at every point; rewriting the inversion formula as $\varphi(x) = (2\pi)^{-n}\hat{\hat\varphi}(-x)$ gives $\FF^2\varphi = (2\pi)^n\check\varphi$, and squaring gives $\FF^4 = (2\pi)^{2n}\id$. So $\FF$ is a bijection of $\Sch$ with continuous inverse $(2\pi)^{-n}\FF^3$, using Corollary \ref{cor:fschwartz}.
+\end{proof}
+
+\subsection{Plancherel and the transform on \texorpdfstring{$L^2$}{L2}}
+
+The Fourier transform is not defined on $L^2$ by the integral formula -- an $L^2$ function need not be integrable -- but it extends there by density, and on $L^2$ it is at its best: it becomes (a multiple of) a unitary map.
+
+\begin{theorem}[Plancherel/Parseval]\label{thm:plancherel}
+	Let $f, g \in L^1(\R^n)\cap L^2(\R^n)$. Then $\hat f, \hat g \in L^2(\R^n)$ and
+	$$\ip{f}{g}_{L^2} = (2\pi)^{-n}\ip{\hat f}{\hat g}_{L^2}, \qquad \text{in particular} \qquad \norm{\hat f}_{L^2}=(2\pi)^{n/2}\norm{f}_{L^2}.$$
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+	For $f, g \in \Sch(\R^n)$ this is a computation: put $h = \ol{g}$, note $\hat{\ol g}(\xi) = \ol{\hat g(-\xi)}$, and apply the inversion theorem to $f * \check{\ol g}$ at the origin. The general case follows because $\Sch$ is dense in $L^1 \cap L^2$ for the norm $\norm{\cdot}_{L^1}+\norm{\cdot}_{L^2}$, by mollification and truncation as in Corollary \ref{cor:ccinftydense}.
+\end{proof}
+
+So $(2\pi)^{-n/2}\FF$ is an isometry from $L^1 \cap L^2$, which is dense in $L^2$, into $L^2$. A densely defined isometry into a complete space extends uniquely to an isometry of the closure, and we obtain:
+
+\begin{definition}
+	The unique continuous extension $\ol\FF : L^2(\R^n)\to L^2(\R^n)$ of $\FF|_{L^1 \cap L^2}$ is the \vocab{Fourier--Plancherel transform}. We write $\FF$ for it as well.
+\end{definition}
+
+\begin{proposition}
+	$\ol\FF$ is a bijection of $L^2(\R^n)$ with $\norm{\ol\FF f}_{L^2}=(2\pi)^{n/2}\norm{f}_{L^2}$, and for $f \in L^2(\R^n)$,
+	$$\ol\FF f = \lim_{R\to\infty}\int_{B_R(0)}f(x)e^{-i(x\cdot\xi)}\dd x$$
+	with the limit taken in $L^2(\R^n)$.
+\end{proposition}
+
+\begin{proof}
+	Set $f_R = f\ii_{B_R(0)}$. Then $f_R \in L^1 \cap L^2$ by H\"older, and $f_R \to f$ in $L^2$; since $\ol\FF$ is continuous, $\hat f_R \to \ol\FF f$ in $L^2$. Surjectivity follows from $\FF^4 = (2\pi)^{2n}\id$ on $\Sch$, which passes to the closure.
+\end{proof}
+
+\begin{remark}
+	The Fourier transform therefore acts on $L^1$ (mapping into $C_0$), on $L^2$ (bijectively, isometrically up to constants), and by interpolation on $L^p$ for $1 \le p \le 2$ (the Hausdorff--Young inequality, $\norm{\hat f}_{L^q}\le C\norm{f}_{L^p}$ for conjugate $p,q$ with $p \le 2$). For $p > 2$ it does not map $L^p$ into any $L^q$, and the transform of such a function only makes sense as a distribution. This is one of several reasons we now build distribution theory.
+\end{remark}
+
+\section{Distributions}\label{sec:dist}
+
+In the study of differential equations one constantly meets objects which behave like functions but are not.
+
+\begin{example}\label{ex:greenmotivation}
+	Consider
+	$$G : \R^3\setminus\{0\}\to\R, \qquad x \mapsto \frac{-1}{4\pi|x|}.$$
+	Every physicist knows that $\nabla^2 G = \delta$, the point mass at the origin, and this fact is the basis of the theory of the Laplace and Poisson equations. But $G$ is not twice differentiable at $0$, $\delta$ is not a function, and the equation as written is meaningless.
+\end{example}
+
+The theory of distributions makes such statements rigorous, and it does so by a strategy we have already used twice: instead of studying an object directly, study how it pairs against nice test objects. A locally integrable function $f$ is determined by the numbers $\int f\varphi$ for $\varphi$ ranging over a suitable class; so let us simply \emph{define} a generalised function to be a rule assigning a number to each $\varphi$. The class of $\varphi$ must be small enough that many rules qualify, and large enough that the rule is determined; the balance is struck by taking $\varphi$ smooth and compactly supported.
+
+\subsection{Spaces of test functions}
+
+Let $\Omega \subseteq \R^n$ be open. We have three test function spaces, in increasing order of size.
+
+The space $C_c^\infty(\Omega)$ of smooth functions with compact support in $\Omega$ carries a natural vector space structure, and it can be given a topology making it a locally convex topological vector space. The construction (an inductive limit over compact exhaustions) is not especially illuminating and we omit it; what matters is the following list of properties, which is all we shall ever use.
+
+\begin{theorem}\label{thm:Dtopology}
+	The space $C_c^\infty(\Omega)$ carries a topology $\tau$ such that:
+	\begin{enumerate}[label=(\roman*)]
+		\item $(C_c^\infty(\Omega),\tau)$ is a locally convex topological vector space, which we denote $\DD(\Omega)$;
+		\item a sequence $(\varphi_j)$ converges to $0$ in $\DD(\Omega)$ if and only if there is a single compact $K \subseteq \Omega$ with $\supp \varphi_j \subseteq K$ for all $j$, and $\sup_{x\in K}|D^\alpha \varphi_j(x)|\to 0$ for every multi-index $\alpha$;
+		\item if $Y$ is a locally convex topological vector space and $\Lambda : \DD(\Omega)\to Y$ is linear, then $\Lambda$ is continuous if and only if it is sequentially continuous.
+	\end{enumerate}
+\end{theorem}
+
+Property (ii) is a strong requirement -- the supports must not run away, and \emph{all} derivatives must converge uniformly. Property (iii) is what makes the space usable in practice, since it lets us verify continuity one sequence at a time.
+
+\begin{example}
+	Let $\varphi \in C_c^\infty(\R)$ be non-zero.
+	\begin{enumerate}[label=(\alph*)]
+		\item $\varphi_j(x) = e^{-j}\varphi(jx)$ converges to $0$ in $\DD(\R)$: the supports shrink to $\{0\}$, and although $D^\alpha\varphi_j$ picks up a factor $j^{|\alpha|}$, the factor $e^{-j}$ swamps it.
+		\item $\varphi_j(x) = j^{-1000}\varphi(jx)$ does \emph{not} converge to $0$ in $\DD(\R)$: for $|\alpha|>1000$ the derivatives blow up.
+		\item $\varphi_j(x) = e^{-j}\varphi(x-j)$ does not converge to $0$ in $\DD(\R)$, even though every derivative tends to $0$ uniformly, because the supports escape to infinity and no single compact set contains them all.
+	\end{enumerate}
+\end{example}
+
+The second space is built on $C^\infty(\Omega)$, with no support restriction. Choose an exhaustion of $\Omega$ by compact sets $K_i$ with $K_i \subseteq K_{i+1}^\circ$ and $\bigcup_i K_i = \Omega$, and for $\varphi \in C^\infty(\Omega)$ set
+$$p_N(\varphi) = \sup_{x \in K_N, |\alpha|\le N}|D^\alpha \varphi(x)|.$$
+These form a countable separating family of seminorms, whose topology is complete; the resulting Fr\'echet space is denoted $\Ecal(\Omega)$.
+
+\begin{theorem}\label{thm:Etopology}
+	$\varphi_j \to 0$ in $\Ecal(\Omega)$ if and only if $\sup_{x \in K}|D^\alpha \varphi_j(x)|\to 0$ for every compact $K\subseteq\Omega$ and every multi-index $\alpha$; that is, if and only if all derivatives converge to $0$ uniformly on compact sets.
+\end{theorem}
+
+\begin{example}
+	If $\varphi\in C_c^\infty(\R)$ is non-zero then $\varphi_j(x)=\varphi(x-j)\to 0$ in $\Ecal(\R)$, since on any fixed compact set $\varphi_j$ eventually vanishes identically. As we saw, this sequence does not converge in $\DD(\R)$: the topology of $\Ecal$ is strictly weaker.
+\end{example}
+
+The third space is the Schwartz space $\Sch(\R^n)$ of Section \ref{sec:fourier}, which sits between the other two:
+$$\DD(\R^n)\subseteq\Sch(\R^n)\subseteq\Ecal(\R^n),$$
+with both inclusions continuous (and, one checks, with dense image).
+
+\subsection{Distributions}
+
+\begin{definition}[Distribution]
+	Let $\Omega\subseteq\R^n$ be open. The space of \vocab{distributions} $\DD'(\Omega)$ is the continuous dual of $\DD(\Omega)$: the space of linear maps $u : \DD(\Omega)\to\C$ such that $u[\varphi_j]\to 0$ whenever $\varphi_j \to 0$ in $\DD(\Omega)$. We equip $\DD'(\Omega)$ with the weak-$*$ topology, so that
+	$$u_j \to u \text{ in } \DD'(\Omega) \iff u_j[\varphi]\to u[\varphi] \text{ for every } \varphi \in \DD(\Omega).$$
+\end{definition}
+
+We write $u[\varphi]$ rather than $u(\varphi)$ to emphasise that $u$ is not a function of $x$.
+
+\begin{example}\label{ex:distributions}
+	\begin{enumerate}[label=(\alph*)]
+		\item For $x \in \Omega$, the evaluation $\delta_x : \varphi\mapsto\varphi(x)$ is a distribution, the \vocab{Dirac delta} at $x$. Continuity is clear from Theorem \ref{thm:Dtopology}(ii).
+		\item For $f \in L^1_{\mathrm{loc}}(\Omega)$, the map
+		$$T_f : \varphi \mapsto \int_\Omega f\varphi \dd x$$
+		is a distribution. Indeed if $\varphi_j\to 0$ in $\DD(\Omega)$ with supports in a compact $K$, then $\varphi_j\to0$ uniformly, so $|f\ii_K\varphi_j|\le C|f|\ii_K \in L^1$ and dominated convergence gives $T_f[\varphi_j]\to0$.
+	\end{enumerate}
+\end{example}
+
+The following characterisation of continuity is the practical test.
+
+\begin{lemma}\label{lem:distcont}
+	A linear map $u : \DD(\Omega)\to\C$ is continuous if and only if for every compact $K\subseteq\Omega$ there are $N_K\in\N$ and $C_K>0$ with
+	$$|u[\varphi]|\le C_K\sup_{x\in K}\sum_{|\alpha|\le N_K}|D^\alpha\varphi(x)| \quad \text{for all }\varphi\in C_c^\infty(K).$$
+\end{lemma}
+
+\begin{proof}
+	($\Leftarrow$) If $\varphi_j\to0$ in $\DD(\Omega)$ then the supports lie in a common compact $K$ and every $D^\alpha \varphi_j\to0$ uniformly on $K$; the estimate then forces $u[\varphi_j]\to0$.
+
+	($\Rightarrow$) Suppose the estimate fails for some compact $K$. Then for each $j$ there is $\varphi_j\in C_c^\infty(K)$ with
+	$$|u[\varphi_j]|>j \sup_{x\in K}\sum_{|\alpha|\le j}|D^\alpha\varphi_j(x)|.$$
+	Put $\psi_j=\varphi_j/|u[\varphi_j]|$. Then for any fixed $\beta$ and all $j \ge |\beta|$,
+	$$\sup_K|D^\beta\psi_j| = \frac{\sup_K|D^\beta\varphi_j|}{|u[\varphi_j]|}\le\frac{1}{j}\to 0,$$
+	so $\psi_j\to0$ in $\DD(\Omega)$ -- but $|u[\psi_j]|=1$ for all $j$, contradicting continuity.
+\end{proof}
+
+\begin{definition}[Order]
+	If in Lemma \ref{lem:distcont} the integer $N_K$ can be chosen independently of $K$, we say $u$ has \vocab{finite order}, and the least such $N$ is the \vocab{order} of $u$.
+\end{definition}
+
+\begin{example}
+	$\delta_x$ and $T_f$ have order $0$; $\varphi \mapsto \varphi'(x)$ has order $1$; and
+	$$u[\varphi]=\sum_{i=1}^\infty \varphi^{(i)}(i)$$
+	defines a distribution on $\R$ (the sum is finite for each $\varphi$) which is continuous but has no finite order.
+\end{example}
+
+The map $f \mapsto T_f$ is injective on $L^1_{\mathrm{loc}}(\Omega)$: if $T_f = T_g$ then $\int(f-g)\varphi = 0$ for all $\varphi\in C_c^\infty(\Omega)$, so $f = g$ almost everywhere by Corollary \ref{cor:duboisreymond}. We may therefore regard $L^1_{\mathrm{loc}}(\Omega)$ as a subspace of $\DD'(\Omega)$, and from now on we abuse notation by writing $f$ for $T_f$. Distributions are `generalised functions' in exactly this sense.
+
+\subsection{Operations on distributions}
+
+The rule for extending an operation from functions to distributions is always the same: find an identity, valid for smooth functions, which expresses the operation in terms of the pairing, and promote it to a definition.
+
+\emph{Multiplication by a smooth function.} If $a \in C^\infty(\Omega)$ and $f \in L^1_{\mathrm{loc}}$, then $T_{af}[\varphi]=T_f[a\varphi]$. Since $a\varphi \in \DD(\Omega)$ whenever $\varphi$ is, we define
+$$(au)[\varphi]=u[a\varphi], \qquad u \in \DD'(\Omega).$$
+Note that there is no way to multiply two distributions: $\delta_0^2$ is not defined, and the failure is not a defect of the theory but a genuine obstruction.
+
+\emph{Differentiation.} If $f \in C^1$ then integration by parts gives $T_{D_if}[\varphi]=-T_f[D_i\varphi]$, with no boundary term since $\varphi$ has compact support. We therefore define, for any multi-index $\alpha$,
+$$D^\alpha u[\varphi]=(-1)^{|\alpha|}u[D^\alpha \varphi].$$
+This is again a distribution, by Lemma \ref{lem:distcont}. So \emph{every distribution is infinitely differentiable}, and in particular every locally integrable function has derivatives of all orders in $\DD'$. The price is that $D^\alpha u$ need not lie in $L^1_{\mathrm{loc}}$ even if $u$ does.
+
+\begin{example}\label{ex:heaviside}
+	Let $H = \ii_{[0,\infty)}$ be the Heaviside function on $\R$, which is certainly in $L^1_{\mathrm{loc}}$. For $\varphi\in\DD(\R)$,
+	$$DH[\varphi]=-H[\varphi']=-\int_0^\infty\varphi'(x)\dd x = \varphi(0)=\delta_0[\varphi],$$
+	so $DH = \delta_0$ in $\DD'(\R)$. Differentiating again, $D^2H = D\delta_0$ is the distribution $\varphi\mapsto-\varphi'(0)$, which is not even a measure.
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+	\begin{scope}
+		\draw[<->] (-2.2,0) -- (2.2,0);
+		\draw[<->] (0,-0.4) -- (0,1.7);
+		\draw[thick, color=blue] (-2.1,0) -- (0,0);
+		\draw[thick, color=blue] (0,1) -- (2.1,1);
+		\fill[color=blue] (0,1) circle (0.055);
+		\node[left] at (-0.1,1) {\small $1$};
+		\node[color=blue] at (1.5,1.3) {\small $H$};
+	\end{scope}
+	\node at (3.1,0.5) {$\xrightarrow{\ D\ }$};
+	\begin{scope}[xshift=6.2cm]
+		\draw[<->] (-2.2,0) -- (2.2,0);
+		\draw[<->] (0,-0.4) -- (0,1.7);
+		\draw[thick, color=blue] (-2.1,0) -- (2.1,0);
+		\draw[very thick, ->, color=blue] (0,0) -- (0,1.3);
+		\node[color=blue, right] at (0.1,1.2) {\small $\delta_0$};
+	\end{scope}
+\end{tikzpicture}
+\end{center}
+\end{example}
+
+With these operations we can make sense of linear partial differential equations in $\DD'(\Omega)$: given $a_\alpha \in C^\infty(\Omega)$ and $w \in \DD'(\Omega)$, we may ask for $u \in \DD'(\Omega)$ with
+$$\sum_{|\alpha|\le k}a_\alpha D^\alpha u = w.$$
+Solutions in this sense are called \vocab{weak} or \vocab{distributional} solutions, and the whole point of the last part of the course is that they are much easier to find than classical ones -- after which one works to prove that they are classical after all.
+
+\begin{example}
+	Mollifiers converge to the delta: for $\varphi \in \DD(\R^n)$,
+	$$\phi_\varepsilon[\varphi]=\int\phi_\varepsilon(x)\varphi(x)\dd x \to \varphi(0)=\delta_0[\varphi]$$
+	by the same computation as in Theorem \ref{thm:mollify}. So $\phi_\varepsilon \to \delta_0$ in $\DD'(\R^n)$, which is the precise sense in which the pictures in Section \ref{sec:mollify} `converge to a spike'.
+\end{example}
+
+\subsection{Compactly supported and tempered distributions}
+
+The duals of the other two test spaces give distinguished subspaces of $\DD'$.
+
+\begin{lemma}\label{lem:Eprime}
+	A linear $u : \Ecal(\Omega)\to\C$ is continuous if and only if there are a compact $K \subseteq \Omega$, $N \in \N$ and $C>0$ with
+	$$|u[\varphi]|\le C\sup_{x\in K, |\alpha|\le N}|D^\alpha\varphi(x)| \quad\text{for all }\varphi\in\Ecal(\Omega).$$
+\end{lemma}
+
+\begin{proof}
+	($\Leftarrow$) If $\varphi_j\to0$ in $\Ecal(\Omega)$ then in particular the right-hand side tends to $0$.
+
+	($\Rightarrow$) Suppose no such $(K,N,C)$ exists. Take a compact exhaustion $(K_j)$ of $\Omega$; then for each $j$ there is $\varphi_j\in\Ecal(\Omega)$ with $|u[\varphi_j]|\ge j\sup_{x\in K_j,|\alpha|\le j}|D^\alpha\varphi_j(x)|$. Setting $\psi_j=\varphi_j/|u[\varphi_j]|$, for any compact $\wt K$ and $\wt N$ we may choose $J>\wt N$ with $\wt K\subseteq K_j$ for $j \ge J$, and then
+	$$\sup_{x\in\wt K,|\alpha|\le\wt N}|D^\alpha\psi_j(x)|\le\frac1j\to0.$$
+	So $\psi_j\to0$ in $\Ecal(\Omega)$ while $|u[\psi_j]|=1$: contradiction.
+\end{proof}
+
+\begin{definition}
+	A distribution $u \in \DD'(\Omega)$ has \vocab{compact support} if there is a compact $K\subseteq\Omega$ with $u[\varphi]=0$ whenever $\supp\varphi\subseteq\Omega\setminus K$.
+\end{definition}
+
+The continuous inclusion $\DD(\Omega)\subseteq\Ecal(\Omega)$ dualises to a map $\Ecal'(\Omega)\to\DD'(\Omega)$, which is injective because $\DD(\Omega)$ is dense in $\Ecal(\Omega)$. Lemma \ref{lem:Eprime} shows that its image consists of compactly supported distributions; conversely, if $u \in \DD'(\Omega)$ is supported in a compact $K$, choose $\chi \in C_c^\infty(\Omega)$ with $\chi\equiv1$ near $K$ and set $\wt u[\varphi]=u[\chi\varphi]$, which is independent of the choice of $\chi$. So
+$$\Ecal'(\Omega)=\{\text{distributions of compact support}\}.$$
+
+\begin{example}
+	$\delta_x \in \Ecal'(\Omega)$; and if $f \in L^1(\Omega)$ vanishes a.e.\ outside a compact set, $T_f\in\Ecal'(\Omega)$. But $u[\varphi]=\sum_{n\in\Z}\varphi(n)$ on $\R$ does not have compact support.
+\end{example}
+
+\begin{definition}[Tempered distribution]
+	The continuous dual $\Sch'(\R^n)$ of the Schwartz space is the space of \vocab{tempered distributions}.
+\end{definition}
+
+The chain $\DD(\R^n)\subseteq\Sch(\R^n)\subseteq\Ecal(\R^n)$ of continuous dense inclusions dualises to injections
+$$\Ecal'(\R^n)\hookrightarrow\Sch'(\R^n)\hookrightarrow\DD'(\R^n).$$
+So the tempered distributions form a class intermediate between compactly supported distributions and all distributions. The name is a mnemonic: a distribution is tempered when it does not grow faster than polynomially.
+
+\begin{example}
+	\begin{enumerate}[label=(\roman*)]
+		\item If $f\in L^1_{\mathrm{loc}}(\R^n)$ satisfies $\int(1+|x|)^{-N}|f(x)|\dd x<\infty$ for some $N$, then $T_f\in\Sch'(\R^n)$. Indeed for $\varphi\in\Sch$,
+		$$|T_f[\varphi]|=\left|\int(1+|x|)^{-N}f(x)\cdot(1+|x|)^N\varphi(x)\dd x\right|\le\left(\int\frac{|f|}{(1+|x|)^N}\right)\sup_x(1+|x|)^N|\varphi(x)|,$$
+		which is a bound of the required form. In particular every $L^p$ function and every polynomial is a tempered distribution.
+		\item $f(x)=e^{|x|^2}$ gives $T_f\in\DD'(\R^n)\setminus\Sch'(\R^n)$: it grows too fast to be paired with a Gaussian.
+		\item $u[\varphi]=\sum_{m\in\Z}m^{50}\varphi(m)$ lies in $\Sch'(\R)$ but not $\Ecal'(\R)$.
+	\end{enumerate}
+\end{example}
+
+\subsection{Convolution and fundamental solutions}
+
+Recall $\check\varphi(y)=\varphi(-y)$, so that $\tau_x\check\varphi(y)=\varphi(x-y)$. For $f \in L^1_{\mathrm{loc}}(\R^n)$ and $\varphi\in\DD(\R^n)$,
+$$(f*\varphi)(x)=\int f(y)\varphi(x-y)\dd y = T_f[\tau_x\check\varphi],$$
+which suggests the definition.
+
+\begin{definition}
+	For $u \in \DD'(\R^n)$ and $\varphi\in\DD(\R^n)$ set $(u*\varphi)(x)=u[\tau_x\check\varphi]$.
+\end{definition}
+
+This is a genuine function of $x$, bilinear in $(u,\varphi)$. Note that $(u*\check\varphi)(0)=u[\varphi]$, so the family of functions $u * \varphi$ determines $u$ completely.
+
+\begin{example}
+	$\delta_0 * \varphi = \varphi$, since $(\delta_0*\varphi)(x)=\tau_x\check\varphi(0)=\varphi(x)$. So $\delta_0$ is an identity for convolution, which is the reason for the name `approximate identity'.
+\end{example}
+
+\begin{lemma}\label{lem:distconv}
+	Let $u \in \DD'(\R^n)$ and $\varphi\in\DD(\R^n)$. Then
+	\begin{enumerate}[label=(\roman*)]
+		\item $u * \varphi\in C^\infty(\R^n)$, and $D^\alpha(u*\varphi)=(D^\alpha u)*\varphi=u*(D^\alpha\varphi)$;
+		\item if $u \in \Ecal'(\R^n)$ then $u*\varphi\in\DD(\R^n)$.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	(i) We have
+	$$\frac{(u*\varphi)(x+he_i)-(u*\varphi)(x)}{h}=u\!\left[\frac{\tau_{x+he_i}\check\varphi-\tau_x\check\varphi}{h}\right],$$
+	and one checks (example sheet) that the argument converges in $\DD(\R^n)$ to $\tau_x((D_i\varphi)^\vee)$ as $h \to 0$; continuity of $u$ then gives $D_i(u*\varphi)=u*D_i\varphi$, and iterating gives smoothness. For the other identity, note
+	$$D^\alpha_y\left(\tau_x\check\varphi\right)(y)=\frac{\partial^{|\alpha|}}{\partial y^\alpha}\varphi(x-y)=(-1)^{|\alpha|}(D^\alpha\varphi)(x-y)=(-1)^{|\alpha|}\tau_x((D^\alpha\varphi)^\vee)(y),$$
+	so that
+	$$((D^\alpha u)*\varphi)(x)=(-1)^{|\alpha|}u[D^\alpha\tau_x\check\varphi]=u[\tau_x((D^\alpha\varphi)^\vee)]=(u*D^\alpha\varphi)(x).$$
+
+	(ii) If $u$ vanishes on functions supported outside a compact $K$, then for $|x|$ large the support of $\tau_x\check\varphi$ misses $K$, so $(u*\varphi)(x)=0$.
+\end{proof}
+
+Using the fact that $u$ is determined by the functions $u*\varphi$, one may define the convolution of $u_1\in\DD'(\R^n)$ with $u_2\in\Ecal'(\R^n)$ by requiring
+$$(u_1*u_2)*\varphi = u_1*(u_2*\varphi) \quad\text{for all }\varphi\in\DD(\R^n),$$
+which makes sense because $u_2 * \varphi \in \DD(\R^n)$ by Lemma \ref{lem:distconv}(ii). One checks $u * \delta_0 = u$, and:
+
+\begin{lemma}\label{lem:convderiv}
+	For $u_1\in\DD'(\R^n)$ and $u_2\in\Ecal'(\R^n)$, $D^\alpha(u_1*u_2)=(D^\alpha u_1)*u_2 = u_1*(D^\alpha u_2)$.
+\end{lemma}
+
+\begin{proof}
+	Test against $\varphi \in \DD(\R^n)$ and use Lemma \ref{lem:distconv}(i) repeatedly:
+	$$(D^\alpha(u_1*u_2))*\varphi=(u_1*u_2)*D^\alpha\varphi = u_1*(u_2*D^\alpha\varphi)=u_1*((D^\alpha u_2)*\varphi)=(u_1*D^\alpha u_2)*\varphi,$$
+	and the other equality is the same computation with the roles reversed.
+\end{proof}
+
+This is exactly what is needed to invert constant-coefficient differential operators.
+
+\begin{definition}[Fundamental solution]
+	Let $L=\sum_{|\alpha|\le N}a_\alpha D^\alpha$ with $a_\alpha \in\C$. A \vocab{fundamental solution} of $L$ is a distribution $G \in \DD'(\R^n)$ with $LG=\delta_0$.
+\end{definition}
+
+\begin{theorem}\label{thm:fundsol}
+	If $G$ is a fundamental solution of $L$ and $u_0 \in \Ecal'(\R^n)$, then $u = G * u_0$ satisfies $Lu = u_0$.
+\end{theorem}
+
+\begin{proof}
+	By Lemma \ref{lem:convderiv},
+	$$L(G*u_0)=\sum_\alpha a_\alpha D^\alpha(G*u_0)=\left(\sum_\alpha a_\alpha D^\alpha G\right)*u_0=(LG)*u_0=\delta_0*u_0=u_0. \qedhere$$
+\end{proof}
+
+\begin{example}
+	Return to Example \ref{ex:greenmotivation}. Take $L=-\nabla^2=-\sum_{i=1}^3\partial^2/\partial x_i^2$ on $\R^3$ and let
+	$$g(x)=\frac{1}{4\pi|x|} \quad (x\ne0), \qquad g(0)=0.$$
+	Then $g \in L^1_{\mathrm{loc}}(\R^3)$ (the singularity $|x|^{-1}$ is integrable in three dimensions) and $G = T_g$ is a fundamental solution of $L$: one computes $\nabla^2 g = 0$ away from the origin and, cutting out a small ball and integrating by parts twice, finds that the boundary terms converge to $\varphi(0)$. So for $f \in C_c^\infty(\R^3)$,
+	$$u(x)=\frac{1}{4\pi}\int_{\R^3}\frac{f(y)}{|x-y|}\dd y$$
+	is a smooth solution of $-\nabla^2u=f$. The physicists were right all along; it just took a duality to say so.
+\end{example}
+
+\subsection{Fourier transforms of tempered distributions}
+
+For $f \in L^1(\R^n)$ and $\varphi\in\Sch(\R^n)$, Fubini gives
+$$T_{\hat f}[\varphi]=\int\hat f(x)\varphi(x)\dd x = \int\!\!\int \varphi(x)f(y)e^{-i(y\cdot x)}\dd y \dd x = \int f(y)\hat\varphi(y)\dd y = T_f[\hat\varphi].$$
+As $\FF$ preserves $\Sch(\R^n)$ (Corollary \ref{cor:fschwartz}), the right-hand side makes sense for any tempered distribution.
+
+\begin{definition}
+	For $u \in \Sch'(\R^n)$, the \vocab{Fourier transform} $\hat u \in \Sch'(\R^n)$ is defined by $\hat u[\varphi]=u[\hat\varphi]$.
+\end{definition}
+
+Note that this really does require tempered distributions: $\FF$ does not preserve $\DD(\R^n)$ (a compactly supported function has an analytic transform, which cannot have compact support unless it vanishes), so there is no Fourier transform on $\DD'$.
+
+\begin{example}\label{ex:deltahat}
+	Fix $\xi \in \R^n$ and let $u = \delta_\xi$. Then
+	$$\hat u[\varphi]=\hat\varphi(\xi)=\int\varphi(x)e^{-i(x\cdot\xi)}\dd x = T_{e_{-\xi}}[\varphi],$$
+	so $\hat{\delta_\xi}=T_{e_{-\xi}}$; in particular $\hat{\delta_0}=1$. Dually, using Theorem \ref{thm:ftinv},
+	$$\widehat{T_{e_x}}[\varphi]=\int e^{i(x\cdot y)}\hat\varphi(y)\dd y = (2\pi)^n\varphi(x)=(2\pi)^n\delta_x[\varphi],$$
+	so $\widehat{T_{e_x}}=(2\pi)^n\delta_x$. The delta and the constant function are Fourier transforms of one another, which is the rigorous version of the formal identity $\int e^{i x\xi}\dd\xi = 2\pi\delta(x)$ familiar from methods courses.
+\end{example}
+
+\begin{lemma}\label{lem:tempft}
+	Let $u \in \Sch'(\R^n)$, $x\in\R^n$ and $\alpha$ a multi-index. Writing $X^\alpha$ for the function $x\mapsto x^\alpha$, and $\tau_xu[\varphi]=u[\tau_{-x}\varphi]$, $\check u[\varphi]=u[\check\varphi]$, we have
+	$$\widehat{e_xu}=\tau_x\hat u, \qquad \widehat{\tau_xu}=e_{-x}\hat u, \qquad \widehat{D^\alpha u}=i^{|\alpha|}X^\alpha\hat u, \qquad D^\alpha\hat u = (-i)^{|\alpha|}\widehat{X^\alpha u},$$
+	and $\hat{\hat u}=(2\pi)^n\check u$.
+\end{lemma}
+
+\begin{proof}
+	Each is the corresponding identity for Schwartz functions, transposed. For instance
+	$$\widehat{e_xu}[\varphi]=e_xu[\hat\varphi]=u[e_x\hat\varphi]=u[\widehat{\tau_{-x}\varphi}]=\hat u[\tau_{-x}\varphi]=\tau_x\hat u[\varphi],$$
+	and for the derivative,
+	$$\widehat{D^\alpha u}[\varphi]=(-1)^{|\alpha|}u[D^\alpha\hat\varphi]=(-1)^{|\alpha|}u\!\left[\widehat{(-i)^{|\alpha|}X^\alpha\varphi}\right]=i^{|\alpha|}\hat u[X^\alpha\varphi]=i^{|\alpha|}X^\alpha\hat u[\varphi].$$
+	The last identity follows from Corollary \ref{cor:fsiso}.
+\end{proof}
+
+\begin{lemma}
+	$\FF : \Sch'(\R^n)\to\Sch'(\R^n)$ is a homeomorphism for the weak-$*$ topology.
+\end{lemma}
+
+\begin{proof}
+	Linearity is clear. If $u_j\wsto u$ then $\hat u_j[\varphi]=u_j[\hat\varphi]\to u[\hat\varphi]=\hat u[\varphi]$ for every $\varphi$, so $\hat u_j\wsto\hat u$: the map is sequentially continuous. Since $\FF^4=(2\pi)^{2n}\id$, the inverse is $(2\pi)^{-2n}\FF^3$, which is continuous by the same argument.
+\end{proof}
+
+\subsection{Periodic distributions}
+
+As an application, and as preparation for Fourier series in the distributional setting, we look at periodic distributions.
+
+\begin{definition}
+	$u \in \DD'(\R^n)$ is \vocab{periodic} if $\tau_yu=u$ for all $y\in\Z^n$.
+\end{definition}
+
+\begin{example}
+	If $f\in L^1_{\mathrm{loc}}(\R^n)$ is $\Z^n$-periodic then $T_f$ is periodic. More interestingly, if $v \in \Ecal'(\R^n)$ then $u = \sum_{y\in\Z^n}\tau_yv$ is a periodic distribution (for each $\varphi\in\DD$ the sum is finite).
+\end{example}
+
+For a periodic smooth function we often want the average over a fundamental cell $q=\{x : -1/2\le x_i<1/2\}$, namely $M[f]=\int_qf$. We would like to write $M[f]=T_f[\ii_q]$, but $\ii_q$ is not a test function. The fix is a smooth partition of unity.
+
+\begin{lemma}\label{lem:partunity}
+	Let $Q=\{x:-1\le x_i<1\}$. There is $\psi\in C^\infty(\R^n)$ with $\psi\ge0$, $\supp\psi\subseteq Q^\circ$, and $\sum_{y\in\Z^n}\tau_y\psi=1$. Moreover if $\psi,\psi'$ are two such functions and $u\in\DD'(\R^n)$ is periodic, then $u[\psi]=u[\psi']$.
+\end{lemma}
+
+\begin{proof}
+	Pick $\psi_0\in C^\infty(\R^n)$ supported in $Q^\circ$ with $\psi_0\ge0$ and $\psi_0\equiv1$ on $q$ (a smoothed indicator, built from the bump of Example \ref{ex:bump}). Set $s(x)=\sum_{y\in\Z^n}\psi_0(x-y)$; this sum is locally finite, so $s\in C^\infty$, it is $\Z^n$-periodic, and $s \ge 1$ since every $x$ has some translate in $q$. Then $\psi=\psi_0/s$ works.
+
+	For the second part, using periodicity of $u$ and of the partitions,
+	$$u[\psi]=u\!\left[\psi\sum_{y}\tau_y\psi'\right]=\sum_yu[\psi\,\tau_y\psi']=\sum_y\tau_{-y}u[\psi'\tau_{-y}\psi]=\sum_yu[\psi'\tau_y\psi]=u[\psi'],$$
+	all sums being finite.
+\end{proof}
+
+So we may define the \vocab{mean} $M[u]=u[\psi]$ of a periodic distribution, and if $u = T_f$ for periodic $f\in L^1_{\mathrm{loc}}$ this agrees with $\int_qf$.
+
+\begin{lemma}\label{lem:periodictempered}
+	If $v\in\Ecal'(\R^n)$ then $u=\sum_{y\in\Z^n}\tau_yv$ converges weakly-$*$ in $\Sch'(\R^n)$. Conversely every periodic distribution has this form; in particular every periodic distribution is tempered.
+\end{lemma}
+
+\begin{proof}
+	For the first part, Lemma \ref{lem:Eprime} gives compact $K \subseteq B_R(0)$, $k\in\N$ and $C>0$ with $|v[\varphi]|\le C\sup_{x\in K,|\alpha|\le k}|D^\alpha\varphi(x)|$. Then $|\tau_yv[\varphi]|\le C\sup_{x\in K,|\alpha|\le k}|D^\alpha\varphi(x+y)|$. For $x \in K$ we have $1+|y|\le(1+R)(1+|x+y|)$, so for any $m$,
+	$$|\tau_yv[\varphi]|\le C\frac{(1+R)^m}{(1+|y|)^m}\sup_{x'\in\R^n,|\alpha|\le k}\left|(1+|x'|)^mD^\alpha\varphi(x')\right|.$$
+	Choosing $m \ge n+1$ makes $\sum_{y\in\Z^n}(1+|y|)^{-m}$ finite, so the series converges absolutely, uniformly over $\varphi$ in a bounded set of $\Sch$.
+
+	Conversely let $u$ be periodic and $\psi$ a periodic partition of unity. For $\varphi\in\DD(\R^n)$,
+	$$u[\varphi]=u\!\left[\varphi\sum_y\tau_y\psi\right]=\sum_yu[\varphi\,\tau_y\psi],$$
+	and $u[\varphi\tau_y\psi]=\tau_yu[\varphi\tau_y\psi]=(\psi u)[\tau_{-y}\varphi]=\tau_y(\psi u)[\varphi]$. So $v=\psi u$ works, and $v$ has compact support since $v[\varphi]=u[\psi\varphi]=0$ whenever $\supp\varphi\cap\supp\psi=\emptyset$.
+\end{proof}
+
+\begin{lemma}\label{lem:latticesupport}
+	Suppose $u\in\Sch'(\R^n)$ satisfies $(e_{-y}-1)u=0$ for all $y\in\Z^n$. Then
+	$$u=\sum_{y\in\Z^n}c_y\delta_{2\pi y}$$
+	for constants $c_y$ with $|c_y|\le C(1+|y|)^N$ for some $C>0$ and $N\in\N$, the sum converging in $\Sch'(\R^n)$.
+\end{lemma}
+
+\begin{proof}
+	Write $\Lambda^*=2\pi\Z^n$. If $\varphi\in\DD(\R^n)$ has $\supp\varphi\cap\Lambda^*=\emptyset$ then $(e_{-y}-1)$ is non-vanishing on $\supp\varphi$ for suitable $y$, so $(e_{-y}-1)^{-1}\varphi$ is a legitimate test function and $u[\varphi]=(e_{-y}-1)u[(e_{-y}-1)^{-1}\varphi]=0$. Hence $u$ is supported on $\Lambda^*$.
+
+	Take a periodic partition of unity $\psi$ and set $\wt\psi(x)=\psi(x/2\pi)$, so that $\sum_y\tau_{2\pi y}\wt\psi=1$. Put $v_y=(\tau_{2\pi y}\wt\psi)u$, supported at the single point $2\pi y$, with $\sum_yv_y=u$. From $(e_{-y'}-1)v_y=0$ and $e^{-i(x_j-2\pi y_j)}-1=(x_j-2\pi y_j)\kappa(x_j)$ with $\kappa$ smooth and non-vanishing near $2\pi y_j$, we get $(x_j-2\pi y_j)v_y=0$ for each $j$. Taylor expanding $\varphi(x)=\varphi(2\pi y)+\sum_j(x_j-2\pi y_j)\varphi_j(x)$ with $\varphi_j$ smooth, and using that $v_y$ has compact support so extends to $\Ecal$, gives $v_y[\varphi]=\varphi(2\pi y)v_y[1]$; that is, $v_y=c_y\delta_{2\pi y}$ with $c_y=u[\tau_{2\pi y}\wt\psi]$.
+
+	For the bound, Lemma \ref{lem:Eprime} applied in $\Sch'$ gives $N,k,C$ with $|u[\varphi]|\le C\sup_{x,|\alpha|\le k}|(1+|x|)^ND^\alpha\varphi(x)|$, whence
+	$$|c_y|\le C\sup_{x,|\alpha|\le k}\left|(1+|x+2\pi y|)^ND^\alpha\wt\psi(x)\right|\le C'(1+|y|)^N. \qedhere$$
+\end{proof}
+
+\begin{theorem}[Fourier series of a periodic distribution]\label{thm:fourierseriesdist}
+	Let $u\in\DD'(\R^n)$ be periodic. Then there are $c_y \in \C$ with
+	$$u = \sum_{y\in\Z^n}c_yT_{e_{2\pi y}}$$
+	converging in $\Sch'(\R^n)$, where $c_y=M[e_{-2\pi y}u]$ satisfies $|c_y|\le C(1+|y|)^N$ for some $C, N$.
+\end{theorem}
+
+\begin{proof}
+	Periodicity says $\tau_{y'}u=u$ for $y'\in\Z^n$, and $u$ is tempered by Lemma \ref{lem:periodictempered}, so taking Fourier transforms and using Lemma \ref{lem:tempft} gives $(e_{-y'}-1)\hat u=0$. By Lemma \ref{lem:latticesupport},
+	$$\hat u = (2\pi)^n\sum_{y\in\Z^n}c_y\delta_{2\pi y},$$
+	and applying the inversion formula of Lemma \ref{lem:tempft} together with Example \ref{ex:deltahat} gives $u=\sum_yc_yT_{e_{2\pi y}}$. Finally $M[e_{-2\pi y}T_{e_{2\pi y'}}]=\delta_{yy'}$ by direct computation, and $u\mapsto M[e_{-2\pi y}u]$ is continuous on $\Sch'$, so $M[e_{-2\pi y}u]=c_y$.
+\end{proof}
+
+We usually abuse notation and write $u(x)=\sum_{y\in\Z^n}c_ye^{2\pi i(y\cdot x)}$. The theorem says that \emph{every} periodic distribution has a Fourier series, with coefficients of at most polynomial growth, and that the series converges in $\Sch'$.
+
+\begin{example}[Poisson summation]
+	Let $u=\sum_{y\in\Z^n}\delta_y$, the `Dirac comb'. Its Fourier coefficients are
+	$$c_y=M[e_{-2\pi y}u]=u[\psi e_{2\pi y}]=\sum_{y'\in\Z^n}\psi(y')e^{-2\pi i(y\cdot y')}=\sum_{y'\in\Z^n}\psi(y')=1,$$
+	since $e^{-2\pi i (y \cdot y')}=1$ for $y,y'\in\Z^n$ and $\sum_{y'}\psi(y')=1$ by the partition of unity property. Theorem \ref{thm:fourierseriesdist} therefore gives \vocab{Poisson's summation formula}
+	$$\sum_{y\in\Z^n}\delta_y = \sum_{y\in\Z^n}T_{e_{2\pi y}}, \qquad \text{or informally} \qquad \sum_{y\in\Z^n}\delta(x-y)=\sum_{y\in\Z^n}e^{2\pi i (y\cdot x)}.$$
+	Pairing both sides with a Schwartz function $\varphi$ recovers the classical statement $\sum_{y}\varphi(y)=\sum_y\hat\varphi(2\pi y)$, a formula with a great many applications in number theory and in the study of lattices.
+\end{example}
+
 \end{document}
