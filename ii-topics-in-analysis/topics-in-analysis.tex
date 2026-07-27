@@ -89,6 +89,58 @@ In practice we use (ii) with $\varepsilon_n = 2^{-n}$ or $\varepsilon_n = 100^{-
 
 The proof is the usual one: a Cauchy sequence in $\R^m$ is coordinatewise Cauchy, and $\R$ is complete by the general principle of convergence from Analysis I.
 
+\subsection{The Contraction Mapping Theorem}
+
+Completeness earns its keep almost immediately. The following theorem was met in IB Analysis and Topology, but it is worth restating here, both because we shall want it and because it is the model against which everything in Section \ref{sec:fixed-points} should be compared.
+
+\begin{definition}[Contraction]
+	Let $(X,d)$ be a metric space. A map $f : X \to X$ is a \vocab{contraction mapping} if there is a constant $0 \leq K < 1$ with
+	$$d\big(f(x),f(y)\big) \leq K\,d(x,y)$$
+	for all $x,y\in X$.
+\end{definition}
+
+A contraction is certainly continuous -- indeed uniformly so. The point of the definition is that it does not merely fail to increase distances, it shrinks them by a definite factor, and it is that definite factor which makes everything work.
+
+\begin{theorem}[Contraction Mapping Theorem]\label{thm:contraction}
+	Let $(X,d)$ be a non-empty complete metric space and let $f : X\to X$ be a contraction mapping with constant $K$. Then $f$ has exactly one fixed point $w$. Moreover, for any $x_0 \in X$ the iterates $x_{n+1} = f(x_n)$ satisfy $x_n \to w$, with
+	$$d(x_n,w) \leq \frac{K^n}{1-K}d(x_0,x_1).$$
+\end{theorem}
+
+\begin{proof}
+	Uniqueness first, since it is free: if $f(v)=v$ and $f(w)=w$ then $d(v,w) = d(f(v),f(w))\leq Kd(v,w)$, and as $K<1$ this forces $d(v,w)=0$.
+
+	For existence, fix $x_0\in X$ and set $x_{n+1}=f(x_n)$. An immediate induction gives $d(x_n,x_{n+1})\leq K^nd(x_0,x_1)$, so for $m>n$
+	$$d(x_n,x_m) \leq \sum_{r=n}^{m-1}d(x_r,x_{r+1}) \leq d(x_0,x_1)\sum_{r=n}^{\infty}K^r = \frac{K^n}{1-K}d(x_0,x_1).$$
+	Since $K^n\to0$, the sequence $(x_n)$ is Cauchy, and by completeness $x_n\to w$ for some $w \in X$. As $f$ is continuous, $f(w) = \lim f(x_n) = \lim x_{n+1} = w$. Letting $m \to\infty$ in the displayed inequality gives the error bound.
+\end{proof}
+
+The proof is worth a second look, because it is the pattern for a great many existence proofs: we do not find $w$, we manufacture a sequence which is forced to converge and then let the limit be $w$. The picture is the familiar staircase, or \emph{cobweb}, of the numerical analyst.
+
+\begin{center}
+	\begin{tikzpicture}[scale=1.15]
+		\draw[ultra thin,color=lightgray] (0,0) grid[xstep=0.5,ystep=0.5] (4,4);
+		\draw[thick] (0,0) rectangle (4,4);
+		\draw[dashed] (0,0) -- (4,4);
+		\node[below right] at (4,4) {\small $y=x$};
+		\draw[thick,color=blue] (0,1.2) -- (4,3.0);
+		\node[right] at (4.05,2.95) {\small $y=f(x)$};
+		\draw[thin,color=red] (0.2,0) -- (0.2,1.29) -- (1.29,1.29) -- (1.29,1.780)
+			-- (1.780,1.780) -- (1.780,2.001) -- (2.001,2.001) -- (2.001,2.101)
+			-- (2.101,2.101) -- (2.101,2.145) -- (2.145,2.145);
+		\fill[black] (2.182,2.182) circle (1.5pt);
+		\node[above left] at (2.16,2.24) {\small $w$};
+		\node[below] at (0.2,0) {\small $x_0$};
+		\node[below] at (1.29,0) {\small $x_1$};
+		\draw[dotted,gray] (1.29,0) -- (1.29,1.29);
+	\end{tikzpicture}
+\end{center}
+
+Both hypotheses are needed. Completeness cannot be dropped: on $X = (0,1]$ with the usual metric the map $f(x) = x/2$ is a contraction with $K=1/2$, but it has no fixed point in $X$. Nor can $K<1$ be weakened to $d(f(x),f(y))<d(x,y)$: the map $f : \R\to\R$ given by $f(x) = \sqrt{1+x^2}$ satisfies
+$$|f(x)-f(y)| = \frac{|x^2-y^2|}{\sqrt{1+x^2}+\sqrt{1+y^2}} = |x-y|\cdot\frac{|x+y|}{\sqrt{1+x^2}+\sqrt{1+y^2}} < |x-y|$$
+for $x \neq y$, yet $f(x)>x$ everywhere, so there is no fixed point at all.
+
+The contraction mapping theorem is enormously useful -- it is what makes Picard's existence theorem for differential equations and the inverse function theorem work -- but the hypothesis is very strong indeed, and it is easy to write down continuous self-maps of a disc which contract nothing. That such maps still have fixed points is the subject of Section \ref{sec:fixed-points}, and the price we pay is that the proof will tell us nothing whatever about how to find one.
+
 \subsection{Compactness in Euclidean Space}
 
 In this course we deal only with subsets of $\R^m$, and there `compact' may be taken to mean `closed and bounded'. (The reader should be warned that this equivalence fails badly in general metric spaces, and that in the world of topological spaces one must further distinguish compactness from sequential compactness. We will not need any of this: if you intend to climb Everest you need your own oxygen supply, but for the Gog Magogs you do not.)
@@ -291,7 +343,7 @@ So much for uniqueness. What about existence? The following example, due to Zare
 
 The moral is that the boundary point $\vv{0}$ is `too thin' for the boundary condition there to be felt. Lebesgue later produced a three-dimensional example (the \emph{Lebesgue thorn}) in which the offending boundary point is a cusp rather than an isolated point, so that the failure is not simply a matter of the boundary having an isolated point. Deciding exactly which boundary points are `regular' in this sense is a substantial piece of potential theory, and we shall not pursue it.
 
-\section{Fixed Point Theorems}
+\section{Fixed Point Theorems}\label{sec:fixed-points}
 
 In Analysis I we proved the intermediate value theorem, and used it to prove a very pretty one-dimensional fixed point theorem.
 
@@ -695,7 +747,24 @@ We might instead mutter something about interpolation. Write $\Pn_n$ for the vec
 	(i) The difference of two such polynomials lies in $\Pn_n$ and vanishes at $n+1$ points, so is zero by Lemma \ref{lem:poly-roots}. (ii) Each $e_j$ has degree $n$, and $e_j(x_i)=\delta_{ij}$ by construction, so $P(x_i) = f(x_i)$. (iii) There are $n+1$ of them and $\dim \Pn_n = n+1$; they span by (ii).
 \end{proof}
 
-So there is always a unique interpolating polynomial. Unfortunately, `interpolates $f$ at $n+1$ points' is a long way from `is close to $f$'. To see how badly things can go we introduce a family of polynomials which will be with us for the rest of the course.
+So there is always a unique interpolating polynomial, and if $f$ is smooth we can even say exactly how good it is.
+
+\begin{theorem}[Interpolation Error]\label{thm:interp-error}
+	Let $x_0<x_1<\cdots<x_n$ be points of $[a,b]$, let $f : [a,b]\to\R$ be $n+1$ times differentiable, and let $P \in\Pn_n$ interpolate $f$ at the $x_j$. Then for each $t \in[a,b]$ there is a $\xi = \xi(t) \in (a,b)$ with
+	$$f(t)-P(t) = \frac{f^{(n+1)}(\xi)}{(n+1)!}\prod_{j=0}^n(t-x_j).$$
+\end{theorem}
+
+\begin{proof}
+	If $t = x_i$ for some $i$ both sides vanish, so suppose not, and write $\pi(s) = \prod_{j=0}^n(s-x_j)$, which is a monic polynomial of degree $n+1$ with $\pi(t)\neq0$. Choose the constant
+	$$\lambda = \frac{f(t)-P(t)}{\pi(t)}$$
+	and set $g(s) = f(s)-P(s)-\lambda\pi(s)$. Then $g$ vanishes at the $n+2$ distinct points $x_0,\ldots,x_n,t$. By Rolle's theorem $g'$ vanishes at $n+1$ points strictly between consecutive zeros of $g$; applying Rolle again, $g''$ vanishes at $n$ points; and after $n+1$ applications we obtain a $\xi\in(a,b)$ with $g^{(n+1)}(\xi)=0$. But $P^{(n+1)} = 0$ and $\pi^{(n+1)} = (n+1)!$, so
+	$$0 = f^{(n+1)}(\xi)-\lambda(n+1)!,$$
+	which rearranges to the stated formula.
+\end{proof}
+
+This is a genuinely informative answer, because it separates the error into two factors of completely different character. The factor $f^{(n+1)}(\xi)/(n+1)!$ depends on $f$, about which we may know nothing; the factor $\prod_j(t-x_j)$ depends only on \emph{where we chose to interpolate}, and is entirely under our control. So a sensible person picks the $x_j$ to make $\sup_t\left|\prod_j(t-x_j)\right|$ as small as possible. We shall find the optimal choice in Corollary \ref{cor:cheb-nodes}, and it will turn out not to be the obvious one.
+
+Meanwhile, the theorem should not be read as saying that interpolation always works. It has a hypothesis of $n+1$ derivatives, and even when those exist they may be enormous. Indeed `interpolates $f$ at $n+1$ points' is in general a long way from `is close to $f$'. To see how badly things can go we introduce a family of polynomials which will be with us for the rest of the course.
 
 \begin{theorem}[Chebyshev Polynomials]\label{thm:chebyshev}
 	There are polynomials $T_n$ of degree $n$ and $U_{n-1}$ of degree $n-1$ such that
@@ -889,7 +958,21 @@ The idea is easy to describe. If $P$ is a good approximation to $f$ then the err
 	The equiripple condition is also \emph{necessary}: the best approximation always equioscillates in this way, and in particular it is unique. The proof is a pleasant exercise but is not part of the course.
 \end{remark}
 
-Chebyshev's criterion is designed to be used in one direction: guess a candidate, check that its error equioscillates, and conclude. Here is the classic application, and it explains where the Chebyshev polynomials really come from.
+Chebyshev's criterion is designed to be used in one direction: guess a candidate, check that its error equioscillates, and conclude. Let us see the method in action on a concrete problem.
+
+\begin{example}[The Best Straight Line Through $e^t$]
+	We find the best approximation to $f(t) = e^t$ on $[-1,1]$ from $\Pn_1$. Write $P(t) = \alpha+\beta t$. Since $n = 2$ here, the criterion asks for three points at which the error takes the values $+\sigma,-\sigma,+\sigma$ (or the negatives).
+
+	The error $e^t - \alpha-\beta t$ has derivative $e^t - \beta$, which vanishes exactly once, at $t^* = \log\beta$ (assuming $\beta>0$). So the error is decreasing then increasing, and its only candidates for extreme values are $t = -1$, $t = t^*$ and $t=1$. For equioscillation we therefore need
+	$$e^{-1}-\alpha+\beta \;=\; -\big(e^{t^*}-\alpha-\beta t^*\big) \;=\; e - \alpha-\beta.$$
+	The outer equality gives $e^{-1}+\beta = e - \beta$, that is
+	$$\beta = \frac{e-e^{-1}}{2} = \sinh 1 = 1.175201\ldots,$$
+	which is exactly the slope of the chord of $f$ across $[-1,1]$ -- as one would guess from the mean value theorem. Putting $t^*=\log\beta$ into the first equality and rearranging,
+	$$\alpha = \frac{e^{-1}}{2}+\beta-\frac{\beta\log\beta}{2} = 1.264300\ldots.$$
+	The common value of the error is then $\sigma = e^{-1}-\alpha+\beta = 0.278781\ldots$, and by Theorem \ref{thm:equiripple} no other line does better. For comparison, the Taylor polynomial $1+t$ has error $e-2 = 0.718\ldots$ at $t=1$: over an interval of this size, the best approximation is better than the Taylor approximation by a factor of nearly three.
+\end{example}
+
+Here is the classic application, and it explains where the Chebyshev polynomials really come from.
 
 \begin{theorem}\label{thm:best-approx-tn}
 	Work on $[-1,1]$ and let $n\geq1$. Write $S_n(t) = t^n - 2^{1-n}T_n(t)$, which lies in $\Pn_{n-1}$ by Theorem \ref{thm:chebyshev}. Then
@@ -903,7 +986,24 @@ Chebyshev's criterion is designed to be used in one direction: guess a candidate
 	So the equiripple criterion of Theorem \ref{thm:equiripple} applies with $\zeta = (-1)^n$, and $S_n$ is a best approximation to $t^n$ from $\Pn_{n-1}$.
 \end{proof}
 
-So the Chebyshev polynomial $2^{1-n}T_n$ is precisely the monic polynomial of degree $n$ with smallest uniform norm on $[-1,1]$. This immediately gives useful lower bounds on the size of polynomials with large coefficients.
+So the Chebyshev polynomial $2^{1-n}T_n$ is precisely the monic polynomial of degree $n$ with smallest uniform norm on $[-1,1]$. This settles the question we left open when we discussed interpolation.
+
+\begin{corollary}[Optimal Interpolation Nodes]\label{cor:cheb-nodes}
+	Let $x_0,\ldots,x_n$ be distinct points of $[-1,1]$. Then
+	$$\sup_{t\in[-1,1]}\left|\prod_{j=0}^n(t-x_j)\right| \geq 2^{-n},$$
+	with equality when the $x_j$ are taken to be the $n+1$ roots
+	$$x_j = \cos\left(\frac{(2j+1)\pi}{2n+2}\right) \qquad (0 \leq j \leq n)$$
+	of $T_{n+1}$. Consequently, if $f$ is $n+1$ times differentiable on $[-1,1]$ and $P\in\Pn_n$ interpolates $f$ at those roots, then
+	$$\norm{f-P}_\infty \leq \frac{1}{2^n(n+1)!}\sup_{t\in[-1,1]}\left|f^{(n+1)}(t)\right|.$$
+\end{corollary}
+
+\begin{proof}
+	The polynomial $\pi(t) = \prod_{j=0}^n(t-x_j)$ is monic of degree $n+1$, so $\pi(t) = t^{n+1}-Q(t)$ with $Q\in\Pn_n$, and Theorem \ref{thm:best-approx-tn} (with $n+1$ in place of $n$) gives $\norm{\pi}_\infty\geq2^{1-(n+1)} = 2^{-n}$. Taking the $x_j$ to be the roots of $T_{n+1}$ makes $\pi = 2^{-n}T_{n+1}$, since both sides are monic of degree $n+1$ with the same roots, and $\norm{T_{n+1}}_\infty=1$. The last statement is Theorem \ref{thm:interp-error} combined with this equality.
+\end{proof}
+
+That is precisely why the second of our two pictures was so much better than the first. For equally spaced nodes the product $\prod_j|t-x_j|$ is small in the middle of the interval but exponentially larger near the ends -- which is exactly where the interpolant went wrong -- whereas the Chebyshev nodes, which crowd towards $\pm1$, equalise it. (The reader should not conclude that the corollary \emph{explains} the Runge phenomenon: for $f(x)=(1+25x^2)^{-1}$ the derivatives $f^{(n+1)}$ grow so fast that the bound above is useless for either choice of nodes. What is true is that the bound is the best one available which does not look at $f$, and that in practice Chebyshev interpolation converges for a much wider class of functions than equally spaced interpolation.)
+
+Theorem \ref{thm:best-approx-tn} also gives useful lower bounds on the size of polynomials with large coefficients.
 
 \begin{corollary}\label{cor:coeff-bound}
 	We work on $[-1,1]$.
@@ -1026,6 +1126,22 @@ Doubling the degree of exactness for free is impressive, but the real payoff is 
 
 	(iv) Given $\varepsilon>0$, Weierstrass's Theorem \ref{thm:weierstrass} provides a polynomial $P$ with $\norm{f-P}_\infty<\varepsilon/4$. For all $n$ with $2n-1\geq\deg P$, part (iii) gives $\left|\int_{-1}^1f - G_nf\right| < \varepsilon$.
 \end{proof}
+
+It is worth carrying the construction out once, if only to see how modest the numbers are.
+
+\begin{example}[The Two-Point Gauss Rule]
+	Take $n = 2$. Gram--Schmidt gives $p_0(t) = 1/\sqrt2$ and, since $\langle t,p_0\rangle = 0$ and $\int_{-1}^1t^2\dd t = \tfrac23$, also $p_1(t) = \sqrt{3/2}\,t$. Next
+	$$q_2(t) = t^2 - \langle t^2,p_0\rangle p_0(t)-\langle t^2,p_1\rangle p_1(t) = t^2 - \frac{2/3}{\sqrt2}\cdot\frac{1}{\sqrt2} - 0 = t^2-\frac13,$$
+	so the nodes are $\alpha_{1,2} = \pm 1/\sqrt3$. By symmetry $A_1 = A_2$, and Theorem \ref{thm:gauss-good}(ii) gives $A_1=A_2=1$. Thus
+	$$\int_{-1}^1 f(t)\dd t \approx f\!\left(-\tfrac{1}{\sqrt3}\right)+f\!\left(\tfrac1{\sqrt3}\right),$$
+	and Theorem \ref{thm:gauss-quad} says that this is exact for every cubic. (One can check this by hand: $\int_{-1}^1t^2\dd t = \tfrac23 = \tfrac13+\tfrac13$ and $\int_{-1}^1t^3\dd t = 0 = -3^{-3/2}+3^{-3/2}$.)
+
+	Let us try it on $f(t)=e^t$, where $\int_{-1}^1e^t\dd t = e - e^{-1} = 2.350402\ldots$. The rule gives
+	$$e^{-1/\sqrt3}+e^{1/\sqrt3} = 2\cosh\!\left(\tfrac{1}{\sqrt3}\right) = 2.342760\ldots,$$
+	an error of $0.0076$ from two evaluations of $f$. Simpson's rule, which is also exact on cubics, uses \emph{three} evaluations and gives
+	$$\tfrac13\big(e^{-1}+4e^0+e\big) = 2.362054\ldots,$$
+	an error of $0.0117$. So Gauss does better with less work, which is the whole point.
+\end{example}
 
 It is worth appreciating how the pieces fit together. Positivity of the weights (i) is what stops the errors from amplifying; it is a consequence of the choice of nodes, and it is exactly what fails for equally spaced nodes. Once we have positivity and (ii), the quadrature error is controlled by the best polynomial approximation error, and Weierstrass's theorem then guarantees convergence for \emph{every} continuous $f$ -- with no smoothness assumptions at all.
 
