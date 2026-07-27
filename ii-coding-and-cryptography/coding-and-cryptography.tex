@@ -1,0 +1,1715 @@
+\documentclass[a4paper]{scrartcl}
+
+\usepackage[
+	fancytheorems,
+	fancyproofs,
+	noindent
+]{adam}
+
+\usepackage{tikz}
+
+% Extra macros for this course
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\wt}{w}
+\newcommand{\Ac}{\mathcal{A}}
+\newcommand{\Bc}{\mathcal{B}}
+\newcommand{\Cc}{\mathcal{C}}
+\newcommand{\Kc}{\mathcal{K}}
+\newcommand{\Mc}{\mathcal{M}}
+\newcommand{\Ec}{\mathcal{E}}
+\newcommand{\Sc}{\mathcal{S}}
+
+\title{Coding and Cryptography}
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{\today}
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+Communication is a mathematical problem. Somebody wants to say something to somebody else; between them lies a channel that is expensive, or unreliable, or overheard, or all three at once. Coding theory is the study of how to package a message so that it survives the journey, and cryptography is the study of how to package it so that only the intended recipient can read it. Both subjects turn out to be, at bottom, about the same thing: the arithmetic of finite sets, and the surprising leverage that a little algebra and a little probability give us over them.
+
+The most striking result in the course is due to Shannon, and it says something that ought to be false. If a channel corrupts one bit in ten, entirely at random, one might reasonably guess that transmitting a long message without error requires sending it over and over again, so that the rate at which information gets through must fall to zero. It does not. There is a positive number -- the \emph{capacity} of the channel -- below which arbitrarily reliable communication is possible, and Shannon's theorem tells us exactly what that number is. What makes the proof so memorable is that it establishes the existence of extremely good codes by choosing one at random, without ever exhibiting a single one.
+
+This article constitutes my notes for the `Coding and Cryptography' course, held in Lent 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
+
+\tableofcontents
+
+\section{Modelling Communication}
+
+Before we can prove anything we need a model, and the one we shall use is the one Shannon drew in 1948. There is a \vocab{source} which produces a message; an \vocab{encoder} which turns that message into something suitable for transmission; a \vocab{channel} down which the transmission travels and in which things go wrong; a \vocab{decoder} which tries to undo the damage; and finally a \vocab{receiver}, for whom the whole business was arranged.
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+	\tikzset{blk/.style={draw, thin, minimum height=0.75cm, minimum width=1.5cm, inner sep=2pt, font=\small}}
+	\node[blk] (s)  at (0,0)    {source};
+	\node[blk] (e)  at (2.5,0)  {encoder};
+	\node[blk] (ch) at (5.4,0)  {channel};
+	\node[blk] (d)  at (8.3,0)  {decoder};
+	\node[blk] (r)  at (10.8,0) {receiver};
+	\draw[->,thin] (s)  -- node[above,font=\scriptsize] {$m$} (e);
+	\draw[->,thin] (e)  -- node[above,font=\scriptsize] {$c$} (ch);
+	\draw[->,thin] (ch) -- node[above,font=\scriptsize] {$r$} (d);
+	\draw[->,thin] (d)  -- node[above,font=\scriptsize] {$\hat m$} (r);
+	\node[font=\small] (n) at (5.4,1.5) {noise};
+	\draw[->,thin] (n) -- (ch);
+	\node[font=\small] (ev) at (5.4,-1.5) {Eve};
+	\draw[->,thin,dashed] (ch) -- (ev);
+\end{tikzpicture}
+\end{center}
+
+By long-standing convention the source is called Alice, the receiver is called Bob, and any third party listening in on the channel is called Eve. The two halves of the course correspond to the two things that can go wrong in the middle of that diagram. In coding theory the enemy is the noise, and we want the message to arrive \emph{economically} and \emph{reliably}. In cryptography the enemy is Eve, and we want the message to arrive \emph{privately}.
+
+It is worth separating two quite different problems which are often confused. \vocab{Noiseless coding}, or source coding, is about compression: we want to spend as few symbols as possible on a message, and it is adapted to the \emph{source}. Morse code is the canonical example -- the letter E, the commonest letter in English, gets the single dot, and the letter Q gets four symbols. \vocab{Noisy coding}, or channel coding, is about redundancy: we want to add enough extra symbols that corruption can be spotted and undone, and it is adapted to the \emph{channel}.
+
+\begin{example}[ISBNs]
+	Every book (before 2007) carried a ten-digit International Standard Book Number $a_1 a_2 \dots a_{10}$, where $a_1, \dots, a_9 \in \{0, 1, \dots, 9\}$ and $a_{10} \in \{0, 1, \dots, 9, X\}$, subject to the single condition
+	$$\sum_{j=1}^{10} j a_j \equiv 0 \pmod{11}.$$
+	Here $X$ stands for $10$, and the modulus $11$ is prime, which is what makes everything work. Suppose one digit is mistyped, say $a_k$ becomes $a_k'$. Then the check sum changes by $k(a_k - a_k')$, and since $1 \le k \le 10$ and $\abs{a_k - a_k'} \le 10$, neither factor is divisible by $11$, so the sum is no longer $0$ modulo $11$ and the error is detected. Similarly, if two adjacent digits are transposed, say $a_k$ and $a_{k+1}$ swap, the sum changes by $a_{k+1} - a_k$, again nonzero modulo $11$ unless the digits were equal in the first place.
+
+	The channel here is a human being reading a number off a page and typing it into a computer, and the code is beautifully adapted to the errors that channel makes.
+\end{example}
+
+We now make the notion of a channel precise.
+
+\begin{definition}[Communication Channel]
+	A \vocab{communication channel} accepts strings of symbols from a finite \vocab{input alphabet} $\Ac = \{a_1, \dots, a_r\}$ and outputs strings of symbols from a finite \vocab{output alphabet} $\Bc = \{b_1, \dots, b_s\}$. It is specified by the probabilities
+	$$\PP(y_1 \dots y_n \text{ received} \mid x_1 \dots x_n \text{ sent}).$$
+\end{definition}
+
+In this generality nothing can be said, because the channel is allowed to remember everything it has ever done. Almost always we assume much more.
+
+\begin{definition}[Discrete Memoryless Channel]
+	A \vocab{discrete memoryless channel} (DMC) is a channel for which the probabilities
+	$$p_{ij} = \PP(b_j \text{ received} \mid a_i \text{ sent})$$
+	are the same on every use of the channel, and are independent of all past and future uses. The $r \times s$ matrix $P = (p_{ij})$ is the \vocab{channel matrix}; each of its rows sums to $1$.
+\end{definition}
+
+Two examples will accompany us for the rest of the course.
+
+\begin{example}[Binary Symmetric Channel]
+	The \vocab{binary symmetric channel} (BSC) with error probability $p \in [0,1]$ has $\Ac = \Bc = \{0,1\}$ and channel matrix
+	$$P = \begin{pmatrix} 1-p & p \\ p & 1-p\end{pmatrix}.$$
+	Each bit is flipped independently with probability $p$, and transmitted faithfully with probability $1-p$.
+
+	\begin{center}
+	\begin{tikzpicture}[x=1cm,y=1cm]
+		\node (i0) at (0,1.1)  {$0$};
+		\node (i1) at (0,-1.1) {$1$};
+		\node (o0) at (4,1.1)  {$0$};
+		\node (o1) at (4,-1.1) {$1$};
+		\draw[->,thin] (i0) -- node[above,font=\scriptsize] {$1-p$} (o0);
+		\draw[->,thin] (i1) -- node[below,font=\scriptsize] {$1-p$} (o1);
+		\draw[->,thin] (i0) -- node[pos=0.28,above,font=\scriptsize,sloped] {$p$} (o1);
+		\draw[->,thin] (i1) -- node[pos=0.28,below,font=\scriptsize,sloped] {$p$} (o0);
+		\node[font=\scriptsize] at (0,1.75) {input};
+		\node[font=\scriptsize] at (4,1.75) {output};
+	\end{tikzpicture}
+	\end{center}
+
+	We shall almost always assume $p < \tfrac12$. This costs nothing: a channel with $p > \tfrac12$ becomes one with error probability $1-p$ if Bob simply inverts everything he receives, and we shall see shortly that a channel with $p = \tfrac12$ is useless, in that it carries no information whatsoever.
+\end{example}
+
+\begin{example}[Binary Erasure Channel]
+	The \vocab{binary erasure channel} (BEC) has $\Ac = \{0,1\}$ and $\Bc = \{0, 1, \star\}$, with channel matrix
+	$$P = \begin{pmatrix} 1-p & 0 & p \\ 0 & 1-p & p \end{pmatrix}.$$
+	Here $p$ is the probability that the symbol arrives illegibly; receiving $\star$ is called a \vocab{splurge error}. This channel never lies to us, it merely occasionally declines to speak.
+
+	\begin{center}
+	\begin{tikzpicture}[x=1cm,y=1cm]
+		\node (i0) at (0,1.1)  {$0$};
+		\node (i1) at (0,-1.1) {$1$};
+		\node (o0) at (3.6,1.1)  {$0$};
+		\node (os) at (3.6,0)    {$\star$};
+		\node (o1) at (3.6,-1.1) {$1$};
+		\draw[->,thin] (i0) -- node[above,font=\scriptsize] {$1-p$} (o0);
+		\draw[->,thin] (i1) -- node[below,font=\scriptsize] {$1-p$} (o1);
+		\draw[->,thin] (i0) -- node[pos=0.62,above,font=\scriptsize,sloped] {$p$} (os);
+		\draw[->,thin] (i1) -- node[pos=0.62,below,font=\scriptsize,sloped] {$p$} (os);
+	\end{tikzpicture}
+	\end{center}
+\end{example}
+
+To use a channel $n$ times we pass to the \vocab{$n$th extension}, whose input alphabet is $\Ac^n$, whose output alphabet is $\Bc^n$, and whose channel matrix (for a DMC) is
+$$\PP(y_1 \dots y_n \mid x_1 \dots x_n) = \prod_{i=1}^n \PP(y_i \mid x_i).$$
+
+\begin{definition}[Code, Rate, Error Rate]
+	A \vocab{code} $C$ of length $n$ is a function $\Mc \to \Ac^n$, where $\Mc$ is a set of messages; implicitly we also fix a decoding rule $\Bc^n \to \Mc$. We usually identify $C$ with its image, a subset of $\Ac^n$.
+	\begin{itemize}
+		\item The \vocab{size} of $C$ is $m = \abs{\Mc}$.
+		\item The \vocab{information rate} of $C$ is $\rho(C) = \frac{1}{n}\log_2 m$.
+		\item The \vocab{error rate} of $C$ is $\hat e(C) = \max_{x \in \Mc} \PP(\text{error} \mid x \text{ sent})$.
+	\end{itemize}
+\end{definition}
+
+Throughout these notes $\log$ means $\log_2$ unless we say otherwise; this is the convention that makes the answers come out in bits.
+
+\begin{definition}[Capacity]
+	A channel can \vocab{transmit reliably at rate $R$} if there is a sequence of codes $(C_n)_{n \ge 1}$, with $C_n$ of length $n$, such that
+	$$\lim_{n \to \infty} \rho(C_n) = R \qquad \text{and} \qquad \lim_{n \to \infty} \hat e(C_n) = 0.$$
+	The \vocab{capacity} of the channel is the supremum of all rates at which it can transmit reliably.
+\end{definition}
+
+Note carefully what is being asked. We are not asking for one good code; we are asking for a whole family of codes whose rate stays bounded away from zero while the error probability is driven to zero. It is far from obvious that this can be done at all for a channel that makes errors, and the fact that it can -- that the binary symmetric channel with $p< \tfrac12$ has strictly positive capacity -- is Shannon's noisy coding theorem, which we prove in Section~\ref{sec:noisycoding}.
+
+\section{Noiseless Coding}
+
+We begin with the easier half of the problem, in which the channel is perfect and the only question is economy. A source emits symbols from an alphabet $\Ac$, some more often than others, and we want to represent them as short strings over a transmission alphabet $\Bc$.
+
+\subsection{Codes and Decipherability}
+
+Let $\Bc$ be a finite alphabet. Write $\Bc^\star = \bigcup_{n \ge 0} \Bc^n$ for the set of all finite strings over $\Bc$, including the empty string. The \vocab{concatenation} of $x = x_1 \dots x_r$ and $y = y_1 \dots y_s$ is $xy = x_1 \dots x_r y_1 \dots y_s$.
+
+\begin{definition}[Code]
+	Let $\Ac$ and $\Bc$ be alphabets. A \vocab{code} is a function $c \colon \Ac \to \Bc^\star$. The elements of the image of $c$ are the \vocab{codewords}.
+\end{definition}
+
+We write $m = \abs{\Ac}$ and $a = \abs{\Bc}$, and call $c$ an \vocab{$a$-ary code of size $m$}. A $2$-ary code is \emph{binary}, a $3$-ary code is \emph{ternary}.
+
+\begin{example}[The Greek Fire Code]
+	Take $\Ac = \{\alpha, \beta, \dots, \omega\}$, the $24$ letters of the Greek alphabet, and $\Bc = \{1,2,3,4,5\}$. Arrange the letters in a $5 \times 5$ square and encode each by its coordinates, so $c(\alpha) = 11$, $c(\beta) = 12$, and so on. To transmit the pair $xy$ one holds up $x$ torches on one hilltop and $y$ torches on another. This scheme is described by Polybius, and is very probably the oldest code in these notes by some two thousand years.
+\end{example}
+
+A code is only useful if we can send more than one symbol. Given a message $x_1 x_2 \dots x_n \in \Ac^\star$ we transmit $c(x_1)c(x_2)\dots c(x_n)$, so that $c$ extends to a map
+$$c^\star \colon \Ac^\star \to \Bc^\star.$$
+
+\begin{definition}[Decipherable]
+	A code $c$ is \vocab{decipherable}, or \vocab{uniquely decodable}, if $c^\star$ is injective.
+\end{definition}
+
+It is not enough for $c$ itself to be injective, as the following shows.
+
+\begin{example}
+	Let $\Ac = \{1,2,3,4\}$ and $\Bc = \{0,1\}$, and set
+	$$c(1) = 0, \quad c(2) = 1, \quad c(3) = 00, \quad c(4) = 01.$$
+	This is injective, but $c^\star(114) = 0\,0\,01 = 0001$ and $c^\star(312) = 00\,0\,1 = 0001$, so $c^\star$ is not. On receiving $0001$ Bob has no way to tell which message was meant.
+\end{example}
+
+There are three easy ways of guaranteeing decipherability, assuming $c$ injective.
+
+\begin{enumerate}[label=(\roman*)]
+	\item A \vocab{block code}, in which all codewords have the same length. The Greek fire code is of this kind.
+	\item A \vocab{comma code}, which reserves one letter of $\Bc$ to mark the end of a codeword and never uses it otherwise.
+	\item A \vocab{prefix-free code}, in which no codeword is an initial segment of another.
+\end{enumerate}
+
+Block codes and comma codes are both special cases of prefix-free codes. Prefix-free codes have the pleasant property that Bob can decode as he reads: the moment the symbols he has seen form a codeword, he knows that codeword has ended, because no longer codeword begins that way. For this reason they are also called \vocab{instantaneous} codes.
+
+Not every decipherable code is prefix-free. For instance $c(1) = 0$, $c(2) = 01$, $c(3) = 011$, $c(4) = 0111$ is decipherable -- each $0$ marks the start of a new codeword -- but $c(1)$ is a prefix of $c(2)$. Here Bob must look ahead to the next $0$ before committing. Remarkably, we shall see in a moment that allowing such lookahead buys us precisely nothing.
+
+The right way to picture a prefix-free binary code is as a rooted binary tree. Reading a codeword left to right tells us which way to turn at each vertex, and the prefix-free condition says exactly that all the codewords sit at \emph{leaves}.
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+	\tikzset{dot/.style={circle, fill=black, inner sep=1.1pt}}
+	\node[dot] (r)   at (0,0)      {};
+	\node[dot] (l0)  at (-1.5,-1)  {};
+	\node[dot] (n1)  at (1.5,-1)   {};
+	\node[dot] (l10) at (0.4,-2)   {};
+	\node[dot] (n11) at (2.6,-2)   {};
+	\node[dot] (l110) at (1.7,-3)  {};
+	\node[dot] (l111) at (3.5,-3)  {};
+	\draw[thin] (r) -- node[above left,font=\scriptsize] {$0$} (l0);
+	\draw[thin] (r) -- node[above right,font=\scriptsize] {$1$} (n1);
+	\draw[thin] (n1) -- node[above left,font=\scriptsize] {$0$} (l10);
+	\draw[thin] (n1) -- node[above right,font=\scriptsize] {$1$} (n11);
+	\draw[thin] (n11) -- node[above left,font=\scriptsize] {$0$} (l110);
+	\draw[thin] (n11) -- node[above right,font=\scriptsize] {$1$} (l111);
+	\node[font=\small] at (-1.5,-1.42) {$0$};
+	\node[font=\small] at (0.4,-2.42) {$10$};
+	\node[font=\small] at (1.7,-3.42) {$110$};
+	\node[font=\small] at (3.5,-3.42) {$111$};
+\end{tikzpicture}
+\end{center}
+
+\subsection{Kraft's Inequality}
+
+How short can the codewords of a prefix-free code be? Not arbitrarily short: the tree picture makes it clear that a short codeword uses up a lot of the tree. The following inequality measures exactly how much.
+
+\begin{definition}[Kraft's Inequality]
+	Let $c \colon \Ac \to \Bc^\star$ be a code with $\abs{\Ac} = m$ and $\abs{\Bc} = a$, whose codewords have lengths $\ell_1, \dots, \ell_m$. We say that $c$ satisfies \vocab{Kraft's inequality} if
+	$$\sum_{i=1}^m a^{-\ell_i} \le 1.$$
+\end{definition}
+
+\begin{theorem}[Kraft]
+	Given lengths $\ell_1, \dots, \ell_m$, there is a prefix-free $a$-ary code with these codeword lengths if and only if Kraft's inequality holds.
+\end{theorem}
+
+\begin{proof}
+	Let $s = \max_i \ell_i$ and let $n_\ell$ be the number of $i$ with $\ell_i = \ell$, so that Kraft's inequality reads $\sum_{\ell=1}^s n_\ell a^{-\ell} \le 1$, or after multiplying by $a^s$,
+	\begin{equation*} n_1 a^{s-1} + n_2 a^{s-2} + \dots + n_{s-1}a + n_s \le a^s. \tag{$\ast$}\end{equation*}
+
+	Suppose first that $c$ is prefix-free. A codeword of length $\ell$ is a prefix of exactly $a^{s-\ell}$ strings of length $s$, and by the prefix-free condition no string of length $s$ has two different codewords as prefixes. So the left hand side of $(\ast)$ counts, without repetition, some of the strings of length $s$, of which there are $a^s$ in all. Hence $(\ast)$ holds.
+
+	Conversely suppose $(\ast)$ holds; we build a prefix-free code with $n_\ell$ codewords of length $\ell$ for each $\ell$, by induction on $s$. If $s = 1$ the inequality says $n_1 \le a$ and we simply choose $n_1$ of the $a$ letters. For $s > 1$, the inductive hypothesis applied to the lengths at most $s-1$ gives a prefix-free code $\hat c$ with $n_\ell$ codewords of length $\ell$ for every $\ell < s$. Now the strings of length $s$ having some codeword of $\hat c$ as a prefix number exactly
+	$$n_1 a^{s-1} + \dots + n_{s-1}a,$$
+	so by $(\ast)$ at least $n_s$ strings of length $s$ remain untouched. Choosing $n_s$ of them and adjoining them to $\hat c$ gives a code which is still prefix-free, since none of the new codewords extends an old one (they were chosen to avoid this) and none of the old codewords extends a new one (they are shorter).
+\end{proof}
+
+\begin{remark}
+	The proof is constructive, and gives a perfectly practical algorithm: list the required lengths in increasing order and greedily assign codewords, at each stage taking any string of the right length that does not extend a codeword already chosen. Kraft's inequality guarantees that we never run out.
+\end{remark}
+
+\subsection{McMillan's Inequality}
+
+Now we come to the result promised above, which says that lookahead is worthless.
+
+\begin{theorem}[McMillan]
+	Every decipherable code satisfies Kraft's inequality.
+\end{theorem}
+
+\begin{proof}
+	Let $c \colon \Ac \to \Bc^\star$ be decipherable with word lengths $\ell_1, \dots, \ell_m$, and set $s = \max_i \ell_i$. The trick is to consider the $R$th power of the quantity in question. For any $R \in \N$,
+	$$\left(\sum_{i=1}^m a^{-\ell_i}\right)^{\!R} = \sum_{\ell=R}^{Rs} b_\ell\, a^{-\ell},$$
+	where $b_\ell$ is the number of ways of choosing an ordered $R$-tuple of codewords whose total length is $\ell$; this is just what happens when we expand the product. Now a tuple of $R$ codewords of total length $\ell$ concatenates to a string in $\Bc^\ell$, and because $c$ is decipherable, distinct tuples give distinct strings. Hence
+	$$b_\ell \le \abs{\Bc^\ell} = a^\ell,$$
+	and so each term $b_\ell a^{-\ell}$ is at most $1$. There are at most $Rs$ terms, so
+	$$\left(\sum_{i=1}^m a^{-\ell_i}\right)^{\!R} \le Rs, \qquad \text{that is} \qquad \sum_{i=1}^m a^{-\ell_i} \le (Rs)^{1/R}.$$
+	Letting $R \to \infty$, the right hand side tends to $1$, and Kraft's inequality follows.
+\end{proof}
+
+The proof is a small piece of magic: an inequality that fails to hold is amplified by exponentiation into an absurdity, while the polynomial factor $Rs$ is powerless to keep up.
+
+\begin{corollary}
+	A decipherable code with word lengths $\ell_1, \dots, \ell_m$ exists if and only if a prefix-free code with the same word lengths exists.
+\end{corollary}
+
+\begin{proof}
+	A prefix-free code is decipherable. Conversely, a decipherable code satisfies Kraft's inequality by McMillan, and then Kraft's theorem produces a prefix-free code with the same lengths.
+\end{proof}
+
+So from the point of view of word lengths -- which is the only point of view that matters for economy -- we may as well restrict attention to prefix-free codes, and we shall.
+
+\subsection{Entropy}
+
+We now need a way of saying how much information a source actually produces, so that we know what we are aiming at. The right notion is Shannon's \vocab{entropy}. Informally, the entropy of a random variable $X$ is the expected number of fair coin tosses needed to determine its value.
+
+\begin{example}
+	Suppose $X$ takes four values with probability $\tfrac14$ each. Identifying the values with $00, 01, 10, 11$, two coin tosses always suffice and never fewer, so the entropy should be $2$.
+
+	Suppose instead $X$ takes four values with probabilities $\tfrac12, \tfrac14, \tfrac18, \tfrac18$. Identify them with the strings $0, 10, 110, 111$: toss a coin, and if it comes up $0$ we are done, otherwise toss again, and so on. The expected number of tosses is
+	$$\tfrac12 \cdot 1 + \tfrac14 \cdot 2 + \tfrac18 \cdot 3 + \tfrac18 \cdot 3 = \tfrac74.$$
+	The second variable is in this sense less random than the first.
+\end{example}
+
+Both examples are instances of the following.
+
+\begin{definition}[Entropy]
+	Let $X$ be a random variable taking finitely many values $x_1, \dots, x_n$ with probabilities $p_1, \dots, p_n$. The \vocab{entropy} of $X$ is
+	$$H(X) = H(p_1, \dots, p_n) = -\sum_{i=1}^n p_i \log p_i = \EE[-\log p(X)],$$
+	where $\log = \log_2$ and we adopt the convention $0\log 0 = 0$.
+\end{definition}
+
+The convention is forced on us by continuity, since $x \log x \to 0$ as $x \to 0^+$. Entropy is measured in \vocab{bits}. Clearly $H(X) \ge 0$, with equality if and only if some $p_i = 1$, that is, if and only if $X$ is constant.
+
+\begin{example}[The Binary Entropy Function]
+	For a biased coin with probability $p$ of heads we write
+	$$H(p) = H(p, 1-p) = -p\log p - (1-p)\log(1-p).$$
+	Differentiating, $H'(p) = \log\frac{1-p}{p}$, which is positive for $p< \tfrac12$ and negative for $p > \tfrac12$; and $H''(p) < 0$ throughout, so $H$ is strictly concave with a maximum of $1$ at $p = \tfrac12$, vanishing at $p=0$ and $p=1$.
+
+	\begin{center}
+	\begin{tikzpicture}[x=6cm,y=3cm]
+		\draw[ultra thin,color=lightgray] (0,0) grid[xstep=0.1,ystep=0.1] (1,1);
+		\draw[->,thin] (0,0) -- (1.08,0) node[right,font=\small] {$p$};
+		\draw[->,thin] (0,0) -- (0,1.12) node[above,font=\small] {$H(p)$};
+		\draw[thick,color=blue,smooth,samples=120,domain=0.0008:0.9992]
+			plot (\x, {-(\x*ln(\x) + (1-\x)*ln(1-\x))/ln(2)});
+		\draw[thin,dotted] (0.5,0) -- (0.5,1);
+		\draw[thin,dotted] (0,1) -- (0.5,1);
+		\node[font=\scriptsize,below] at (0.5,0) {$\frac12$};
+		\node[font=\scriptsize,below] at (1,0) {$1$};
+		\node[font=\scriptsize,left] at (0,1) {$1$};
+	\end{tikzpicture}
+	\end{center}
+
+	This little function is going to appear everywhere, so it is worth committing its shape to memory: symmetric about $\tfrac12$, with infinite slope at the two ends.
+\end{example}
+
+The following inequality is the workhorse of the whole subject.
+
+\begin{proposition}[Gibbs' Inequality]
+	Let $(p_1, \dots, p_n)$ and $(q_1, \dots, q_n)$ be probability distributions. Then
+	$$-\sum_{i=1}^n p_i \log p_i \le -\sum_{i=1}^n p_i \log q_i,$$
+	with equality if and only if $p_i = q_i$ for all $i$.
+\end{proposition}
+
+The right hand side is the \vocab{cross entropy} of $q$ relative to $p$; the difference between the two sides is called the relative entropy, or Kullback--Leibler divergence, and Gibbs' inequality says it is non-negative.
+
+\begin{proof}
+	Since $\log x = \ln x/\ln 2$ we may work with natural logarithms throughout. Let $I = \{i : p_i \ne 0\}$. The elementary inequality $\ln x \le x-1$ for $x > 0$, with equality only at $x=1$, gives for $i \in I$
+	$$\ln \frac{q_i}{p_i} \le \frac{q_i}{p_i} - 1,$$
+	and multiplying by $p_i > 0$ and summing over $I$,
+	$$\sum_{i \in I} p_i \ln \frac{q_i}{p_i} \le \sum_{i \in I} q_i - \sum_{i \in I} p_i \le 1 - 1 = 0,$$
+	using $\sum_{i \in I} p_i = 1$ and $\sum_{i \in I} q_i \le 1$. Therefore
+	$$-\sum_{i=1}^n p_i \ln p_i = -\sum_{i \in I} p_i \ln p_i \le -\sum_{i \in I} p_i \ln q_i \le -\sum_{i=1}^n p_i \ln q_i,$$
+	the last step because the omitted terms have $p_i = 0$. If equality holds throughout we need $\sum_{i \in I} q_i = 1$ and $q_i/p_i = 1$ for every $i \in I$; the first forces $q_i = 0$ for $i \notin I$, and the second gives $p_i = q_i$ on $I$.
+\end{proof}
+
+\begin{corollary}
+	$H(p_1, \dots, p_n) \le \log n$, with equality if and only if $p_1 = \dots = p_n = \frac1n$.
+\end{corollary}
+
+\begin{proof}
+	Take $q_i = \frac1n$ in Gibbs' inequality: the right hand side is $-\sum p_i \log \frac1n = \log n$.
+\end{proof}
+
+In other words, the uniform distribution is the most random one, which is what one would hope.
+
+\subsection{Optimal Codes and the Noiseless Coding Theorem}
+
+Fix an alphabet $\Ac = \{\mu_1, \dots, \mu_m\}$ of $m \ge 2$ messages and a transmission alphabet $\Bc$ with $a = \abs{\Bc} \ge 2$. Let $X$ be a random variable on $\Ac$ with $\PP(X = \mu_i) = p_i$. A code $c$ with word lengths $\ell_1, \dots, \ell_m$ has expected word length
+$$\EE[S] = \sum_{i=1}^m p_i \ell_i.$$
+
+\begin{definition}[Optimal Code]
+	A code $c \colon \Ac \to \Bc^\star$ is \vocab{optimal} if it has the smallest expected word length among all decipherable codes for $X$.
+\end{definition}
+
+We can now say precisely how well one can do.
+
+\begin{theorem}[Shannon's Noiseless Coding Theorem]\label{thm:noiseless}
+	The expected word length $\EE[S]$ of an optimal code satisfies
+	$$\frac{H(X)}{\log a} \le \EE[S] < \frac{H(X)}{\log a} + 1.$$
+	Moreover the lower bound holds for \emph{every} decipherable code, and is attained exactly when $p_i = a^{-\ell_i}$ for integers $\ell_i$ (so that in particular $\sum_i a^{-\ell_i} = 1$).
+\end{theorem}
+
+\begin{proof}
+	\emph{The lower bound.} Let $c$ be any decipherable code with word lengths $\ell_1, \dots, \ell_m$. Put $D = \sum_i a^{-\ell_i}$ and $q_i = a^{-\ell_i}/D$, so that $(q_i)$ is a probability distribution. By Gibbs' inequality,
+	$$H(X) \le -\sum_i p_i \log q_i = -\sum_i p_i\left(-\ell_i \log a - \log D\right) = \log D + \log a \sum_i p_i \ell_i.$$
+	By McMillan's inequality $D \le 1$, so $\log D \le 0$, and therefore
+	$$H(X) \le \log a \cdot \EE[S],$$
+	which is the lower bound. Equality forces $D = 1$ and $p_i = q_i = a^{-\ell_i}$.
+
+	\emph{The upper bound.} It suffices to exhibit \emph{some} decipherable code beating the bound, since an optimal code can only be better. Set
+	$$\ell_i = \ceil{-\log_a p_i},$$
+	so that $-\log_a p_i \le \ell_i < -\log_a p_i + 1$. From the first inequality $p_i \ge a^{-\ell_i}$, and summing, $\sum_i a^{-\ell_i} \le 1$. So Kraft's inequality holds and there is a prefix-free code $c$ with these word lengths. From the second inequality,
+	$$\EE[S] = \sum_i p_i \ell_i < \sum_i p_i \left(-\log_a p_i + 1\right) = \frac{H(X)}{\log a} + 1. \qedhere$$
+\end{proof}
+
+The code constructed in the second half is worth a name.
+
+\begin{definition}[Shannon--Fano Coding]
+	The \vocab{Shannon--Fano code} for probabilities $p_1, \dots, p_m$ takes word lengths $\ell_i = \ceil{-\log_a p_i}$ and then assigns codewords greedily in order of increasing length, as in the proof of Kraft's theorem.
+\end{definition}
+
+\begin{example}\label{ex:shannonfano}
+	Take $a = 2$ and the source
+	$$\begin{array}{c|cccccc}
+		i & 1 & 2 & 3 & 4 & 5 & 6 \\ \hline
+		p_i & 0.30 & 0.22 & 0.18 & 0.14 & 0.10 & 0.06
+	\end{array}$$
+	The entropy is
+	$$H(X) = -\sum_i p_i \log p_i \approx 2.4198.$$
+	The Shannon--Fano lengths are $\ell_i = \ceil{-\log_2 p_i}$, namely
+	$$\ell = (2,3,3,3,4,5),$$
+	and $\sum_i 2^{-\ell_i} = \tfrac14 + 3\cdot\tfrac18 + \tfrac1{16}+\tfrac1{32} = 0.71875 \le 1$ as it must be. Assigning codewords greedily gives
+	$$\begin{array}{c|cccccc}
+		i & 1 & 2 & 3 & 4 & 5 & 6 \\ \hline
+		c(i) & 00 & 010 & 011 & 100 & 1010 & 10110
+	\end{array}$$
+	with expected word length
+	$$\EE[S] = 0.30\cdot 2 + 0.22 \cdot 3 + 0.18 \cdot 3 + 0.14\cdot 3 + 0.10\cdot 4 + 0.06\cdot 5 = 2.92.$$
+	This does obey $H(X) \le \EE[S] < H(X)+1$, but only just, and it is visibly wasteful: nothing at all uses the string $11$, and we could shorten $c(6)$ to $1011$ without breaking anything. Shannon--Fano coding is not optimal.
+\end{example}
+
+\subsection{Huffman Coding}
+
+Huffman's algorithm produces a genuinely optimal code, and it does so by a beautifully simple greedy rule. We take $a = 2$ and $\Bc = \{0,1\}$ for simplicity; everything generalises.
+
+Order the messages so that $p_1 \ge p_2 \ge \dots \ge p_m$. We define the code recursively.
+
+\begin{definition}[Huffman Code]
+	If $m = 2$, take the codewords $0$ and $1$. If $m > 2$, form the source on $m-1$ symbols $\mu_1, \dots, \mu_{m-2}, \nu$ with probabilities $p_1, \dots, p_{m-2}, p_{m-1}+p_m$, take a \vocab{Huffman code} for it, and then set
+	$$c(\mu_{m-1}) = c(\nu)0, \qquad c(\mu_m) = c(\nu)1,$$
+	keeping all other codewords unchanged.
+\end{definition}
+
+In other words: repeatedly merge the two least likely symbols into one, until only two remain; then read the resulting binary tree from the root outwards. Huffman codes are prefix-free by construction, since every codeword sits at a leaf. They are not unique -- ties in the probabilities force arbitrary choices -- but we shall see that all the choices are equally good.
+
+\begin{example}\label{ex:huffman}
+	Take the same source as Example~\ref{ex:shannonfano}, writing the messages as $A, \dots, F$:
+	$$\begin{array}{c|cccccc}
+		 & A & B & C & D & E & F \\ \hline
+		p & 0.30 & 0.22 & 0.18 & 0.14 & 0.10 & 0.06
+	\end{array}$$
+	We merge repeatedly.
+	\begin{itemize}
+		\item The two smallest are $E$ and $F$; merge them into $X$ with probability $0.16$. Remaining: $A\,0.30$, $B\,0.22$, $C\,0.18$, $X\,0.16$, $D\,0.14$.
+		\item The two smallest are $D$ and $X$; merge them into $Y$ with probability $0.30$. Remaining: $A\,0.30$, $Y\,0.30$, $B\,0.22$, $C\,0.18$.
+		\item The two smallest are $C$ and $B$; merge them into $Z$ with probability $0.40$. Remaining: $A\,0.30$, $Y\,0.30$, $Z\,0.40$.
+		\item The two smallest are $A$ and $Y$; merge them into $W$ with probability $0.60$.
+		\item Finally merge $Z$ and $W$.
+	\end{itemize}
+	The resulting tree is as follows, with $0$ on the left branch and $1$ on the right.
+
+	\begin{center}
+	\begin{tikzpicture}[x=1cm,y=1.15cm]
+		\tikzset{dot/.style={circle, fill=black, inner sep=1.1pt}}
+		\node[dot,label={[font=\scriptsize]above:$1.00$}] (rt) at (0,0) {};
+		\node[dot,label={[font=\scriptsize]above left:$0.40$}] (Zn) at (-2.6,-1) {};
+		\node[dot,label={[font=\scriptsize]above right:$0.60$}] (Wn) at (1.6,-1) {};
+		\node (B) at (-3.7,-2) {$B$};
+		\node (C) at (-1.5,-2) {$C$};
+		\node (A) at (0.3,-2) {$A$};
+		\node[dot,label={[font=\scriptsize]above right:$0.30$}] (Yn) at (2.9,-2) {};
+		\node (D) at (1.9,-3) {$D$};
+		\node[dot,label={[font=\scriptsize]above right:$0.16$}] (Xn) at (3.9,-3) {};
+		\node (E) at (3.1,-4) {$E$};
+		\node (F) at (4.7,-4) {$F$};
+		\draw[thin] (rt) -- node[above left,font=\scriptsize] {$0$} (Zn);
+		\draw[thin] (rt) -- node[above right,font=\scriptsize] {$1$} (Wn);
+		\draw[thin] (Zn) -- node[above left,font=\scriptsize] {$0$} (B);
+		\draw[thin] (Zn) -- node[above right,font=\scriptsize] {$1$} (C);
+		\draw[thin] (Wn) -- node[above left,font=\scriptsize] {$0$} (A);
+		\draw[thin] (Wn) -- node[above right,font=\scriptsize] {$1$} (Yn);
+		\draw[thin] (Yn) -- node[above left,font=\scriptsize] {$0$} (D);
+		\draw[thin] (Yn) -- node[above right,font=\scriptsize] {$1$} (Xn);
+		\draw[thin] (Xn) -- node[above left,font=\scriptsize] {$0$} (E);
+		\draw[thin] (Xn) -- node[above right,font=\scriptsize] {$1$} (F);
+		\node[font=\scriptsize] at (-3.7,-2.45) {$00$};
+		\node[font=\scriptsize] at (-1.5,-2.45) {$01$};
+		\node[font=\scriptsize] at (0.3,-2.45) {$10$};
+		\node[font=\scriptsize] at (1.9,-3.45) {$110$};
+		\node[font=\scriptsize] at (3.1,-4.45) {$1110$};
+		\node[font=\scriptsize] at (4.7,-4.45) {$1111$};
+	\end{tikzpicture}
+	\end{center}
+
+	Reading off, the word lengths are $2,2,2,3,4,4$ and
+	$$\EE[S] = 0.30\cdot2 + 0.22\cdot2+0.18\cdot2+0.14\cdot3+0.10\cdot4+0.06\cdot4 = 2.46,$$
+	comfortably better than the $2.92$ of Shannon--Fano, and within $0.05$ of the entropy bound $2.4198$.
+\end{example}
+
+To prove optimality we need two structural facts about optimal codes, both of which are obvious once stated.
+
+\begin{lemma}\label{lem:optprops}
+	Let $c$ be an optimal prefix-free code for messages $\mu_1, \dots, \mu_m$ with probabilities $p_1 \ge \dots \ge p_m$, and word lengths $\ell_1, \dots, \ell_m$. Then
+	\begin{enumerate}[label=(\roman*)]
+		\item if $p_i > p_j$ then $\ell_i \le \ell_j$;
+		\item among the codewords of maximal length, there are two which differ only in their last digit.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	\emph{(i).} Suppose $p_i > p_j$ but $\ell_i > \ell_j$. Swapping the $i$th and $j$th codewords leaves the code prefix-free and changes the expected word length by
+	$$(p_i \ell_j + p_j \ell_i) - (p_i \ell_i + p_j \ell_j) = (p_i - p_j)(\ell_j - \ell_i) < 0,$$
+	contradicting optimality.
+
+	\emph{(ii).} Let $\ell = \max_i \ell_i$, and suppose no two codewords of length $\ell$ agree in their first $\ell - 1$ digits. Deleting the final digit of every codeword of length $\ell$ then leaves all these codewords distinct; and the code is still prefix-free, because a shortened codeword $y$ could only be a prefix of some other codeword $z$ if $y0$ or $y1$ were, and $z$ has length at most $\ell$, so $z \in \{y0, y1\}$, which our assumption excludes. But this strictly decreases the expected word length, contradicting optimality.
+\end{proof}
+
+\begin{theorem}
+	Huffman codes are optimal.
+\end{theorem}
+
+\begin{proof}
+	We induct on $m$. For $m = 2$ the Huffman code has both word lengths equal to $1$, which is clearly best possible.
+
+	Let $m > 2$ and let $c_m$ be the Huffman code for $X_m$ taking values $\mu_1, \dots, \mu_m$ with probabilities $p_1 \ge \dots \ge p_m$. By construction $c_m$ is built from a Huffman code $c_{m-1}$ for the merged source $X_{m-1}$ on $\mu_1, \dots, \mu_{m-2}, \nu$ with probabilities $p_1, \dots, p_{m-2}, p_{m-1}+p_m$, by extending the codeword of $\nu$ by one digit in each of two ways. Comparing expected lengths term by term,
+	\begin{equation*}\EE[S_m] = \EE[S_{m-1}] + p_{m-1} + p_m. \tag{1}\end{equation*}
+
+	Now let $c_m'$ be an optimal code for $X_m$; by the corollary to McMillan's theorem we may take it prefix-free. By Lemma~\ref{lem:optprops}(i) the two longest codewords belong to two of the least likely messages, and by (ii) we may assume, after relabelling messages of equal probability and swapping codewords of equal length, that
+	$$c_m'(\mu_{m-1}) = y0, \qquad c_m'(\mu_m) = y1$$
+	for some string $y$. Define a code $c_{m-1}'$ for $X_{m-1}$ by
+	$$c_{m-1}'(\mu_i) = c_m'(\mu_i) \ (i \le m-2), \qquad c_{m-1}'(\nu) = y.$$
+	This is prefix-free: no codeword of $c_m'$ other than $y0, y1$ can have $y$ as a prefix, else it would have $y0$ or $y1$ as a prefix. Exactly as in (1),
+	\begin{equation*}\EE[S_m'] = \EE[S_{m-1}'] + p_{m-1} + p_m. \tag{2}\end{equation*}
+	By the inductive hypothesis $c_{m-1}$ is optimal for $X_{m-1}$, so $\EE[S_{m-1}] \le \EE[S_{m-1}']$. Combining with (1) and (2),
+	$$\EE[S_m] \le \EE[S_m'],$$
+	and since $c_m'$ was optimal, so is $c_m$.
+\end{proof}
+
+\begin{remark}
+	Not every optimal code is a Huffman code -- one can always relabel $0 \leftrightarrow 1$ in a subtree, for instance. What the theorem really gives us is that the Huffman word lengths are optimal word lengths.
+
+	Huffman coding is optimal but not perfect: it can never do better than the entropy bound, and if one symbol has probability close to $1$ it must still spend a whole bit on it. The remedy is to Huffman-code blocks of $N$ symbols at a time, which as we shall see in Section~\ref{sec:infotheory} drives the cost per symbol down to the entropy.
+\end{remark}
+
+\subsection{Joint Entropy}
+
+Finally in this section we record how entropy behaves for pairs of random variables, which we shall need repeatedly later on.
+
+If $X, Y$ take values in $\Ac, \Bc$ then $(X,Y)$ takes values in $\Ac \times \Bc$, and its entropy
+$$H(X,Y) = -\sum_{x \in \Ac}\sum_{y \in \Bc} \PP(X = x, Y=y)\log \PP(X=x,Y=y)$$
+is called the \vocab{joint entropy}. The same definition works for any finite tuple.
+
+\begin{lemma}[Subadditivity]\label{lem:subadd}
+	$H(X,Y) \le H(X) + H(Y)$, with equality if and only if $X$ and $Y$ are independent.
+\end{lemma}
+
+\begin{proof}
+	Write $\Ac = \{x_1, \dots, x_m\}$, $\Bc = \{y_1, \dots, y_n\}$, and set $p_{ij} = \PP(X = x_i, Y = y_j)$, $p_i = \PP(X = x_i)$, $q_j = \PP(Y = y_j)$. Both $(p_{ij})$ and $(p_iq_j)$ are probability distributions on $\Ac \times \Bc$, so Gibbs' inequality applies and gives
+	\begin{align*}
+		H(X,Y) = -\sum_{i,j} p_{ij}\log p_{ij} &\le -\sum_{i,j}p_{ij}\log(p_iq_j) \\
+		&= -\sum_i \Bigl(\sum_j p_{ij}\Bigr)\log p_i - \sum_j \Bigl(\sum_i p_{ij}\Bigr)\log q_j \\
+		&= -\sum_i p_i \log p_i - \sum_j q_j \log q_j = H(X) + H(Y).
+	\end{align*}
+	Equality in Gibbs holds precisely when $p_{ij} = p_iq_j$ for all $i,j$, which is exactly independence.
+\end{proof}
+
+Intuitively: knowing two things at once is never harder than knowing each separately, and it is exactly as hard only when the two are unrelated.
+
+
+\section{Noisy Channels and Error-Correcting Codes}
+
+We now switch the channel back on. Throughout this section, unless we say otherwise, the channel is the binary symmetric channel with error probability $p < \tfrac12$, and a code is a subset of $\F_2^n$.
+
+\begin{definition}[Binary Code]
+	A \vocab{binary $[n,m]$-code} is a subset $C \subseteq \{0,1\}^n$ with $\abs{C} = m$. We call $n$ the \vocab{length} of the code and the elements of $C$ its \vocab{codewords}.
+\end{definition}
+
+Such a code lets us send one of $m$ messages using $n$ bits, that is, using the channel $n$ times. Since $1 \le m \le 2^n$, the information rate $\rho(C) = \frac1n \log m$ satisfies $0 \le \rho(C) \le 1$, with $\rho(C) = 0$ for the useless code $\abs{C} = 1$ and $\rho(C) = 1$ for the code $C = \{0,1\}^n$ which does no error correction at all. All the interest lies in between.
+
+\subsection{Decoding Rules}
+
+Suppose Bob receives $x \in \{0,1\}^n$. What should he guess was sent? There are three natural answers.
+
+\begin{definition}[Decoding Rules]
+	Let $C$ be a binary $[n,m]$-code.
+	\begin{itemize}
+		\item The \vocab{ideal observer} rule decodes $x$ as the codeword $c \in C$ maximising $\PP(c \text{ sent} \mid x \text{ received})$.
+		\item The \vocab{maximum likelihood} rule decodes $x$ as the $c \in C$ maximising $\PP(x \text{ received} \mid c \text{ sent})$.
+		\item The \vocab{minimum distance} rule decodes $x$ as the $c \in C$ minimising the Hamming distance $d(x,c)$,
+		$$d(x,y) = \abs{\{i : x_i \ne y_i\}}.$$
+	\end{itemize}
+\end{definition}
+
+The first is what we actually want, but it requires knowing the prior distribution on messages. The third is what we can actually compute. Happily, under mild hypotheses they all coincide.
+
+\begin{lemma}\label{lem:decoding}
+	Let $C$ be a binary $[n,m]$-code used over a BSC with error probability $p$.
+	\begin{enumerate}[label=(\roman*)]
+		\item If all messages are equally likely, the ideal observer and maximum likelihood rules agree.
+		\item If $p < \tfrac12$, the maximum likelihood and minimum distance rules agree.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	\emph{(i).} By Bayes' theorem,
+	$$\PP(c \text{ sent} \mid x \text{ received}) = \frac{\PP(c \text{ sent})}{\PP(x \text{ received})}\,\PP(x \text{ received}\mid c \text{ sent}).$$
+	For fixed $x$, the denominator does not depend on $c$, and by hypothesis neither does $\PP(c \text{ sent})$. So the two quantities are maximised together.
+
+	\emph{(ii).} If $d(x,c) = r$ then exactly $r$ of the $n$ transmitted bits were flipped, so
+	$$\PP(x \text{ received} \mid c \text{ sent}) = p^r(1-p)^{n-r} = (1-p)^n\left(\frac{p}{1-p}\right)^{\!r}.$$
+	As $p < \tfrac12$ we have $\frac{p}{1-p} < 1$, so this is a strictly decreasing function of $r$. Maximising it is therefore the same as minimising $r = d(x,c)$.
+\end{proof}
+
+The hypothesis in (i) is reasonable in practice, because if we first compress the message using a good noiseless code the resulting bits look close to uniform. The hypothesis in (ii) is harmless, as discussed earlier. Channels with $p = 0$ are called \vocab{lossless}, and channels with $p = \tfrac12$ are called \vocab{useless}.
+
+It is worth seeing that the rules really can differ.
+
+\begin{example}
+	Let $C = \{000, 111\}$, sent with probabilities $\alpha = \tfrac9{10}$ and $1-\alpha = \tfrac1{10}$ respectively, over a BSC with $p = \tfrac14$. Suppose $110$ is received. Then
+	$$\PP(000 \text{ sent} \mid 110) = \frac{\alpha p^2(1-p)}{\alpha p^2 (1-p) + (1-\alpha)p(1-p)^2} = \frac{\tfrac9{10}\cdot \tfrac1{16}\cdot\tfrac34}{\tfrac9{10}\cdot\tfrac1{16}\cdot\tfrac34 + \tfrac1{10}\cdot\tfrac14\cdot\tfrac9{16}} = \frac34,$$
+	so $\PP(111 \text{ sent} \mid 110) = \tfrac14$. The ideal observer decodes $110$ as $000$, since $000$ was so much more likely \emph{a priori}. But $d(110,111) = 1 < 2 = d(110,000)$, so minimum distance decoding -- and hence maximum likelihood decoding -- gives $111$.
+\end{example}
+
+\begin{remark}
+	Minimum distance decoding is conceptually simple but potentially expensive: naively one compares the received word against every codeword, which is hopeless once $\abs{C}$ is large. Much of Section~\ref{sec:linear} is devoted to making it cheap for structured codes. One should also fix a convention for ties: either make an arbitrary choice, or declare a failure and ask for retransmission.
+\end{remark}
+
+From now on we use minimum distance decoding.
+
+\subsection{Error Detection and Correction}
+
+\begin{definition}
+	A binary $[n,m]$-code $C$ is
+	\begin{itemize}
+		\item \vocab{$d$-error detecting} if changing at most $d$ digits of a codeword can never produce another codeword;
+		\item \vocab{$e$-error correcting} if, knowing that $x \in \F_2^n$ differs from some codeword in at most $e$ places, we can determine that codeword.
+	\end{itemize}
+\end{definition}
+
+\begin{example}[Repetition Code]
+	The \vocab{repetition code} of length $n$ has codewords $00\dots0$ and $11\dots1$. It is an $[n,2]$-code, it is $(n-1)$-error detecting and $\floor{\frac{n-1}{2}}$-error correcting, and its information rate is $\frac1n$, which tends to $0$. Reliability is bought at the price of everything else.
+\end{example}
+
+\begin{example}[Simple Parity Check Code]
+	The \vocab{simple parity check code} (or \vocab{paper tape code}) of length $n$ is
+	$$C = \Bigl\{(x_1, \dots, x_n) \in \F_2^n : \sum_{i=1}^n x_i = 0\Bigr\}.$$
+	This is an $[n, 2^{n-1}]$-code, it is $1$-error detecting and $0$-error correcting, and its information rate is $\frac{n-1}{n} \to 1$. Economy is bought at the price of everything else.
+\end{example}
+
+Between these two extremes sits the first genuinely clever code.
+
+\begin{example}[Hamming's Original Code]\label{ex:ham74}
+	Define $C \subseteq \F_2^7$ by the three conditions
+	$$c_1 + c_3 + c_5 + c_7 = 0, \qquad c_2 + c_3 + c_6 + c_7 = 0, \qquad c_4 + c_5 + c_6 + c_7 = 0.$$
+	The digits $c_3, c_5, c_6, c_7$ may be chosen freely and then $c_1, c_2, c_4$ are determined, so $\abs{C} = 2^4 = 16$ and $C$ is a $[7,16]$-code with rate $\frac47$.
+
+	Suppose $x \in \F_2^7$ is received. Form the \vocab{syndrome} $z = (z_1, z_2, z_4)$ where
+	$$z_1 = x_1+x_3+x_5+x_7, \quad z_2 = x_2+x_3+x_6+x_7, \quad z_4 = x_4+x_5+x_6+x_7.$$
+	If $x \in C$ then $z = (0,0,0)$. If instead $x = c + e_i$, a codeword with the $i$th digit flipped, then by linearity $z_x = z_{e_i}$, and one checks case by case that
+	$$z_1 + 2z_2 + 4z_4 = i$$
+	as an ordinary integer. For instance $e_5$ appears in the first and third conditions but not the second, giving $z = (1,0,1)$ and $1 + 0 + 4 = 5$. So the syndrome does not merely tell us that an error has occurred, it tells us \emph{where}: the code is $1$-error correcting. This is a remarkably efficient piece of bookkeeping, and we will see in a moment that in a precise sense it cannot be improved on.
+\end{example}
+
+To analyse such codes properly we need the geometry of $\F_2^n$.
+
+\begin{lemma}
+	The Hamming distance $d$ is a metric on $\F_2^n$.
+\end{lemma}
+
+\begin{proof}
+	Certainly $d(x,y) \ge 0$ with equality if and only if $x = y$, and $d(x,y) = d(y,x)$. For the triangle inequality, note that if $x_i \ne z_i$ then $x_i \ne y_i$ or $y_i \ne z_i$, so
+	$$\{i : x_i \ne z_i\} \subseteq \{i : x_i \ne y_i\} \cup \{i : y_i \ne z_i\},$$
+	and taking sizes gives $d(x,z) \le d(x,y) + d(y,z)$.
+\end{proof}
+
+Equivalently, $d(x,y) = \sum_i d_1(x_i,y_i)$ where $d_1$ is the discrete metric on $\F_2$; the triangle inequality is inherited coordinatewise.
+
+\begin{definition}[Minimum Distance]
+	The \vocab{minimum distance} of a code $C$ with $\abs{C} \ge 2$ is
+	$$d(C) = \min\{d(c_1,c_2) : c_1, c_2 \in C, \, c_1 \ne c_2\}.$$
+	An $[n,m]$-code with minimum distance $d$ is called an $[n,m,d]$-code.
+\end{definition}
+
+\begin{lemma}\label{lem:mindist}
+	Let $C$ be a code with minimum distance $d$. Then
+	\begin{enumerate}[label=(\roman*)]
+		\item $C$ is $(d-1)$-error detecting, but cannot detect all sets of $d$ errors;
+		\item $C$ is $\floor{\frac{d-1}{2}}$-error correcting, but cannot correct all sets of $\floor{\frac{d-1}{2}}+1$ errors.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	\emph{(i).} If $c \in C$ and $1 \le d(x,c) \le d-1$ then $x \notin C$, since every other codeword is at distance at least $d$ from $c$; so the corruption is detected. On the other hand if $c_1, c_2$ are codewords at distance exactly $d$, then $d$ well-chosen errors carry $c_1$ to $c_2$ and nothing at all is noticed.
+
+	\emph{(ii).} Put $e = \floor{\frac{d-1}{2}}$, so that $2e < d$. Suppose $x \in \F_2^n$ and $c_1 \in C$ with $d(x,c_1) \le e$. For any other codeword $c_2$, the triangle inequality gives
+	$$d(x,c_2) \ge d(c_1,c_2) - d(x,c_1) \ge d - e > e,$$
+	so $c_1$ is the unique codeword within distance $e$ of $x$ and we recover it. For the second half, choose $c_1, c_2$ with $d(c_1,c_2) = d$ and let $x$ agree with $c_1$ except in $e+1$ of the places where $c_1$ and $c_2$ differ. Then $d(x,c_1) = e+1$ while $d(x,c_2) = d - (e+1) \le e+1$, using $d \le 2(e+1)$; so $x$ is at least as close to $c_2$ as to $c_1$ and we cannot reliably decode.
+\end{proof}
+
+\begin{example}
+	The repetition code of length $n$ is an $[n,2,n]$-code. The simple parity check code of length $n$ is an $[n,2^{n-1},2]$-code, since flipping any two digits preserves the parity. The trivial code $\F_2^n$ is an $[n,2^n,1]$-code. Hamming's original code is $1$-error correcting so has $d \ge 3$ by Lemma~\ref{lem:mindist}; and $0000000$ and $1110000$ are both codewords, so $d = 3$ exactly, making it a $[7,16,3]$-code.
+\end{example}
+
+\subsection{Covering Estimates and Perfect Codes}
+
+The picture behind Lemma~\ref{lem:mindist} is that an $e$-error correcting code is a packing of disjoint balls of radius $e$ into $\F_2^n$. Counting gives an immediate upper bound on how many codewords there can be.
+
+\begin{definition}
+	For $x \in \F_2^n$ and $r \ge 0$, write $B(x,r) = \{y \in \F_2^n : d(x,y) \le r\}$ for the closed \vocab{Hamming ball} of radius $r$. Its size does not depend on $x$, and we write
+	$$V(n,r) = \abs{B(x,r)} = \sum_{i=0}^{r}\binom{n}{i}.$$
+\end{definition}
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+	\draw[thin] (-4.3,-2.3) rectangle (4.3,2.3);
+	\node[font=\small] at (-3.55,1.95) {$\F_2^n$};
+	\foreach \pos in {(-3,1.1), (-0.6,1.35), (2,1.2), (-2.4,-1.1), (0.9,-0.4), (3.1,-1.3), (-0.1,-1.6)}{
+		\draw[thin,color=blue] \pos circle (0.72);
+		\fill[color=blue] \pos circle (1.3pt);
+	}
+	\draw[->,thin] (2,1.2) -- node[above,font=\scriptsize] {$e$} ++(0.72,0);
+\end{tikzpicture}
+\end{center}
+
+The dots are the codewords; the discs are the balls of radius $e$ inside which minimum distance decoding succeeds. They must be disjoint, and they all live inside a space of size $2^n$.
+
+\begin{lemma}[Hamming's Bound; the Sphere-Packing Bound]\label{lem:hamming}
+	An $e$-error correcting code $C$ of length $n$ satisfies
+	$$\abs{C} \le \frac{2^n}{V(n,e)}.$$
+\end{lemma}
+
+\begin{proof}
+	If $c_1 \ne c_2$ are codewords then $B(c_1,e) \cap B(c_2,e) = \varnothing$, since a point in the intersection could not be decoded. Hence
+	$$\sum_{c \in C} \abs{B(c,e)} \le \abs{\F_2^n}, \qquad \text{that is} \qquad \abs{C}\,V(n,e) \le 2^n. \qedhere$$
+\end{proof}
+
+\begin{definition}[Perfect Code]
+	An $e$-error correcting code $C$ of length $n$ with $\abs{C} = \frac{2^n}{V(n,e)}$ is called \vocab{perfect}.
+\end{definition}
+
+\begin{remark}
+	Equivalently, $C$ is perfect if the balls $B(c,e)$ for $c \in C$ partition $\F_2^n$: every word in the space is within distance $e$ of exactly one codeword. Perfect codes are wonderfully efficient but also brittle, since any $e+1$ errors are guaranteed to be decoded to the wrong codeword, with no warning.
+\end{remark}
+
+\begin{example}
+	Hamming's $[7,16,3]$-code is $1$-error correcting, and
+	$$\frac{2^7}{V(7,1)} = \frac{128}{1+7} = 16 = \abs{C},$$
+	so it is perfect. Indeed, the syndrome map sends $\F_2^7$ onto $\F_2^3$, and the eight syndromes correspond precisely to `no error' and the seven possible single-bit errors.
+\end{example}
+
+\begin{example}
+	The repetition code of length $n$ is perfect if and only if $n$ is odd. If $n = 2k+1$ it is $k$-error correcting and $V(n,k) = \sum_{i \le k}\binom{n}{i} = 2^{n-1}$ by symmetry, so $2^n/V(n,k) = 2 = \abs{C}$. If $n$ is even the count fails.
+\end{example}
+
+The smallest interesting case is worth drawing. Here is $\F_2^3$ as the vertices of a cube, with the repetition code $\{000,111\}$ marked.
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+	\tikzset{dot/.style={circle,fill=black,inner sep=1.2pt},
+	         cod/.style={circle,fill=blue,inner sep=1.7pt}}
+	\coordinate (v000) at (0,0);
+	\coordinate (v100) at (2.4,0);
+	\coordinate (v010) at (0,2.4);
+	\coordinate (v110) at (2.4,2.4);
+	\coordinate (v001) at (1,0.95);
+	\coordinate (v101) at (3.4,0.95);
+	\coordinate (v011) at (1,3.35);
+	\coordinate (v111) at (3.4,3.35);
+	\draw[thin] (v000)--(v100)--(v110)--(v010)--cycle;
+	\draw[thin] (v101)--(v111)--(v011);
+	\draw[thin] (v100)--(v101);
+	\draw[thin] (v110)--(v111); \draw[thin] (v010)--(v011);
+	\draw[thin,dashed,color=gray] (v001)--(v101);
+	\draw[thin,dashed,color=gray] (v001)--(v011);
+	\draw[thin,dashed,color=gray] (v000)--(v001);
+	\node[cod] at (v000) {}; \node[cod] at (v111) {};
+	\node[dot] at (v100) {}; \node[dot] at (v010) {};
+	\node[dot] at (v110) {}; \node[dot] at (v001) {};
+	\node[dot] at (v101) {}; \node[dot] at (v011) {};
+	\node[font=\scriptsize,below left] at (v000) {$000$};
+	\node[font=\scriptsize,below] at (v100) {$100$};
+	\node[font=\scriptsize,left] at (v010) {$010$};
+	\node[font=\scriptsize,above left] at (v110) {$110$};
+	\node[font=\scriptsize,below right] at (v001) {$001$};
+	\node[font=\scriptsize,right] at (v101) {$101$};
+	\node[font=\scriptsize,above left] at (v011) {$011$};
+	\node[font=\scriptsize,right] at (v111) {$111$};
+\end{tikzpicture}
+\end{center}
+
+Every vertex is adjacent to exactly one of the two blue vertices, which is the statement that the $[3,2,3]$ repetition code is perfect.
+
+\begin{remark}
+	If $\frac{2^n}{V(n,e)}$ is not an integer then certainly no perfect $e$-error correcting code of length $n$ exists. The converse is false: with $n = 90$ and $e = 2$ the quotient is an integer, but no such code exists.
+\end{remark}
+
+\begin{definition}
+	$A(n,d)$ denotes the largest $m$ for which an $[n,m,d]$-code exists.
+\end{definition}
+
+Determining $A(n,d)$ in general is a hard open problem, and only small cases are known.
+
+\begin{example}
+	$A(n,1) = 2^n$, achieved by the trivial code. $A(n,2) = 2^{n-1}$, achieved by the simple parity check code (the upper bound follows from the next theorem). $A(n,n) = 2$, achieved by the repetition code.
+\end{example}
+
+\begin{lemma}\label{lem:Amono}
+	$A(n,d+1) \le A(n,d)$.
+\end{lemma}
+
+\begin{proof}
+	Let $m = A(n,d+1)$ and let $C$ be an $[n,m,d+1]$-code. Choose distinct $c_1, c_2 \in C$ with $d(c_1,c_2) = d+1$, and let $c_1'$ differ from $c_1$ in exactly one of the places where $c_1$ and $c_2$ differ, so $d(c_1',c_2) = d$. For any other $c \in C$,
+	$$d+1 \le d(c,c_1) \le d(c,c_1') + d(c_1',c_1) = d(c,c_1') + 1,$$
+	so $d(c,c_1') \ge d$. Hence $C' = (C \setminus \{c_1\})\cup\{c_1'\}$ has $m$ elements, length $n$, and minimum distance exactly $d$.
+\end{proof}
+
+\begin{corollary}
+	$A(n,d) = \max\{m : \text{there is an } [n,m,d'] \text{-code for some } d' \ge d\}$.
+\end{corollary}
+
+Now we can sandwich $A(n,d)$ between two natural bounds.
+
+\begin{theorem}[Hamming and GSV Bounds]\label{thm:gsv}
+	$$\frac{2^n}{V(n,d-1)} \;\le\; A(n,d) \;\le\; \frac{2^n}{V\bigl(n,\floor{\frac{d-1}{2}}\bigr)}.$$
+\end{theorem}
+
+The upper bound is Hamming's bound, a \emph{packing} estimate. The lower bound is the \vocab{Gilbert--Shannon--Varshamov} (GSV) bound, and is a \emph{covering} estimate: it says that a maximal code cannot leave any large empty region.
+
+\begin{proof}
+	The upper bound is Lemma~\ref{lem:hamming} together with Lemma~\ref{lem:mindist}(ii).
+
+	For the lower bound, let $m = A(n,d)$ and let $C$ be an $[n,m,d]$-code. There can be no $x \in \F_2^n$ with $d(x,c) \ge d$ for all $c \in C$, for then $C \cup \{x\}$ would be an $[n,m+1,d]$-code, contradicting maximality. Hence every $x$ lies within distance $d-1$ of some codeword, that is,
+	$$\F_2^n = \bigcup_{c \in C} B(c,d-1),$$
+	and counting gives $2^n \le m\,V(n,d-1)$.
+\end{proof}
+
+There is a third bound, of a completely different flavour, which is often the sharpest of all for large $d$.
+
+\begin{theorem}[Singleton Bound]\label{thm:singleton}
+	For any $[n,m,d]$-code, $m \le 2^{n-d+1}$.
+\end{theorem}
+
+\begin{proof}
+	Let $C$ be an $[n,m,d]$-code and consider the map $\pi \colon C \to \F_2^{n-d+1}$ which deletes the last $d-1$ coordinates. If $c_1 \ne c_2$ had the same image then they would agree in the first $n-d+1$ places and so differ in at most $d-1$ places, contradicting $d(C) = d$. So $\pi$ is injective and $m = \abs{C} \le 2^{n-d+1}$.
+\end{proof}
+
+A code attaining the Singleton bound is called \vocab{maximum distance separable}, or MDS. Over $\F_2$ these are rare, but we shall meet a large family of them over larger alphabets in Section~\ref{sec:cyclic}.
+
+\begin{example}
+	Take $n = 10$, $d = 3$. Then $V(10,1) = 11$ and $V(10,2) = 1 + 10 + 45 = 56$, so Theorem~\ref{thm:gsv} gives
+	$$\frac{1024}{56} \le A(10,3) \le \frac{1024}{11}, \qquad \text{that is} \qquad 19 \le A(10,3) \le 93.$$
+	Singleton gives only $A(10,3) \le 2^8 = 256$, which is worse here. The true value, established by computer search, is $A(10,3) = 72$; so the GSV bound in particular is far from sharp.
+\end{example}
+
+\subsection{Asymptotics}
+
+For applications we care about long codes, and about how the rate behaves when we insist that the minimum distance grows proportionally to the length. So fix $\delta \in (0,\tfrac12)$ and study
+$$\frac{1}{n}\log A(n, \floor{n\delta})$$
+as $n \to \infty$. The answer is governed, once again, by the binary entropy function.
+
+\begin{proposition}\label{prop:volbound}
+	Let $0 < \delta < \tfrac12$. Then
+	\begin{enumerate}[label=(\roman*)]
+		\item $\log V(n,\floor{n\delta}) \le n H(\delta)$;
+		\item $\dfrac{1}{n}\log A(n,\floor{n\delta}) \ge 1 - H(\delta)$.
+	\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+	\emph{(i) implies (ii).} By the GSV bound and monotonicity of $V$ in its second argument,
+	$$A(n,\floor{n\delta}) \ge \frac{2^n}{V(n,\floor{n\delta}-1)} \ge \frac{2^n}{V(n,\floor{n\delta})},$$
+	so taking logarithms and using (i),
+	$$\frac1n \log A(n,\floor{n\delta}) \ge 1 - \frac{\log V(n,\floor{n\delta})}{n} \ge 1 - H(\delta).$$
+
+	\emph{Proof of (i).} Since $H$ is increasing on $(0,\tfrac12)$ and $V(n, \floor{n\delta}) = V(n, \floor{n\delta'})$ for $\delta' = \floor{n\delta}/n \le \delta$, we may assume $n\delta$ is an integer. Now expand $1 = (\delta + (1-\delta))^n$ and throw away all but the first $n\delta+1$ terms:
+	\begin{align*}
+		1 &= \sum_{i=0}^n \binom{n}{i}\delta^i(1-\delta)^{n-i} \ \ge\  \sum_{i=0}^{n\delta}\binom{n}{i}\delta^i(1-\delta)^{n-i}\\
+		&= (1-\delta)^n \sum_{i=0}^{n\delta}\binom{n}{i}\left(\frac{\delta}{1-\delta}\right)^{\!i} \ \ge\  (1-\delta)^n\left(\frac{\delta}{1-\delta}\right)^{\!n\delta}\sum_{i=0}^{n\delta}\binom{n}{i}\\
+		&= \delta^{n\delta}(1-\delta)^{n(1-\delta)}\,V(n,n\delta),
+	\end{align*}
+	where the second inequality uses $\frac{\delta}{1-\delta} < 1$ (as $\delta< \tfrac12$), so that each of the terms $\bigl(\tfrac{\delta}{1-\delta}\bigr)^i$ with $i \le n\delta$ is at least $\bigl(\tfrac{\delta}{1-\delta}\bigr)^{n\delta}$. Taking logarithms,
+	$$0 \ge n\delta \log\delta + n(1-\delta)\log(1-\delta) + \log V(n,n\delta) = -nH(\delta) + \log V(n,n\delta),$$
+	which is (i).
+\end{proof}
+
+\begin{lemma}
+	For $0 < \delta < \tfrac12$, $\displaystyle \lim_{n \to \infty}\frac{\log V(n,\floor{n\delta})}{n} = H(\delta)$.
+\end{lemma}
+
+\begin{proof}
+	The upper bound is Proposition~\ref{prop:volbound}(i). For the lower bound it suffices to keep the single term $\binom{n}{\floor{n\delta}}$ and apply Stirling's formula, which gives $\frac1n\log\binom{n}{\floor{n\delta}} \to H(\delta)$.
+\end{proof}
+
+So the constant $H(\delta)$ in the proposition cannot be improved. It is instructive to plot the three bounds we now have, expressed as constraints on the rate $R = \frac1n \log \abs{C}$ in terms of the relative distance $\delta = d/n$. The Hamming bound becomes $R \le 1 - H(\delta/2)$, the Singleton bound becomes $R \le 1 - \delta$, and the GSV bound becomes $R \ge 1 - H(\delta)$.
+
+\begin{center}
+\begin{tikzpicture}[x=11cm,y=5cm]
+	\draw[ultra thin,color=lightgray] (0,0) grid[xstep=0.05,ystep=0.1] (0.5,1);
+	\draw[->,thin] (0,0) -- (0.63,0) node[below,font=\small] {$\delta$};
+	\draw[->,thin] (0,0) -- (0,1.1) node[above,font=\small] {$R$};
+	\foreach \x/\l in {0.1/0.1, 0.2/0.2, 0.3/0.3, 0.4/0.4, 0.5/0.5}
+		\node[font=\scriptsize,below] at (\x,0) {$\l$};
+	\foreach \y/\l in {0.5/0.5, 1/1}
+		\node[font=\scriptsize,left] at (0,\y) {$\l$};
+	% Hamming bound R = 1 - H(delta/2)
+	\draw[thick,color=blue,smooth,samples=100,domain=0.001:0.5]
+		plot (\x, {1 + ((\x/2)*ln(\x/2) + (1-\x/2)*ln(1-\x/2))/ln(2)});
+	% Singleton bound R = 1 - delta
+	\draw[thick,color=DarkGreen] (0,1) -- (0.5,0.5);
+	% GSV bound R = 1 - H(delta)
+	\draw[thick,color=red,smooth,samples=100,domain=0.001:0.4999]
+		plot (\x, {1 + (\x*ln(\x) + (1-\x)*ln(1-\x))/ln(2)});
+	\node[font=\scriptsize,color=DarkGreen,anchor=west] at (0.505,0.50) {Singleton};
+	\node[font=\scriptsize,color=blue,anchor=west] at (0.505,0.19) {Hamming};
+	\node[font=\scriptsize,color=red,anchor=west] at (0.505,0.02) {GSV};
+\end{tikzpicture}
+\end{center}
+
+Anything achievable lies below the blue and green curves and, by GSV, at least the region below the red curve \emph{is} achievable. The gap between red and blue is enormous, and closing it -- determining the true asymptotic trade-off between rate and distance -- remains one of the central open problems of coding theory.
+
+\subsection{Constructing New Codes from Old}
+
+We finish this section with three easy operations on codes; each is worth knowing because they let us move around the parameter space by hand. Let $C$ be an $[n,m,d]$-code.
+
+\begin{example}[Parity Check Extension]
+	The \vocab{parity check extension} of $C$ is
+	$$C^+ = \Bigl\{\Bigl(c_1, \dots, c_n, \sum_{i=1}^n c_i\Bigr) : (c_1,\dots,c_n) \in C\Bigr\},$$
+	an $[n+1,m,d']$-code where $d' = d+1$ if $d$ is odd and $d' = d$ if $d$ is even. (All codewords of $C^+$ have even weight, so distances between them are even; hence an odd $d$ must increase.)
+\end{example}
+
+\begin{example}[Punctured Code]
+	Deleting the $i$th digit from every codeword gives the \vocab{punctured code} $C^-$. If $d \ge 2$ this is an $[n-1,m,d']$-code with $d' \in \{d-1, d\}$; the codewords remain distinct because they differed in at least two places.
+\end{example}
+
+\begin{example}[Shortened Code]
+	Fix $i$ and $\alpha \in \F_2$, and let
+	$$C' = \{(c_1,\dots,c_{i-1},c_{i+1},\dots,c_n) : (c_1,\dots,c_{i-1},\alpha,c_{i+1},\dots,c_n) \in C\}.$$
+	This is the \vocab{shortened code}. It has length $n-1$ and minimum distance $d' \ge d$, and for a suitable choice of $\alpha$ (namely, the more popular value of the $i$th digit) it has size $m' \ge \frac{m}{2}$.
+\end{example}
+
+
+\section{Information Theory}\label{sec:infotheory}
+
+We now have two loose ends to tie up. In Section~2 we measured the cost of encoding a \emph{single} symbol and found the entropy $H(X)$ standing in the way; but a real source emits a long stream of symbols, possibly with dependence between them, and we should ask what the cost per symbol is in the long run. In Section~3 we defined the capacity of a channel and did not compute it for a single example. Both questions are answered by the same circle of ideas, and the answers are Shannon's two coding theorems.
+
+\subsection{Sources and Information Rate}
+
+\begin{definition}[Source]
+	A \vocab{source} is a sequence of random variables $X_1, X_2, \dots$ taking values in an alphabet $\Ac$.
+\end{definition}
+
+\begin{example}
+	A \vocab{Bernoulli} or \vocab{memoryless} source is one in which the $X_i$ are independent and identically distributed. English text is emphatically not of this kind -- the letter $u$ is much more likely after a $q$ -- but it is the case in which everything can be computed.
+\end{example}
+
+\begin{definition}[Reliable Encoding]
+	A source $X_1, X_2, \dots$ is \vocab{reliably encodable at rate $r$} if there are subsets $A_n \subseteq \Ac^n$ with
+	\begin{enumerate}[label=(\roman*)]
+		\item $\displaystyle \lim_{n\to\infty} \frac{\log \abs{A_n}}{n} = r$, and
+		\item $\displaystyle \lim_{n\to\infty} \PP\bigl((X_1,\dots,X_n) \in A_n\bigr) = 1$.
+	\end{enumerate}
+	The \vocab{information rate} $H$ of the source is the infimum of all rates at which it is reliably encodable.
+\end{definition}
+
+The idea is that we agree to encode faithfully only the messages in $A_n$, which takes $\log\abs{A_n}$ bits, and accept a vanishing probability of complete failure otherwise. Since $A_n = \Ac^n$ always works, $H \le \log\abs{\Ac}$; and clearly $H \ge 0$. Both extremes occur.
+
+Before going further, a piece of notation which is easy to misread. If $X$ is a discrete random variable with probability mass function $p_X(x) = \PP(X = x)$, then $p(X)$ denotes the composite $p_X \circ X$, that is, the random variable
+$$\omega \mapsto \PP\bigl(X = X(\omega)\bigr).$$
+It is the `probability of what actually happened'. Similarly for a tuple $X^{(n)} = (X_1, \dots, X_n)$ we write $p(X^{(n)})$ for the random variable $\omega \mapsto \PP(X_1 = X_1(\omega), \dots, X_n = X_n(\omega))$. With this notation, $H(X) = \EE[-\log p(X)]$.
+
+\begin{example}
+	Let $\Ac = \{A,B,C\}$ and suppose $X^{(2)} = (X_1,X_2)$ takes the values $AB, AC, BC, BA, CA, CB$ with probabilities $0.3, 0.1, 0.1, 0.2, 0.25, 0.05$. Then $p_{X^{(2)}}(AB) = 0.3$ and so on, so the random variable $p(X^{(2)})$ takes the value $0.3$ with probability $0.3$, the value $0.1$ with probability $0.2$ (the two ways of getting a probability-$0.1$ outcome), the value $0.2$ with probability $0.2$, and so on.
+\end{example}
+
+Recall from IA Probability that $X_n \to L$ \vocab{in probability}, written $X_n \xrightarrow{\PP} L$, if $\PP(\abs{X_n - L} > \varepsilon) \to 0$ for every $\varepsilon > 0$, and that the weak law of large numbers says that if $Y_1, Y_2, \dots$ are i.i.d.\ real random variables with finite mean then $\frac1n \sum_{i \le n} Y_i \xrightarrow{\PP} \EE[Y_1]$.
+
+\begin{example}\label{ex:bernoulliaep}
+	Let $X_1, X_2, \dots$ be a Bernoulli source. Then $p(X_1), p(X_2), \dots$ are i.i.d., and by independence
+	$$p(X_1, \dots, X_n) = p(X_1)p(X_2)\cdots p(X_n).$$
+	Applying the weak law to the i.i.d.\ variables $-\log p(X_i)$,
+	$$-\frac1n \log p(X_1,\dots,X_n) = -\frac1n \sum_{i=1}^n \log p(X_i) \xrightarrow{\ \PP\ } \EE\bigl[-\log p(X_1)\bigr] = H(X_1).$$
+\end{example}
+
+This last observation is the key to everything in this section, and it deserves a name; but first let us see that it gives the right answer for Bernoulli sources by an elementary route.
+
+\begin{lemma}\label{lem:ratebound}
+	The information rate of a Bernoulli source $X_1, X_2, \dots$ is at most the expected word length of an optimal binary code $c$ for $X_1$.
+\end{lemma}
+
+\begin{proof}
+	Let $L_i$ be the length of the codeword $c(X_i)$, so the $L_i$ are i.i.d.\ with mean $\EE[L_1]$. Fix $\varepsilon>0$ and let
+	$$A_n = \bigl\{x \in \Ac^n : c^\star(x) \text{ has length} < n(\EE[L_1]+\varepsilon)\bigr\}.$$
+	Then
+	$$\PP\bigl((X_1,\dots,X_n) \in A_n\bigr) = \PP\Bigl(\tfrac1n\sum_{i=1}^n L_i < \EE[L_1]+\varepsilon\Bigr) \to 1$$
+	by the weak law. Since $c$ is decipherable, $c^\star$ is injective, and there are fewer than $2^{n(\EE[L_1]+\varepsilon)+1}$ binary strings of length less than $n(\EE[L_1]+\varepsilon)$; so
+	$$\abs{A_n} \le 2^{n(\EE[L_1]+\varepsilon)+1}.$$
+	Enlarging $A_n$ if necessary so that $\abs{A_n} = \floor{2^{n(\EE[L_1]+\varepsilon)}}$ (which only helps condition (ii)), we get $\frac1n\log\abs{A_n}\to \EE[L_1]+\varepsilon$. Hence the source is reliably encodable at rate $\EE[L_1]+\varepsilon$ for every $\varepsilon>0$, and the result follows.
+\end{proof}
+
+\begin{corollary}\label{cor:ratelt}
+	A Bernoulli source has information rate $H < H(X_1)+1$.
+\end{corollary}
+
+\begin{proof}
+	Combine Lemma~\ref{lem:ratebound} with the upper bound in Shannon's noiseless coding theorem (Theorem~\ref{thm:noiseless}).
+\end{proof}
+
+The `$+1$' is the same waste we met before, and the same trick removes it. Suppose we encode in blocks of size $N$: set $Y_1 = (X_1,\dots,X_N)$, $Y_2 = (X_{N+1},\dots,X_{2N})$ and so on, giving a source over the alphabet $\Ac^N$. One checks directly from the definition that if $(X_i)$ has information rate $H$ then $(Y_j)$ has information rate $NH$.
+
+\begin{proposition}\label{prop:rateleH}
+	The information rate $H$ of a Bernoulli source satisfies $H \le H(X_1)$.
+\end{proposition}
+
+\begin{proof}
+	The blocked source $(Y_j)$ is again Bernoulli, so Corollary~\ref{cor:ratelt} applies to it:
+	$$NH < H(Y_1) + 1 = H(X_1,\dots,X_N)+1 = NH(X_1)+1,$$
+	the last equality by independence and Lemma~\ref{lem:subadd} (with equality since the $X_i$ are independent). Dividing by $N$ gives $H < H(X_1)+\frac1N$ for every $N$.
+\end{proof}
+
+\subsection{The Asymptotic Equipartition Property}
+
+Example~\ref{ex:bernoulliaep} isolates exactly the property we need, and it is worth abstracting.
+
+\begin{definition}[AEP]
+	A source $X_1, X_2, \dots$ satisfies the \vocab{asymptotic equipartition property} (AEP) with constant $H \ge 0$ if
+	$$-\frac1n\log p(X_1,\dots,X_n) \xrightarrow{\ \PP\ } H.$$
+\end{definition}
+
+\begin{example}
+	Toss a biased coin with $\PP(\text{head}) = q$, and let $X_1, X_2, \dots$ record the results. After $N$ tosses we expect about $qN$ heads, and any \emph{particular} sequence with exactly $qN$ heads has probability
+	$$q^{qN}(1-q)^{(1-q)N} = 2^{N(q\log q + (1-q)\log(1-q))} = 2^{-NH(q)}.$$
+	Not every sequence looks like this; but the atypical ones carry vanishing total probability. So with high probability we see a `typical sequence', and typical sequences are all roughly \emph{equally likely}, each with probability about $2^{-NH(q)}$. This is what the name is describing: the probability mass is asymptotically spread evenly over about $2^{NH}$ sequences.
+\end{example}
+
+That reformulation is worth recording precisely.
+
+\begin{lemma}\label{lem:typical}
+	A source satisfies the AEP with constant $H$ if and only if for every $\varepsilon>0$ there is $n_0$ such that for all $n \ge n_0$ there is a \vocab{typical set} $T_n \subseteq \Ac^n$ with
+	\begin{enumerate}[label=(\roman*)]
+		\item $\PP\bigl((X_1,\dots,X_n) \in T_n\bigr) > 1-\varepsilon$;
+		\item $2^{-n(H+\varepsilon)} \le p(x_1,\dots,x_n) \le 2^{-n(H-\varepsilon)}$ for all $(x_1,\dots,x_n) \in T_n$.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	Suppose the AEP holds and let $\varepsilon>0$. Define
+	$$T_n = \Bigl\{(x_1,\dots,x_n) : \Bigl\lvert-\tfrac1n \log p(x_1,\dots,x_n) - H\Bigr\rvert \le \varepsilon\Bigr\},$$
+	which is precisely the set on which (ii) holds. By convergence in probability, $\PP((X_1,\dots,X_n)\in T_n) \to 1$, so (i) holds for $n$ large.
+
+	Conversely, given such sets $T_n$, for any $\varepsilon > 0$ we have
+	$$\PP\Bigl(\Bigl\lvert-\tfrac1n\log p(X_1,\dots,X_n)-H\Bigr\rvert \le \varepsilon\Bigr) \ge \PP\bigl((X_1,\dots,X_n)\in T_n\bigr) > 1-\varepsilon$$
+	for $n \ge n_0(\varepsilon)$, which is convergence in probability.
+\end{proof}
+
+\subsection{Shannon's First Coding Theorem}
+
+\begin{theorem}[Shannon's First Coding Theorem]\label{thm:firstcoding}
+	A source satisfying the AEP with constant $H$ has information rate exactly $H$.
+\end{theorem}
+
+\begin{proof}
+	\emph{Rate $H$ is achievable.} Let $\varepsilon>0$ and take typical sets $T_n$ as in Lemma~\ref{lem:typical}. For $n \ge n_0(\varepsilon)$ and $(x_1,\dots,x_n) \in T_n$ we have $p(x_1,\dots,x_n) \ge 2^{-n(H+\varepsilon)}$, so
+	$$1 \ge \PP(T_n) \ge \abs{T_n}\,2^{-n(H+\varepsilon)}, \qquad \text{giving} \qquad \frac1n \log\abs{T_n} \le H+\varepsilon.$$
+	Taking $A_n = T_n$ (padded if necessary so that the limit in (i) exists and equals $H + \varepsilon$) shows that the source is reliably encodable at rate $H+\varepsilon$. As $\varepsilon>0$ was arbitrary, the information rate is at most $H$.
+
+	\emph{No smaller rate is achievable.} If $H=0$ there is nothing to prove, so assume $H>0$ and let $0 < \varepsilon < \tfrac{H}{2}$. Suppose for contradiction that the source is reliably encodable at rate $H-2\varepsilon$, witnessed by sets $A_n$. Let $T_n$ be typical sets for this $\varepsilon$. For $(x_1,\dots,x_n)\in T_n$ we have $p(x_1,\dots,x_n) \le 2^{-n(H-\varepsilon)}$, so
+	$$\PP\bigl((X_1,\dots,X_n) \in A_n \cap T_n\bigr) \le \abs{A_n}\,2^{-n(H-\varepsilon)},$$
+	and hence
+	$$\frac1n\log \PP(A_n \cap T_n) \le -(H-\varepsilon) + \frac1n\log\abs{A_n} \longrightarrow -(H-\varepsilon)+(H-2\varepsilon) = -\varepsilon.$$
+	Therefore $\log\PP(A_n \cap T_n) \to -\infty$, so $\PP(A_n \cap T_n) \to 0$. But
+	$$\PP(T_n) \le \PP(A_n \cap T_n) + \PP(\Ac^n \setminus A_n) \to 0 + 0 = 0,$$
+	contradicting $\PP(T_n) > 1-\varepsilon$. So the information rate is at least $H$.
+\end{proof}
+
+\begin{corollary}
+	A Bernoulli source has information rate exactly $H(X_1)$.
+\end{corollary}
+
+\begin{proof}
+	Example~\ref{ex:bernoulliaep} verifies the AEP with constant $H(X_1)$.
+\end{proof}
+
+\begin{remark}
+	The theorem is not merely an existence statement; it comes with a coding scheme. Encode the typical sequences with a block code of length $\ceil{n(H+\varepsilon)}$, and encode the atypical sequences however you like (say, by a reserved escape symbol followed by the raw string). The scheme fails with vanishing probability and costs $H+\varepsilon$ bits per symbol.
+
+	Many non-Bernoulli sources also satisfy the AEP. Under suitable hypotheses -- for instance for a stationary ergodic source -- the sequence $\frac1n H(X_1,\dots,X_n)$ is decreasing, and the AEP holds with $H = \lim_n \frac1n H(X_1,\dots,X_n)$. This is what makes the theory applicable to real text.
+\end{remark}
+
+\subsection{Capacity of the Binary Symmetric Channel}
+
+We now turn to the channel side. Recall the definitions from Section~1: a code of length $n$ is $C \subseteq \Ac^n$, its rate is $\rho(C) = \frac{\log\abs{C}}{n}$, its error rate is $\hat e(C) = \max_{c \in C}\PP(\text{error}\mid c \text{ sent})$, and the capacity is the supremum of rates at which reliable transmission is possible.
+
+As a warm-up -- and because it shows exactly where the GSV bound earns its keep -- let us prove directly that a reasonably good binary symmetric channel has positive capacity.
+
+\begin{lemma}\label{lem:wlln}
+	Let $\varepsilon>0$ and let a BSC with error probability $p$ be used $n$ times. Then
+	$$\lim_{n\to\infty}\PP\bigl(\text{the channel makes at least } n(p+\varepsilon) \text{ errors}\bigr) = 0.$$
+\end{lemma}
+
+\begin{proof}
+	Let $U_i$ be the indicator that the $i$th digit is mistransmitted. The $U_i$ are i.i.d.\ with $\EE[U_i] = p$, and
+	$$\PP\Bigl(\sum_{i=1}^n U_i \ge n(p+\varepsilon)\Bigr) \le \PP\Bigl(\Bigl\lvert\tfrac1n\sum_{i=1}^n U_i - p\Bigr\rvert \ge \varepsilon\Bigr) \to 0$$
+	by the weak law of large numbers.
+\end{proof}
+
+\begin{proposition}
+	A binary symmetric channel with error probability $p < \tfrac14$ has nonzero capacity.
+\end{proposition}
+
+\begin{proof}
+	Choose $\delta$ with $2p < \delta < \tfrac12$; this is possible precisely because $p< \tfrac14$. We claim we can transmit reliably at rate $R = 1-H(\delta) > 0$.
+
+	Let $C_n$ be an $[n, A(n,\floor{n\delta}), \floor{n\delta}]$-code of maximal size. By the GSV bound and Proposition~\ref{prop:volbound},
+	$$\abs{C_n} = A(n,\floor{n\delta}) \ge 2^{n(1-H(\delta))} = 2^{nR},$$
+	and passing to a subcode we may assume $\abs{C_n} = \floor{2^{nR}}$, still with minimum distance at least $\floor{n\delta}$. Using minimum distance decoding, an error occurs only if the channel makes more than $\floor{\frac{\floor{n\delta}-1}{2}}$ errors, so
+	$$\hat e(C_n) \le \PP\Bigl(\text{at least } \tfrac{n\delta-1}{2} \text{ errors in } n \text{ uses}\Bigr).$$
+	Now pick $\varepsilon>0$ with $p+\varepsilon < \frac{\delta}{2}$, which is possible as $2p<\delta$. For large $n$,
+	$$\frac{n\delta-1}{2} = n\Bigl(\frac{\delta}{2}-\frac{1}{2n}\Bigr) > n(p+\varepsilon),$$
+	so $\hat e(C_n) \le \PP(\text{at least } n(p+\varepsilon) \text{ errors})\to 0$ by Lemma~\ref{lem:wlln}. Since $\rho(C_n)\to R$, we are done.
+\end{proof}
+
+This is already remarkable, but the constant is wrong: the answer is not $1-H(\delta)$ for some $\delta > 2p$, and the restriction $p< \tfrac14$ is an artefact. To get the truth we need a more delicate measure of how much a channel destroys.
+
+\subsection{Conditional Entropy and Fano's Inequality}
+
+\begin{definition}[Conditional Entropy]
+	Let $X, Y$ take values in $\Ac, \Bc$. The \vocab{conditional entropy} of $X$ given $Y = y$ is
+	$$H(X \mid Y=y) = -\sum_{x \in \Ac}\PP(X = x\mid Y=y)\log\PP(X=x\mid Y=y),$$
+	and the \vocab{conditional entropy} of $X$ given $Y$ is
+	$$H(X\mid Y) = \sum_{y\in\Bc}\PP(Y=y)\,H(X\mid Y=y).$$
+\end{definition}
+
+Clearly $H(X\mid Y)\ge0$. It measures how much uncertainty about $X$ remains once $Y$ is known.
+
+\begin{lemma}[Chain Rule]\label{lem:chain}
+	$H(X,Y) = H(X\mid Y) + H(Y)$.
+\end{lemma}
+
+\begin{proof}
+	Expanding the definition and writing $\PP(X = x \mid Y = y)\PP(Y=y) = \PP(X=x,Y=y)$,
+	\begin{align*}
+		H(X\mid Y) &= -\sum_{y}\sum_x \PP(X=x,Y=y)\log\frac{\PP(X=x,Y=y)}{\PP(Y=y)}\\
+		&= -\sum_{y}\sum_x \PP(X=x,Y=y)\log\PP(X=x,Y=y)\\
+		&\qquad + \sum_y \Bigl(\sum_x\PP(X=x,Y=y)\Bigr)\log\PP(Y=y)\\
+		&= H(X,Y) + \sum_y \PP(Y=y)\log\PP(Y=y) = H(X,Y)-H(Y). \qedhere
+	\end{align*}
+\end{proof}
+
+\begin{example}
+	Let $X$ be uniform on $\{1,\dots,6\}$, modelling a die, and let $Y$ be $0$ if $X$ is even and $1$ if $X$ is odd. Then $Y$ is a function of $X$, so $H(X,Y)=H(X)=\log 6$, and $H(Y)=\log2 = 1$. The chain rule gives $H(X\mid Y) = \log 6 - \log 2 = \log 3$, which is right: knowing the parity leaves three equally likely values. Applying the chain rule the other way round, $H(Y\mid X) = H(X,Y)-H(X) = 0$, as it must be.
+\end{example}
+
+\begin{corollary}\label{cor:condle}
+	$H(X\mid Y)\le H(X)$, with equality if and only if $X$ and $Y$ are independent.
+\end{corollary}
+
+\begin{proof}
+	Combine the chain rule with subadditivity (Lemma~\ref{lem:subadd}): $H(X\mid Y) = H(X,Y)-H(Y) \le H(X)$, with the same equality condition.
+\end{proof}
+
+Everything extends to tuples: replacing $X$ by $X^{(r)} = (X_1,\dots,X_r)$ and $Y$ by $Y^{(s)}$, we may speak of $H(X_1,\dots,X_r\mid Y_1,\dots,Y_s)$. One must read such expressions carefully: $H(X,Y\mid Z)$ is the entropy of the \emph{pair} $(X,Y)$ given $Z$, not the entropy of $X$ together with the entropy of $Y$ given $Z$.
+
+\begin{lemma}\label{lem:threevar}
+	$H(X\mid Y) \le H(X\mid Y,Z) + H(Z)$.
+\end{lemma}
+
+\begin{proof}
+	Expand $H(X,Y,Z)$ in two ways using the chain rule:
+	$$H(Z\mid X,Y) + \underbrace{H(X\mid Y)+H(Y)}_{H(X,Y)} = H(X,Y,Z) = H(X\mid Y,Z)+\underbrace{H(Z\mid Y)+H(Y)}_{H(Y,Z)}.$$
+	Since $H(Z\mid X,Y)\ge0$ we get $H(X\mid Y) \le H(X\mid Y,Z)+H(Z\mid Y)$, and $H(Z\mid Y)\le H(Z)$ by Corollary~\ref{cor:condle}.
+\end{proof}
+
+Now for the key estimate. Think of $X$ as what was sent and $Y$ as what was decoded; then $p = \PP(X\ne Y)$ is the probability of error, and Fano's inequality bounds how much uncertainty can remain.
+
+\begin{proposition}[Fano's Inequality]\label{prop:fano}
+	Let $X,Y$ take values in an alphabet $\Ac$ with $\abs{\Ac} = m \ge 2$, and let $p = \PP(X\ne Y)$. Then
+	$$H(X\mid Y) \le H(p) + p\log(m-1).$$
+\end{proposition}
+
+\begin{proof}
+	Let $Z$ be the indicator of the event $X \ne Y$, so $H(Z) = H(p)$. By Lemma~\ref{lem:threevar} it suffices to show $H(X\mid Y,Z)\le p\log(m-1)$.
+
+	If $Z = 0$ then $X = Y$, so $H(X\mid Y=y,Z=0) = 0$. If $Z=1$ then $X$ is one of the $m-1$ values other than $y$, so $H(X\mid Y=y,Z=1)\le\log(m-1)$. Hence
+	\begin{align*}
+		H(X\mid Y,Z) &= \sum_{y\in\Ac}\sum_{z\in\{0,1\}}\PP(Y=y,Z=z)\,H(X\mid Y=y,Z=z)\\
+		&\le \sum_{y\in\Ac}\PP(Y=y,Z=1)\log(m-1) = \PP(Z=1)\log(m-1) = p\log(m-1). \qedhere
+	\end{align*}
+\end{proof}
+
+The two terms have a clean reading: $H(p)$ is the information needed to say \emph{whether} an error occurred, and $p\log(m-1)$ is the information needed to say \emph{which} error it was, in the worst case.
+
+\subsection{Mutual Information and Information Capacity}
+
+\begin{definition}[Mutual Information]
+	The \vocab{mutual information} of $X$ and $Y$ is
+	$$I(X;Y) = H(X)-H(X\mid Y).$$
+\end{definition}
+
+By the chain rule $I(X;Y) = H(X)+H(Y)-H(X,Y)$, from which it is visibly symmetric in $X$ and $Y$, and non-negative by subadditivity, with $I(X;Y)=0$ if and only if $X$ and $Y$ are independent. It measures how much knowing one variable tells us about the other -- exactly the quantity a channel ought to be judged by.
+
+\begin{definition}[Information Capacity]
+	Let a discrete memoryless channel have input alphabet $\Ac$ and output alphabet $\Bc$. For a random variable $X$ on $\Ac$, let $Y$ be the resulting output. The \vocab{information capacity} of the channel is
+	$$C = \max_X I(X;Y),$$
+	the maximum being over all distributions of $X$ on $\Ac$.
+\end{definition}
+
+The maximum is attained: $I$ is a continuous function of the input distribution $(p_1,\dots,p_m)$, which ranges over the compact simplex $\{p_i \ge 0, \sum p_i = 1\}$. Note that the information capacity depends only on the channel matrix, and is a finite computation; whereas the (operational) capacity of Section~1 is defined by a limiting process over all possible codes. The content of Shannon's second theorem is that they agree.
+
+\begin{theorem}[Shannon's Noisy Coding Theorem]\label{thm:secondcoding}
+	For a discrete memoryless channel, the operational capacity equals the information capacity.
+\end{theorem}
+
+We shall prove the inequality `operational $\le$ information' in general, and the reverse inequality for the binary symmetric channel. First, let us see what the theorem buys us.
+
+\begin{example}\label{ex:capacities}
+	\begin{enumerate}[label=(\roman*)]
+		\item \emph{The binary symmetric channel with error probability $p$.} Let $\PP(X=0)=\alpha$. Given $X$, the output differs from the input with probability $p$ regardless, so $H(Y\mid X=0)=H(Y\mid X=1)=H(p)$ and hence $H(Y\mid X) = H(p)$. Also $\PP(Y=0) = \alpha(1-p)+(1-\alpha)p$. Therefore
+		\begin{align*}
+			C &= \max_\alpha\bigl[H(Y)-H(Y\mid X)\bigr] = \max_\alpha \bigl[H\bigl(\alpha(1-p)+(1-\alpha)p\bigr)-H(p)\bigr] = 1-H(p),
+		\end{align*}
+		the maximum being at $\alpha = \tfrac12$, when the argument of the outer $H$ is $\tfrac12$. So
+		$$C = 1 + p\log p + (1-p)\log(1-p).$$
+		If $p = 0$ or $p=1$ then $C=1$; if $p = \tfrac12$ then $C = 0$, confirming that such a channel is useless.
+		\item \emph{The binary erasure channel with erasure probability $p$.} Here it is easier to compute $I(Y;X) = H(X)-H(X\mid Y)$. With $\PP(X=0)=\alpha$, receiving $0$ or $1$ determines $X$, so $H(X\mid Y=0)=H(X\mid Y=1)=0$, while $H(X\mid Y=\star) = H(\alpha)$. As $\PP(Y=\star)=p$,
+		$$C = \max_\alpha\bigl[H(\alpha)-pH(\alpha)\bigr] = (1-p)\max_\alpha H(\alpha) = 1-p,$$
+		again at $\alpha=\tfrac12$. This is exactly what one would guess: a fraction $p$ of the transmissions is simply lost.
+	\end{enumerate}
+\end{example}
+
+Note the strength of the first computation. A channel that flips one bit in ten has capacity $1-H(0.1) = 0.531$, so we can push more than half a bit of genuine information through each use of it, with arbitrarily small error probability.
+
+\begin{lemma}\label{lem:extcap}
+	If a discrete memoryless channel has information capacity $C$, its $n$th extension has information capacity $nC$.
+\end{lemma}
+
+\begin{proof}
+	Let $X_1,\dots,X_n$ be the input and $Y_1,\dots,Y_n$ the output. Because the channel is memoryless, $Y_i$ depends only on $X_i$, so
+	$$H(Y_1,\dots,Y_n\mid X_1,\dots,X_n) = \sum_{i=1}^n H(Y_i\mid X_1,\dots,X_n) = \sum_{i=1}^n H(Y_i\mid X_i).$$
+	Hence, using subadditivity for the first term,
+	\begin{align*}
+		I(X_1,\dots,X_n;Y_1,\dots,Y_n) &= H(Y_1,\dots,Y_n)-H(Y_1,\dots,Y_n\mid X_1,\dots,X_n)\\
+		&\le \sum_{i=1}^n H(Y_i)-\sum_{i=1}^n H(Y_i\mid X_i) = \sum_{i=1}^n I(X_i;Y_i) \le nC.
+	\end{align*}
+	Conversely, take the $X_i$ independent and each achieving $I(X_i;Y_i)=C$. Then the $Y_i$ are independent too, so $H(Y_1,\dots,Y_n) = \sum_i H(Y_i)$ and the first inequality is an equality. Hence the maximum is exactly $nC$.
+\end{proof}
+
+\subsection{Proof of the Noisy Coding Theorem}\label{sec:noisycoding}
+
+We begin with the converse, which holds for any discrete memoryless channel.
+
+\begin{proposition}[Converse to the Noisy Coding Theorem]
+	The operational capacity of a discrete memoryless channel is at most its information capacity $C$.
+\end{proposition}
+
+\begin{proof}
+	Suppose, for contradiction, that reliable transmission is possible at some rate $R > C$. Then there are codes $C_n$ of length $n$ and size $\floor{2^{nR}}$ with $\rho(C_n)\to R$ and $\hat e(C_n)\to0$.
+
+	Introduce the \vocab{average error rate}
+	$$e(C_n) = \frac{1}{\abs{C_n}}\sum_{c\in C_n}\PP(\text{error}\mid c\text{ sent}) \le \hat e(C_n),$$
+	so $e(C_n)\to0$ as well. Let $X$ be uniform on $C_n$, let $Y$ be the channel output, and let $\hat X$ be the decoded codeword; write $p = e(C_n) = \PP(X \ne \hat X)$.
+
+	Since $X$ is uniform, $H(X) = \log\abs{C_n} = \log\floor{2^{nR}} \ge nR-1$ for $n$ large. By Fano's inequality applied to $X$ and $\hat X$, and then the fact that $\hat X$ is a function of $Y$ (so conditioning on $Y$ can only be more informative),
+	$$H(X\mid Y) \le H(X \mid \hat X) \le H(p)+p\log(\abs{C_n}-1) \le 1 + pnR.$$
+	Therefore, using Lemma~\ref{lem:extcap} for the $n$th extension,
+	$$nC \ge I(X;Y) = H(X)-H(X\mid Y) \ge (nR-1)-(1+pnR),$$
+	so that
+	$$p\,nR \ge n(R-C)-2, \qquad\text{that is}\qquad p \ge \frac{n(R-C)-2}{nR} \longrightarrow \frac{R-C}{R} > 0.$$
+	This contradicts $p = e(C_n)\to0$. Hence no rate above $C$ is achievable.
+\end{proof}
+
+The direct half is the celebrated one, and Shannon's proof is a masterpiece of the probabilistic method: rather than constructing a good code, we pick one at random and show that the average is good enough.
+
+\begin{proposition}\label{prop:randomcoding}
+	Let a BSC have error probability $p$, and let $R < 1-H(p)$. Then there are codes $C_n$ of length $n$ and size $\floor{2^{nR}}$ with $\rho(C_n)\to R$ and $e(C_n)\to0$.
+\end{proposition}
+
+Note that this concerns the \emph{average} error rate $e$; we shall upgrade to $\hat e$ afterwards.
+
+\begin{proof}
+	Without loss of generality $p< \tfrac12$. Choose $\varepsilon>0$ small enough that $p+\varepsilon<\tfrac12$ and $R < 1-H(p+\varepsilon)$; this is possible by continuity of $H$. Put $m = \floor{2^{nR}}$ and $r = \floor{n(p+\varepsilon)}$. We use minimum distance decoding, breaking ties arbitrarily.
+
+	Let $\Cc$ be the set of all $[n,m]$-codes, so $\abs{\Cc} = \binom{2^n}{m}$, and choose $C = \{c_1,\dots,c_m\}$ from $\Cc$ uniformly at random. Choose $i \in \{1,\dots,m\}$ uniformly at random too, send $c_i$, and let $Y$ be the output. Then
+	$$\PP(Y \text{ not decoded as } c_i) = \frac{1}{\abs{\Cc}}\sum_{C \in \Cc} e(C),$$
+	so there exists some $C_n \in \Cc$ with $e(C_n)$ at most this average. It therefore suffices to show that the left hand side tends to $0$.
+
+	If $B(Y,r)\cap C = \{c_i\}$ then $Y$ is certainly decoded as $c_i$, so
+	$$\PP(Y\text{ not decoded as }c_i) \le \PP\bigl(c_i \notin B(Y,r)\bigr) + \PP\bigl(B(Y,r)\cap C \supsetneq \{c_i\}\bigr),$$
+	and we handle the two terms separately.
+
+	The first term is $\PP(d(c_i,Y)>r)$, which is the probability that the channel makes more than $n(p+\varepsilon)$ errors; this tends to $0$ by Lemma~\ref{lem:wlln}.
+
+	For the second term, condition on $Y$ and on $c_i$. Given that $c_i \in B(Y,r)$, each of the other $m-1$ codewords is uniform over the remaining $2^n - 1$ words, so
+	$$\PP\bigl(c_j \in B(Y,r)\mid c_i \in B(Y,r)\bigr) = \frac{V(n,r)-1}{2^n-1}\le \frac{V(n,r)}{2^n}$$
+	for $j \ne i$. Hence, by a union bound and Proposition~\ref{prop:volbound}(i),
+	\begin{align*}
+		\PP\bigl(B(Y,r)\cap C \supsetneq \{c_i\}\bigr) &\le \sum_{j\ne i}\PP\bigl(c_j\in B(Y,r)\mid c_i \in B(Y,r)\bigr)\\
+		&\le (m-1)\frac{V(n,r)}{2^n} \le 2^{nR}\,2^{nH(p+\varepsilon)}\,2^{-n}\\
+		&= 2^{-n\left(1-H(p+\varepsilon)-R\right)} \longrightarrow 0,
+	\end{align*}
+	because $R < 1-H(p+\varepsilon)$. This completes the proof.
+\end{proof}
+
+\begin{proposition}
+	In Proposition~\ref{prop:randomcoding} we may replace $e$ by $\hat e$.
+\end{proposition}
+
+\begin{proof}
+	Choose $R'$ with $R<R'<1-H(p)$ and apply the previous proposition to $R'$, obtaining codes $C_n'$ of size $\floor{2^{nR'}}$ with $e(C_n')\to0$. Order the codewords of $C_n'$ by their individual error probabilities and delete the worse half, giving a code $C_n''$. If more than half the codewords had error probability exceeding $2e(C_n')$ the average would exceed $e(C_n')$; so $\hat e(C_n'')\le 2e(C_n')\to0$. Now $C_n''$ has size $\tfrac12\floor{2^{nR'}} \ge 2^{nR}$ for large $n$, since $2^{nR'-1} = 2^{n(R'-1/n)} \ge 2^{nR}$ eventually. Passing to a subcode of size exactly $\floor{2^{nR}}$ can only decrease $\hat e$, and gives $\rho \to R$.
+\end{proof}
+
+Putting the two halves together: the binary symmetric channel with error probability $p$ has operational capacity exactly $1 - H(p)$, which by Example~\ref{ex:capacities} is also its information capacity. This is Theorem~\ref{thm:secondcoding} for the BSC.
+
+\begin{remark}
+	The proof is purely existential. It tells us that almost every code of the right size is good, but it gives no way of writing one down, and no way of decoding one efficiently even if we could -- minimum distance decoding over $2^{nR}$ codewords is hopeless. Finding explicit families of codes approaching capacity, with practical decoding algorithms, took another fifty years. The rest of these notes on coding theory is about algebraic constructions which are far from optimal but eminently practical.
+\end{remark}
+
+\subsection{An Aside: the Kelly Criterion}
+
+Entropy turns up in places that have nothing obviously to do with communication. Here is one, included because it is charming and because it was lectured.
+
+Suppose a biased coin with $\PP(\text{head}) = p$ is tossed repeatedly, and that before each toss we may stake money on heads at odds $u$: a stake of $k$ returns $ku$ if the coin comes up heads and nothing otherwise. Start with a bankroll $X_0 = 1$ and bet a fixed fraction $w \in [0,1)$ of the current bankroll each time, so
+$$X_{n+1} = \begin{cases} X_n\bigl(wu + (1-w)\bigr) & \text{if toss } n+1 \text{ is a head},\\ X_n(1-w) & \text{otherwise.}\end{cases}$$
+Then $Y_{n+1} = X_{n+1}/X_n$ are i.i.d., and $\log X_n = \sum_{i=1}^n \log Y_i$ is a sum of i.i.d.\ terms.
+
+\begin{lemma}
+	Let $\mu = \EE[\log Y_1]$ and $\sigma^2 = \var(\log Y_1)$. Then for $a>0$,
+	$$\PP\left(\left\lvert \frac{\log X_n}{n}-\mu\right\rvert \ge a\right) = \PP\left(\left\lvert\frac1n\sum_{i=1}^n \log Y_i - \mu\right\rvert\ge a\right) \le \frac{\sigma^2}{na^2}.$$
+	In particular, for any $\varepsilon, \delta>0$ there is $N$ with $\PP(\abs{\frac{\log X_n}{n}-\mu}\ge\delta)\le\varepsilon$ for all $n\ge N$.
+\end{lemma}
+
+\begin{proof}
+	Immediate from Chebyshev's inequality applied to the sample mean.
+\end{proof}
+
+So the bankroll behaves like $2^{n\mu}$, and to do well in the long run we should maximise $\mu$ rather than the expected return. Now
+$$\mu = \EE[\log Y] = p\log\bigl(1+(u-1)w\bigr)+(1-p)\log(1-w).$$
+Differentiating with respect to $w$ and setting the result to zero, one finds that $\mu$ is maximised at $w = 0$ if $up \le 1$ (the bet is not worth taking) and at
+$$w = \frac{up-1}{u-1}$$
+if $up>1$. This is \vocab{Kelly's criterion}. Writing $q = 1-p$ and substituting the optimal $w$,
+$$\EE[\log Y] = p\log p + q \log q + \log u - q\log(u-1) = -H(p)+\log u - q\log(u-1).$$
+Entropy has appeared, and it is exactly the penalty paid for the randomness of the coin. Betting below the Kelly fraction still grows the bankroll, but more slowly; betting sufficiently far above it makes the bankroll tend to zero almost surely, however favourable the odds.
+
+
+\section{Linear Codes}\label{sec:linear}
+
+Shannon's theorem guarantees good codes but produces none, and even if it did we could not use them, because minimum distance decoding over an unstructured code of size $2^{nR}$ is computationally hopeless. The way out is to insist that our codes be \emph{linear subspaces}, at which point all the machinery of IB Linear Algebra becomes available and both encoding and decoding become matrix arithmetic.
+
+\subsection{Linear Codes, Generator and Parity Check Matrices}
+
+\begin{definition}[Linear Code]
+	A binary code $C \subseteq \F_2^n$ is \vocab{linear} if $0 \in C$ and $x+y \in C$ whenever $x,y \in C$; equivalently, if $C$ is a vector subspace of $\F_2^n$.
+\end{definition}
+
+\begin{definition}[Rank]
+	The \vocab{rank} of a linear code $C$ is its dimension as an $\F_2$-vector space. A linear code of length $n$ and rank $k$ is an \vocab{$(n,k)$-code}; if its minimum distance is $d$ it is an \vocab{$(n,k,d)$-code}.
+\end{definition}
+
+We use round brackets for linear codes and square brackets for general ones. If $v_1,\dots,v_k$ is a basis then every codeword is uniquely $\sum \lambda_i v_i$ with $\lambda_i \in \F_2$, so $\abs{C} = 2^k$. Thus an $(n,k)$-code is an $[n,2^k]$-code, and its information rate is $\frac kn$ -- a pleasantly simple formula.
+
+\begin{definition}[Weight]
+	The \vocab{weight} of $x \in \F_2^n$ is $\wt(x) = d(x,0)$, the number of nonzero digits.
+\end{definition}
+
+\begin{lemma}\label{lem:wtmin}
+	The minimum distance of a linear code equals the minimum weight of a nonzero codeword.
+\end{lemma}
+
+\begin{proof}
+	For $x,y \in \F_2^n$ we have $d(x,y) = d(x+y,0) = \wt(x+y)$, since over $\F_2$ subtraction is addition. If $C$ is linear and $x,y \in C$ are distinct then $x+y$ is a nonzero codeword, and conversely every nonzero codeword $z$ arises as $z = z + 0$. So the two minima are over the same set of numbers.
+\end{proof}
+
+This is already a large saving: computing $d(C)$ naively requires $\binom{2^k}{2}$ comparisons, but for a linear code only $2^k - 1$ weights.
+
+\begin{definition}[Dot Product, Dual Code]
+	For $x,y \in \F_2^n$ set $x\cdot y = \sum_{i=1}^n x_iy_i \in \F_2$; this is symmetric and bilinear. Given $P \subseteq \F_2^n$, the \vocab{parity check code} defined by $P$ is
+	$$C = \{x \in \F_2^n : p\cdot x = 0 \text{ for all } p \in P\}.$$
+	For a linear code $C$, the \vocab{dual code} is
+	$$C^\perp = \{x \in \F_2^n : x\cdot y = 0 \text{ for all } y \in C\}.$$
+\end{definition}
+
+A warning: this bilinear form is not an inner product, since $x\cdot x = 0$ for any $x$ of even weight. In particular $C \cap C^\perp$ need not be $\{0\}$, and a code can even be \emph{self-dual}.
+
+\begin{example}
+	\begin{enumerate}[label=(\roman*)]
+		\item $P = \{11\dots1\}$ gives the simple parity check code.
+		\item $P = \{1010101, 0110011, 0001111\}$ gives Hamming's original $[7,16,3]$-code of Example~\ref{ex:ham74}.
+		\item If $C$ is linear then so are the parity check extension $C^+$ and any punctured code $C^-$.
+	\end{enumerate}
+\end{example}
+
+\begin{lemma}
+	Every parity check code is linear.
+\end{lemma}
+
+\begin{proof}
+	$p\cdot 0 = 0$, and if $p\cdot x = p\cdot y = 0$ then $p\cdot(x+y) = 0$ by bilinearity.
+\end{proof}
+
+In particular $C^\perp$ is always linear. We shall shortly see the converse: every linear code is a parity check code.
+
+\begin{definition}[Generator and Parity Check Matrices]
+	Let $C$ be an $(n,k)$-code. A \vocab{generator matrix} for $C$ is a $k\times n$ matrix $G$ whose rows form a basis of $C$. A \vocab{parity check matrix} for $C$ is a generator matrix $H$ for $C^\perp$; we shall see it is an $(n-k)\times n$ matrix.
+\end{definition}
+
+The two matrices give two descriptions of the same code: codewords are the linear combinations of rows of $G$, and also the linear dependence relations among the columns of $H$,
+$$C = \{x \in \F_2^n : Hx = 0\},$$
+where we regard $x$ as a column vector. Encoding uses $G$ and decoding uses $H$.
+
+\begin{definition}[Syndrome]
+	Let $C$ be a linear code with parity check matrix $H$. The \vocab{syndrome} of $x \in \F_2^n$ is $Hx \in \F_2^{n-k}$.
+\end{definition}
+
+Here is the point. Suppose we receive $x = c + z$ where $c \in C$ and $z$ is the error pattern. Since $Hc = 0$,
+$$Hx = Hz,$$
+so the syndrome depends only on the error, not on the codeword that was sent. If $C$ is $e$-error correcting we may precompute $Hz$ for every $z$ with $\wt(z)\le e$ -- there are $V(n,e)$ of them, far fewer than $2^k$ codewords in general -- and store the results in a table. On receiving $x$ we compute $Hx$, look it up, and decode as $c = x - z$. The cost of decoding is one matrix multiplication and one table lookup.
+
+More generally, two words have the same syndrome exactly when they differ by a codeword, so the syndromes are in bijection with the cosets of $C$ in $\F_2^n$. Minimum distance decoding amounts to choosing, in each coset, a word of least weight -- a \vocab{coset leader} -- and subtracting it. Displaying the cosets as the rows of an array gives the classical picture.
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+	\draw[thin] (-0.2,0.55) -- (7.9,0.55);
+	\draw[thin] (0.95,1.05) -- (0.95,-4.1);
+	\draw[thin] (6.55,1.05) -- (6.55,-4.1);
+	\node[font=\small] at (0.35,0.85)  {$z$};
+	\node[font=\small] at (3.7,0.85)   {coset $z + C$};
+	\node[font=\small] at (7.25,0.85)  {$Hz$};
+	\node[font=\small] at (0.35,0)  {$0$};
+	\node[font=\small] at (1.8,0)   {$0$};
+	\node[font=\small] at (3.0,0)   {$c_2$};
+	\node[font=\small] at (4.2,0)   {$\cdots$};
+	\node[font=\small] at (5.6,0)   {$c_m$};
+	\node[font=\small] at (7.25,0)  {$0$};
+	\node[font=\small] at (0.35,-0.9)  {$z_2$};
+	\node[font=\small] at (1.8,-0.9)   {$z_2$};
+	\node[font=\small] at (3.0,-0.9)   {$z_2+c_2$};
+	\node[font=\small] at (4.2,-0.9)   {$\cdots$};
+	\node[font=\small] at (5.6,-0.9)   {$z_2+c_m$};
+	\node[font=\small] at (7.25,-0.9)  {$s_2$};
+	\node[font=\small] at (0.35,-1.8)  {$z_3$};
+	\node[font=\small] at (1.8,-1.8)   {$z_3$};
+	\node[font=\small] at (3.0,-1.8)   {$z_3+c_2$};
+	\node[font=\small] at (4.2,-1.8)   {$\cdots$};
+	\node[font=\small] at (5.6,-1.8)   {$z_3+c_m$};
+	\node[font=\small] at (7.25,-1.8)  {$s_3$};
+	\node[font=\small] at (0.35,-2.6)  {$\vdots$};
+	\node[font=\small] at (1.8,-2.6)   {$\vdots$};
+	\node[font=\small] at (3.0,-2.6)   {$\vdots$};
+	\node[font=\small] at (5.6,-2.6)   {$\vdots$};
+	\node[font=\small] at (7.25,-2.6)  {$\vdots$};
+	\node[font=\small] at (0.35,-3.6)  {$z_t$};
+	\node[font=\small] at (1.8,-3.6)   {$z_t$};
+	\node[font=\small] at (3.0,-3.6)   {$z_t+c_2$};
+	\node[font=\small] at (4.2,-3.6)   {$\cdots$};
+	\node[font=\small] at (5.6,-3.6)   {$z_t+c_m$};
+	\node[font=\small] at (7.25,-3.6)  {$s_t$};
+\end{tikzpicture}
+\end{center}
+
+The first row is the code itself; the leftmost column holds the coset leaders; the rightmost column holds the syndromes, and it is the only column we need to store. On receiving $x$ we find the row with syndrome $Hx$ and subtract its leader.
+
+\begin{definition}[Equivalence]
+	Codes $C_1, C_2 \subseteq \F_2^n$ are \vocab{equivalent} if some permutation of the $n$ coordinates carries $C_1$ onto $C_2$.
+\end{definition}
+
+Equivalent codes have the same length, size and minimum distance, so we generally work up to equivalence.
+
+\begin{lemma}\label{lem:standardform}
+	Every $(n,k)$-code is equivalent to one with generator matrix in the \vocab{standard form}
+	$$G = \begin{pmatrix} I_k & B\end{pmatrix}$$
+	for some $k\times(n-k)$ matrix $B$.
+\end{lemma}
+
+\begin{proof}
+	Let $G$ be any generator matrix. Row operations do not change the row space, so by Gaussian elimination we may put $G$ in row echelon form, with leading $1$s in columns $\ell(1)<\ell(2)<\dots<\ell(k)$. Permuting columns replaces $C$ by an equivalent code, so we may assume $\ell(i)=i$. Further row operations clear the entries above the leading $1$s, leaving $G = (I_k \mid B)$.
+\end{proof}
+
+With $G$ in standard form, a message $y \in \F_2^k$ (a row vector) is encoded as
+$$yG = (y \mid yB),$$
+that is, the message itself followed by $n-k$ \vocab{check digits}. Such an encoding is called \vocab{systematic}, and is convenient because the message can be read straight off the codeword.
+
+\begin{lemma}\label{lem:dualdim}
+	For a linear code $C \le \F_2^n$, $\rank C + \rank C^\perp = n$.
+\end{lemma}
+
+\begin{proof}
+	This is the annihilator statement from IB Linear Algebra, but here is a direct argument. Passing to an equivalent code we may assume $C$ has generator matrix $G = (I_k \mid B)$. Consider the linear map $\gamma\colon \F_2^n \to \F_2^k$, $x \mapsto Gx$. Since $G$ contains $I_k$, its rows are linearly independent, so $\gamma$ is surjective. Its kernel is exactly the set of $x$ orthogonal to every row of $G$, that is, $C^\perp$. By rank--nullity,
+	$$n = \dim\ker\gamma + \dim\image\gamma = \rank C^\perp + k. \qedhere$$
+\end{proof}
+
+\begin{corollary}
+	$(C^\perp)^\perp = C$. In particular every linear code is a parity check code, namely the one defined by $C^\perp$.
+\end{corollary}
+
+\begin{proof}
+	If $x \in C$ then $x\cdot y = 0$ for all $y \in C^\perp$ by definition, so $C \subseteq (C^\perp)^\perp$. Applying Lemma~\ref{lem:dualdim} twice,
+	$$\rank (C^\perp)^\perp = n - \rank C^\perp = n - (n - \rank C) = \rank C,$$
+	so the inclusion is an equality.
+\end{proof}
+
+\begin{lemma}\label{lem:HfromG}
+	If $C$ has generator matrix $G = (I_k \mid B)$ then $H = (B^\top \mid I_{n-k})$ is a parity check matrix for $C$.
+\end{lemma}
+
+\begin{proof}
+	We compute
+	$$GH^\top = \begin{pmatrix} I_k & B\end{pmatrix}\begin{pmatrix} B \\ I_{n-k}\end{pmatrix} = B + B = 0$$
+	over $\F_2$. So every row of $H$ is orthogonal to every row of $G$, giving $\rank H \le \dim C^\perp$ as subspaces; but $H$ contains $I_{n-k}$, so $\rank H = n-k = \rank C^\perp$ by Lemma~\ref{lem:dualdim}. Hence the rows of $H$ are a basis of $C^\perp$.
+\end{proof}
+
+The minimum distance can also be read off from $H$, which is often the most convenient way to compute it.
+
+\begin{lemma}\label{lem:distH}
+	Let $C$ be a linear code with parity check matrix $H$. Then $d(C) = d$ if and only if some $d$ columns of $H$ are linearly dependent, but no $d-1$ columns are.
+\end{lemma}
+
+\begin{proof}
+	A word $x$ lies in $C$ if and only if $Hx = 0$, that is, if and only if the columns of $H$ indexed by the support of $x$ sum to zero. So there is a nonzero codeword of weight $w$ exactly when some $w$ columns of $H$ are linearly dependent. Now apply Lemma~\ref{lem:wtmin}.
+\end{proof}
+
+\begin{example}\label{ex:syndrome523}
+	Let $C$ be the $(5,2)$-code with generator matrix
+	$$G = \begin{pmatrix} 1&0&1&1&0\\0&1&0&1&1\end{pmatrix} = \begin{pmatrix} I_2 & B \end{pmatrix}, \qquad B = \begin{pmatrix}1&1&0\\0&1&1\end{pmatrix}.$$
+	Its four codewords are $00000$, $10110$, $01011$, $11101$, of weights $0,3,3,4$, so $d(C)=3$ by Lemma~\ref{lem:wtmin} and $C$ is a $(5,2,3)$-code, correcting one error. By Lemma~\ref{lem:HfromG},
+	$$H = \begin{pmatrix} B^\top & I_3\end{pmatrix} = \begin{pmatrix} 1&0&1&0&0\\1&1&0&1&0\\0&1&0&0&1\end{pmatrix},$$
+	and indeed no two columns of $H$ are equal (so no two are dependent), while columns $1,2,4$ sum to zero, confirming $d = 3$ via Lemma~\ref{lem:distH}.
+
+	The syndromes of the five single-bit errors are just the columns of $H$:
+	$$\begin{array}{c|cccccccc}
+		z & 00000 & 10000 & 01000 & 00100 & 00010 & 00001 & 00101 & 10001\\\hline
+		Hz & 000 & 110 & 011 & 100 & 010 & 001 & 101 & 111
+	\end{array}$$
+	There are $8$ syndromes and only $6$ patterns of weight at most $1$, so two cosets need leaders of weight $2$; the last two columns give such a choice. Note the choice is not unique -- the syndrome $101$ also arises from $11000$, and $111$ from $01100$ -- which is Lemma~\ref{lem:mindist} telling us that a code with $d = 3$ cannot correct two errors.
+
+	Let us decode. Suppose we receive $x = 10111$. Then
+	$$Hx = (1+1,\ 1+1,\ 1+1)^\top \cdot \text{(reading off columns } 1,3,4,5) = 001,$$
+	more carefully: the columns of $H$ in positions $1,3,4,5$ are $(1,1,0),(1,0,0),(0,1,0),(0,0,1)$, which sum to $(0,0,1)$. Looking up $001$ in the table gives $z = 00001$, so we decode $x$ as $10111 + 00001 = 10110$, a codeword as required.
+\end{example}
+
+\subsection{Hamming Codes}
+
+Lemma~\ref{lem:distH} makes the construction of $1$-error correcting codes almost automatic. We need $d = 3$, so we need a parity check matrix whose columns are pairwise linearly independent; over $\F_2$ that just means the columns are nonzero and distinct. To get as many columns as possible for a given number of rows, we should use \emph{all} of them.
+
+\begin{definition}[Hamming Code]
+	Let $d \ge 2$ and $n = 2^d - 1$. Let $H$ be the $d\times n$ matrix whose columns are the $n$ nonzero elements of $\F_2^d$, in some order. The \vocab{Hamming $(n, n-d)$-code} is the linear code with parity check matrix $H$.
+\end{definition}
+
+\begin{lemma}
+	The Hamming $(n,n-d)$-code has minimum distance $3$ and is a perfect $1$-error correcting code.
+\end{lemma}
+
+\begin{proof}
+	The columns of $H$ are distinct and nonzero, so no two are dependent; and any three columns $u,v,u+v$ are dependent, and such a triple exists as soon as $d \ge 2$. By Lemma~\ref{lem:distH}, $d(C) = 3$, so $C$ corrects $\floor{\frac{3-1}{2}} = 1$ error. Finally
+	$$\frac{2^n}{V(n,1)} = \frac{2^n}{1+n} = \frac{2^n}{2^d} = 2^{n-d} = \abs{C},$$
+	so $C$ is perfect.
+\end{proof}
+
+If the columns of $H$ are listed in the order $1, 2, \dots, n$ read as binary numbers, then the syndrome of a single error in position $i$ is the binary expansion of $i$, and decoding is instantaneous: compute the syndrome, read it as a number, and flip that bit. Taking $d = 3$ recovers Hamming's original $(7,4,3)$-code of Example~\ref{ex:ham74}.
+
+That code has a famous picture. Draw three overlapping circles, one for each parity check, and place the seven digits in the seven regions so that digit $i$ lies in circle $j$ exactly when the $j$th binary digit of $i$ is $1$.
+
+\begin{center}
+\begin{tikzpicture}[x=1cm,y=1cm]
+	\draw[thin,color=blue]  (-0.7,0.4) circle (1.3);
+	\draw[thin,color=red]   (0.7,0.4) circle (1.3);
+	\draw[thin,color=DarkGreen] (0,-0.75) circle (1.3);
+	\node[font=\small] at (-1.45,0.75) {$c_1$};
+	\node[font=\small] at (1.45,0.75)  {$c_2$};
+	\node[font=\small] at (0,-1.55)    {$c_4$};
+	\node[font=\small] at (0,1.0)      {$c_3$};
+	\node[font=\small] at (-0.85,-0.55){$c_5$};
+	\node[font=\small] at (0.85,-0.55) {$c_6$};
+	\node[font=\small] at (0,0.05)     {$c_7$};
+	\node[font=\scriptsize,color=blue] at (-2.05,1.55) {$z_1$};
+	\node[font=\scriptsize,color=red] at (2.05,1.55) {$z_2$};
+	\node[font=\scriptsize,color=DarkGreen] at (0,-2.35) {$z_4$};
+\end{tikzpicture}
+\end{center}
+
+Each circle must contain an even number of $1$s: those are exactly the three parity conditions
+$$c_1+c_3+c_5+c_7 = 0,\quad c_2+c_3+c_6+c_7=0,\quad c_4+c_5+c_6+c_7=0.$$
+Now the decoding rule becomes visual. A single error breaks precisely the parity of those circles containing it, and since every region is determined by the set of circles containing it, the broken circles identify the erroneous digit uniquely. If, for instance, only the blue and green circles fail, the culprit is $c_5$, which lies in those two and no other.
+
+\subsection{Weight Enumerators}
+
+The weights of the codewords of a linear code contain a great deal of information, and it is convenient to package them into a polynomial.
+
+\begin{definition}[Weight Enumerator]
+	The \vocab{weight enumerator} of a linear code $C \le \F_2^n$ is the homogeneous polynomial
+	$$W_C(x,y) = \sum_{c \in C} x^{\,n-\wt(c)}y^{\,\wt(c)} = \sum_{i=0}^n A_i\, x^{n-i}y^i,$$
+	where $A_i$ is the number of codewords of weight $i$.
+\end{definition}
+
+Note $W_C(1,1) = \abs{C}$ and $W_C(1,0) = 1$, and that $d(C)$ is the least $i>0$ with $A_i \ne 0$. If $C$ is used over a BSC with error probability $p$, then the probability that a transmitted codeword is received as another codeword -- an undetected error -- is $W_C(1-p,p) - (1-p)^n$, so the weight enumerator is exactly what one needs to analyse error detection.
+
+\begin{example}
+	The repetition code of length $n$ has $W(x,y) = x^n + y^n$. The simple parity check code of length $n$ has $W(x,y) = \sum_{i \text{ even}}\binom ni x^{n-i}y^i = \tfrac12\bigl[(x+y)^n + (x-y)^n\bigr]$. Hamming's $(7,4,3)$-code has weight distribution $A_0 = 1$, $A_3 = A_4 = 7$, $A_7 = 1$, so
+	$$W(x,y) = x^7 + 7x^4y^3+7x^3y^4+y^7.$$
+	(One checks $A_3 = 7$ directly: a weight-$3$ codeword corresponds to a triple of columns of $H$ summing to zero, and each of the $7$ nonzero syndromes $u$ determines such a triple. The remaining counts follow since $C$ contains $1111111$, so $A_i = A_{7-i}$.)
+\end{example}
+
+There is a beautiful and useful relation between the weight enumerator of a code and that of its dual, which comes from Fourier analysis on $\F_2^n$.
+
+\begin{lemma}[Poisson Summation]\label{lem:poisson}
+	Let $C \le \F_2^n$ be linear and let $f\colon \F_2^n \to \R$, with Fourier transform $\hat f(v) = \sum_{u \in \F_2^n}(-1)^{u\cdot v}f(u)$. Then
+	$$\sum_{v \in C}\hat f(v) = \abs{C}\sum_{u \in C^\perp}f(u).$$
+\end{lemma}
+
+\begin{proof}
+	Exchanging the order of summation,
+	$$\sum_{v\in C}\hat f(v) = \sum_{v\in C}\sum_{u}(-1)^{u\cdot v}f(u) = \sum_u f(u)\sum_{v\in C}(-1)^{u\cdot v}.$$
+	The inner sum is $\abs{C}$ if $u \in C^\perp$. Otherwise the map $v \mapsto u\cdot v$ is a surjective linear map $C \to \F_2$, so its kernel has index $2$ in $C$ and the sum is $\tfrac12\abs{C} - \tfrac12\abs{C} = 0$.
+\end{proof}
+
+\begin{theorem}[MacWilliams Identity]
+	For a linear code $C \le \F_2^n$,
+	$$W_{C^\perp}(x,y) = \frac{1}{\abs{C}}\,W_C(x+y,\,x-y).$$
+\end{theorem}
+
+\begin{proof}
+	Apply Lemma~\ref{lem:poisson} to $f(u) = x^{n-\wt(u)}y^{\wt(u)}$, which factorises as $f(u) = \prod_{i=1}^n g(u_i)$ with $g(0)=x$, $g(1)=y$. Then the Fourier transform factorises too:
+	$$\hat f(v) = \sum_{u\in\F_2^n}\prod_{i=1}^n(-1)^{u_iv_i}g(u_i) = \prod_{i=1}^n\Bigl(\sum_{u_i \in \F_2}(-1)^{u_iv_i}g(u_i)\Bigr) = \prod_{i=1}^n\bigl(x+(-1)^{v_i}y\bigr),$$
+	which is $(x+y)^{n-\wt(v)}(x-y)^{\wt(v)}$. Summing over $v \in C$ gives $W_C(x+y,x-y)$ on the left of Lemma~\ref{lem:poisson}, and $\abs{C}\,W_{C^\perp}(x,y)$ on the right.
+\end{proof}
+
+\begin{example}
+	Take $C$ the simple parity check code of length $n$, with $W_C(x,y) = \tfrac12[(x+y)^n+(x-y)^n]$ and $\abs{C}=2^{n-1}$. Then
+	$$W_{C^\perp}(x,y) = \frac{1}{2^{n-1}}\cdot\frac12\bigl[(2x)^n + (2y)^n\bigr] = x^n+y^n,$$
+	which is the weight enumerator of the repetition code. And indeed the dual of the parity check code is the repetition code, as one sees directly.
+\end{example}
+
+\subsection{Reed--Muller Codes}
+
+Our final family of linear codes is built out of the geometry of $\F_2^d$, and includes several codes we have already met. It is the family used by NASA to transmit the Mariner photographs of Mars.
+
+Let $X = \{p_1,\dots,p_n\}$ be a set of size $n$. There is a chain of bijections
+$$\power(X) \xrightarrow{\ A \mapsto \ii_A\ } \{f\colon X \to \F_2\} \xrightarrow{\ f \mapsto (f(p_1),\dots,f(p_n))\ } \F_2^n,$$
+under which the symmetric difference $A \triangle B$ corresponds to vector addition, and the intersection $A \cap B$ corresponds to the \vocab{wedge product}
+$$x \wedge y = (x_1y_1,\dots,x_ny_n).$$
+So we may think of vectors in $\F_2^n$ as subsets of $X$, and we shall pass between the two pictures freely.
+
+Now take $X = \F_2^d$, so that $n = \abs{X} = 2^d$. Let $v_0 = (1,1,\dots,1) = \ii_X$, and for $1 \le i \le d$ let
+$$v_i = \ii_{H_i}, \qquad H_i = \{p \in X : p_i = 0\},$$
+the indicator of the $i$th coordinate hyperplane.
+
+\begin{definition}[Reed--Muller Code]
+	For $0 \le r \le d$, the \vocab{Reed--Muller code} $RM(d,r)$ of \vocab{order} $r$ and length $2^d$ is the linear code spanned by $v_0$ together with all wedge products of at most $r$ of the $v_i$, $1 \le i \le d$. (By convention the empty wedge product is $v_0$.)
+\end{definition}
+
+\begin{example}\label{ex:rm3}
+	Let $d = 3$ and list $X = \F_2^3$ in binary order. Then the spanning vectors are
+	$$\begin{array}{c|cccccccc}
+		X & 000&001&010&011&100&101&110&111\\\hline
+		v_0 & 1&1&1&1&1&1&1&1\\
+		v_1 & 1&1&1&1&0&0&0&0\\
+		v_2 & 1&1&0&0&1&1&0&0\\
+		v_3 & 1&0&1&0&1&0&1&0\\
+		v_1\wedge v_2 & 1&1&0&0&0&0&0&0\\
+		v_1\wedge v_3 & 1&0&1&0&0&0&0&0\\
+		v_2\wedge v_3 & 1&0&0&0&1&0&0&0\\
+		v_1\wedge v_2\wedge v_3 & 1&0&0&0&0&0&0&0
+	\end{array}$$
+	Notice that deleting the first column and the rows $v_0$ and $v_1\wedge v_2 \wedge v_3$ leaves a generator matrix for a $(7,4)$-code, which turns out to be Hamming's original code.
+\end{example}
+
+We can identify the small cases directly. $RM(3,0)$ is spanned by $v_0$ alone, so it is the repetition code of length $8$. $RM(3,1)$ is spanned by $v_0,v_1,v_2,v_3$, and is equivalent to the parity check extension of Hamming's $(7,4)$-code. $RM(3,2)$ is an $(8,7)$-code, equivalent to the simple parity check code of length $8$. And $RM(3,3)$ is the whole of $\F_2^8$.
+
+\begin{theorem}\label{thm:rmrank}
+	\begin{enumerate}[label=(\roman*)]
+		\item The $2^d$ vectors $v_{i_1}\wedge\dots\wedge v_{i_s}$ with $i_1<\dots<i_s$ and $0 \le s \le d$ form a basis of $\F_2^n$, where $n = 2^d$.
+		\item $\rank RM(d,r) = \sum_{s=0}^r \binom ds$.
+	\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+	\emph{(i).} There are $\sum_{s=0}^d\binom ds = 2^d = n$ vectors in the list, so it suffices to show they span, that is, that $RM(d,d) = \F_2^n$. Fix $p \in X$ and set
+	$$y_i = \begin{cases} v_i & \text{if } p_i = 0,\\ v_0+v_i & \text{if } p_i = 1.\end{cases}$$
+	In the set picture $y_i$ is the indicator of $\{q : q_i = p_i\}$, so
+	$$y_1 \wedge \dots \wedge y_d = \ii_{\{p\}}.$$
+	Expanding the left hand side by distributivity of $\wedge$ over $+$ writes $\ii_{\{p\}}$ as a sum of wedge products of the $v_i$, hence $\ii_{\{p\}} \in RM(d,d)$. As $p$ was arbitrary and the $\ii_{\{p\}}$ span $\F_2^n$, we are done.
+
+	\emph{(ii).} $RM(d,r)$ is spanned by those basis vectors with $s \le r$, of which there are $\sum_{s\le r}\binom ds$, and these are linearly independent by (i).
+\end{proof}
+
+To compute the minimum distance we use a construction which is of independent interest.
+
+\begin{definition}[Bar Product]
+	Let $C_2 \subseteq C_1$ be linear codes of length $n$. Their \vocab{bar product} is
+	$$C_1 \mid C_2 = \{(x \mid x+y) : x \in C_1,\ y \in C_2\},$$
+	a linear code of length $2n$.
+\end{definition}
+
+\begin{lemma}\label{lem:barprod}
+	\begin{enumerate}[label=(\roman*)]
+		\item $\rank(C_1\mid C_2) = \rank C_1 + \rank C_2$;
+		\item $d(C_1\mid C_2) = \min\{2\,d(C_1),\ d(C_2)\}$.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	\emph{(i).} If $x_1,\dots,x_k$ is a basis of $C_1$ and $y_1,\dots,y_\ell$ a basis of $C_2$, then
+	$$\{(x_i\mid x_i) : i \le k\}\cup\{(0\mid y_j): j\le\ell\}$$
+	spans $C_1\mid C_2$, and is independent: a vanishing combination must have zero first half, forcing all $x$-coefficients to vanish, and then the $y$-coefficients too.
+
+	\emph{(ii).} Let $(x\mid x+y)$ be a nonzero element. If $y \ne 0$ then, since weight is subadditive and $\wt(u)+\wt(u+v)\ge\wt(v)$,
+	$$\wt(x\mid x+y) = \wt(x)+\wt(x+y)\ge \wt(y)\ge d(C_2).$$
+	If $y = 0$ then $x \ne 0$ and $\wt(x\mid x) = 2\wt(x)\ge 2d(C_1)$. Hence $d(C_1\mid C_2)\ge\min\{2d(C_1),d(C_2)\}$. For the reverse, choose $x\in C_1$ of weight $d(C_1)$ to get a codeword $(x\mid x)$ of weight $2d(C_1)$, and choose $y \in C_2$ of weight $d(C_2)$ to get $(0 \mid y)$ of weight $d(C_2)$.
+\end{proof}
+
+\begin{theorem}\label{thm:rmdist}
+	\begin{enumerate}[label=(\roman*)]
+		\item $RM(d,r) = RM(d-1,r)\mid RM(d-1,r-1)$ for $0 < r< d$;
+		\item $RM(d,r)$ has minimum distance $2^{d-r}$.
+	\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+	\emph{(i).} Order $X = \F_2^d$ so that the points with last coordinate $0$ come first, identifying the two halves with $\F_2^{d-1}$. Under this splitting, the vectors $v_0,v_1,\dots,v_{d-1}$ for $\F_2^d$ become $(w\mid w)$ where $w$ is the corresponding vector for $\F_2^{d-1}$, while $v_d = (\mathbf{1}\mid \mathbf 0)$. A wedge product of at most $r$ of the $v_i$ with $i<d$ therefore has the form $(w\mid w)$ with $w \in RM(d-1,r)$; and a wedge product involving $v_d$ has the form $(w\mid 0)$ with $w \in RM(d-1,r-1)$, since one of its $r$ factors has been used up. As $(w \mid 0) = (w \mid w + w)$, every generator lies in $RM(d-1,r)\mid RM(d-1,r-1)$; and comparing ranks using Theorem~\ref{thm:rmrank}(ii), Lemma~\ref{lem:barprod}(i) and Pascal's rule
+	$$\sum_{s\le r}\binom ds = \sum_{s \le r}\binom{d-1}{s} + \sum_{s\le r-1}\binom{d-1}{s}$$
+	shows the two codes have the same dimension, hence are equal.
+
+	\emph{(ii).} If $r=0$ then $RM(d,0)$ is the repetition code of length $2^d$, of minimum distance $2^d$. If $r=d$ then $RM(d,d) = \F_2^{2^d}$, of minimum distance $1 = 2^{d-d}$. For $0<r<d$ we induct on $d$, using (i) and Lemma~\ref{lem:barprod}(ii):
+	$$d\bigl(RM(d,r)\bigr) = \min\{2\cdot2^{(d-1)-r},\ 2^{(d-1)-(r-1)}\} = \min\{2^{d-r},2^{d-r}\} = 2^{d-r}. \qedhere$$
+\end{proof}
+
+\begin{example}
+	$RM(5,1)$ is a $(32,6)$-code with minimum distance $2^4 = 16$, so it corrects $7$ errors at rate $\frac6{32}$. This is the code used by Mariner 9 in 1971 to send back pictures of Mars: each pixel was one of $64$ grey levels, encoded in $32$ bits, and the channel was extremely noisy.
+\end{example}
+
+\end{document}
