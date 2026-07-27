@@ -9,6 +9,13 @@
 \usepackage{quiver}
 \usepackage{mdsymbol}
 
+\usetikzlibrary{decorations.markings, arrows.meta, calc}
+
+\newcommand{\Mob}{\text{M\"ob}}
+\newcommand{\HH}{\mathbb{H}}
+\DeclareMathOperator{\Isom}{Isom}
+\DeclareMathOperator{\artanh}{artanh}
+
 \title{Geometry}
 \author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
 \date{\today}
@@ -17,9 +24,9 @@
 
 \begin{document}
 
-\maketitle 
+\maketitle
 
-% This is a short description of the course. It should give a little flavour of what the course is about, and what will be roughly covered in the notes.
+Geometry is the study of shapes -- but shapes viewed with an eye towards \emph{measurement}. In this course we will study surfaces: spaces which locally look like the plane, but which globally can be curved, twisted or glued together in interesting ways. We will begin by pinning down what a surface actually is, and then gradually add structure: smoothness, ways of measuring lengths, angles and areas, and finally curvature. Along the way we will meet the three classical two-dimensional geometries -- Euclidean, spherical and hyperbolic -- and the course will culminate in the Gauss--Bonnet theorem, a genuinely remarkable result linking the curvature of a surface to its topology.
 
 This article constitutes my notes for the `Geometry' course, held in Lent 2022 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
 
@@ -41,12 +48,12 @@ We will begin immediately with a definition that will occupy us for some time.
     \end{enumerate}    
 \end{definition}
 
-Recall that a space $X$ is Hausdorff if for $p \neq q$ in $X$ there exists disjoint open sets $p \in U$ and $q \in V$ in $X$, and that a space is second countable it's topology has a countable basis.
-In some ways, the real nature of topological spaces comes from the condition (a), and the condition (b) is really there for technical honesty.
+Recall that a space $X$ is Hausdorff if for $p \neq q$ in $X$ there exist disjoint open sets $p \in U$ and $q \in V$ in $X$, and that a space is second countable if its topology has a countable basis.
+In some ways, the real nature of topological surfaces comes from the condition (i), and the condition (ii) is really there for technical honesty.
 
 \subsection{Examples of Topological Surfaces}
 
-Let's now take some to consider some examples of topological surfaces.
+Let's now take some time to consider some examples of topological surfaces.
 
 \begin{example}[$\R^2$]
     The plane $\R^2$ is a topological surface.
@@ -62,7 +69,8 @@ Let's now take some to consider some examples of topological surfaces.
 
 \begin{example}[Graphs]
     Let $f: \R^2 \rightarrow \R$ be a continuous function. Then the \vocab{graph} 
-    $$\Gamma_f = \{(x, y, f(x, y)) \mid (x, y) \in \R^2\} \subseteq \R^3 \text{ (subspace topology)}.$$
+    $$\Gamma_f = \{(x, y, f(x, y)) \mid (x, y) \in \R^2\} \subseteq \R^3,$$
+    taken with the subspace topology, is a topological surface. Let's see why.
     
     Recall that if $X$ and $Y$ are topological spaces, the product topology on $X \times Y$ has basis open sets $U \times V$ with $U \subseteq X$ and $V \subseteq Y$ both open sets.
 
@@ -78,7 +86,7 @@ As a note, the topological surface $\Gamma_f$ is independent of $f$. Later on as
 \begin{example}[Stereographic Projection]
     Consider the sphere
     $$
-S^2 = \{(x, y, t) \in \R^3 \mid x^2 + y^2 + z^2 =1 \}.
+S^2 = \{(x, y, t) \in \R^3 \mid x^2 + y^2 + t^2 =1 \}.
     $$
 
     We can consider the stereographic projection
@@ -144,7 +152,7 @@ rgb(400bp)=(0.78,0.88,1)}
     $$
     So $\pi_+$ is a continuous bijection with continuous inverse and hence a homeomorphism.
 
-    Of course we could also have projected from the south pole, to get a homeomorphism $\pi_-$ from $S^2 \backslash \{0, 0, -1\}$ to $\R^2$, so indeed every point lies in an open set which is homeomorphic through either $\pi_+$ or $\pi_-$ to $\R^2$. So $S^2$ is a topological surface.
+    Of course we could also have projected from the south pole, to get a homeomorphism $\pi_-$ from $S^2 \backslash \{(0, 0, -1)\}$ to $\R^2$, so indeed every point lies in an open set which is homeomorphic through either $\pi_+$ or $\pi_-$ to $\R^2$. So $S^2$ is a topological surface.
 \end{example}
 
 \begin{remark}
@@ -156,7 +164,7 @@ rgb(400bp)=(0.78,0.88,1)}
     $$
     a(x, y, t) = (-x, -y, -t).
     $$
-    That is, there exists a homeomorphism $\Z/2\Z \rightarrow \operatorname{Homeo}(S^2)$ sending the non-identity element to $a$.
+    That is, there exists a homomorphism $\Z/2\Z \rightarrow \operatorname{Homeo}(S^2)$ sending the non-identity element to $a$.
 
     The \vocab{real projective plane} is the quotient space of $S^2$ given by identifying every point with its antipodal image: $\R \PP^2 = S^2/(\Z/2\Z) = S^2/\sim$ with $x \sim a(x)$.
 
@@ -207,7 +215,7 @@ rgb(400bp)=(0.78,0.88,1)}
 
     We can also check that $\R\PP^2$ is a topological surface. 
     
-    We must first check that it is Hausdorff. Recall that if $X$ is a space and $q: X \rightarrow Y$ is a quotient map, then $V \in Y$ is open if and only if $q^{-1}(V) \in X$ is open.
+    We must first check that it is Hausdorff. Recall that if $X$ is a space and $q: X \rightarrow Y$ is a quotient map, then $V \subseteq Y$ is open if and only if $q^{-1}(V) \subseteq X$ is open.
 
     \begin{center}
         
@@ -264,11 +272,11 @@ rgb(400bp)=(0.78,0.88,1)}
 
     If $[p] \neq [q] \in \R\PP^2$ then $\pm p$ and $\pm q \in S^2$ are distinct antipodal points. We can then take small open discs\footnote{We could take small balls $B_{\pm p}(\delta)$ and $B_{\pm q}(\delta)$ ($\delta \ll$ 1 small), which meet $S^2$ in open sets. If $q: S^2 \rightarrow \R\PP^2$ is the quotient map, then $q(B_{p}(\delta))$ \emph{is} open since $q^{-1}(q(B_{p}(\delta))) = B_{p}(\delta) \cup (-B_{p}(\delta))$, the union with the antipodal image.} about these in $S^2$ as in the picture, which give us disjoint open neighborhoods of $[p]$ or $[q]$ in $\R \PP^2$. That is, it's Hausdorff.
 
-    We can also check that $\R\PP^2$ is second countable. We know that $U$ be a countable basis for the topology on $S^2$, and without loss of generality for all $u \in U$, the antipodal image is in $U$.
-    Let $\overline{U}$ be the family of opens ets in $\R\PP^2$ of the form $q(u) \cup q(-u), u \in U$.
+    We can also check that $\R\PP^2$ is second countable. Let $U$ be a countable basis for the topology on $S^2$, and without loss of generality for all $u \in U$, the antipodal image is in $U$.
+    Let $\overline{U}$ be the family of open sets in $\R\PP^2$ of the form $q(u) \cup q(-u), u \in U$.
     Now if $V \subseteq \R\PP^2$ is open, by definition $q^{-1}(V)$ is open in $S^2$, and so $q^{-1}(V)$ contains some $u \in U$ and hence contains $u \cup (-u)$. So $\overline{U}$ is a countable base for the quotient topology on $\R\PP^2$.
 
-    Finally, let $p \in S^2$ and let $[p] \in \R\PP^2$ be it's image.
+    Finally, let $p \in S^2$ and let $[p] \in \R\PP^2$ be its image.
     Let $\overline{D}$ be a small\footnote{Contained in an open hemisphere} closed disc neighborhood of $p \in S^2$.
 
     \begin{center}
@@ -309,12 +317,12 @@ rgb(400bp)=(0.78,0.88,1)}
 
     Then the quotient map $q|_{\overline{D}} : \overline{D} \rightarrow q(\overline{D}) \subseteq \R \PP^2$ is a continuous map from a compact space to a Hausdorff space.
     Also, on $\overline{D}$ the map $q$ is injective.
-So by the topological inverse function theorem, this map $q|_{\overline{D}}$ is a homeomorphism. This induces (by taking interiors) a homeomorphism $q|_{D}: D \rightarrow q(D) \in \R\PP^2$. So $[p] \in q(D)$ has an open neighborhood in $\R\PP^2$ homeomorphic to an open disk, and we are done.
+So by the topological inverse function theorem, this map $q|_{\overline{D}}$ is a homeomorphism. This induces (by taking interiors) a homeomorphism $q|_{D}: D \rightarrow q(D) \subseteq \R\PP^2$. So $[p] \in q(D)$ has an open neighborhood in $\R\PP^2$ homeomorphic to an open disk, and we are done.
 
 \end{example}
 
 \begin{example}[Torus]
-    Let $S^1 = \{z \in \C \mid |z| = 1\}$, and define the \vocab{torus} $S_1 \times S_1$ with the subspace topology from $\C^2$ (which is the product topology). We will show that the torus is a topological surface.
+    Let $S^1 = \{z \in \C \mid |z| = 1\}$, and define the \vocab{torus} $S^1 \times S^1$ with the subspace topology from $\C^2$ (which is the product topology). We will show that the torus is a topological surface.
 
     Consider the map
     \begin{align*}
@@ -334,11 +342,11 @@ So by the topological inverse function theorem, this map $q|_{\overline{D}}$ is 
             \arrow["{\hat{e}}", from=3-1, to=1-3]
         \end{tikzcd}
     \end{center}
-    that is, on the equivalence relation on $\R^2$ given by translating by $\pi^2$, $e$ is constant on equivalence classes and so induces a map of sets $\R^2/\Z^2 \rightarrow S^1 \times S^1$. Note we viewing $\R^2/\Z^2$ as the quotient space for $q: \R^2 \rightarrow \R^2/\Z^2$.
+    that is, on the equivalence relation on $\R^2$ given by translating by $\Z^2$, $e$ is constant on equivalence classes and so induces a map of sets $\R^2/\Z^2 \rightarrow S^1 \times S^1$. Note we are viewing $\R^2/\Z^2$ as the quotient space for $q: \R^2 \rightarrow \R^2/\Z^2$.
 
     So the map $[0, 1]^2 \hookrightarrow \R^2 \xrightarrow{q} \R^2/\Z^2$ is onto, \emph{so} $\R^2/\Z^2$ is compact. So $\hat{e}$ is a continuous map from a compact space to a Hausdorff space and is a bijection, and is thus a homeomorphism by the topological inverse function theorem.
 
-    Note we already know that $S^1 \times S^1$ is compact and Hausdorff (closed and bounded in $\R^4$). As for $S^2 \rightarrow \R\PP^2$, pick $[p] = q(p)$ for $p \in \R^2$ and some small closed disc $\overline{D}(p) \subseteq \R^2$ such that for all non-zero integers $n, m$ we have $\overline{D}(p) \cap (\overline{D}(p) + (n, m)) = \emptyset$.
+    Note we already know that $S^1 \times S^1$ is compact and Hausdorff (closed and bounded in $\R^4$). As for $S^2 \rightarrow \R\PP^2$, pick $[p] = q(p)$ for $p \in \R^2$ and some small closed disc $\overline{D}(p) \subseteq \R^2$ such that for all integers $(n, m) \neq (0,0)$ we have $\overline{D}(p) \cap (\overline{D}(p) + (n, m)) = \emptyset$.
     Then $e|_{\overline{D}(p)}$ is injective and $q|_{\overline{D}(p)}$ is injective.
     Now restricting to the open disc as before, we get an open disc neighborhood of $[p] \in S^1 \times S^1$.
     Since $[p]$ is arbitrary, $S^1 \times S^1$ is a topological surface.
@@ -375,7 +383,7 @@ So by the topological inverse function theorem, this map $q|_{\overline{D}}$ is 
 \end{example}
 
 \begin{example}[Gluing Edges]
-    Let $P$ be a planar Euclidean polygon. We will assume the edges are \emph{oriented} and paired. For simplicity, we can suppose the Euclidean length of $e$ and $e'$ if $\{e, e'\}$ are paired.
+    Let $P$ be a planar Euclidean polygon. We will assume the edges are \emph{oriented} and paired. For simplicity, we can suppose that $e$ and $e'$ have the same Euclidean length whenever $\{e, e'\}$ are paired.
     
     \begin{center}
         
@@ -470,7 +478,7 @@ So by the topological inverse function theorem, this map $q|_{\overline{D}}$ is 
         
             \end{center}
 
-    If $P = [0, 1]$ and $p$ is in the interior of $P$, then picking $\delta > 0$ sufficiently small so that $B_p(\delta)$ and $\overline{B_p(\delta)}$ in $\R^2$ lie in the interior of $P$. Now we argue as before: the quotient map is injective on $\overline{B_p(\delta)}$ and a homoemorphism on its interior.
+    If $P = [0, 1]^2$ and $p$ is in the interior of $P$, then we can pick $\delta > 0$ sufficiently small so that $B_p(\delta)$ and $\overline{B_p(\delta)}$ in $\R^2$ lie in the interior of $P$. Now we argue as before: the quotient map is injective on $\overline{B_p(\delta)}$ and a homeomorphism on its interior.
     If $p$ is on an edge of $P$, then we take two half disks of sufficiently small radius $\delta$ so that they don't meet a vertex of $P$.
 
     \begin{center}
@@ -543,7 +551,7 @@ Then we can define a map $f$ from the union of these half disks to the disk of t
 
 Explicitly, we define $f_U$ and $f_V$ such that they are continuous on the half disks $U, V \in [0, 1]^2$. These induce a continuous map on $q(U)$ and $q(V) \subseteq T^2$, ($q: [0, 1]^2 \rightarrow [0, 1]^2/\sim = T^2$). In $T^2$, the half disks $q(U)$ and $q(V)$ overlap \emph{but} overlaps agree on the closed intersection locus (as $f_U$ and $f_V$ are compatible with the equivalence relation). So $f_U$ and $f_V$ glue to define a continuous map $f$ on an open neighborhood $[p] \in T^2$ to $B_0(\delta) \subseteq \R^2$.
 
-Now we can apply our `usual argument' (pass toa closed disk, apply the topological inverse function theorem, pass back to the interior) to show that if $[q] \in R^2$ lies on the image of an edge of $[0, 1]^2$, it has an open neighborhood homeomorphic to a disk.
+Now we can apply our `usual argument' (pass to a closed disk, apply the topological inverse function theorem, pass back to the interior) to show that if $[q] \in T^2$ lies on the image of an edge of $[0, 1]^2$, it has an open neighborhood homeomorphic to a disk.
 
 Analogously, at a vertex of $[0, 1]^2$, the same argument with a slight modification works.
 \begin{center}
@@ -608,16 +616,16 @@ Analogously, at a vertex of $[0, 1]^2$, the same argument with a slight modifica
 \end{center}
 
 
-This shows that $[0, 1]^n / \sim$ is a topological surface.
+This shows that $[0, 1]^2 / \sim$ is a topological surface.
 
 \textbf{For a general planar polygon $P$}. We will now see how to address the general case.
-We again are trying to show that each point has an open neighborhood that is homeomorphic to a disk. For interior points, a suitably sizes disk (so that it does not intersect with edges or vertices).
+We again are trying to show that each point has an open neighborhood that is homeomorphic to a disk. For interior points, a suitably sized disk (chosen so that it does not intersect any edges or vertices) works exactly as before.
 
 Now we have our equivalence relation on points in the polygon $x \sim f_{ee'}(x)$ where $x \in e \in \operatorname{Edge}(P)$ and $e, e'$ are paired with $f: e \rightarrow e'$ compatible with orientation. This relation induces an equivalence relation on $\operatorname{Vert}(P)$.
 
-If $v \in \operatorname{Vert}(p)$ has $r$ vertices in it's equivalence class, there exists $r$ sections in $P$ of total angle $\alpha_v$. Any sector can be identified with our favorite sector $(r, \theta) \in \R^2$ with $0 \leq r < \delta$ and $\theta \in [0, \alpha_v/r]$, which is homeomorphic to a disk.
+If $v \in \operatorname{Vert}(P)$ has $r$ vertices in its equivalence class, then these contribute $r$ sectors in $P$, of total angle $\alpha_v$ say. Rescaling angles by a factor of $2\pi/\alpha_v$, these sectors can be glued around the image of $v$ to give a full sector $\{(\rho, \theta) \mid 0 \leq \rho < \delta,\ \theta \in [0, 2\pi]\}$, which is homeomorphic to a disk.
 
-To see that $P/\sim$ is Hausdorff, we can take disks on the interior with a sufficiently small radius and distinct points will have disjoint disks. For second countable, consider disks on the interior of $P$ with radional radii and center, and if $e \in \operatorname{Edge}(P)$ then $e \mapsto [0, \operatorname{length}(e)]$ is an isometry, so take only half disks on $e$ which are centered at radional radii. And at vertices, allow rational radius sectors. This gives a countable basis.
+To see that $P/\sim$ is Hausdorff, we can take disks on the interior with a sufficiently small radius and distinct points will have disjoint disks. For second countable, consider disks on the interior of $P$ with rational radii and centre, and if $e \in \operatorname{Edge}(P)$ then $e \mapsto [0, \operatorname{length}(e)]$ is an isometry, so take only half disks on $e$ which are centred at rational points, with rational radii. And at vertices, allow rational radius sectors. This gives a countable basis.
 
 
 \end{example}
@@ -685,9 +693,9 @@ To see that $P/\sim$ is Hausdorff, we can take disks on the interior with a suff
 
 Explicitly, I take $\Sigma_1 \backslash D_1$ and $\Sigma_2 \backslash D_2$ and impose an equivalence relation
 $$
-\theta \in D_1 \sim \theta \in D_2,
+\theta \in \partial D_1 \sim \theta \in \partial D_2,
 $$
-where $\theta$ parameterises $S_1 = \delta D_i$.
+where $\theta$ parameterises the boundary circles $S^1 \cong \partial D_i$.
 
 The result $\Sigma_1 \# \Sigma_2$ is the \vocab{connect sum} of $\Sigma_1$ and $\Sigma_2$. Note that in principle this connect sum depends on a number of choices, but we suppress this from the notation.
 
@@ -992,7 +1000,7 @@ Recall that if $V$ and $V'$ are open subsets of $\R^n$, then a map $f: V \righta
 \end{example}
 
 \begin{remark}[Philosophical]
-    Being a topological surface is \emph{structure}, one can ask if a topological space $X$ is a topological surface or not. But being an abstract smooth surface is \emph{data}, in that one has to be given an atlas of charts with smooth transition maths with smooth inverses, and there could be many.
+    Being a topological surface is \emph{structure}, one can ask if a topological space $X$ is a topological surface or not. But being an abstract smooth surface is \emph{data}, in that one has to be given an atlas of charts with smooth transition maps with smooth inverses, and there could be many.
 \end{remark}
 
 \begin{definition}[Smooth at a Point]
@@ -1006,7 +1014,7 @@ Note that smoothness of $f$ at $p$ is \emph{independent} of the choice of chart 
     \circ f \circ \phi^{-1}$ to be smooth at $\phi(p)$.
 \end{definition}
 
-Again, smoothness of $f$ does not depend on our choice of charts at $p$ and $f(p)$ provided I take charts from our smooth atlas..
+Again, smoothness of $f$ does not depend on our choice of charts at $p$ and $f(p)$ provided we take charts from our smooth atlas.
 
 We can now say what it means for abstract smooth surfaces to be diffeomorphic.
 
@@ -1015,10 +1023,12 @@ We can now say what it means for abstract smooth surfaces to be diffeomorphic.
 \end{definition}
 
 \begin{remark}
-    We often pass from a given smooth atlas for an abstract smooth surfaces $\Sigma$ to the maximal `compatible' such atlas, that is, I add to the atlas $\{(U_i, \phi_i) \mid i \in I\}$ for $\Sigma$ \emph{all} charts $(V, \psi)$ with the property that the transition maps are  still all diffeomorphisms. Such a process technically involved Zorn's lemma.
+    We often pass from a given smooth atlas for an abstract smooth surfaces $\Sigma$ to the maximal `compatible' such atlas, that is, I add to the atlas $\{(U_i, \phi_i) \mid i \in I\}$ for $\Sigma$ \emph{all} charts $(V, \psi)$ with the property that the transition maps are  still all diffeomorphisms. Such a process technically involves Zorn's lemma.
 \end{remark}
 
-So far, this has all been rather abstract, but in this course what we really care about is smooth surfaces in $\R^3$. Recall if $V \subseteq \R^n$ and $V' \subseteq \R^m$ are open subsets then $f: V \rightarrow V'$ is smooth if it is infinitely differentiable.
+\section{Smooth Surfaces in $\R^3$}
+
+So far, this has all been rather abstract, but in this course what we really care about is smooth surfaces in $\R^3$, where we can do honest calculus. Recall if $V \subseteq \R^n$ and $V' \subseteq \R^m$ are open subsets then $f: V \rightarrow V'$ is smooth if it is infinitely differentiable.
 
 \begin{definition}[Smoothness of Maps on Subsets of $\R^n$]
     If $Z \subseteq \R^n$ is an arbitrary subset, we say that a continuous map $f: Z \rightarrow \R^m$ is \vocab{smooth} at a point $p \in Z$ if there exists an open set $B \in \R^n$ with $p \in B$ and a smooth map $F: B \rightarrow \R^m$ such that
@@ -1028,4 +1038,2054 @@ So far, this has all been rather abstract, but in this course what we really car
     That is, $f$ is \emph{locally} the restriction of a smooth map defined on an open set.
 \end{definition}
 
+
+With this notion in hand, it makes sense to talk about subsets of Euclidean spaces being diffeomorphic.
+
+\begin{definition}[Diffeomorphic Subsets]
+    If $X \subseteq \R^n$ and $Y \subseteq \R^m$ are arbitrary subsets, we say that $X$ and $Y$ are \vocab{diffeomorphic} if there is a homeomorphism $f: X \rightarrow Y$ such that both $f$ and $f^{-1}$ are smooth.
+\end{definition}
+
+\subsection{Definitions and Equivalent Characterisations}
+
+We can now say what it means for a subset of $\R^3$ to be a smooth surface.
+
+\begin{definition}[Smooth Surface in $\R^3$]
+    A \vocab{smooth surface in $\R^3$} is a subset $\Sigma \subseteq \R^3$ such that each point $p \in \Sigma$ has an open neighbourhood $U \subseteq \Sigma$ which is diffeomorphic to an open set in $\R^2$.
+\end{definition}
+
+Unpacking the definitions, this says: for each $p \in \Sigma$ there is an open ball $p \in B \subseteq \R^3$ and an open set $V \subseteq \R^2$ such that, setting $U = B \cap \Sigma$, there is a homeomorphism $\phi: U \rightarrow V$ which is smooth (in the sense of the previous definition), and whose inverse $V \rightarrow U \subseteq \R^3$ is also smooth.
+
+There are several other ways one might have tried to define a smooth surface in $\R^3$ -- as a level set of a smooth function, as a graph, or via nice parametrisations -- and thankfully they all agree. Before stating this, we single out the parametrisations that will do most of the work in this course.
+
+\begin{definition}[Allowable Parametrisation]
+    Let $V \subseteq \R^2$ be open and let $U \subseteq \Sigma \subseteq \R^3$ be open in $\Sigma$. A map $\sigma: V \rightarrow U$ is an \vocab{allowable parametrisation} if $\sigma$ is a homeomorphism, is smooth as a map $V \rightarrow \R^3$, and $\left.D\sigma\right|_x$ has rank $2$ for every $x \in V$.
+    If moreover $\sigma(0) = p$, we say $\sigma$ is an allowable parametrisation \emph{near} $p$.
+\end{definition}
+
+The rank condition is what stops the parametrisation from degenerating -- it guarantees that the two partial derivatives $\sigma_u$ and $\sigma_v$ are linearly independent, so the image genuinely looks two-dimensional.
+
+\begin{theorem}[Characterisations of Smooth Surfaces]\label{thm:smoothsurfacechar}
+    For a subset $\Sigma \subseteq \R^3$, the following are equivalent.
+    \begin{enumerate}[label=(\roman*)]
+        \item $\Sigma$ is a smooth surface in $\R^3$.
+        \item $\Sigma$ is \emph{locally a graph} over one of the three coordinate planes: for each $p \in \Sigma$ there is an open ball $p \in B \subseteq \R^3$ and an open set $V \subseteq \R^2$ such that
+        $$
+        \Sigma \cap B = \{(x, y, g(x, y)) \mid (x,y) \in V\}
+        $$
+        for some smooth $g : V \rightarrow \R$, or the same with the roles of the coordinates permuted.
+        \item $\Sigma$ is \emph{locally cut out} by a smooth function: for each $p \in \Sigma$ there is an open ball $p \in B \subseteq \R^3$ and a smooth $f: B \rightarrow \R$ such that
+        $$
+        \Sigma \cap B = f^{-1}(0), \quad \text{with } \left.Df\right|_x \neq 0 \text{ for all } x \in B.
+        $$
+        \item $\Sigma$ is locally the image of an allowable parametrisation near each of its points.
+    \end{enumerate}
+\end{theorem}
+
+\begin{remark}
+    Characterisation (ii) implies that every $p \in \Sigma$ lies in a chart $(U, \phi)$ where $\phi$ is the restriction of one of the coordinate projections $\pi_{xy}, \pi_{yz}, \pi_{xz}: \R^3 \rightarrow \R^2$. The transition map between two graphical charts over the \emph{same} plane is the identity, and between charts over different planes it looks like
+    $$
+    (x, y) \mapsto (x, y, g(x,y)) \mapsto (y, g(x, y)),
+    $$
+    which is smooth with smooth inverse of the same shape. So a smooth surface in $\R^3$ carries a natural atlas whose transition maps are diffeomorphisms -- that is, it is an abstract smooth surface, and the two uses of the word `smooth' are consistent.
+\end{remark}
+
+Some of the implications in this theorem are easy, but the substantial ones rest on the inverse function theorem, which we now recall (a proof is given in Analysis and Topology).
+
+\subsection{The Inverse and Implicit Function Theorems}
+
+\begin{theorem}[Inverse Function Theorem]
+    Let $U \subseteq \R^n$ be open and $f: U \rightarrow \R^n$ be continuously differentiable. Let $p \in U$, $q = f(p)$, and suppose the derivative $\left.Df\right|_p$ is invertible. Then there exists an open neighbourhood $V$ of $q$ and a continuously differentiable map $g: V \rightarrow \R^n$ with $g(q) = p$, whose image is an open neighbourhood $U' \subseteq U$ of $p$, such that $f \circ g = \operatorname{Id}_V$. Moreover if $f$ is smooth then so is $g$.
+\end{theorem}
+
+By the chain rule, the inverse satisfies $\left.Dg\right|_q = (\left.Df\right|_p)^{-1}$.
+The inverse function theorem deals with maps $\R^n \rightarrow \R^n$ whose derivative is an isomorphism. If instead we have $f : \R^{k + \ell} \rightarrow \R^\ell$ whose derivative is \emph{surjective}, we can say something about the level sets of $f$ -- this is the implicit function theorem.
+
+\begin{theorem}[Implicit Function Theorem]
+    Let $p = (x_0, y_0) \in U$ where $U \subseteq \R^k \times \R^\ell$ is open, and let $f: U \rightarrow \R^\ell$ be continuously differentiable with $f(p) = 0$, such that the $\ell \times \ell$ matrix of partial derivatives $\left(\partial f_i/\partial y_j\right)$ is invertible at $p$. Then there is an open neighbourhood $V$ of $x_0$ in $\R^k$ and a continuously differentiable map $g: V \rightarrow \R^\ell$ with $g(x_0) = y_0$ such that, for $(x, y) \in U$ sufficiently close to $p$,
+    $$
+    f(x, y) = 0 \iff y = g(x).
+    $$
+    Moreover if $f$ is smooth then so is $g$.
+\end{theorem}
+\begin{proof}
+    Define $F: U \rightarrow \R^k \times \R^\ell$ by $F(x, y) = (x, f(x, y))$. Then in block form
+    $$
+    DF = \begin{pmatrix}
+        I & 0 \\ * & \partial f_i/\partial y_j
+    \end{pmatrix},
+    $$
+    which is invertible at $(x_0, y_0)$. So by the inverse function theorem, $F$ is locally invertible near $F(x_0, y_0) = (x_0, 0)$; let $G: V \times V' \rightarrow U' \subseteq U$ be a continuously differentiable local inverse, defined on a product of open sets. Writing $G(x, y) = (\varphi(x, y), \psi(x, y))$, the relation $F \circ G = \operatorname{Id}$ gives
+    $$
+    (\varphi(x, y), f(\varphi(x,y), \psi(x, y))) = (x, y),
+    $$
+    so $\varphi(x, y) = x$ and $f(x, \psi(x, y)) = y$ for $(x, y) \in V \times V'$.
+    In particular $f(x, y) = 0$ exactly when $y = \psi(x, 0)$, so we may take $g(x) = \psi(x, 0)$.
+\end{proof}
+
+\begin{example}[Level Sets in $\R^3$]
+    Let $f: \R^3 \rightarrow \R$ be smooth with $f(x_0, y_0, z_0) = 0$, and consider the level set $\Sigma = f^{-1}(0)$. Suppose $Df \neq 0$ at $(x_0, y_0, z_0)$; permuting coordinates, we may assume $\partial f/\partial z \neq 0$ there. The implicit function theorem (with $k = 2$, $\ell = 1$) then provides an open neighbourhood $V$ of $(x_0, y_0)$ and a smooth $g: V \rightarrow \R$ such that near $(x_0, y_0, z_0)$, the level set $\Sigma$ is exactly the graph $\{(x, y, g(x, y)) \mid (x, y) \in V\}$. In other words -- near a point where its defining function has non-vanishing derivative, a level set is locally a graph.
+\end{example}
+
+\subsection{Proof of the Characterisation Theorem}
+
+We can now assemble the proof of Theorem \ref{thm:smoothsurfacechar}.
+
+\begin{proof}[Proof of Theorem \ref{thm:smoothsurfacechar}]
+    We first show that (ii) implies all of the other conditions. Suppose $\Sigma$ is locally the graph $\{(x, y, g(x, y))\}$ over (say) the $xy$-plane. Then the coordinate projection $\pi_{xy}$ restricts to a homeomorphism from this graph to $V$, it is defined and smooth on an open neighbourhood in $\R^3$, and its inverse $\sigma(x, y) = (x, y, g(x, y))$ is smooth. So $\Sigma$ is a smooth surface in $\R^3$, giving (i). Also, the graph is cut out by the function $f(x, y, z) = z - g(x, y)$, which has $\partial f/\partial z = 1 \neq 0$, giving (iii). Finally $\sigma(x, y) = (x, y, g(x,y))$ is an allowable parametrisation: it is a smooth homeomorphism, and its derivative contains the $2 \times 2$ identity block in the first two rows, so has rank $2$. This gives (iv).
+
+    Next, (i) implies (iv): if $\phi: U \rightarrow V$ is a diffeomorphism as in the definition of a smooth surface, then near a given point, $\phi^{-1}$ extends implicitly to a smooth map on an open subset of $\R^2$, and (shrinking if necessary) $\sigma = \phi^{-1}$ is a smooth homeomorphism. Its derivative has rank 2: writing $F$ for a local smooth extension of $\phi$ to an open set $B \subseteq \R^3$, we have $F \circ \sigma = \operatorname{Id}$ near a point of $V$, so by the chain rule $\left.DF\right|_p \circ \left.D\sigma\right|_x = I_2$, which forces $\left.D\sigma\right|_x$ to be injective, i.e.\ of rank 2. So $\sigma$ is allowable.
+
+    That (iii) implies (ii) is exactly the level set example of the implicit function theorem above.
+
+    Finally we show (iv) implies (ii) and (i), which completes the cycle. Let $\sigma: V \rightarrow U$ be an allowable parametrisation with $\sigma(0) = p$, and write $\sigma = (\sigma_1, \sigma_2, \sigma_3)$, so
+    $$
+    D \sigma = \begin{pmatrix}
+        \partial \sigma_1/\partial u & \partial \sigma_1/\partial v \\
+        \partial \sigma_2/\partial u & \partial \sigma_2/\partial v \\
+        \partial \sigma_3/\partial u & \partial \sigma_3/\partial v
+    \end{pmatrix}.
+    $$
+    This matrix has rank 2, so some two rows form an invertible $2 \times 2$ matrix -- without loss of generality the first two rows. Let $\operatorname{pr} = \pi_{xy}$, and consider $\operatorname{pr} \circ \sigma: V \rightarrow \R^2$. Its derivative at $0$ is an isomorphism, so by the inverse function theorem it has a smooth local inverse, and hence $\Sigma$ is locally the graph of the smooth function $\sigma_3 \circ (\operatorname{pr} \circ \sigma)^{-1}$ over the $xy$-plane. This gives (ii). For (i), the map $(x, y, z) \mapsto (\operatorname{pr} \circ \sigma)^{-1}(x, y)$ is defined and smooth on an open ball about $p$ in $\R^3$, and restricts on $\Sigma$ to a local inverse of $\sigma$. So $\sigma^{-1}$ is smooth, and $\Sigma$ is a smooth surface in $\R^3$.
+\end{proof}
+
+Let's see some examples.
+
+\begin{example}[The Sphere]
+    The unit sphere $S^2 \subseteq \R^3$ is $f^{-1}(0)$ for $f(x, y, z) = x^2 + y^2 + z^2 - 1$. At any point of $S^2$ we have $Df = (2x, 2y, 2z) \neq 0$, so $S^2$ is a smooth surface in $\R^3$ by criterion (iii).
+\end{example}
+
+\begin{example}[Surfaces of Revolution]
+    Let $\gamma: (a, b) \rightarrow \R^3$ be a smooth injective curve in the $xz$-plane, say
+    $$
+    \gamma(t) = (f(t), 0, g(t)), \quad \text{with } f > 0 \text{ and } \gamma' \neq 0 \text{ everywhere}.
+    $$
+    The \vocab{surface of revolution} obtained by rotating $\gamma$ about the $z$-axis is covered by parametrisations
+    $$
+    \sigma(u, v) = (f(u) \cos v, f(u) \sin v, g(u)),
+    $$
+    with $(u, v) \in (a, b) \times (\theta, \theta + 2\pi)$ for fixed $\theta$. Here
+    $$
+    \sigma_u = (f' \cos v, f' \sin v, g'), \quad \sigma_v = (-f \sin v, f \cos v, 0),
+    $$
+    and one computes $\|\sigma_u \times \sigma_v\|^2 = f^2 ((f')^2 + (g')^2) \neq 0$, so these are allowable parametrisations and the surface of revolution is a smooth surface in $\R^3$.
+\end{example}
+
+\begin{example}[$\OO(3)$ Acting on $S^2$]
+    The orthogonal group $\OO(3)$ acts on $S^2$ by diffeomorphisms: any $A \in \OO(3)$ defines a linear (hence smooth) map $\R^3 \rightarrow \R^3$ preserving $S^2$, whose restriction to $S^2$ is a homeomorphism that is smooth with smooth inverse in the sense above. This is analogous to the action of the M\"obius group on $\C \cup \{\infty\} \cong S^2$, which we shall meet again when we study hyperbolic geometry.
+\end{example}
+
+\subsection{Orientability}
+
+There is one more piece of global structure we should discuss before we start measuring things: \emph{orientation}. Intuitively, an orientation of a surface is a consistent choice of what `anticlockwise' means at each point, and the M\"obius band shows this is not always possible.
+
+\begin{definition}[Orientation-Preserving]
+    Let $V, V'$ be open sets in $\R^2$ and $f: V \rightarrow V'$ a diffeomorphism, so $\left.Df\right|_x \in \GL(2, \R)$ for every $x \in V$. We say $f$ is \vocab{orientation-preserving} if $\det \left.Df\right|_x > 0$ for all $x \in V$.
+\end{definition}
+
+\begin{definition}[Orientable]
+    An abstract smooth surface $\Sigma$ is \vocab{orientable} if it admits an atlas in which all transition maps are orientation-preserving. A choice of such an atlas is an \vocab{orientation} of $\Sigma$, and $\Sigma$ equipped with an orientation is \vocab{oriented}.
+\end{definition}
+
+Orientability behaves well under diffeomorphism, as one would hope.
+
+\begin{lemma}
+    If $\Sigma_1$ and $\Sigma_2$ are diffeomorphic abstract smooth surfaces, then $\Sigma_1$ is orientable if and only if $\Sigma_2$ is orientable.
+\end{lemma}
+\begin{proof}
+    Let $f: \Sigma_1 \rightarrow \Sigma_2$ be a diffeomorphism and suppose $\Sigma_2$ is equipped with an oriented atlas. Consider the atlas on $\Sigma_1$ whose charts are $(f^{-1}(U), \psi \circ f)$ for charts $(U, \psi)$ in the oriented atlas of $\Sigma_2$. The transition map between two such charts,
+    $$
+    (\psi_1 \circ f) \circ (\psi_2 \circ f)^{-1} = \psi_1 \circ \psi_2^{-1},
+    $$
+    is exactly a transition map of the oriented atlas on $\Sigma_2$, so is orientation-preserving. Hence $\Sigma_1$ is orientable, and the claim follows by symmetry.
+\end{proof}
+
+\begin{example}[The M\"obius Band]
+    The \vocab{M\"obius band} is the surface obtained from the square by gluing a pair of opposite open edges with a flip:
+    \begin{center}
+        \begin{tikzpicture}
+            \draw[dash pattern={on 2pt off 2pt}] (0,0) -- (3.2,0);
+            \draw[dash pattern={on 2pt off 2pt}] (0,2) -- (3.2,2);
+            \draw[postaction={decorate},decoration={markings, mark=at position 0.55 with {\arrow{Stealth}}}] (0,0) -- (0,2);
+            \draw[postaction={decorate},decoration={markings, mark=at position 0.55 with {\arrow{Stealth}}}] (3.2,2) -- (3.2,0);
+            \node at (-0.35,1) {$e$};
+            \node at (3.55,1) {$e$};
+        \end{tikzpicture}
+    \end{center}
+    where the dashed edges are omitted (so this is a surface without boundary). One can check that the M\"obius band is \emph{not} orientable, and in fact a surface is orientable if and only if it contains no open subsurface homeomorphic to the M\"obius band. This gives a way of extending the notion of orientability to topological surfaces, where the definition through determinants of derivatives makes no sense.
+\end{example}
+
+\begin{example}[$S^2$ and $T^2$ are Orientable]
+    For $S^2$ with the atlas of two stereographic projections, the transition map works out to be
+    $$
+    (u, v) \mapsto \left(\frac{u}{u^2 + v^2}, \frac{v}{u^2 + v^2}\right)
+    $$
+    on $\R^2 \backslash \{0\}$, which does not have positive determinant everywhere (it is a reflection composed with an inversion). But replacing $\pi_-$ by its composite with the reflection $(u,v) \mapsto (u, -v)$ fixes this, and the resulting atlas is oriented. So $S^2$ is orientable.
+    For the torus $T^2 = \R^2/\Z^2$, we found an atlas whose transition maps are restrictions of translations of $\R^2$, and translations certainly have positive determinant. So $T^2$ is orientable.
+\end{example}
+
+\begin{remark}
+    One can define other classes of surfaces by restricting which subgroup of $\GL(2, \R)$ the derivatives of transition maps may lie in. Asking for derivatives in $\GL^+(2, \R)$ gives oriented surfaces; asking for transition maps that are restrictions of translations gives \emph{Euclidean} surfaces (like the torus above); asking for derivatives in $\GL(1, \C) \subseteq \GL(2, \R)$ gives \emph{Riemann surfaces}.
+\end{remark}
+
+\subsection{Tangent Planes}
+
+If a smooth surface is the collection of points that locally looks like a plane, its tangent plane at $p$ is the best flat approximation at $p$.
+
+\begin{definition}[Tangent Plane]
+    Let $\Sigma$ be a smooth surface in $\R^3$, $p \in \Sigma$, and let $\sigma: V \rightarrow U$ be an allowable parametrisation near $p$ (so $\sigma(0) = p$). The \vocab{tangent plane} is
+    $$
+    T_p \Sigma = \operatorname{Image}\left(\left.D\sigma\right|_0\right) = \langle \sigma_u, \sigma_v \rangle \subseteq \R^3,
+    $$
+    a two-dimensional vector subspace of $\R^3$. The \vocab{affine tangent plane} at $p$ is the translate $p + T_p \Sigma$.
+    \begin{center}
+        \begin{tikzpicture}[scale=1.05]
+            % surface patch
+            \draw (0,0.4) .. controls (1.2,-0.25) and (2.8,-0.25) .. (4,0.5)
+                  .. controls (4.35,1.3) and (4.25,2.0) .. (3.7,2.6)
+                  .. controls (2.6,3.15) and (1.2,3.15) .. (0.4,2.5)
+                  .. controls (-0.1,1.9) and (-0.25,1.0) .. cycle;
+            \node at (0.55,0.62) {$\Sigma$};
+            % tangent plane parallelogram
+            \draw[color={rgb,255:red,74;green,144;blue,226}] (0.7,1.0) -- (2.9,1.15) -- (3.5,2.15) -- (1.3,2.0) -- cycle;
+            % point p
+            \fill (2,1.5) circle (1.5pt);
+            \node[below] at (2.12,1.48) {$p$};
+            % normal
+            \draw[->, thick] (2,1.5) -- (2,2.95);
+            \node[right] at (2,2.8) {$n$};
+        \end{tikzpicture}
+    \end{center}
+\end{definition}
+
+Of course, we should check that this does not depend on which allowable parametrisation we picked.
+
+\begin{lemma}
+    $T_p \Sigma$ is independent of the choice of allowable parametrisation.
+\end{lemma}
+\begin{proof}
+    Suppose $\sigma: V \rightarrow U$ and $\tilde{\sigma}: \tilde{V} \rightarrow \tilde{U}$ are allowable parametrisations with $\sigma(0) = \tilde{\sigma}(0) = p$. The transition map $\sigma^{-1} \circ \tilde{\sigma}$ is a diffeomorphism of open sets of $\R^2$ (shrinking domains so both parametrise the same neighbourhood), and
+    $$
+    \tilde{\sigma} = \sigma \circ (\sigma^{-1} \circ \tilde{\sigma}).
+    $$
+    Applying the chain rule at $0$, $\left.D\tilde{\sigma}\right|_0 = \left.D\sigma\right|_0 \circ \left.D(\sigma^{-1} \circ \tilde{\sigma})\right|_0$, and the second factor is an isomorphism of $\R^2$. So the images of $\left.D\tilde{\sigma}\right|_0$ and $\left.D\sigma\right|_0$ agree.
+\end{proof}
+
+There is a more geometric way to think about the tangent plane. If $\gamma: (-\epsilon, \epsilon) \rightarrow \R^3$ is any smooth curve with image in $\Sigma$ and $\gamma(0) = p$, then writing $\gamma(t) = \sigma(u(t), v(t))$ for smooth $u, v$ we get
+$$
+\gamma'(0) = \sigma_u u'(0) + \sigma_v v'(0) \in T_p \Sigma,
+$$
+and conversely every vector of $T_p \Sigma$ arises this way. So $T_p \Sigma$ is precisely the set of velocity vectors at $p$ of smooth curves on $\Sigma$ through $p$ -- which makes it visibly independent of any parametrisation.
+
+\begin{definition}[Normal Direction]
+    If $\Sigma$ is a smooth surface in $\R^3$ and $p \in \Sigma$, the \vocab{normal direction} at $p$ is $(T_p \Sigma)^{\perp}$, the Euclidean orthogonal complement of the tangent plane. There are exactly two unit vectors in the normal direction.
+\end{definition}
+
+\begin{definition}[Two-Sided]
+    A smooth surface in $\R^3$ is \vocab{two-sided} if it admits a continuous global choice of unit normal vector $p \mapsto n(p)$.
+\end{definition}
+
+Two-sidedness is how orientability manifests itself for surfaces sitting in $\R^3$.
+
+\begin{lemma}
+    A smooth surface $\Sigma$ in $\R^3$ is orientable if and only if it is two-sided.
+\end{lemma}
+\begin{proof}
+    Given an allowable parametrisation $\sigma: V \rightarrow U$ near $p$, define the \emph{positive unit normal with respect to $\sigma$}
+    $$
+    n_{\sigma}(p) = \frac{\sigma_u \times \sigma_v}{\|\sigma_u \times \sigma_v\|},
+    $$
+    which is the unit normal making $\{\sigma_u, \sigma_v, n_\sigma\}$ a positively oriented basis of $\R^3$. Now suppose $\tilde{\sigma}$ is another allowable parametrisation near $p$ and $\sigma = \tilde{\sigma} \circ \varphi$ for the transition map $\varphi$. Writing $\left.D\varphi\right|_0 = \begin{pmatrix} \alpha & \beta \\ \gamma & \delta\end{pmatrix}$, the chain rule gives $\sigma_u = \alpha \tilde{\sigma}_u + \gamma \tilde{\sigma}_v$ and $\sigma_v = \beta \tilde{\sigma}_u + \delta \tilde{\sigma}_v$, and hence
+    \begin{equation}
+    \sigma_u \times \sigma_v = \det\left(\left.D\varphi\right|_0\right) \, \tilde{\sigma}_u \times \tilde{\sigma}_v. \tag{$\dagger$}
+    \end{equation}
+    So if $\Sigma$ is oriented and we only use parametrisations compatible with the orientation, the determinant above is positive and the positive unit normal is independent of the parametrisation. Since $n_\sigma$ is manifestly continuous on each $U$, these local normals patch to a global continuous unit normal, and $\Sigma$ is two-sided.
+
+    Conversely, suppose $\Sigma$ has a global continuous unit normal $n$. Consider the collection of all allowable parametrisations $\sigma$ such that $\{\sigma_u, \sigma_v, n\}$ is a positively oriented basis of $\R^3$ at every point (any allowable parametrisation can be corrected to have this property by precomposing with $(u, v) \mapsto (v, u)$ if needed, so these charts cover $\Sigma$). By $(\dagger)$, the transition map $\varphi$ between two such parametrisations satisfies $\det D\varphi > 0$. So this atlas is oriented and $\Sigma$ is orientable.
+\end{proof}
+
+The following little lemma gets used constantly: symmetries of a surface act on its tangent planes.
+
+\begin{lemma}\label{lem:symmetrytangent}
+    Let $\Sigma$ be a smooth surface in $\R^3$, and let $A: \R^3 \rightarrow \R^3$ be a smooth map with $A(\Sigma) \subseteq \Sigma$. Then for $p \in \Sigma$, the derivative $\left.DA\right|_p$ maps $T_p \Sigma$ into $T_{A(p)} \Sigma$.
+\end{lemma}
+\begin{proof}
+    Recall $T_p\Sigma$ is spanned by vectors $\gamma'(0)$ for smooth curves $\gamma: (-\epsilon, \epsilon) \rightarrow \Sigma$ with $\gamma(0) = p$. For such a curve, $A \circ \gamma$ is a smooth curve on $\Sigma$ through $A(p)$, and by the chain rule
+    $$
+    \left.DA\right|_p (\gamma'(0)) = (A \circ \gamma)'(0) \in T_{A(p)} \Sigma. \qedhere
+    $$
+\end{proof}
+
+\begin{example}[The Sphere is Two-Sided]
+    For the unit sphere $S^2$, the normal direction at $p$ is spanned by $p$ itself: the rotation group $\SO(3)$ acts transitively on $S^2$ and preserves tangent planes by Lemma \ref{lem:symmetrytangent}, so it suffices to check this at the north pole, where it is clear. So $n(p) = p$ (the outward normal) is a global continuous choice of unit normal, and $S^2$ is two-sided, hence orientable -- in agreement with our computation with stereographic charts.
+\end{example}
+
+\begin{example}[The M\"obius Band is Not Two-Sided]
+    An explicit embedding of the M\"obius band in $\R^3$ is
+    $$
+    \sigma(t, \theta) = \left(\left(1 - t \sin \tfrac{\theta}{2}\right) \cos\theta, \left(1 - t \sin \tfrac{\theta}{2}\right) \sin\theta, t \cos\tfrac{\theta}{2}\right),
+    $$
+    where $t \in (-1/2, 1/2)$ and $\theta$ ranges over $(0, 2\pi)$ or $(-\pi, \pi)$ for the two charts. Geometrically we take a unit interval centred on each point of the unit circle, and let it rotate by half a turn as $\theta$ goes around the circle once. A direct computation along the central circle $t = 0$ gives
+    $$
+    \sigma_t \times \sigma_\theta = \left(-\cos\theta\cos\tfrac{\theta}{2}, -\sin\theta\cos\tfrac{\theta}{2}, -\sin\tfrac{\theta}{2}\right),
+    $$
+    which is already a unit vector. As $\theta \rightarrow 0^+$ this tends to $(-1, 0, 0)$, while as $\theta \rightarrow 2\pi^-$ it tends to $(1, 0, 0)$ -- the normal comes back \emph{flipped} after a loop around the band. So there is no continuous global choice of unit normal, and the M\"obius band is not two-sided (hence not orientable).
+\end{example}
+
+\begin{remark}
+    There is no sensible classification of all smooth surfaces -- already the surfaces $\R^2 \backslash Z$ for closed sets $Z$ form an uncountable zoo. But for \emph{compact} smooth surfaces the situation is remarkably clean: a compact smooth surface is determined up to diffeomorphism by its orientability and its Euler characteristic. This classification is stated here for culture; it will be proved in the Part II course \emph{Algebraic Topology}.
+\end{remark}
+
+\section{The First Fundamental Form}
+
+Up until now everything has been topology in disguise -- we have said when surfaces are the same as topological or smooth objects, but we have not \emph{measured} anything. In this section we start doing geometry properly: we will measure lengths of curves on a surface, angles between curves, and areas of regions. All of this information is captured by a single gadget called the first fundamental form.
+
+\subsection{Isometries of Euclidean Space}
+
+It is worth first pausing to understand distance-preserving maps of flat space itself, since these are the `symmetries' against which all our later notions are calibrated.
+
+\begin{definition}[Isometry]
+    A map $f: \R^n \rightarrow \R^n$ is an \vocab{isometry} if it preserves distances, that is
+    $$
+    \|f(x) - f(y)\| = \|x - y\| \quad \text{for all } x, y \in \R^n.
+    $$
+    The isometries of $\R^n$ form a group $\Isom(\R^n)$ under composition.
+\end{definition}
+
+Obvious examples are translations $x \mapsto x + b$, and the linear maps preserving the inner product -- the \vocab{orthogonal group}
+$$
+\OO(n) = \{A \in \GL(n, \R) \mid A^T A = I\}.
+$$
+It turns out these examples generate everything.
+
+\begin{theorem}
+    Every isometry of $\R^n$ has the form $f(x) = Ax + b$ for some $A \in \OO(n)$ and $b \in \R^n$.
+\end{theorem}
+\begin{proof}
+    Let $b = f(0)$, and set $g(x) = f(x) - b$, an isometry fixing the origin. Since $g$ fixes $0$ and preserves distances, it preserves norms, and then by the polarisation identity
+    $$
+    \langle x, y \rangle = \tfrac{1}{2}\left(\|x\|^2 + \|y\|^2 - \|x - y\|^2\right)
+    $$
+    it preserves inner products: $\langle g(x), g(y) \rangle = \langle x, y \rangle$ for all $x, y$.
+    In particular, if $e_1, \dots, e_n$ is the standard orthonormal basis then $g(e_1), \dots, g(e_n)$ is again orthonormal, and for any $x$,
+    $$
+    \left\langle g(x) - \sum_i \langle x, e_i \rangle g(e_i),\ g(e_j) \right\rangle = \langle x, e_j \rangle - \langle x, e_j \rangle = 0
+    $$
+    for each $j$. As the $g(e_i)$ form a basis, the vector on the left is orthogonal to everything, so is zero, i.e.
+    $$
+    g(x) = \sum_i \langle x, e_i \rangle \, g(e_i).
+    $$
+    So $g$ is linear, and being a linear map preserving the inner product, its matrix $A$ satisfies $A^TA = I$, that is $A \in \OO(n)$.
+\end{proof}
+
+Recall that $\det A = \pm 1$ for $A \in \OO(n)$. Isometries with $\det A = 1$ are \vocab{orientation-preserving} (or \emph{rigid motions}); those with $\det A = -1$ are orientation-reversing. The simplest orientation-reversing isometries are \vocab{reflections}: given an affine hyperplane $H = \{x \mid \langle x, u \rangle = c\}$ with $\|u\| = 1$, the reflection in $H$ is
+$$
+R_H(x) = x - 2 (\langle x, u \rangle - c)\, u,
+$$
+which fixes $H$ pointwise and swaps the two sides. Remarkably, these building blocks suffice.
+
+\begin{theorem}[Reflections Generate]
+    Every isometry of $\R^n$ is a composite of at most $n + 1$ reflections in affine hyperplanes.
+\end{theorem}
+\begin{proof}
+    First observe that if an isometry $f$ fixes points $p_0, \dots, p_k$, then it fixes every point of their affine span: indeed a point $x$ is determined by its distances to $p_0, \dots, p_k$ together with the affine subspace it lies in, and one can check directly that $f$ fixes the affine span setwise and preserves those distances. In particular an isometry fixing $n + 1$ affinely independent points (whose span is all of $\R^n$) is the identity.
+
+    Now take any isometry $f$, and choose affinely independent points $p_0, \dots, p_n$. We correct $f$ one point at a time. If $f(p_0) \neq p_0$, let $R_1$ be the reflection in the perpendicular bisector hyperplane of $p_0$ and $f(p_0)$, so $R_1 f$ fixes $p_0$. Inductively, suppose $g = R_k \cdots R_1 f$ fixes $p_0, \dots, p_{k-1}$. If $g(p_k) \neq p_k$, let $R_{k+1}$ be the reflection in the perpendicular bisector of $p_k$ and $g(p_k)$; since
+    $$
+    \|p_i - p_k\| = \|g(p_i) - g(p_k)\| = \|p_i - g(p_k)\| \quad \text{for } i < k,
+    $$
+    the points $p_0, \dots, p_{k-1}$ lie on this bisector, so are still fixed by $R_{k+1} g$, which now also fixes $p_k$. After at most $n+1$ steps we obtain a composite of reflections and $f$ which fixes all of $p_0, \dots, p_n$, hence equals the identity. Rearranging, $f$ is a composite of at most $n + 1$ reflections.
+\end{proof}
+
+In low dimensions we can be completely explicit. In $\R^2$, an isometry is a composite of at most $3$ reflections, and working through the cases gives the classical classification: every isometry of the plane is one of
+\begin{enumerate}[label=(\roman*)]
+    \item the identity;
+    \item a \emph{translation} $x \mapsto x + b$;
+    \item a \emph{rotation} about some point $c$;
+    \item a \emph{reflection} in a line $\ell$;
+    \item a \emph{glide reflection} -- a reflection in a line $\ell$ followed by a translation along $\ell$.
+\end{enumerate}
+The first three are orientation-preserving (composites of two reflections), the last two orientation-reversing (one or three reflections).
+\begin{center}
+    \begin{tikzpicture}[scale=0.92]
+        % rotation panel
+        \fill (0.9,0.55) circle (1.3pt);
+        \node[below] at (0.9,0.5) {$c$};
+        \draw[->] ($(0.9,0.55)+(-5:1.15)$) arc[start angle=-5, end angle=75, radius=1.15];
+        \fill ($(0.9,0.55)+(-5:1.15)$) circle (1.3pt);
+        \node[right] at ($(0.9,0.55)+(-5:1.2)$) {$x$};
+        \fill ($(0.9,0.55)+(75:1.15)$) circle (1.3pt);
+        \node[above] at ($(0.9,0.55)+(75:1.2)$) {$T(x)$};
+        \node at (1.1,-0.65) {rotation};
+        % reflection panel
+        \draw (4.9,-0.25) -- (4.9,2.05);
+        \node[above] at (4.9,2.05) {$\ell$};
+        \fill (4.05,1.0) circle (1.3pt);
+        \node[left] at (4.05,1.0) {$x$};
+        \fill (5.75,1.0) circle (1.3pt);
+        \node[right] at (5.75,1.0) {$T(x)$};
+        \draw[dashed] (4.05,1.0) -- (5.75,1.0);
+        \node at (4.9,-0.65) {reflection};
+        % glide panel
+        \draw (7.7,0.9) -- (10.9,0.9);
+        \node[above] at (10.8,0.95) {$\ell$};
+        \fill (8.1,1.55) circle (1.3pt);
+        \node[above] at (8.1,1.6) {$x$};
+        \fill (9.9,0.25) circle (1.3pt);
+        \node[below] at (9.9,0.2) {$T(x)$};
+        \draw[dashed,->] (8.1,1.55) -- (8.1,0.25) -- (9.75,0.25);
+        \node at (9.3,-0.65) {glide reflection};
+    \end{tikzpicture}
+\end{center}
+
+The moral for the rest of the course is this: the plane $\R^2$ has a very large group of isometries -- enough to take any point to any other point, and any direction at a point to any other direction at any other point. We will meet exactly two other surfaces with this much symmetry: the round sphere, and the hyperbolic plane.
+
+\subsection{Lengths of Curves}
+
+Let $\gamma: (a, b) \rightarrow \R^3$ be a smooth curve. We define its \vocab{length} to be
+$$
+L(\gamma) = \int_a^b \|\gamma'(t)\| \, dt,
+$$
+whenever this integral is finite. The length does not depend on the parametrisation of the curve: if $s: (A, B) \rightarrow (a, b)$ is monotonic increasing and smooth, and $\tau = \gamma \circ s$, then by the chain rule and the substitution rule
+$$
+L(\tau) = \int_A^B \|\gamma'(s(t))\| \, |s'(t)| \, dt = \int_a^b \|\gamma'(t')\| \, dt' = L(\gamma).
+$$
+
+\begin{lemma}
+    If $\gamma: (a, b) \rightarrow \R^3$ is continuously differentiable with $\gamma'(t) \neq 0$ everywhere, then $\gamma$ can be reparametrised by \vocab{arc length}, so that $\|\gamma'\| \equiv 1$.
+\end{lemma}
+\begin{proof}
+    Fix $t_0 \in (a,b)$ and let $s(t) = \int_{t_0}^t \|\gamma'(w)\|\, dw$. Then $s$ is continuously differentiable with $s'(t) = \|\gamma'(t)\| > 0$, so $s$ is a monotonic bijection onto its image with differentiable inverse. Setting $\tau = \gamma \circ s^{-1}$, the chain rule gives $\|\tau'\| = \|\gamma'\| / s' = 1$.
+\end{proof}
+
+\subsection{The First Fundamental Form}
+
+Now let $\Sigma$ be a smooth surface in $\R^3$, and $\sigma: V \rightarrow U \subseteq \Sigma$ an allowable parametrisation. If $\gamma$ is a smooth curve with image in $U$, we can write $\gamma(t) = \sigma(u(t), v(t))$ for smooth functions $(u, v): (a,b) \rightarrow V$, and then
+$$
+\gamma'(t) = \sigma_u u'(t) + \sigma_v v'(t).
+$$
+Taking the squared norm,
+$$
+\|\gamma'(t)\|^2 = E \, u'(t)^2 + 2F\, u'(t) v'(t) + G \, v'(t)^2,
+$$
+where
+$$
+E = \langle \sigma_u, \sigma_u \rangle, \quad F = \langle \sigma_u, \sigma_v \rangle, \quad G = \langle \sigma_v, \sigma_v \rangle
+$$
+are smooth functions on $V$ depending only on $\sigma$, not on the curve.
+
+\begin{definition}[First Fundamental Form]
+    The \vocab{first fundamental form} of $\Sigma$ in the allowable parametrisation $\sigma$ is the expression
+    $$
+    E \, du^2 + 2F \, du \, dv + G \, dv^2,
+    $$
+    with $E, F, G$ as above. The notation records the fact that if $\gamma(t) = \sigma(u(t), v(t))$ then
+    $$
+    L(\gamma) = \int_a^b \sqrt{E (u')^2 + 2 F u' v' + G (v')^2} \, dt.
+    $$
+\end{definition}
+
+\begin{remark}
+    There is a cleaner way to think about this. The Euclidean inner product of $\R^3$ restricts to an inner product on the subspace $T_p \Sigma$, and \emph{that} restriction is the real object of study: a symmetric positive definite bilinear form on tangent planes, varying smoothly with $p$. The functions $E, F, G$ are just its matrix
+    $$
+    \begin{pmatrix} E & F \\ F & G \end{pmatrix}
+    $$
+    in the basis $\{\sigma_u, \sigma_v\}$ of $T_p\Sigma$ supplied by a parametrisation. Indeed, since the columns of $D\sigma$ are $\sigma_u$ and $\sigma_v$, we can write the matrix of the first fundamental form compactly as $(D\sigma)^T (D\sigma)$.
+\end{remark}
+
+Let's compute some examples.
+
+\begin{example}[The Plane]
+    The plane $\R^2_{xy} \subseteq \R^3$ has parametrisation $\sigma(u, v) = (u, v, 0)$, giving $\sigma_u = e_1$, $\sigma_v = e_2$ and first fundamental form
+    $$
+    du^2 + dv^2.
+    $$
+    We could instead use polar coordinates $\sigma(r, \theta) = (r\cos\theta, r\sin\theta, 0)$ on the plane minus a half-line, giving $\sigma_r = (\cos\theta, \sin\theta, 0)$ and $\sigma_\theta = (-r\sin\theta, r\cos\theta, 0)$, so the first fundamental form is
+    $$
+    dr^2 + r^2 \, d\theta^2.
+    $$
+    Note the same surface can have quite different-looking fundamental forms in different parametrisations.
+\end{example}
+
+\begin{example}[The Sphere]\label{ex:sphereFFF}
+    The sphere of radius $a$ has an allowable parametrisation
+    $$
+    \sigma(u, v) = (a \cos u \cos v, a \cos u \sin v, a \sin u), \quad u \in \left(-\tfrac{\pi}{2}, \tfrac{\pi}{2}\right),\ v \in (0, 2\pi),
+    $$
+    covering the complement of a half great circle ($u$ is latitude and $v$ longitude). Here
+    $$
+    \sigma_u = (-a\sin u \cos v, -a \sin u \sin v, a \cos u), \quad \sigma_v = (-a \cos u \sin v, a \cos u \cos v, 0),
+    $$
+    so $E = a^2$, $F = 0$, $G = a^2 \cos^2 u$, and the first fundamental form is
+    $$
+    a^2 \, du^2 + a^2 \cos^2 u \, dv^2.
+    $$
+\end{example}
+
+\begin{example}[Surfaces of Revolution]\label{ex:revolutionFFF}
+    For the surface of revolution of $\eta(t) = (f(t), 0, g(t))$ about the $z$-axis, with parametrisation $\sigma(u, v) = (f(u)\cos v, f(u) \sin v, g(u))$, we compute
+    $$
+    \sigma_u = (f'\cos v, f' \sin v, g'), \quad \sigma_v = (-f \sin v, f\cos v, 0),
+    $$
+    giving first fundamental form
+    $$
+    \left((f')^2 + (g')^2\right) du^2 + f^2 \, dv^2.
+    $$
+    If the profile curve $\eta$ is parametrised by arc length, this simplifies to $du^2 + f^2\,dv^2$.
+\end{example}
+
+\subsection{Isometric Surfaces}
+
+The first fundamental form is exactly the data needed to measure lengths, so it is the right thing to preserve if we want maps of surfaces that preserve geometry.
+
+\begin{definition}[Isometric Surfaces]
+    Smooth surfaces $\Sigma, \Sigma'$ in $\R^3$ are \vocab{isometric} if there is a diffeomorphism $f: \Sigma \rightarrow \Sigma'$ which preserves lengths of curves: for every smooth curve $\gamma$ on $\Sigma$, $L(f \circ \gamma) = L(\gamma)$. Such an $f$ is an \vocab{isometry}.
+\end{definition}
+
+\begin{example}
+    If $f(x) = Ax + b$ is a global isometry of $\R^3$ (with $A \in \OO(3)$), then for any smooth surface $\Sigma$, the surfaces $\Sigma$ and $f(\Sigma)$ are isometric -- rigid motions preserve the lengths of all curves in $\R^3$. But note the definition asks for much less: $f$ need only be defined on $\Sigma$, and isometric surfaces certainly need not be related by a rigid motion of the ambient space, as we will see with the cone below.
+\end{example}
+
+\begin{definition}[Locally Isometric]
+    $\Sigma$ and $\Sigma'$ are \vocab{locally isometric near $p \in \Sigma$ and $q \in \Sigma'$} if there are open neighbourhoods $U \ni p$, $U' \ni q$ which are isometric. We say $\Sigma$ and $\Sigma'$ are locally isometric if each point of either surface has a neighbourhood isometric to an open set of the other.
+\end{definition}
+
+The first fundamental form detects local isometry completely.
+
+\begin{lemma}\label{lem:fffisometry}
+    Smooth surfaces $\Sigma, \Sigma' \subseteq \R^3$ are locally isometric near $p \in \Sigma$ and $q \in \Sigma'$ if and only if there are allowable parametrisations $\sigma: V \rightarrow U \subseteq \Sigma$ and $\sigma': V \rightarrow U' \subseteq \Sigma'$, with the \emph{same} domain $V$, near $p$ and $q$ respectively, whose first fundamental forms are equal as functions on $V$.
+\end{lemma}
+\begin{proof}
+    ($\Leftarrow$) If such parametrisations exist, then $f = \sigma' \circ \sigma^{-1}: U \rightarrow U'$ is a diffeomorphism, and given a curve $\gamma = \sigma(u(t), v(t))$ in $U$, the image curve is $f \circ \gamma = \sigma'(u(t), v(t))$. The two length integrals are computed from the respective first fundamental forms with the identical functions $(u(t), v(t))$, so they agree. Hence $f$ is an isometry.
+
+    ($\Rightarrow$) Suppose $f: U \rightarrow U'$ is an isometry with $f(p) = q$, and let $\sigma: V \rightarrow U$ be an allowable parametrisation near $p$; then $\sigma' = f \circ \sigma$ is an allowable parametrisation of $U'$ near $q$ with the same domain. We must show lengths of curves determine the first fundamental form -- then, since $\sigma$ and $\sigma'$ assign equal lengths to corresponding curves, their fundamental forms must agree. Without loss of generality let $V = B(0, \delta)$ and $\sigma(0) = p$. For $\epsilon < \delta$, consider the curves
+    $$
+    \gamma_\epsilon(t) = \sigma(t, 0), \quad t \in [0, \epsilon].
+    $$
+    Then
+    $$
+    L(\gamma_\epsilon) = \int_0^\epsilon \sqrt{E(t, 0)} \, dt \implies \left.\frac{d}{d\epsilon}\right|_{\epsilon = 0} L(\gamma_\epsilon) = \sqrt{E(0,0)},
+    $$
+    so lengths of curves near $p$ determine $E$ at $p$ (and similarly at every point of $V$). Using instead $t \mapsto \sigma(0, t)$ determines $G$, and $t \mapsto \sigma(t, t)$ determines $E + 2F + G$, hence $F$. So the first fundamental form is determined by lengths, as required.
+\end{proof}
+
+\begin{example}[The Cone]\label{ex:cone}
+    Consider the cone with angle $\arctan(a)$ to the vertical (minus its apex and a ruling line), parametrised for $u > 0$, $v \in (0, 2\pi)$ by
+    $$
+    \sigma(u, v) = (a u \cos v, au\sin v, u),
+    $$
+    with first fundamental form
+    $$
+    (1 + a^2)\, du^2 + a^2 u^2 \, dv^2.
+    $$
+    Intuitively, we can cut the cone along a ruling and flatten it onto the plane -- rolling a paper cone flat -- to obtain a plane sector of radius $\sqrt{1 + a^2}\,u$ and total angle $2\pi a / \sqrt{1 + a^2}$. Concretely, the map into the plane
+    $$
+    \sigma'(u, v) = \left(\sqrt{1 + a^2}\, u \cos\left(\tfrac{a v}{\sqrt{1 + a^2}}\right), \sqrt{1 + a^2} \, u \sin\left(\tfrac{av}{\sqrt{1+a^2}}\right), 0\right)
+    $$
+    with the same domain has first fundamental form
+    $$
+    (1 + a^2) \, du^2 + a^2 u^2 \, dv^2
+    $$
+    as well. So by Lemma \ref{lem:fffisometry} the cone is \emph{locally isometric to the plane} -- despite looking curved, it is flat from the point of view of any measurements made along the surface. The cone and the plane are not \emph{globally} isometric, since they are not even homeomorphic.
+\end{example}
+
+Finally, let's record how the first fundamental form transforms when we change parametrisation.
+
+\begin{lemma}
+    Suppose $\sigma: V \rightarrow U$ and $\sigma': V' \rightarrow U$ are allowable parametrisations of the same open set $U \subseteq \Sigma$, related by the transition map $\varphi = (\sigma')^{-1} \circ \sigma : V \rightarrow V'$. Then their first fundamental forms are related by
+    $$
+    \begin{pmatrix} E & F \\ F & G\end{pmatrix} = (D\varphi)^T \begin{pmatrix} E' & F' \\ F' & G' \end{pmatrix} (D\varphi).
+    $$
+\end{lemma}
+\begin{proof}
+    Since the matrix of the first fundamental form is $(D\sigma)^T(D\sigma)$ and $\sigma = \sigma' \circ \varphi$, the chain rule $D\sigma = (D\sigma')( D\varphi)$ gives
+    $$
+    (D\sigma)^T (D\sigma) = (D\varphi)^T (D\sigma')^T (D\sigma') (D\varphi),
+    $$
+    which is the claim.
+\end{proof}
+
+\subsection{Angles and Conformality}
+
+For vectors $v, w \in \R^3$ we have $\langle v, w \rangle = \|v\| \|w\| \cos\theta$, so the angle between them is determined by inner products. If $v, w \in T_p \Sigma$ are tangent vectors, say $v = D\sigma|_0(\hat{v})$ and $w = D\sigma|_0(\hat{w})$, then writing $I(\cdot\, , \cdot)$ for the first fundamental form as a bilinear form,
+$$
+\cos \theta = \frac{I(\hat v, \hat w)}{\sqrt{I(\hat v, \hat v)}\sqrt{I(\hat w, \hat w)}}.
+$$
+So the first fundamental form measures angles as well as lengths. In particular, if two curves $\gamma(t) = \sigma(u(t), v(t))$ and $\tilde{\gamma}(t) = \sigma(\tilde{u}(t), \tilde v(t))$ meet at $p$, the angle $\theta$ at which they meet satisfies
+$$
+\cos\theta = \frac{E \dot u \dot{\tilde u} + F (\dot u \dot{\tilde v} + \dot v \dot{\tilde u}) + G \dot v \dot{\tilde v}}{\sqrt{E \dot u^2 + 2F \dot u \dot v + G \dot v^2}\sqrt{E \dot{\tilde u}^2 + 2F \dot{\tilde u}\dot{\tilde v} + G \dot{\tilde v}^2}}.
+$$
+
+\begin{definition}[Conformal]
+    An allowable parametrisation $\sigma: V \rightarrow U$ is \vocab{conformal} if it preserves angles: whenever two curves in $V$ meet at some angle, their images under $\sigma$ meet at the same angle.
+\end{definition}
+
+\begin{lemma}
+    $\sigma$ is conformal if and only if $E = G$ and $F = 0$.
+\end{lemma}
+\begin{proof}
+    Suppose $\sigma$ is conformal. The curves $t \mapsto (t, 0)$ and $t \mapsto (0, t)$ meet at angle $\pi/2$ in $V$, so their images meet at angle $\pi/2$; by the angle formula this gives $F = 0$. Likewise the curves $t \mapsto (t, t)$ and $t \mapsto (t, -t)$ meet at right angles, and the angle formula (using $F = 0$) gives $E - G = 0$.
+
+    Conversely if $E = G$ and $F = 0$, then the first fundamental form is $\rho\,(du^2 + dv^2)$ where $\rho = E > 0$. So at each point it is a pointwise rescaling of the Euclidean inner product, and rescaling an inner product does not change the angles it defines. Hence $\sigma$ preserves angles.
+\end{proof}
+
+\begin{remark}
+    Conformal parametrisations are historically important in cartography -- a conformal map of the Earth renders compass bearings faithfully, even though (as we will see) no map can render distances faithfully. The existence of conformal charts on any surface is a hard theorem, closely tied to the theory of \emph{Riemann surfaces}, where surfaces are modelled on $\C$ rather than $\R^2$.
+\end{remark}
+
+\subsection{Area}
+
+Recall that the parallelogram spanned by $v, w \in \R^3$ has area
+$$
+\|v \times w\| = \sqrt{\|v\|^2\|w\|^2 - \langle v, w\rangle^2}.
+$$
+Applying this to the `infinitesimal parallelogram' spanned by $\sigma_u$ and $\sigma_v$, whose sides span the image of a small coordinate square under $\sigma$, we find its area is
+$$
+\|\sigma_u \times \sigma_v\| = \sqrt{EG - F^2}.
+$$
+This motivates the following definition.
+
+\begin{definition}[Area]
+    Let $\sigma: V \rightarrow U \subseteq \Sigma$ be an allowable parametrisation. The \vocab{area} of $U$ is
+    $$
+    \operatorname{area}(U) = \int_V \sqrt{EG - F^2} \; du \, dv.
+    $$
+\end{definition}
+
+\begin{remark}
+    This is independent of the parametrisation. If $\tilde{\sigma}: \tilde{V} \rightarrow U$ is another allowable parametrisation, with transition map $\varphi: \tilde V \rightarrow V$, then from the transformation law for the first fundamental form,
+    $$
+    \sqrt{\tilde E \tilde G - \tilde F^2} = |{\det D\varphi}| \sqrt{EG - F^2},
+    $$
+    and the change of variables formula for double integrals gives
+    $$
+    \int_{\tilde V} \sqrt{\tilde E \tilde G - \tilde F^2} \; du \, dv = \int_V \sqrt{EG - F^2} \; du\,dv.
+    $$
+    For an open set (or a compact surface) not contained in a single chart, we compute the area by breaking the set into finitely many pieces each lying in a chart, and adding up.
+\end{remark}
+
+\begin{example}[Graphs Stretch Area]
+    Let $\Sigma$ be the graph of a smooth function $f: \R^2 \rightarrow \R$, with its global parametrisation $\sigma(u, v) = (u, v, f(u, v))$. Then $\sigma_u = (1, 0, f_u)$ and $\sigma_v = (0, 1, f_v)$, so
+    $$
+    \sqrt{EG - F^2} = \sqrt{1 + f_u^2 + f_v^2}.
+    $$
+    If $U_R$ is the part of the graph over the disc $B(0, R)$, then
+    $$
+    \operatorname{area}(U_R) = \int_{B(0, R)} \sqrt{1 + f_u^2 + f_v^2} \; du \, dv \geq \pi R^2,
+    $$
+    with equality if and only if $f_u \equiv f_v \equiv 0$ on the disc, i.e.\ the graph is horizontal. In other words -- projecting a graph to the plane always shrinks area, unless the graph was flat to begin with.
+\end{example}
+
+\begin{example}[Archimedes]
+    Let $S^2$ be the unit sphere, enclosed in the cylinder $\{x^2 + y^2 = 1\}$ of unit radius, and consider the radial projection taking a point of the sphere (other than the poles) horizontally outward to the cylinder. A pleasant computation (on the example sheets) shows this map is \emph{area-preserving}: whatever area a region gains by being pushed outwards horizontally, it loses by being compressed vertically. This is Archimedes' theorem, and gives $\operatorname{area}(S^2) = 4\pi$ immediately -- the cylinder unrolls to a $2\pi \times 2$ rectangle. It also underlies the Lambert equal-area projection used in cartography.
+\end{example}
+
+\section{The Second Fundamental Form and Gaussian Curvature}
+
+The first fundamental form records the \emph{intrinsic} geometry of a surface -- everything a small ant living on the surface could measure. We now introduce a second quadratic form which records how the surface \emph{bends} inside $\R^3$, and from it we will extract the single most important function in this course: the Gaussian curvature.
+
+\subsection{The Second Fundamental Form}
+
+Let $\sigma: V \rightarrow U \subseteq \Sigma$ be an allowable parametrisation. By Taylor's theorem, for small $(h, \ell)$,
+\begin{align*}
+    \sigma(u + h, v + \ell) = \sigma(u, v) &+ h\, \sigma_u + \ell \, \sigma_v \\
+    &+ \frac{1}{2}\left(h^2 \sigma_{uu} + 2 h \ell \, \sigma_{uv} + \ell^2 \sigma_{vv}\right) + O(h^3, \ell^3).
+\end{align*}
+Write $p = \sigma(u,v)$ and let $n$ be the unit normal at $p$. The first order terms lie in $T_p\Sigma$, so the perpendicular distance from $\sigma(u + h, v+\ell)$ to the affine tangent plane $p + T_p\Sigma$ is
+$$
+\langle \sigma(u+h, v+\ell) - \sigma(u,v), n \rangle = \frac{1}{2}\left(L h^2 + 2M h\ell + N \ell^2\right) + O(h^3, \ell^3),
+$$
+where we define
+$$
+L = \langle n, \sigma_{uu}\rangle, \quad M = \langle n, \sigma_{uv} \rangle, \quad N = \langle n, \sigma_{vv} \rangle.
+$$
+So the following quadratic form measures, to leading order, how the surface pulls away from its tangent plane.
+
+\begin{definition}[Second Fundamental Form]
+    The \vocab{second fundamental form} of $\Sigma$ in the allowable parametrisation $\sigma$ is the quadratic form
+    $$
+    L \, du^2 + 2M \, du \, dv + N \, dv^2, \quad \text{where } n = \frac{\sigma_u \times \sigma_v}{\|\sigma_u \times \sigma_v\|},
+    $$
+    with $L, M, N$ as above, thought of as the matrix $\begin{pmatrix} L & M \\ M & N \end{pmatrix}$ with respect to the basis $\{\sigma_u, \sigma_v\}$ of $T_p \Sigma$.
+\end{definition}
+
+Note that unlike the first fundamental form, which is always positive definite, the second fundamental form can be degenerate, indefinite, or zero. Indeed, vanishing identically means exactly what you would guess.
+
+\begin{lemma}
+    Let $V$ be connected and $\sigma : V \rightarrow U \subseteq \Sigma$ an allowable parametrisation whose second fundamental form vanishes identically. Then $U$ is contained in an affine plane.
+\end{lemma}
+\begin{proof}
+    Differentiating the identities $\langle n, \sigma_u \rangle = 0 = \langle n, \sigma_v \rangle$ with respect to $u$ and $v$ gives
+    \begin{align*}
+        L &= \langle n, \sigma_{uu} \rangle = -\langle n_u, \sigma_u \rangle, &
+        M &= \langle n, \sigma_{uv} \rangle = -\langle n_v, \sigma_u\rangle = -\langle n_u, \sigma_v \rangle, \\
+        N &= \langle n, \sigma_{vv} \rangle = -\langle n_v, \sigma_v \rangle. & &
+    \end{align*}
+    If $L = M = N \equiv 0$, then $n_u$ is orthogonal to $\sigma_u$ and $\sigma_v$; but also $\langle n, n \rangle = 1$ gives $\langle n_u, n \rangle = 0$. Since $\{\sigma_u, \sigma_v, n\}$ is a basis of $\R^3$, we get $n_u \equiv 0$, and similarly $n_v \equiv 0$. As $V$ is connected, $n$ is a constant vector, and then
+    $$
+    \frac{\partial}{\partial u}\langle \sigma, n \rangle = \langle \sigma_u, n \rangle = 0, \quad \frac{\partial}{\partial v}\langle \sigma, n \rangle = 0,
+    $$
+    so $\langle \sigma, n \rangle$ is constant -- which says exactly that $U = \sigma(V)$ lies in a plane normal to $n$.
+\end{proof}
+
+The identities in the proof above deserve to be displayed on their own: the second fundamental form can be written as
+$$
+\begin{pmatrix} L & M \\ M & N \end{pmatrix} = -\begin{pmatrix} \langle n_u , \sigma_u \rangle & \langle n_u, \sigma_v \rangle \\ \langle n_v, \sigma_u \rangle & \langle n_v, \sigma_v \rangle \end{pmatrix} = -(Dn)^T (D\sigma),
+$$
+in perfect analogy with $(D\sigma)^T(D\sigma)$ for the first fundamental form. From this one can also derive the transformation rule under a transition map $\varphi$:
+$$
+\begin{pmatrix} \tilde L & \tilde M \\ \tilde M & \tilde N \end{pmatrix} = \pm (D\varphi)^T \begin{pmatrix} L & M \\ M & N\end{pmatrix} (D\varphi),
+$$
+where the sign is $+$ if $\varphi$ is orientation-preserving (so the two parametrisations induce the same normal) and $-$ otherwise.
+
+\begin{example}[The Cylinder]
+    Consider the cylinder of radius $a$, parametrised by $\sigma(u, v) = (a \cos u, a \sin u, v)$. Then $\sigma_{uv} = \sigma_{vv} = 0$, so $M = N = 0$, while $\sigma_{uu} = (-a\cos u, -a \sin u, 0)$ and $n = (\cos u, \sin u, 0)$ (the outward normal), giving $L = -a$. So the second fundamental form is
+    $$
+    -a \, du^2.
+    $$
+    The cylinder bends in one direction and is straight in the other -- exactly what the degenerate matrix $\begin{pmatrix} -a & 0 \\ 0 & 0\end{pmatrix}$ records.
+\end{example}
+
+\subsection{The Gauss Map}
+
+The appearance of $Dn$ above suggests that we study the normal vector as a map in its own right.
+
+\begin{definition}[Gauss Map]
+    Let $\Sigma$ be a smooth oriented surface in $\R^3$. The \vocab{Gauss map} is
+    $$
+    n: \Sigma \rightarrow S^2, \quad p \mapsto n(p),
+    $$
+    sending each point to its (positively oriented) unit normal, viewed as a point of the unit sphere.
+    \begin{center}
+        \begin{tikzpicture}[scale=0.95]
+            % surface (wavy curve as cartoon of Sigma)
+            \draw (0,0.7) .. controls (0.7,1.7) and (1.4,1.7) .. (2.0,0.7)
+                    .. controls (2.5,-0.1) and (3.1,-0.1) .. (3.7,0.7);
+            \node at (0.2,0.15) {$\Sigma$};
+            % normals on the surface
+            \draw[->, color={rgb,255:red,74;green,144;blue,226}] (1.0,1.42) -- (1.0,2.22);
+            \draw[->, color={rgb,255:red,74;green,144;blue,226}] (2.42,0.33) -- (2.06,1.05);
+            \draw[->, color={rgb,255:red,74;green,144;blue,226}] (2.85,0.29) -- (2.85,1.09);
+            \fill (1.0,1.42) circle (1.2pt) node[below=1pt] {$p$};
+            \fill (2.42,0.33) circle (1.2pt);
+            \fill (2.85,0.29) circle (1.2pt);
+            % mapping arrow
+            \draw[->] (4.3,1.0) -- (5.3,1.0);
+            \node[above] at (4.8,1.05) {$n$};
+            % sphere
+            \draw (7.0,1.0) circle (1.0);
+            \draw[dashed] (6.0,1.0) arc[start angle=180, end angle=0, x radius=1.0, y radius=0.3];
+            \draw (6.0,1.0) arc[start angle=180, end angle=360, x radius=1.0, y radius=0.3];
+            \node at (8.35,0.25) {$S^2$};
+            % image arrows from centre, reaching the sphere
+            \draw[->, color={rgb,255:red,74;green,144;blue,226}] (7.0,1.0) -- (7.0,2.0);
+            \draw[->, color={rgb,255:red,74;green,144;blue,226}] (7.0,1.0) -- (6.29,1.71);
+            \fill (7.0,2.0) circle (1.2pt);
+            \node[right] at (7.05,2.0) {$n(p)$};
+            \fill (6.29,1.71) circle (1.2pt);
+        \end{tikzpicture}
+    \end{center}
+\end{definition}
+
+\begin{lemma}
+    The Gauss map is smooth.
+\end{lemma}
+\begin{proof}
+    Smoothness is a local property, so we can check it in an allowable parametrisation $\sigma$ compatible with the orientation, where
+    $$
+    n \circ \sigma = \frac{\sigma_u \times \sigma_v}{\|\sigma_u \times \sigma_v\|}.
+    $$
+    The numerator is smooth and the denominator is smooth and non-vanishing (since $\sigma$ is allowable), so $n \circ \sigma$ is smooth, which is what smoothness of $n$ means.
+\end{proof}
+
+\begin{remark}
+    If $\Sigma = f^{-1}(0)$ is cut out by $f: \R^3 \rightarrow \R$ with non-vanishing derivative along $\Sigma$, the Gauss map is simply
+    $$
+    n(p) = \frac{\nabla f}{\|\nabla f\|}.
+    $$
+\end{remark}
+
+The key observation about the Gauss map is that its derivative at $p$ is an endomorphism of the tangent plane. Indeed, the tangent plane to $S^2$ at $n(p)$ is $(n(p))^\perp = T_p\Sigma$ -- the two planes are orthogonal to the same vector! So the derivative of the Gauss map is a linear map
+$$
+\left.Dn\right|_p : T_p \Sigma \rightarrow T_{n(p)} S^2 = T_p \Sigma.
+$$
+Concretely, if $v = \gamma'(0)$ for a curve $\gamma$ on $\Sigma$ through $p$, then $\left.Dn\right|_p(v) = (n \circ \gamma)'(0)$.
+
+We can now give the slick, parametrisation-free description of both fundamental forms. For an oriented smooth surface $\Sigma$ in $\R^3$ and $p \in \Sigma$:
+\begin{enumerate}[label=(\roman*)]
+    \item The \emph{first} fundamental form is the symmetric bilinear form on $T_p\Sigma$ obtained by restricting the Euclidean inner product:
+    $$
+    \mathrm{I}_p(v, w) = \langle v, w \rangle.
+    $$
+    \item The \emph{second} fundamental form is the symmetric bilinear form
+    $$
+    \mathrm{II}_p (v, w) = \mathrm{I}_p\left(-\left.Dn\right|_p(v), w\right).
+    $$
+\end{enumerate}
+In an allowable (correctly oriented) parametrisation these have matrices $\begin{pmatrix} E & F \\ F & G\end{pmatrix}$ and $\begin{pmatrix} L & M \\ M & N \end{pmatrix}$ in the basis $\{\sigma_u, \sigma_v\}$, recovering our earlier definitions -- this is exactly the identity $-(Dn)^T(D\sigma) = \begin{pmatrix} L & M \\ M & N\end{pmatrix}$ from before. The forms themselves do not depend on $\sigma$.
+
+\begin{lemma}
+    The derivative of the Gauss map is self-adjoint with respect to the first fundamental form:
+    $$
+    \mathrm{I}_p\left(\left.Dn\right|_p(v), w\right) = \mathrm{I}_p\left(v, \left.Dn\right|_p(w)\right) \quad \text{for all } v, w \in T_p\Sigma.
+    $$
+\end{lemma}
+\begin{proof}
+    In a parametrisation, both fundamental forms are represented by \emph{symmetric} matrices ($F = F$ trivially, and $M = \langle n, \sigma_{uv}\rangle = \langle n, \sigma_{vu} \rangle$ by symmetry of mixed partials). Hence
+    $$
+    \mathrm{I}_p(Dn(v), w) = -\mathrm{II}_p(v, w) = -\mathrm{II}_p(w, v) = \mathrm{I}_p(Dn(w), v) = \mathrm{I}_p(v, Dn(w)). \qedhere
+    $$
+\end{proof}
+
+\begin{remark}
+    A theorem worth knowing (though beyond this course) is the \emph{fundamental theorem of surfaces in $\R^3$}: a smooth oriented connected surface in $\R^3$ is determined, up to rigid motion, by its two fundamental forms. So $\mathrm{I}$ and $\mathrm{II}$ really are a complete set of invariants for local surface theory.
+\end{remark}
+
+\subsection{Gaussian Curvature}
+
+\begin{definition}[Gaussian Curvature]
+    The \vocab{Gaussian curvature} of a smooth surface $\Sigma$ in $\R^3$ is the function
+    $$
+    \kappa : \Sigma \rightarrow \R, \quad \kappa(p) = \det\left(\left.Dn\right|_p\right).
+    $$
+\end{definition}
+
+\begin{remark}
+    This is well-defined even when $\Sigma$ is not orientable: locally there are two choices of normal, differing by a sign, but in two dimensions $\det(-A) = \det(A)$, so the determinant is unaffected.
+\end{remark}
+
+Let's express $\kappa$ in terms of the fundamental forms. Fix a parametrisation, and let $A = \begin{pmatrix} E & F \\ F & G\end{pmatrix}$, $B = \begin{pmatrix} L & M \\ M & N \end{pmatrix}$, and let $S$ be the matrix of $\left.Dn\right|_p$ in the basis $\{\sigma_u, \sigma_v\}$. The relation $\mathrm{II}_p(v, w) = \mathrm{I}_p(-Dn(v), w)$ reads $B = -S^T A$, so $S = -(A^{-1}B)^T$ and
+$$
+\kappa = \det S = \frac{\det B}{\det A} = \frac{LN - M^2}{EG - F^2}.
+$$
+Under a transition map $\varphi$, $A$ and $B$ transform by $(D\varphi)^T(\cdot)(D\varphi)$ up to the same sign, so this ratio is genuinely independent of the parametrisation.
+
+\begin{example}[The Cylinder is Flat]
+    For the cylinder, the image of the Gauss map lies in the equator of $S^2$: the normal $(\cos u, \sin u, 0)$ is always horizontal. So for any curve $\gamma$ on the cylinder, $n \circ \gamma$ stays in a fixed circle, and $\left.Dn\right|_p$ has image of dimension at most $1$. Hence $\kappa \equiv 0$. Alternatively, $LN - M^2 = (-a)(0) - 0 = 0$. A surface with $\kappa \equiv 0$ is called \vocab{flat}.
+\end{example}
+
+\begin{example}[Graphs, and the Sphere]\label{ex:graphcurvature}
+    If $\Sigma$ is the graph of a smooth function $f$, a computation from the example sheets gives
+    $$
+    \kappa = \frac{f_{uu} f_{vv} - f_{uv}^2}{(1 + f_u^2 + f_v^2)^2}.
+    $$
+    For instance, $f(u, v) = \sqrt{r^2 - u^2 - v^2}$ describes a piece of the sphere of radius $r$ near its north pole, and at the origin $f_u = f_v = 0$, $f_{uu} = f_{vv} = -1/r$, $f_{uv} = 0$, giving
+    $$
+    \kappa(0, 0, r) = \frac{1}{r^2}.
+    $$
+    Since $\OO(3)$ acts transitively on the sphere by rigid motions, which preserve both fundamental forms, $\kappa \equiv 1/r^2$ on the whole sphere of radius $r$. Notice that a big sphere is gently curved and a small sphere is sharply curved, and that a dilation by $a$ scales $\kappa$ by $1/a^2$.
+\end{example}
+
+\begin{example}[The Paraboloid]
+    Let $\Sigma = \{z = x^2 + y^2\}$. By the graph formula, at the origin $\kappa = 4 > 0$, and everywhere
+    $$
+    \kappa = \frac{4}{(1 + 4x^2 + 4y^2)^2} > 0.
+    $$
+    One can also check that (for the inward orientation) the image of the Gauss map is precisely the open northern hemisphere: $\Sigma$ is rotationally symmetric, the Gauss map commutes with rotations about the $z$-axis, and along $\{y = 0\}$ we have $n(x, 0, x^2) = (-2x, 0, 1)/\sqrt{1 + 4x^2}$, which sweeps out an open arc from pole towards (but never reaching) the equator.
+\end{example}
+
+\subsection{Elliptic, Hyperbolic and Parabolic Points}
+
+\begin{definition}
+    A point $p$ of a smooth surface $\Sigma \subseteq \R^3$ is
+    \vocab{elliptic} if $\kappa(p) > 0$, \vocab{hyperbolic} if $\kappa(p) < 0$, and \vocab{parabolic} if $\kappa(p) = 0$.
+\end{definition}
+
+The sign of the curvature has a directly visible meaning.
+
+\begin{lemma}
+    Near an elliptic point $p$, the surface lies entirely on one side of the affine tangent plane $p + T_p\Sigma$. Near a hyperbolic point, the surface meets both sides of the tangent plane in every neighbourhood of $p$.
+\end{lemma}
+\begin{proof}
+    Since the first fundamental form is positive definite, $EG - F^2 > 0$, and the sign of $\kappa$ is the sign of $LN - M^2 = \det \mathrm{II}_p$. Recall the Taylor computation: for $w = h\sigma_u + \ell \sigma_v \in T_p\Sigma$, the signed distance from $\sigma(h, \ell)$ to the affine tangent plane is
+    $$
+    \frac{1}{2}\, \mathrm{II}_p(w, w) + O(h^3, \ell^3).
+    $$
+    If $p$ is elliptic, $\mathrm{II}_p$ has two eigenvalues of the same sign, so it is positive or negative definite; on the unit circle of directions $w$ the form is bounded away from $0$, so for small $(h, \ell)$ the quadratic term dominates the error and the signed distance has constant sign. If $p$ is hyperbolic, $\mathrm{II}_p$ has eigenvalues of opposite signs, so along the two eigendirections the signed distance takes opposite signs arbitrarily close to $p$.
+\end{proof}
+
+\begin{remark}
+    At parabolic points nothing can be concluded. The cylinder has $\kappa \equiv 0$ and lies on one side of each tangent plane. On the other hand the \emph{monkey saddle} $\sigma(u, v) = (u, v, u^3 - 3v^2u)$ has a parabolic point at the origin, but crosses its tangent plane there (it has three `valleys' -- two for the legs and one for the tail).
+\end{remark}
+
+\begin{proposition}\label{prop:ellipticpoint}
+    Every compact smooth surface in $\R^3$ has an elliptic point.
+\end{proposition}
+\begin{proof}
+    Being compact, $\Sigma$ is closed and bounded, so is contained in some closed ball; let $R$ be the smallest radius such that $\Sigma \subseteq \overline{B(0, R)}$ (after translating so that the minimal enclosing ball is centred at the origin). Then $\Sigma$ touches the sphere $S^2(R)$ at some point, and applying a rotation we may assume $p = (0, 0, R) \in \Sigma$. The tangent planes of $\Sigma$ and $S^2(R)$ at $p$ agree (both are characterised by minimality/tangency; more carefully, if they differed then points of $\Sigma$ near $p$ would leave the ball). So near $p$ we can write $\Sigma$ as a graph $\{(u, v, f(u,v))\}$ with
+    $$
+    f(u, v) \leq \sqrt{R^2 - u^2 - v^2},
+    $$
+    expressing that $\Sigma$ stays inside the ball, with equality at $(0,0)$. Since $(0,0)$ is thus a maximum of $f(u,v) - \sqrt{R^2 - u^2 - v^2}$, second-order Taylor expansion of both sides gives, for small $(u, v)$,
+    $$
+    \frac{1}{2}\left(f_{uu} u^2 + 2 f_{uv} uv + f_{vv} v^2 \right) \leq -\frac{1}{2R}(u^2 + v^2) + O((u^2+v^2)^{3/2}).
+    $$
+    So the Hessian of $f$ at $0$ is negative definite, and by the graph formula of Example \ref{ex:graphcurvature} (using $f_u = f_v = 0$ at the origin),
+    $$
+    \kappa(p) = f_{uu}f_{vv} - f_{uv}^2 \geq \frac{1}{R^2} > 0. \qedhere
+    $$
+\end{proof}
+
+This innocuous-looking proposition has a striking consequence: the flat torus $\R^2/\Z^2$, which we will construct properly in Section \ref{sec:riemannianmetrics}, admits \emph{no} isometric embedding as a smooth surface in $\R^3$, since any compact surface in $\R^3$ has a point of positive curvature.
+
+Here is one more interpretation of $\kappa$: it is the infinitesimal amount by which the Gauss map distorts area.
+
+\begin{theorem}\label{thm:curvaturearea}
+    Let $p \in \Sigma$ with $\kappa(p) \neq 0$, and let $(A_i)$ be a sequence of open neighbourhoods of $p$ which shrink to $p$, in the sense that for every $\epsilon > 0$ we have $A_i \subseteq B(p, \epsilon)$ for all large $i$. Then
+    $$
+    |\kappa(p)| = \lim_{i \rightarrow \infty} \frac{\operatorname{area}_{S^2}(n(A_i))}{\operatorname{area}_\Sigma(A_i)}.
+    $$
+\end{theorem}
+\begin{proof}
+    Fix an allowable parametrisation $\sigma$ near $p$ and let $V_i = \sigma^{-1}(A_i)$, so $\bigcap_i V_i = \{0\}$. First,
+    $$
+    \operatorname{area}_\Sigma(A_i) = \int_{V_i} \|\sigma_u \times \sigma_v\| \, du \, dv.
+    $$
+    Next, by the chain rule, $\left.Dn\right|_{\sigma(u,v)}(\sigma_u) = (n \circ \sigma)_u$ and similarly for $v$; since $\kappa(p) \neq 0$, the map $n \circ \sigma$ has derivative of rank 2 at $0$, so (by the inverse function theorem, shrinking $V$) it is an allowable parametrisation of a neighbourhood of $n(p)$ in $S^2$. Hence for large $i$,
+    \begin{align*}
+    \operatorname{area}_{S^2}(n(A_i)) = \int_{V_i} \|n_u \times n_v\| \, du\,dv &= \int_{V_i} |{\det Dn}| \, \|\sigma_u \times \sigma_v\| \, du \, dv \\
+    &= \int_{V_i} |\kappa| \, \|\sigma_u \times \sigma_v\| \, du \, dv,
+    \end{align*}
+    using $n_u \times n_v = Dn(\sigma_u) \times Dn(\sigma_v) = \det(Dn) \, \sigma_u \times \sigma_v$.
+    Finally, $\kappa$ is continuous, so given $\epsilon > 0$, for all large $i$ we have $|\kappa| \in (|\kappa(p)| - \epsilon, |\kappa(p)| + \epsilon)$ on $V_i$, and hence
+    $$
+    |\kappa(p)| - \epsilon \leq \frac{\operatorname{area}_{S^2}(n(A_i))}{\operatorname{area}_\Sigma(A_i)} \leq |\kappa(p)| + \epsilon.
+    $$
+    Letting $i \rightarrow \infty$ and then $\epsilon \rightarrow 0$ gives the result.
+\end{proof}
+
+\subsection{The Theorema Egregium}
+
+We defined $\kappa$ using the Gauss map -- that is, using the way $\Sigma$ sits inside $\R^3$. The astonishing discovery of Gauss is that $\kappa$ doesn't actually depend on the embedding at all.
+
+\begin{theorem}[Theorema Egregium]\label{thm:egregium}
+    The Gaussian curvature is invariant under isometries: if $f: \Sigma_1 \rightarrow \Sigma_2$ is an isometry of smooth surfaces in $\R^3$, then
+    $$
+    \kappa_{\Sigma_2}(f(p)) = \kappa_{\Sigma_1}(p) \quad \text{for all } p \in \Sigma_1.
+    $$
+    In other words, the Gaussian curvature is determined by the first fundamental form alone.
+\end{theorem}
+
+The `remarkable theorem' is remarkable because $\kappa$ was defined through the second fundamental form, which is definitely \emph{not} an isometry invariant: the plane and the cylinder are locally isometric (unroll the cylinder!) but have different second fundamental forms. Somehow the particular combination $(LN - M^2)/(EG - F^2)$ only depends on $E, F, G$.
+
+One can prove this by brute force -- differentiate everything in sight and grind until $\kappa$ is expressed in terms of $E, F, G$ and their derivatives -- but that proof teaches you nothing. We will instead take a more geometric route: in the next section we will find, on any surface, special parametrisations (`geodesic normal coordinates') in which the first fundamental form looks like
+$$
+du^2 + G(u,v)\,dv^2,
+$$
+and in such coordinates one can show (example sheet) that
+$$
+\kappa = -\frac{(\sqrt{G})_{uu}}{\sqrt{G}}.
+$$
+Since geodesics -- and hence these coordinates -- will be defined using lengths of curves only, this formula exhibits $\kappa$ as an invariant of the first fundamental form, proving the Theorema Egregium.
+
+An immediate and famous consequence: there is no map of the Earth (or any part of it) which preserves distances to scale, since the sphere has $\kappa = 1/r^2 > 0$ while the plane has $\kappa \equiv 0$. Every atlas of the world necessarily distorts.
+
+\section{Geodesics}
+
+On the plane, the shortest path between two points is a straight line. What is the analogue of a straight line on a curved surface? The right notion turns out to be that of a \emph{geodesic}, which we will define variationally: a geodesic is a critical point of an energy functional. This section develops the theory and computes geodesics on our favourite examples.
+
+\subsection{The Energy Functional}
+
+Let $\Sigma$ be a smooth surface in $\R^3$ and $\gamma: [a, b] \rightarrow \Sigma$ a smooth curve. Alongside the length $L(\gamma) = \int_a^b \|\gamma'\|\,dt$ we define the \vocab{energy}
+$$
+E(\gamma) = \int_a^b \|\gamma'(t)\|^2 \, dt.
+$$
+Energy is slightly less geometric than length (it is not invariant under reparametrisation), but it is analytically much better behaved -- no square roots -- and we will see that its critical points are exactly the constant-speed shortest paths.
+
+\begin{definition}[Variation]
+    A \vocab{one-parameter variation with fixed endpoints} of $\gamma$ is a smooth map
+    $$
+    \Gamma: (-\epsilon, \epsilon) \times [a, b] \rightarrow \Sigma, \quad \gamma_s(t) = \Gamma(s, t),
+    $$
+    such that $\gamma_0 = \gamma$, and $\gamma_s(a) = \gamma(a)$, $\gamma_s(b) = \gamma(b)$ for all $s$.
+\end{definition}
+
+\begin{definition}[Geodesic]
+    A smooth curve $\gamma: [a, b] \rightarrow \Sigma$ is a \vocab{geodesic} if for every one-parameter variation $(\gamma_s)$ of $\gamma$ with fixed endpoints,
+    $$
+    \left.\frac{d}{ds}\right|_{s = 0} E(\gamma_s) = 0.
+    $$
+    That is, $\gamma$ is a critical point of the energy functional on paths from $\gamma(a)$ to $\gamma(b)$.
+\end{definition}
+
+\subsection{The Geodesic Equations}
+
+Let's turn the variational condition into differential equations. Suppose $\gamma$ has image in the image of an allowable parametrisation $\sigma: V \rightarrow U$ with first fundamental form $E\,du^2 + 2F\,du\,dv + G\,dv^2$ (context will always distinguish the function $E$ from the energy). For small $s$ write $\gamma_s(t) = \sigma(u(s,t), v(s,t))$ and let
+$$
+R = E \dot u^2 + 2F \dot u \dot v + G \dot v^2, \qquad E(\gamma_s) = \int_a^b R \, dt,
+$$
+where dots denote $t$-derivatives. Differentiating under the integral,
+\begin{align*}
+    \frac{\partial R}{\partial s} &= \left(E_u \dot u^2 + 2F_u \dot u \dot v + G_u \dot v^2\right)\frac{\partial u}{\partial s} + \left(E_v \dot u^2 + 2F_v \dot u \dot v + G_v \dot v^2\right)\frac{\partial v}{\partial s} \\
+    &\quad + 2\left(E \dot u + F \dot v\right) \frac{\partial \dot u}{\partial s} + 2\left(F \dot u + G \dot v\right)\frac{\partial \dot v}{\partial s}.
+\end{align*}
+Integrating the last two terms by parts in $t$ -- the boundary terms vanish since $\partial u/\partial s = \partial v /\partial s = 0$ at $t = a, b$ (fixed endpoints!) -- we obtain
+$$
+\left.\frac{d}{ds}\right|_{s=0} E(\gamma_s) = \int_a^b \left(A \, \frac{\partial u}{\partial s} + B \, \frac{\partial v}{\partial s}\right) dt,
+$$
+where
+\begin{align*}
+    A &= E_u \dot u^2 + 2 F_u \dot u \dot v + G_u \dot v^2 - 2 \frac{d}{dt}\left(E \dot u + F \dot v\right), \\
+    B &= E_v \dot u^2 + 2F_v \dot u \dot v + G_v \dot v^2 - 2\frac{d}{dt}\left(F \dot u + G \dot v\right).
+\end{align*}
+Since $\partial u/\partial s$ and $\partial v/\partial s$ can be arbitrary smooth functions vanishing at the endpoints, the integral vanishes for every variation exactly when $A \equiv B \equiv 0$.
+
+\begin{corollary}[Geodesic Equations]
+    A smooth curve $\gamma(t) = \sigma(u(t), v(t))$ is a geodesic if and only if
+    \begin{align*}
+        \frac{d}{dt}\left(E \dot u + F \dot v\right) &= \frac{1}{2}\left(E_u \dot u^2 + 2F_u \dot u \dot v + G_u \dot v^2\right), \\
+        \frac{d}{dt}\left(F \dot u + G \dot v\right) &= \frac{1}{2}\left(E_v \dot u^2 + 2 F_v \dot u \dot v + G_v \dot v^2\right).
+    \end{align*}
+\end{corollary}
+
+\begin{remark}
+    Being a geodesic looks like a global condition (it quantifies over all variations) but is actually local: any subarc of a geodesic is a geodesic, since a variation of the subarc extends by the constant variation, and conversely the equations above are differential equations, checked pointwise. This is important -- it means we may verify the geodesic condition chart by chart.
+\end{remark}
+
+What is the relationship between minimising energy and minimising length? The Cauchy--Schwarz inequality applied to $f = \|\gamma'\|$ and $g = 1$ gives
+$$
+L(\gamma)^2 = \left(\int_a^b \|\gamma'\| \cdot 1 \, dt\right)^2 \leq (b - a)\int_a^b \|\gamma'\|^2 dt = (b - a) E(\gamma),
+$$
+with equality if and only if $\|\gamma'\|$ is constant, i.e.\ $\gamma$ is parametrised proportionally to arc length. From this we can deduce:
+
+\begin{corollary}
+    If $\gamma$ has constant speed and locally minimises length, then $\gamma$ is a geodesic. Conversely, a curve which globally minimises energy among paths with the given endpoints also globally minimises length, and has constant speed.
+\end{corollary}
+
+We stress that geodesics need not globally minimise length -- an arc of a great circle going the `long way round' the sphere between two points is still a geodesic, as we are about to see, but is certainly not shortest. Geodesics are only \emph{critical points} of the length/energy functionals: straightest, not necessarily shortest.
+
+\subsection{Geodesics on the Plane and the Sphere}
+
+\begin{example}[The Plane]
+    For $\sigma(u, v) = (u, v, 0)$ we have $E = G = 1$, $F = 0$, and all derivatives of $E, F, G$ vanish. The geodesic equations reduce to
+    $$
+    \ddot u = 0, \quad \ddot v = 0,
+    $$
+    so $u(t) = \alpha t + \beta$ and $v(t) = \gamma t + \delta$: geodesics in the plane are straight lines traversed at constant speed, as they should be.
+\end{example}
+
+\begin{example}[The Sphere]\label{ex:spheregeodesics}
+    Consider the unit sphere with the latitude--longitude parametrisation of Example \ref{ex:sphereFFF}, with first fundamental form $du^2 + \cos^2 u \, dv^2$, so $E = 1$, $F = 0$, $G = \cos^2 u$. The geodesic equations become
+    $$
+    \ddot u + \sin u \cos u \, \dot v^2 = 0, \quad \frac{d}{dt}\left(\cos^2 u \, \dot v\right) = 0.
+    $$
+    Geodesics have constant speed, and rescaling time we may assume unit speed:
+    $$
+    \dot u^2 + \cos^2 u \, \dot v^2 = 1.
+    $$
+    The second geodesic equation gives $\dot v = C/\cos^2 u$ for a constant $C$, and substituting into the unit speed condition,
+    $$
+    \dot u^2 = 1 - \frac{C^2}{\cos^2 u} = \frac{\cos^2 u - C^2}{\cos^2 u}.
+    $$
+    Assuming we are not on a parallel, we can divide to obtain
+    $$
+    \frac{dv}{du} = \frac{\dot v}{\dot u} = \frac{C}{\cos u \sqrt{\cos^2 u - C^2}} = \frac{C \sec^2 u}{\sqrt{1 - C^2\sec^2 u \vphantom{\big(}}\,\sqrt{1 - C^2}\big/\sqrt{1 - C^2}},
+    $$
+    and the substitution $w = C \tan u / \sqrt{1 - C^2}$ turns the integral for $v$ into $\int dw/\sqrt{1 - w^2}$, so
+    $$
+    v = \arcsin\left(\frac{C \tan u}{\sqrt{1 - C^2}}\right) + \delta, \quad \text{i.e.} \quad \sin(v - \delta) = \lambda \tan u
+    $$
+    for constants $\lambda, \delta$. Expanding $\sin(v - \delta)$ and multiplying through by $\cos u$,
+    $$
+    \underbrace{(\cos u \sin v)}_{y} \cos\delta - \underbrace{(\cos u \cos v)}_{x}\sin \delta - \lambda \underbrace{\sin u}_{z} = 0.
+    $$
+    This is a linear equation in $(x, y, z)$ -- so the geodesic lies on a plane through the origin, and hence on a \vocab{great circle}, the intersection of such a plane with the sphere.
+    \begin{center}
+        \begin{tikzpicture}[scale=1.0]
+            \draw (0,0) circle (1.5);
+            % equator: front solid, back dashed
+            \draw[color={rgb,255:red,74;green,144;blue,226}] (-1.5,0) arc[start angle=180, end angle=360, x radius=1.5, y radius=0.45];
+            \draw[dashed, color={rgb,255:red,74;green,144;blue,226}] (1.5,0) arc[start angle=0, end angle=180, x radius=1.5, y radius=0.45];
+            % tilted great circle (meridian-like): front solid, back dashed
+            \draw[color={rgb,255:red,208;green,2;blue,27}] (0,1.5) arc[start angle=90, end angle=-90, x radius=0.55, y radius=1.5];
+            \draw[dashed, color={rgb,255:red,208;green,2;blue,27}] (0,1.5) arc[start angle=90, end angle=270, x radius=0.55, y radius=1.5];
+            \node[color={rgb,255:red,74;green,144;blue,226}] at (2.2,-0.42) {\small equator};
+            \node[color={rgb,255:red,208;green,2;blue,27}, right] at (1.05,1.55) {\small meridian};
+        \end{tikzpicture}
+    \end{center}
+    Conversely all constant-speed parametrisations of arcs of great circles are geodesics -- this will drop out of the symmetry argument below with no computation at all.
+\end{example}
+
+\begin{example}[The Torus of Revolution]
+    Take the torus obtained by revolving the circle of radius 1 centred at $(a, 0, 0)$ (with $a > 1$) in the $xz$-plane about the $z$-axis:
+    $$
+    \sigma(u, v) = ((a + \cos u)\cos v, (a + \cos u)\sin v, \sin u),
+    $$
+    with first fundamental form $du^2 + (a + \cos u)^2 dv^2$. Formally this is the sphere computation with $\cos u$ replaced by $a + \cos u$, and the same manipulations give
+    $$
+    \frac{dv}{du} = \frac{C}{(a + \cos u)\sqrt{(a + \cos u)^2 - C^2}}.
+    $$
+    But this integral cannot be evaluated in elementary functions -- it is an \emph{elliptic integral}, and the study of such integrals is precisely where elliptic functions historically came from. The moral: even on very symmetric surfaces, geodesics can be genuinely transcendental objects.
+\end{example}
+
+\subsection{A Second Characterisation of Geodesics}
+
+In the plane, straight lines are not just shortest -- they are \emph{straightest}: their tangent vector never turns. On a surface in $\R^3$, a curve's tangent vector may be forced to turn simply because the surface is curved, but a geodesic should turn no more than the surface forces it to. This is captured by the following characterisation.
+
+\begin{proposition}\label{prop:geodesicnormal}
+    Let $\Sigma$ be a smooth surface in $\R^3$. A smooth curve $\gamma : [a, b] \rightarrow \Sigma$ is a geodesic if and only if $\ddot{\gamma}(t)$ is normal to $\Sigma$ (that is, orthogonal to $T_{\gamma(t)}\Sigma$) for every $t$.
+\end{proposition}
+
+\begin{remark}
+    Before the proof, note a pleasant consequence: if $\ddot\gamma \perp T_\gamma \Sigma$ then
+    $$
+    \frac{d}{dt}\langle \dot\gamma, \dot\gamma \rangle = 2 \langle \ddot \gamma, \dot\gamma \rangle = 0,
+    $$
+    since $\dot\gamma$ is tangent. So geodesics are automatically parametrised at constant speed.
+\end{remark}
+\begin{proof}
+    Both conditions are local, so we may work in an allowable parametrisation and write $\gamma(t) = \sigma(u(t), v(t))$, with $\dot\gamma = \sigma_u \dot u + \sigma_v \dot v$. Now $\ddot\gamma$ is normal to $\Sigma$ if and only if it is orthogonal to both $\sigma_u$ and $\sigma_v$. Let's expand the first condition:
+    $$
+    0 = \left\langle \frac{d}{dt}\left(\sigma_u \dot u + \sigma_v \dot v\right), \sigma_u \right\rangle = \frac{d}{dt}\left\langle \sigma_u \dot u + \sigma_v \dot v, \sigma_u \right\rangle - \left\langle \sigma_u \dot u + \sigma_v \dot v, \frac{d}{dt}\sigma_u \right\rangle.
+    $$
+    The first term is $\frac{d}{dt}(E \dot u + F \dot v)$. For the second, $\frac{d}{dt}\sigma_u = \sigma_{uu}\dot u + \sigma_{uv} \dot v$, so it expands as
+    $$
+    \dot u^2 \langle \sigma_u, \sigma_{uu}\rangle + \dot u \dot v \left(\langle \sigma_u, \sigma_{uv}\rangle + \langle \sigma_v, \sigma_{uu} \rangle\right) + \dot v^2 \langle \sigma_v, \sigma_{uv} \rangle.
+    $$
+    Differentiating $E = \langle \sigma_u, \sigma_u\rangle$, $F = \langle \sigma_u, \sigma_v \rangle$ and $G = \langle \sigma_v, \sigma_v\rangle$ with respect to $u$ gives
+    $$
+    E_u = 2\langle \sigma_u, \sigma_{uu}\rangle, \quad F_u = \langle \sigma_u, \sigma_{uv}\rangle + \langle \sigma_v, \sigma_{uu} \rangle, \quad G_u = 2 \langle \sigma_v, \sigma_{uv}\rangle,
+    $$
+    so the condition $\langle \ddot\gamma, \sigma_u \rangle = 0$ becomes precisely the first geodesic equation
+    $$
+    \frac{d}{dt}(E \dot u + F \dot v) = \frac{1}{2}\left(E_u \dot u^2 + 2F_u \dot u \dot v + G_u \dot v^2\right),
+    $$
+    and symmetrically $\langle \ddot \gamma, \sigma_v \rangle = 0$ is the second geodesic equation.
+\end{proof}
+
+\subsection{Planes of Symmetry}
+
+Here is a beautifully economical way to find geodesics.
+
+\begin{proposition}\label{prop:planesymmetry}
+    Let $\Sigma$ be a smooth surface in $\R^3$ and $\Pi \subseteq \R^3$ a plane such that $\Sigma$ is setwise preserved by reflection in $\Pi$, and $C = \Pi \cap \Sigma$ is a smooth embedded curve. Then $C$, parametrised at constant speed, is a geodesic.
+\end{proposition}
+\begin{proof}
+    Let $p \in C$ and let $R$ denote reflection in $\Pi$. Since $R$ preserves $\Sigma$ and fixes $p$, its derivative (which is $R$ itself, suitably translated) preserves $T_p\Sigma$ by Lemma \ref{lem:symmetrytangent}. The tangent plane therefore splits into the $(\pm 1)$-eigenspaces of the reflection restricted to it; since $T_p\Sigma \not\subseteq \Pi$ would force... let us argue directly: $R$ restricted to $T_p\Sigma$ is a linear isometry of order 2, so $T_p\Sigma$ has an orthogonal basis of eigenvectors with eigenvalues $\pm 1$. The $+1$-eigenspace is $T_p\Sigma \cap \Pi$, which is the tangent line to $C$; it is one-dimensional (as $C$ is an embedded curve), so the $(-1)$-eigenspace is also one-dimensional. Now the normal line $\R n_p = (T_p\Sigma)^\perp$ is preserved by $R$; if $R$ acted by $-1$ on it, then $R$ would act by $-1$ on a two-dimensional subspace spanned by $n_p$ and the $(-1)$-eigenvector, and by $+1$ on the tangent line to $C$ -- but a reflection acts by $-1$ only on the one-dimensional $\Pi^\perp$. So $R n_p = n_p$, that is $n_p \in \Pi$.
+
+    Now parametrise $C$ near $p$ at constant speed by $\gamma(t)$. Since $\gamma$ lies in the plane $\Pi$, both $\dot\gamma$ and $\ddot\gamma$ lie in (the direction space of) $\Pi$. Constant speed gives $\langle \dot\gamma, \ddot\gamma\rangle = 0$, so within the plane $\Pi$, $\ddot\gamma$ is orthogonal to the tangent line of $C$. But $\Pi$'s direction space is spanned by the tangent line of $C$ together with $n_p$ (both lie in $\Pi$, and they are orthogonal). Hence $\ddot\gamma \in \R n_p$, i.e.\ $\ddot\gamma$ is normal to $\Sigma$, and $\gamma$ is a geodesic by Proposition \ref{prop:geodesicnormal}.
+\end{proof}
+
+\begin{example}
+    Any great circle on $S^2$ is the intersection of the sphere with a plane through the origin, which is a plane of reflective symmetry of the sphere. So all great circles, parametrised at constant speed, are geodesics -- no computation needed. Together with the computation of Example \ref{ex:spheregeodesics} (and uniqueness of geodesics, coming shortly), the geodesics of the sphere are \emph{precisely} the constant-speed arcs of great circles.
+\end{example}
+
+\subsection{Spherical Triangles}
+
+Since great circles are the `straight lines' of the sphere, it is natural to do some classical geometry with them -- this will also give us a first taste of the Gauss--Bonnet phenomenon. Note the sharp contrast with the plane: any two distinct great circles meet (in two antipodal points), so \emph{there are no parallel lines in spherical geometry}.
+
+\begin{definition}[Spherical Triangle]
+    A \vocab{spherical triangle} on $S^2$ is a region bounded by three arcs of great circles, each of length less than $\pi$, meeting pairwise in three vertices. The \vocab{angle} at a vertex is the angle between the tangent vectors of the two arcs meeting there.
+\end{definition}
+\begin{center}
+    \begin{tikzpicture}[scale=1.0]
+        \draw (0,0) circle (1.6);
+        \draw[dashed] (-1.6,0) arc[start angle=180, end angle=0, x radius=1.6, y radius=0.48];
+        \draw (-1.6,0) arc[start angle=180, end angle=360, x radius=1.6, y radius=0.48];
+        % triangle with vertices A, B, C on front of sphere
+        \fill (-0.85,0.42) circle (1.2pt);
+        \fill (0.95,0.28) circle (1.2pt);
+        \fill (0.12,1.28) circle (1.2pt);
+        \draw[color={rgb,255:red,208;green,2;blue,27}] (-0.85,0.42) .. controls (0.0,0.05) and (0.4,0.08) .. (0.95,0.28);
+        \draw[color={rgb,255:red,208;green,2;blue,27}] (0.95,0.28) .. controls (0.75,0.85) and (0.5,1.1) .. (0.12,1.28);
+        \draw[color={rgb,255:red,208;green,2;blue,27}] (0.12,1.28) .. controls (-0.35,1.0) and (-0.7,0.75) .. (-0.85,0.42);
+        \node at (-0.5,0.63) {\small $\alpha$};
+        \node at (0.58,0.56) {\small $\beta$};
+        \node at (0.1,0.98) {\small $\gamma$};
+    \end{tikzpicture}
+\end{center}
+
+\begin{theorem}[Gauss--Bonnet for Spherical Triangles]\label{thm:sphericalGB}
+    Let $T$ be a spherical triangle on the unit sphere with internal angles $\alpha, \beta, \gamma$. Then
+    $$
+    \operatorname{area}(T) = \alpha + \beta + \gamma - \pi.
+    $$
+    In particular the angles of a spherical triangle always sum to \emph{more} than $\pi$.
+\end{theorem}
+\begin{proof}
+    The key player is the \emph{lune}: the region between two great semicircles meeting at a pair of antipodal points with angle $\theta$. Since the area of a lune is proportional to its angle and the lune of angle $\pi$ is a hemisphere (area $2\pi$), a lune of angle $\theta$ has area $2\theta$.
+
+    Now let $T$ have vertices $A, B, C$. Each pair of the three great circles through the sides of $T$ divides the sphere; consider the three lunes with angles $\alpha, \beta, \gamma$ containing $T$, together with their antipodal images. These six lunes cover the whole sphere; moreover every point of the sphere outside $T \cup (-T)$ is covered exactly once, while the points of $T$ are covered by three lunes and points of the antipodal triangle $-T$ by the three antipodal lunes. Adding up areas,
+    $$
+    2(2\alpha) + 2(2\beta) + 2(2\gamma) = \operatorname{area}(S^2) + 4\operatorname{area}(T) = 4\pi + 4\operatorname{area}(T),
+    $$
+    using $\operatorname{area}(-T) = \operatorname{area}(T)$. Rearranging gives $\operatorname{area}(T) = \alpha + \beta + \gamma - \pi$.
+\end{proof}
+
+This is a first instance of curvature controlling angle sums: on the unit sphere $\kappa \equiv 1$, and the theorem says
+$$
+\int_T \kappa \, dA = \operatorname{area}(T) = (\alpha + \beta + \gamma) - \pi,
+$$
+the \emph{angle excess} of the triangle. We will later prove the same statement for geodesic triangles on an arbitrary surface -- the local Gauss--Bonnet theorem -- and the hyperbolic plane will exhibit the opposite behaviour, with angle sums falling short of $\pi$.
+
+\subsection{Surfaces of Revolution and Clairaut's Relation}
+
+Let $\Sigma$ be the surface of revolution of the curve $\eta(u) = (f(u), 0, g(u))$, with $f > 0$, which we may as well parametrise by arc length so the first fundamental form is $du^2 + f(u)^2 dv^2$ (Example \ref{ex:revolutionFFF}).
+
+\begin{definition}[Parallels and Meridians]
+    The circles obtained by rotating a fixed point of $\eta$ about the axis are called \vocab{parallels}; the copies of $\eta$ obtained by rotating through a fixed angle are called \vocab{meridians}.
+\end{definition}
+\begin{center}
+    \begin{tikzpicture}[scale=1.1]
+        % axis
+        \draw[dashed] (0,-0.45) -- (0,2.6);
+        % profile curves (vase)
+        \draw (-1.2,2.2) .. controls (-0.55,1.5) and (-0.55,0.75) .. (-1.1,0);
+        \draw (1.2,2.2) .. controls (0.55,1.5) and (0.55,0.75) .. (1.1,0);
+        % top rim
+        \draw (0,2.2) ellipse [x radius=1.2, y radius=0.3];
+        % bottom rim: front solid, back dashed
+        \draw (-1.1,0) arc[start angle=180, end angle=360, x radius=1.1, y radius=0.27];
+        \draw[dashed] (1.1,0) arc[start angle=0, end angle=180, x radius=1.1, y radius=0.27];
+        % waist parallel
+        \draw[color={rgb,255:red,74;green,144;blue,226}] (-0.69,1.1) arc[start angle=180, end angle=360, x radius=0.69, y radius=0.17];
+        \draw[dashed, color={rgb,255:red,74;green,144;blue,226}] (0.69,1.1) arc[start angle=0, end angle=180, x radius=0.69, y radius=0.17];
+        % radius rho
+        \draw[dashed] (0,1.1) -- (0.69,1.1);
+        \node[above] at (0.32,1.08) {\small $\rho$};
+        % geodesic crossing the parallel
+        \draw[color={rgb,255:red,208;green,2;blue,27}] (-0.05,-0.27) .. controls (0.5,0.35) and (0.62,0.8) .. (0.55,1.24) .. controls (0.48,1.75) and (0.28,2.1) .. (0.05,2.48);
+        \node[color={rgb,255:red,208;green,2;blue,27}] at (0.98,2.0) {\small $\gamma$};
+        \node at (0.78,0.9) {\small $\theta$};
+    \end{tikzpicture}
+\end{center}
+
+Every plane containing the axis of revolution is a plane of reflective symmetry of $\Sigma$, so by Proposition \ref{prop:planesymmetry}:
+
+\begin{corollary}
+    All meridians of a surface of revolution are geodesics.
+\end{corollary}
+
+Parallels, on the other hand, are usually \emph{not} geodesics -- think of a circle of latitude on the sphere near the north pole, which is visibly not straight.
+
+\begin{lemma}
+    The parallel $u = u_0$, parametrised at constant speed, is a geodesic if and only if $f'(u_0) = 0$, i.e.\ the parallel sits at a critical radius.
+\end{lemma}
+\begin{proof}
+    With $E = 1$, $F = 0$, $G = f^2$, the geodesic equations read
+    $$
+    \ddot u = f f' \dot v^2, \qquad \frac{d}{dt}\left(f^2 \dot v\right) = 0.
+    $$
+    On the parallel $u \equiv u_0$ with constant speed, $\dot v$ is a non-zero constant, so the second equation holds automatically and the first reduces to $0 = f(u_0) f'(u_0) \dot v^2$. Since $f > 0$ and $\dot v \neq 0$, this holds precisely when $f'(u_0) = 0$.
+\end{proof}
+
+For general geodesics on a surface of revolution there is a striking conservation law. Let $\gamma$ be a unit speed curve on $\Sigma$, let $\rho = f(u)$ be the radius of the parallel through a point, and let $\theta$ be the angle at which $\gamma$ crosses that parallel.
+
+\begin{proposition}[Clairaut's Relation]
+    If $\gamma$ is a geodesic, then $\rho \cos \theta$ is constant along $\gamma$.
+\end{proposition}
+\begin{proof}
+    Write $\gamma(t) = \sigma(u(t), v(t))$, so $\dot\gamma = \sigma_u \dot u + \sigma_v \dot v$, and the tangent to the parallel is $\sigma_v$, of length $\|\sigma_v\| = \sqrt{G} = f = \rho$. By the angle formula from the first fundamental form ($F = 0$),
+    $$
+    \cos\theta = \frac{\langle \sigma_v, \sigma_u \dot u + \sigma_v \dot v\rangle}{\|\sigma_v\| \, \|\dot\gamma\|} = \frac{G \dot v}{\rho} = \rho \, \dot v,
+    $$
+    using $\|\dot\gamma\| = 1$. So $\rho \cos\theta = \rho^2 \dot v = f^2 \dot v$, and the second geodesic equation says precisely that this is constant.
+\end{proof}
+
+\begin{example}[Geodesics Trapped Between Parallels]
+    Consider an ellipsoid of revolution, and a geodesic $\gamma$ which crosses some parallel of radius $\rho_0$ at angle $\theta_0$, and is not a meridian, so $c = \rho_0\cos\theta_0 > 0$. Along $\gamma$ we always have $\rho \cos\theta = c$, and since $|\cos \theta| \leq 1$ this forces $\rho \geq c$: the geodesic can never enter the polar caps where the parallels are narrower than $c$. Such a geodesic is `trapped' in the band between two parallels of radius $c$, bouncing between them indefinitely. In particular, any geodesic through a pole must have $c = 0$, i.e.\ must be a meridian.
+\end{example}
+
+\subsection{Local Existence of Geodesics}
+
+Solving the geodesic equations globally is generally hopeless (we already met elliptic integrals on the torus), but locally the general theory of differential equations does everything for us. Recall \emph{Picard's theorem} from Analysis and Topology: an ODE $\dot x = h(t, x)$ with $h$ continuous and Lipschitz in $x$ has a unique local solution through each initial condition, and if $h$ is smooth, the solution is smooth and depends smoothly on the initial conditions.
+
+The geodesic equations can be put in this form. Writing them as
+$$
+\begin{pmatrix} E & F \\ F & G \end{pmatrix}\begin{pmatrix} \ddot u \\ \ddot v \end{pmatrix} = R(u, v, \dot u, \dot v)
+$$
+with $R$ built smoothly from $E, F, G$ and their derivatives, we can invert the (positive definite, hence invertible) matrix -- and matrix inversion is smooth -- to get
+$$
+\ddot u = A(u, v, \dot u, \dot v), \quad \ddot v = B(u, v, \dot u, \dot v)
+$$
+with $A, B$ smooth. Introducing $p = \dot u$, $q = \dot v$ converts this to a first-order system in $(u, v, p, q)$ to which Picard's theorem applies.
+
+\begin{corollary}\label{cor:geodesicexistence}
+    Let $\Sigma$ be a smooth surface in $\R^3$, $p \in \Sigma$ and $0 \neq v \in T_p\Sigma$. Then there is some $\epsilon > 0$ and a geodesic $\gamma: [0, \epsilon) \rightarrow \Sigma$ with
+    $$
+    \gamma(0) = p, \quad \dot\gamma(0) = v,
+    $$
+    and $\gamma$ is unique and depends smoothly on $(p, v)$.
+\end{corollary}
+
+This local existence gives us the promised `best possible' parametrisations. Fix $p \in \Sigma$ and a unit speed geodesic arc $\gamma(v)$ through $p = \gamma(0)$. For each small $v$, let $\gamma_v$ be the unit speed geodesic through $\gamma(v)$ orthogonal to $\gamma$, and define
+$$
+\sigma(u, v) = \gamma_v(u).
+$$
+
+\begin{lemma}
+    For sufficiently small $\epsilon, \delta > 0$, the map $\sigma: (u, v) \mapsto \gamma_v(u)$ on $(-\epsilon,\epsilon) \times (-\delta, \delta)$ is an allowable parametrisation of an open set in $\Sigma$.
+\end{lemma}
+\begin{proof}
+    Smoothness of $\sigma$ is the smooth dependence on initial conditions in Picard's theorem. At the origin, $\sigma_u = \dot\gamma_0(0)$ and $\sigma_v = \dot\gamma(0)$ are orthogonal unit vectors by construction, so $D\sigma$ has rank 2 at the origin, and by continuity in a neighbourhood; shrinking further makes $\sigma$ injective. So $\sigma$ is allowable.
+\end{proof}
+
+\begin{corollary}[Geodesic Normal Coordinates]\label{cor:geodesicnormalcoords}
+    Every smooth surface in $\R^3$ admits, near each point, an allowable parametrisation with first fundamental form
+    $$
+    du^2 + G(u, v)\, dv^2, \quad \text{with} \quad G(0, v) = 1, \quad G_u(0, v) = 0.
+    $$
+\end{corollary}
+\begin{proof}
+    Take $\sigma(u, v) = \gamma_v(u)$ as above. For fixed $v_0$, the curve $u \mapsto \sigma(u, v_0)$ is a unit speed geodesic, so $E = \|\sigma_u\|^2 = 1$ everywhere, and in particular $E_v = 0$. Substituting the curve $u(t) = t$, $v(t) = v_0$ (so $\dot u = 1, \dot v = 0$) into the second geodesic equation,
+    $$
+    \frac{d}{dt}\left(F \dot u + G \dot v\right) = \frac{1}{2}\left(E_v \dot u^2 + 2 F_v \dot u \dot v + G_v \dot v^2\right) \implies \frac{d}{dt} F = 0 \implies F_u = 0,
+    $$
+    so $F$ is independent of $u$. At $u = 0$ we have $F = \langle \dot\gamma_v(0), \dot\gamma(v)\rangle = 0$ by the orthogonality in the construction; hence $F \equiv 0$. Next, $\sigma_v(0, v) = \dot\gamma(v)$ has unit length, so $G(0, v) = 1$. Finally $u = 0$ gives the unit speed geodesic $\gamma$ itself (with $\dot u = 0$, $\dot v = 1$), and the first geodesic equation applied to it gives
+    $$
+    \frac{d}{dt}(E \dot u + F \dot v) = \frac{1}{2}\left(E_u \dot u^2 + 2F_u \dot u \dot v + G_u \dot v^2\right) \implies 0 = \frac{1}{2}G_u(0, v). \qedhere
+    $$
+\end{proof}
+
+In geodesic normal coordinates one shows (on the example sheets, by direct computation with the formula $\kappa = (LN - M^2)/(EG - F^2)$ and repeated differentiation of the relations among $\sigma_u, \sigma_v, n$) that
+$$
+\kappa = -\frac{\left(\sqrt{G}\right)_{uu}}{\sqrt{G}}.
+$$
+Since geodesics, and hence these coordinates, are defined purely in terms of lengths of curves, this expresses $\kappa$ in terms of the first fundamental form alone -- completing the proof of the Theorema Egregium (Theorem \ref{thm:egregium}), as promised.
+
+\subsection{Surfaces of Constant Curvature}
+
+The formula $\kappa = -(\sqrt{G})_{uu}/\sqrt{G}$ lets us completely determine the local geometry of surfaces of constant curvature. Note first that under a dilation $x \mapsto ax$ of $\R^3$, the functions $E, F, G$ scale by $a^2$ while $L, M, N$ scale by $a$, so $\kappa$ scales by $1/a^2$; thus it suffices to understand $\kappa \equiv 0, \pm 1$.
+
+\begin{proposition}
+    Let $\Sigma$ be a smooth surface in $\R^3$.
+    \begin{enumerate}[label=(\roman*)]
+        \item If $\kappa \equiv 0$, then $\Sigma$ is locally isometric to the plane $(\R^2, du^2 + dv^2)$.
+        \item If $\kappa \equiv 1$, then $\Sigma$ is locally isometric to the unit sphere $(S^2, du^2 + \cos^2 u\, dv^2)$.
+    \end{enumerate}
+\end{proposition}
+\begin{proof}
+    Take geodesic normal coordinates about a point, so that the first fundamental form is $du^2 + G\, dv^2$ with $G(0, v) = 1$, $G_u(0, v) = 0$, and
+    $$
+    \left(\sqrt{G}\right)_{uu} + \kappa \sqrt{G} = 0.
+    $$
+    If $\kappa \equiv 0$: then $\sqrt{G} = A(v) u + B(v)$, and the boundary conditions force $A \equiv 0$, $B \equiv 1$, so $G \equiv 1$ and the first fundamental form is $du^2 + dv^2$ -- that of the plane. By Lemma \ref{lem:fffisometry}, $\Sigma$ is locally isometric to the plane.
+
+    If $\kappa \equiv 1$: then $\sqrt{G} = A(v)\sin u + B(v) \cos u$, and the boundary conditions force $A \equiv 0$, $B \equiv 1$, giving first fundamental form $du^2 + \cos^2 u \, dv^2$ -- that of the unit sphere in latitude--longitude coordinates (Example \ref{ex:sphereFFF}).
+\end{proof}
+
+What about $\kappa \equiv -1$? The same argument gives $\sqrt{G} = \cosh u$, so the first fundamental form is
+$$
+du^2 + \cosh^2 u \, dv^2.
+$$
+There is a surface of revolution with this geometry: the \vocab{pseudosphere} (or tractoid), obtained by revolving the \emph{tractrix} -- the curve traced by a weight dragged on the end of a taut string whose other end moves along a line -- about its asymptotic axis.
+\begin{center}
+    \begin{tikzpicture}[scale=1.0]
+        % axis
+        \draw[dashed] (0,-0.15) -- (0,2.75);
+        % horn profile
+        \draw (-1.5,0) .. controls (-0.5,0.1) and (-0.22,1.1) .. (-0.13,2.6);
+        \draw (1.5,0) .. controls (0.5,0.1) and (0.22,1.1) .. (0.13,2.6);
+        % bottom rim: front solid, back dashed
+        \draw (-1.5,0) arc[start angle=180, end angle=360, x radius=1.5, y radius=0.36];
+        \draw[dashed] (1.5,0) arc[start angle=0, end angle=180, x radius=1.5, y radius=0.36];
+        % a middle parallel
+        \draw (-0.31,1.35) arc[start angle=180, end angle=360, x radius=0.31, y radius=0.09];
+        \draw[dashed] (0.31,1.35) arc[start angle=0, end angle=180, x radius=0.31, y radius=0.09];
+    \end{tikzpicture}
+\end{center}
+But the pseudosphere is geometrically unsatisfying: it has an edge (the rim), and geodesics run off it in finite time. A theorem of Hilbert says this is unavoidable -- \emph{no} complete surface of constant curvature $-1$ embeds smoothly in $\R^3$. If we want a good home for constant negative curvature, we must leave $\R^3$ behind and work with \emph{abstract} Riemannian metrics. That is the subject of the next section, and the resulting geometry -- hyperbolic geometry -- will occupy us for most of the rest of the course.
+
+Before moving on, we record a change of variables we will meet again: substituting $V = e^{v}\tanh u$, $W = e^{v}\operatorname{sech} u$ transforms $du^2 + \cosh^2 u \, dv^2$ into
+$$
+\frac{dV^2 + dW^2}{W^2},
+$$
+which is the `standard' form of the hyperbolic metric on a half-plane.
+
+\section{Abstract Riemannian Metrics}\label{sec:riemannianmetrics}
+
+The first fundamental form of a surface in $\R^3$ was induced from the ambient Euclidean inner product. But nothing stops us writing down expressions like $E\,du^2 + 2F\,du\,dv + G\,dv^2$ on an abstract smooth surface directly, without any embedding -- and the Theorema Egregium tells us that curvature will still make sense. This idea unlocks geometries, like the hyperbolic plane, which genuinely do not exist inside $\R^3$.
+
+\subsection{Riemannian Metrics}
+
+\begin{definition}[Riemannian Metric on an Open Set]
+    Let $V \subseteq \R^2$ be open. A \vocab{Riemannian metric} on $V$ is a smooth map from $V$ to the positive definite symmetric bilinear forms on $\R^2$,
+    $$
+    x \mapsto \begin{pmatrix} E(x) & F(x) \\ F(x) & G(x) \end{pmatrix}, \quad \text{with } E > 0,\ G > 0,\ EG - F^2 > 0,
+    $$
+    where $E, F, G: V \rightarrow \R$ are smooth. We write it as $E \, du^2 + 2F\,du\,dv + G\,dv^2$.
+\end{definition}
+
+Given such a metric, we measure exactly as before: a tangent vector $w$ at $x \in V$ has length
+$\|w\|^2 = w^T \left(\begin{smallmatrix} E & F \\ F & G\end{smallmatrix}\right) w$, and a smooth curve $\gamma(t) = (u(t), v(t))$ in $V$ has length
+$$
+L(\gamma) = \int_a^b \left(E \dot u^2 + 2F \dot u \dot v + G \dot v^2\right)^{1/2} dt.
+$$
+Angles and areas are defined by the same formulae as for surfaces in $\R^3$; and geodesics are again critical points of the energy, characterised by the same geodesic equations (our derivation only ever used $E, F, G$).
+
+To put a metric on an abstract surface, we put compatible metrics on all its charts.
+
+\begin{definition}[Riemannian Metric on an Abstract Surface]
+    Let $\Sigma$ be an abstract smooth surface with atlas $\{(U_i, \phi_i)\}$, $\phi_i: U_i \rightarrow V_i \subseteq \R^2$. A \vocab{Riemannian metric} $g$ on $\Sigma$ is a choice of Riemannian metric on each $V_i$ such that the transition maps are isometries: writing $f$ for the transition map between charts $i$ and $j$,
+    $$
+    (Df)^T \begin{pmatrix} E_j & F_j \\ F_j & G_j\end{pmatrix} (Df) = \begin{pmatrix} E_i & F_i \\ F_i & G_i \end{pmatrix}
+    $$
+    wherever this makes sense.
+\end{definition}
+
+The compatibility condition is precisely the transformation law that first fundamental forms of surfaces in $\R^3$ obey under transition maps -- so a smooth surface in $\R^3$ with its first fundamental form is an example. The point is that there are now many more examples.
+
+\begin{example}[The Flat Torus]\label{ex:flattorus}
+    Recall the torus $T^2 = \R^2/\Z^2$, which has an atlas of charts inverse to $q|_{D}$ for small discs $D \subseteq \R^2$, whose transition maps are restrictions of translations of $\R^2$. Equip every chart with the Euclidean metric $du^2 + dv^2$. If $f$ is a translation then $Df = I$, so the compatibility condition
+    $$
+    (Df)^T I (Df) = I
+    $$
+    holds trivially, and we obtain a global Riemannian metric on $T^2$: the \vocab{flat torus}. Every point has a chart which is an isometry onto a Euclidean disc, so this metric has $\kappa \equiv 0$.
+
+    Contrast this with the torus of revolution in $\R^3$: by Proposition \ref{prop:ellipticpoint}, any compact surface in $\R^3$ has an elliptic point, so \emph{no} embedding of the torus in $\R^3$ can induce the flat metric. The flat torus is a genuinely abstract object.
+\end{example}
+
+\begin{example}[$\R\PP^2$ and the Klein Bottle]
+    The real projective plane $\R\PP^2 = S^2/\pm 1$ has an atlas of charts lifted from charts of $S^2$ on open sets contained in hemispheres, with transition maps locally equal to the identity or the antipodal map. The antipodal map is an isometry of the round sphere, so the round metric descends to a Riemannian metric on $\R\PP^2$ of constant curvature $+1$.
+
+    Similarly, the Klein bottle (the square with one pair of sides glued directly and the other with a flip) has an atlas whose transition maps are translations and translations composed with a reflection -- all Euclidean isometries -- so it inherits a flat Riemannian metric. Neither $\R\PP^2$ nor the Klein bottle embeds in $\R^3$ at all, so abstract metrics are the only ones available.
+\end{example}
+
+\begin{definition}[Isometry of Riemannian Surfaces]
+    Let $(\Sigma_1, g_1)$ and $(\Sigma_2, g_2)$ be abstract smooth surfaces with Riemannian metrics. A diffeomorphism $f: \Sigma_1 \rightarrow \Sigma_2$ is an \vocab{isometry} if it preserves the lengths of all curves.
+\end{definition}
+
+\begin{example}[Pullback Metrics]
+    If $(\Sigma_2, g_2)$ is given and $f: \Sigma_1 \rightarrow \Sigma_2$ is any diffeomorphism of smooth surfaces, there is a unique metric on $\Sigma_1$ making $f$ an isometry: define the inner product of two tangent vectors to be the $g_2$-inner product of their images under $Df$. This is the \vocab{pullback metric} $f^* g_2$.
+\end{example}
+
+\subsection{The Length Metric}
+
+A Riemannian metric on $\Sigma$ measures lengths of curves; from this we get a candidate distance function between points, in the usual `infimum over paths' way.
+
+\begin{definition}[Length Metric]
+    Let $(\Sigma, g)$ be a connected abstract smooth surface with a Riemannian metric. For $p, q \in \Sigma$ define
+    $$
+    d_g(p, q) = \inf \{L(\gamma) \mid \gamma \text{ a piecewise smooth path from } p \text{ to } q\}.
+    $$
+\end{definition}
+
+We should check this is an honest metric -- the worry being that two distinct points might be joined by paths of arbitrarily small length.
+
+\begin{proposition}
+    $d_g$ is a metric on $\Sigma$, and it induces the original topology of $\Sigma$.
+\end{proposition}
+\begin{proof}
+    First, $d_g$ is well-defined and finite: a connected surface is path-connected, and given a continuous path from $p$ to $q$ we can cover its (compact) image by finitely many charts $U_1, \dots, U_N$ and pick intermediate points $p = x_0, x_1 \in U_1 \cap U_2, \dots, x_N = q$; within each chart, the straight line segment between the images of consecutive points gives a smooth path, and concatenating produces a piecewise smooth path from $p$ to $q$. Symmetry of $d_g$ follows by reversing paths, and the triangle inequality by concatenating them.
+
+    The only issue is showing $d_g(p, q) = 0 \implies p = q$; equivalently, that distinct points are a positive distance apart. Let $p \neq q$, fix a chart $(U, \phi)$ at $p$ with $\phi(p) = 0$ and $\phi(U) = B(0, 1)$, and choose $\epsilon \in (0,1)$ small enough that $q \notin \phi^{-1}(\overline{B(0, \epsilon)})$. Any path $\gamma$ from $p$ to $q$ must cross the circle $\phi^{-1}(\{|z| = \epsilon\})$, so it suffices to bound below the length of the part of $\gamma$ inside $\phi^{-1}(\overline{B(0, \epsilon)})$.
+
+    On the compact set $\overline{B(0,\epsilon)}$, the metric $\begin{pmatrix} E & F \\ F & G\end{pmatrix}$ is a continuous family of positive definite forms, so there is $\delta > 0$ such that
+    $$
+    \begin{pmatrix} E - \delta & F \\ F & G - \delta \end{pmatrix}
+    $$
+    is still positive semi-definite everywhere on $\overline{B(0,\epsilon)}$ -- for instance because the smallest eigenvalue of the metric is a continuous positive function on a compact set, hence bounded below by some $\delta > 0$. Then for any tangent vector $w$ at a point of $\overline{B(0, \epsilon)}$,
+    $$
+    \|w\|_g^2 \geq \delta \|w\|_{\text{Euc}}^2,
+    $$
+    so $g$-lengths of curves inside the ball dominate $\sqrt{\delta}$ times their Euclidean lengths. The part of $\phi \circ \gamma$ from $0$ to the circle of radius $\epsilon$ has Euclidean length at least $\epsilon$, whence
+    $$
+    d_g(p, q) \geq \sqrt{\delta}\, \epsilon > 0.
+    $$
+    Finally, the two-sided comparison between $g$ and (a scaled) Euclidean metric on compact sets, argued exactly as above, shows that small $d_g$-balls contain and are contained in small chart-balls, so $d_g$ induces the given topology.
+\end{proof}
+
+We now have all the language we need. The plane $\R^2$ with its flat metric and the sphere $S^2$ with its round metric are homogeneous, highly symmetric geometries of curvature $0$ and $+1$. The missing member of the family -- constant curvature $-1$ -- is the subject of the next section.
+
+\section{Hyperbolic Geometry}
+
+We now construct the hyperbolic plane: the homogeneous geometry of constant curvature $-1$. Historically this was the geometry that resolved the two-thousand-year controversy over Euclid's parallel postulate -- in the hyperbolic plane, through any point not on a line $\ell$ there are \emph{infinitely many} lines not meeting $\ell$. We will build it concretely, as a disc (or half-plane) with a rescaled Euclidean metric, and its symmetries will come from the M\"obius group.
+
+\subsection{The Hyperbolic Disc}
+
+\begin{definition}[Hyperbolic Disc]
+    Let $D = \{z \in \C \mid |z| < 1\}$ be the open unit disc. The \vocab{hyperbolic metric} on $D$ is the Riemannian metric
+    $$
+    g_{\mathrm{hyp}} = \frac{4 (du^2 + dv^2)}{(1 - u^2 - v^2)^2} = \frac{4|dz|^2}{(1 - |z|^2)^2}.
+    $$
+    The disc $D$ with this metric is the \vocab{disc model} of the hyperbolic plane.
+\end{definition}
+
+Since $E = G$ and $F = 0$, the hyperbolic metric is a \emph{conformal} rescaling of the Euclidean metric -- hyperbolic angles are Euclidean angles. But lengths are distorted, and dramatically so near the boundary: a smooth curve $\gamma: [0,1] \rightarrow D$ has hyperbolic length
+$$
+L_{\mathrm{hyp}}(\gamma) = \int_0^1 \frac{2 |\dot\gamma(t)|}{1 - |\gamma(t)|^2}\, dt,
+$$
+and the factor $2/(1 - |z|^2)$ blows up as $|z| \rightarrow 1$. The boundary circle is `infinitely far away' -- as we will verify shortly -- and it is \emph{not} part of the hyperbolic plane.
+
+The flat plane and the round sphere both have very large isometry groups. The same is true here, and the isometries come from a group we know well from IA Groups: the M\"obius group
+$$
+\Mob = \left\{z \mapsto \frac{az + b}{cz + d} \;\middle|\; \begin{pmatrix} a & b \\ c & d\end{pmatrix} \in \GL(2, \C)\right\}
+$$
+acting on $\C \cup \{\infty\}$.
+
+\begin{lemma}\label{lem:mobD}
+    The subgroup of M\"obius maps preserving the disc, $\Mob(D) = \{T \in \Mob \mid T(D) = D\}$, is
+    $$
+    \Mob(D) = \left\{z \mapsto e^{i\theta}\, \frac{z - a}{1 - \bar{a} z} \;\middle|\; a \in D,\ \theta \in \R \right\}.
+    $$
+\end{lemma}
+\begin{proof}
+    First we check the given maps preserve $D$. For $|a| < 1$,
+    \begin{align*}
+        \left|\frac{z - a}{1 - \bar a z}\right| = 1 &\iff (z - a)(\bar z - \bar a) = (1 - \bar a z)(1 - a \bar z) \\
+        &\iff |z|^2 - a \bar z - \bar a z + |a|^2 = 1 - \bar a z - a \bar z + |a|^2 |z|^2 \\
+        &\iff (|z|^2 - 1)(1 - |a|^2) = 0 \iff |z| = 1.
+    \end{align*}
+    So the map preserves the unit circle; being a homeomorphism of $\C \cup \{\infty\}$, it maps $D$ to either the inside or the outside, and since $a \mapsto 0 \in D$, it preserves $D$. The rotation factor $e^{i\theta}$ clearly preserves $D$ too.
+
+    Conversely, suppose $T \in \Mob$ preserves $D$, and let $a = T^{-1}(0) \in D$. Then composing $T$ with the inverse of $z \mapsto (z - a)/(1 - \bar a z)$, we get a M\"obius map preserving $D$ and fixing $0$; it also preserves the unit circle, and one checks (using preservation of inverse points, or a direct computation) that a M\"obius map fixing $0$ and preserving the unit circle is a rotation $z \mapsto e^{i\theta} z$. So $T$ has the stated form.
+\end{proof}
+
+\begin{lemma}\label{lem:mobisometry}
+    $\Mob(D)$ acts on $(D, g_{\mathrm{hyp}})$ by isometries.
+\end{lemma}
+\begin{proof}
+    The group $\Mob(D)$ is generated by rotations $z \mapsto e^{i\theta} z$ and the maps $T_a: z \mapsto \frac{z-a}{1 - \bar a z}$. Rotations are Euclidean isometries fixing $|z|$, so preserve $g_{\mathrm{hyp}}$, which only depends on $|z|$ and $|dz|$.
+    For $T_a$, write $w = \frac{z - a}{1 - \bar a z}$. Differentiating,
+    $$
+    dw = \left(\frac{1}{1 - \bar a z} + \frac{(z - a)\bar a}{(1 - \bar a z)^2}\right) dz = \frac{1 - |a|^2}{(1 - \bar a z)^2}\, dz.
+    $$
+    Also
+    $$
+    1 - |w|^2 = \frac{|1 - \bar a z|^2 - |z - a|^2}{|1 - \bar a z|^2} = \frac{(1 - |a|^2)(1 - |z|^2)}{|1 - \bar a z|^2},
+    $$
+    where the numerator is the same computation as in Lemma \ref{lem:mobD}. Dividing,
+    $$
+    \frac{|dw|}{1 - |w|^2} = \frac{(1 - |a|^2)\,|dz|}{|1 - \bar a z|^2} \cdot \frac{|1 - \bar a z|^2}{(1 - |a|^2)(1 - |z|^2)} = \frac{|dz|}{1 - |z|^2}.
+    $$
+    So $T_a$ preserves the expression $2|dz|/(1 - |z|^2)$, i.e.\ pulls back $g_{\mathrm{hyp}}$ to itself. Hence every element of $\Mob(D)$ is an isometry.
+\end{proof}
+
+Note that $\Mob(D)$ acts \emph{transitively} on $D$ (the map $T_a$ sends $a$ to $0$), so the hyperbolic plane looks the same at every point -- just like the flat plane and the round sphere.
+
+Now we can find the geodesics.
+
+\begin{proposition}\label{prop:discgeodesics}
+    In $(D, g_{\mathrm{hyp}})$:
+    \begin{enumerate}[label=(\roman*)]
+        \item any two points are joined by a unique geodesic, up to reparametrisation;
+        \item the geodesics are the diameters of $D$ and the arcs of circles meeting the boundary circle $\partial D$ at right angles.
+    \end{enumerate}
+    The complete geodesics (defined on all of $\R$) are called \vocab{hyperbolic lines}.
+\end{proposition}
+\begin{center}
+    \begin{tikzpicture}[scale=1.0]
+        \draw (0,0) circle (1.6);
+        \draw[color={rgb,255:red,74;green,144;blue,226}] (-150:1.6) -- (30:1.6);
+        \begin{scope}
+            \clip (0,0) circle (1.6);
+            \draw[color={rgb,255:red,74;green,144;blue,226}] (2.0,0.6) circle (1.3416);
+            \draw[color={rgb,255:red,74;green,144;blue,226}] (-0.7,-1.9) circle (1.2410);
+            \draw[color={rgb,255:red,74;green,144;blue,226}] (-1.3,1.75) circle (1.2903);
+        \end{scope}
+        \node at (1.35,-1.35) {$D$};
+    \end{tikzpicture}
+\end{center}
+\begin{proof}
+    Consider first two points on the real diameter, say $0$ and $a \in (0, 1)$. Let $\gamma(t) = (u(t), v(t))$ be any smooth path from $0$ to $a$ in $D$. Then
+    \begin{align*}
+    L_{\mathrm{hyp}}(\gamma) = \int_0^1 \frac{2\sqrt{\dot u^2 + \dot v^2}}{1 - u^2 - v^2}\, dt \geq \int_0^1 \frac{2 |\dot u|}{1 - u^2} \, dt \geq \int_0^1 \frac{2 \dot u}{1 - u^2} \, dt = 2 \artanh a,
+    \end{align*}
+    where the first inequality is an equality if and only if $\dot v \equiv 0$ and $v \equiv 0$ (dropping $\dot v^2$ and enlarging the denominator), and the second iff $u$ is monotonic. So the straight segment $[0, a]$, monotonically parametrised, is the unique shortest path, of hyperbolic length $2 \artanh a$; being length-minimising with constant speed (after reparametrising) it is a geodesic, and any geodesic between the two points must equal it.
+
+    Now let $p, q \in D$ be arbitrary. Using the transitive isometric action of $\Mob(D)$, choose $T \in \Mob(D)$ with $T(p) = 0$, and then a rotation moves $T(q)$ to some $a \in (0, 1)$. Since isometries carry geodesics to geodesics, $p$ and $q$ are joined by a unique geodesic: the preimage of the segment $[0, a]$. Finally, M\"obius maps send circles-and-lines to circles-and-lines and preserve angles, and diameters are exactly the circles-and-lines through $0$ meeting $\partial D$ at right angles; so the geodesics through arbitrary points are exactly diameters and circular arcs orthogonal to $\partial D$.
+\end{proof}
+
+\begin{corollary}
+    The hyperbolic distance on $D$ is
+    $$
+    d_{\mathrm{hyp}}(p, q) = 2 \artanh \left|\frac{p - q}{1 - \bar p q}\right|.
+    $$
+\end{corollary}
+\begin{proof}
+    The map $z \mapsto \frac{z - p}{1 - \bar p z}$ is an isometry taking $p$ to $0$ and $q$ to $\frac{q - p}{1 - \bar p q}$, and a rotation about $0$ takes this to the positive real point $a = \left|\frac{p - q}{1 - \bar p q}\right|$, at distance $2\artanh a$ from $0$.
+\end{proof}
+
+Notice that $d_{\mathrm{hyp}}(0, a) = 2 \artanh a \rightarrow \infty$ as $a \rightarrow 1$: the boundary really is infinitely far away, so the hyperbolic plane is `complete' in a way the pseudosphere was not.
+
+\begin{remark}
+    A pleasant uniqueness statement: up to a constant scale, $g_{\mathrm{hyp}}$ is the \emph{only} Riemannian metric on $D$ invariant under $\Mob(D)$ for which the diameters are length-minimising -- essentially because invariance forces the distance function $p(a) = d(0, a)$ to satisfy the functional equation $p(b) - p(a) = p\left(\frac{b - a}{1 - ab}\right)$, whose differentiable solutions are multiples of $\artanh$. The factor $4$ in the metric is chosen precisely so that the curvature is $-1$, as we will see.
+\end{remark}
+
+\subsection{The Upper Half-Plane}
+
+There is a second standard model of the same geometry, often more convenient for computation.
+
+\begin{definition}[Upper Half-Plane]
+    The \vocab{hyperbolic upper half-plane} is
+    $$
+    \mathfrak{h} = \{z \in \C \mid \im z > 0\}, \quad \text{with the metric} \quad g_{\mathrm{hyp}} = \frac{dx^2 + dy^2}{y^2} = \frac{|dz|^2}{(\im z)^2}.
+    $$
+\end{definition}
+
+\begin{lemma}
+    $(D, g_{\mathrm{hyp}})$ and $(\mathfrak{h}, g_{\mathrm{hyp}})$ are isometric.
+\end{lemma}
+\begin{proof}
+    Consider the mutually inverse M\"obius maps
+    $$
+    T: \mathfrak{h} \rightarrow D, \quad T(w) = \frac{w - i}{w + i}, \qquad T^{-1}(z) = i\,\frac{1 + z}{1 - z}.
+    $$
+    ($T$ sends $\R \cup \{\infty\}$ to the unit circle and $i \mapsto 0$, so maps $\mathfrak{h}$ onto $D$.) We compute
+    $$
+    T'(w) = \frac{2i}{(w + i)^2},
+    $$
+    and, with $z = T(w)$,
+    $$
+    1 - |z|^2 = \frac{|w + i|^2 - |w - i|^2}{|w+i|^2} = \frac{4 \im w}{|w + i|^2}.
+    $$
+    Hence
+    $$
+    \frac{2|dz|}{1 - |z|^2} = \frac{2\,|T'(w)|\,|dw|}{1 - |T(w)|^2} = \frac{4 |dw|}{|w+i|^2} \cdot \frac{|w+i|^2}{4 \im w} = \frac{|dw|}{\im w}.
+    $$
+    So $T$ pulls the disc metric back to the half-plane metric, i.e.\ $T$ is an isometry.
+\end{proof}
+
+\begin{corollary}
+    Any two points of $\mathfrak{h}$ are joined by a unique geodesic, and the hyperbolic lines in $\mathfrak{h}$ are the vertical half-lines and the semicircles centred on the real axis.
+\end{corollary}
+\begin{proof}
+    The isometry $T^{-1}: D \rightarrow \mathfrak{h}$ is a M\"obius map, so takes circles-and-lines to circles-and-lines, preserves angles, and takes $\partial D$ to $\R \cup \{\infty\}$. So the images of the hyperbolic lines of $D$ (circles-and-lines orthogonal to $\partial D$) are precisely the circles-and-lines orthogonal to the real axis: vertical lines and semicircles centred on $\R$.
+\end{proof}
+\begin{center}
+    \begin{tikzpicture}[scale=1.0]
+        \draw (-3.1,0) -- (3.1,0);
+        \node[below] at (2.7,-0.05) {$\R = \partial \mathfrak{h}$};
+        \draw[color={rgb,255:red,74;green,144;blue,226}] (-2.4,0) -- (-2.4,2.1);
+        \draw[color={rgb,255:red,74;green,144;blue,226}] (-1.1,0) -- (-1.1,2.1);
+        \draw[color={rgb,255:red,74;green,144;blue,226}] (-0.4,0) arc[start angle=180, end angle=0, radius=1.1];
+        \draw[color={rgb,255:red,74;green,144;blue,226}] (1.9,0) arc[start angle=180, end angle=0, radius=0.55];
+        \node at (2.4,1.75) {$\mathfrak{h}$};
+    \end{tikzpicture}
+\end{center}
+
+In the half-plane model the orientation-preserving symmetries take a particularly clean form: one can check that the M\"obius maps preserving $\mathfrak{h}$ are exactly those with \emph{real} coefficients and positive determinant,
+$$
+\Mob(\mathfrak{h}) = \left\{z \mapsto \frac{az + b}{cz + d} \;\middle|\; a, b, c, d \in \R, \ ad - bc > 0 \right\} \cong \PSL(2, \R),
+$$
+where $\PSL(2, \R) = \SL(2, \R)/\{\pm I\}$, since scaling the matrix doesn't change the map. For example $z \mapsto z + b$ ($b \in \R$) and $z \mapsto \lambda z$ ($\lambda > 0$) are hyperbolic isometries -- the second showing that all vertical lines are `translates' of one another.
+
+\begin{remark}[The Hyperboloid Model]
+    There is a third model worth knowing about, which makes the analogy with the sphere vivid. Consider $\R^3$ with the \emph{Lorentzian} inner product $\langle x, y \rangle_L = x_1 y_1 + x_2 y_2 - x_3 y_3$, and the upper sheet of the hyperboloid
+    $$
+    \{x \in \R^3 \mid \langle x, x \rangle_L = -1, \ x_3 > 0\},
+    $$
+    which is the `sphere of radius $\sqrt{-1}$' for this inner product. The restriction of $\langle \cdot, \cdot \rangle_L$ to its tangent planes is positive definite, and gives a metric of constant curvature $-1$ isometric to $(D, g_{\mathrm{hyp}})$ -- indeed, radial projection from $(0,0,-1)$ maps the hyperboloid onto the disc $D \times \{0\}$ and carries this metric to $g_{\mathrm{hyp}}$, in perfect analogy with stereographic projection of the sphere. The isometry group becomes the group $\OO^+(2,1)$ of Lorentz transformations preserving the sheet, mirroring $\OO(3)$ acting on $S^2$.
+\end{remark}
+
+\subsection{Isometries of the Hyperbolic Plane}
+
+We have exhibited many isometries of $\HH$ (we write $\HH$ for the hyperbolic plane in either model). Are there others? Certainly one: complex conjugation $z \mapsto \bar z$ on $D$ visibly preserves $g_{\mathrm{hyp}}$ but is orientation-reversing. It is the hyperbolic analogue of a reflection, and generalises as follows.
+
+\begin{definition}[Inversion]
+    Let $\Gamma \subseteq \C \cup \{\infty\}$ be a circle or line. Points $z, z'$ are \vocab{inverse with respect to $\Gamma$} if every circle-or-line through $z$ orthogonal to $\Gamma$ also passes through $z'$. Given $z$, the inverse point exists and is unique, and the map $J_\Gamma: z \mapsto z'$ is called \vocab{inversion} in $\Gamma$.
+\end{definition}
+
+To see existence and uniqueness: for $\Gamma = \R \cup \{\infty\}$, the circles through $z$ orthogonal to $\R$ are precisely those centred on $\R$, and they all pass through $\bar z$ and through no other common point; so $J_{\R \cup \{\infty\}}(z) = \bar z$. For general $\Gamma$, choose $T \in \Mob$ with $T(\R \cup \{\infty\}) = \Gamma$; since M\"obius maps preserve circles and angles, they preserve the inversion relation, so
+$$
+J_\Gamma = T \circ (z \mapsto \bar z) \circ T^{-1}.
+$$
+Inversion in a straight line is ordinary reflection; inversion in the unit circle is $z \mapsto 1/\bar z$. Inversions fix $\Gamma$ pointwise and swap its two sides, and the composite of two inversions is a M\"obius map (conjugating twice removes the conjugations: if $T(z) = \frac{az + b}{cz + d}$, then $z \mapsto \overline{T(\bar z)} = \frac{\bar a z + \bar b}{\bar c z + \bar d}$ is again M\"obius).
+
+\begin{theorem}
+    The isometry group of the hyperbolic plane is generated by inversions in hyperbolic lines; the orientation-preserving isometries are exactly $\Mob(\HH)$.
+\end{theorem}
+\begin{proof}
+    We work in the disc model. First, inversions in hyperbolic lines are isometries: inversion in the diameter $\R \cap D$ is $z \mapsto \bar z$, which preserves $g_{\mathrm{hyp}}$; and a general hyperbolic line is the image of $\R \cap D$ under some $T \in \Mob(D)$, so inversion in it is $T \circ (z \mapsto \bar z) \circ T^{-1}$, a composite of isometries.
+
+    Now let $\alpha$ be any isometry of $(D, g_{\mathrm{hyp}})$. Choose $T \in \Mob(D)$ with $T(\alpha(0)) = 0$, so $T \circ \alpha$ is an isometry fixing $0$. An isometry fixing $0$ permutes the geodesics through $0$, i.e.\ the diameters, and preserves angles up to sign; composing with a rotation $R$ we may assume $R \circ T \circ \alpha$ fixes $0$ and maps the positive real radius $D \cap \R_{+}$ to itself (using that isometries preserve $d_{\mathrm{hyp}}(0, \cdot)$, which is a strictly increasing function of $|z|$, so points of $D \cap \R_+$ go to points at the same radius). Composing if necessary with conjugation $C: z \mapsto \bar z$, we get an isometry $\beta$ fixing $0$, fixing $D \cap \R_+$ pointwise (again since distances from $0$ are preserved), and preserving the upper half of the disc. We claim $\beta = \operatorname{Id}$: any point $w \in D$ is determined by its distances to three non-collinear points of $D \cap \R$ together with the side of $\R$ it lies on -- distances to two points of the fixed diameter determine $w$ up to reflection.
+    So $\alpha = (C) \circ (R \circ T)^{-1}$ or $(R \circ T)^{-1}$, a composite of M\"obius maps in $\Mob(D)$ and possibly one conjugation. Since elements of $\Mob(D)$ are themselves composites of (two or four) inversions -- this is an exercise on the example sheets, mirroring the Euclidean fact that rotations and translations are composites of two reflections -- the full isometry group is generated by inversions. And an orientation-preserving isometry must involve an even number of inversions, hence lies in $\Mob(D)$.
+\end{proof}
+
+It is worth recording the trichotomy of non-identity orientation-preserving isometries, in analogy with rotations and translations of the Euclidean plane. Any $\alpha \in \Mob(\HH)$, $\alpha \neq \operatorname{Id}$, extends to the closed disc (or closed half-plane) and has a fixed point there, and is exactly one of:
+\begin{enumerate}[label=(\roman*)]
+    \item \vocab{elliptic}: $\alpha$ fixes a point $p \in \HH$. Conjugating so $p = 0 \in D$, $\alpha$ is a rotation $z \mapsto e^{i\theta}z$ -- hyperbolic rotations about $p$.
+    \item \vocab{parabolic}: $\alpha$ fixes exactly one point of the boundary $\partial \HH$ and none of $\HH$. Conjugating so the fixed point is $\infty \in \partial\mathfrak{h}$, $\alpha$ is $z \mapsto z + b$.
+    \item \vocab{hyperbolic}: $\alpha$ fixes exactly two points of $\partial\HH$. It then preserves the hyperbolic line joining them (its \emph{axis}) and translates along it; conjugating so the fixed points are $0, \infty \in \partial\mathfrak{h}$, $\alpha$ is $z \mapsto \lambda z$ with $\lambda > 0$.
+\end{enumerate}
+
+There is a corresponding trichotomy for pairs of hyperbolic lines $\ell, \ell'$: they are \vocab{intersecting} if they meet in $\HH$; \vocab{parallel} if they meet only `at infinity', i.e.\ their closures share a boundary point; and \vocab{ultraparallel} if their closures are disjoint. Given a hyperbolic line $\ell$ and $p \notin \ell$, there are exactly two lines through $p$ parallel to $\ell$ (one for each end of $\ell$), and a continuum of lines through $p$ ultraparallel to $\ell$ -- so the parallel postulate fails as extravagantly as possible.
+
+\subsection{Hyperbolic Triangles}
+
+\begin{definition}[Hyperbolic Triangle]
+    A \vocab{hyperbolic triangle} is a region of $\HH$ bounded by three hyperbolic line segments, meeting pairwise in three vertices. We allow vertices to lie on the boundary $\partial\HH$ (where the two sides meet at angle $0$); such vertices are called \vocab{ideal}, and a triangle with all three vertices ideal is an \vocab{ideal triangle}.
+\end{definition}
+
+We adopt the classical labelling: side lengths $A, B, C$, with opposite angles $\alpha, \beta, \gamma$ at vertices $a, b, c$. Since the hyperbolic metric is conformal, hyperbolic angles are just Euclidean angles in either model. Here is a hyperbolic triangle in the disc model -- note how the sides bow inwards, pinching the angles:
+\begin{center}
+    \begin{tikzpicture}[scale=1.0]
+        \draw (0,0) circle (1.6);
+        \begin{scope}
+            \clip (0,0) circle (1.6);
+            \draw[color={rgb,255:red,208;green,2;blue,27}] (90:3.4) circle (3.0);
+            \draw[color={rgb,255:red,208;green,2;blue,27}] (210:3.4) circle (3.0);
+            \draw[color={rgb,255:red,208;green,2;blue,27}] (330:3.4) circle (3.0);
+        \end{scope}
+        \node at (270:0.78) {\small $\alpha$};
+        \node at (30:0.78) {\small $\beta$};
+        \node at (150:0.78) {\small $\gamma$};
+        \node at (1.42,-1.35) {$D$};
+    \end{tikzpicture}
+\end{center}
+As the picture suggests, the angles of a hyperbolic triangle sum to \emph{less} than $\pi$; we will prove this precisely with the area formula below. First, the hyperbolic law of cosines, which controls the metric side of the story.
+
+\begin{proposition}[Hyperbolic Cosine Rule]
+    For a hyperbolic triangle with the labelling above,
+    $$
+    \cosh C = \cosh A \cosh B - \sinh A \sinh B \cos \gamma.
+    $$
+\end{proposition}
+\begin{proof}
+    Applying an isometry, we may place the vertex $c$ at $0$ in the disc model and the vertex $b$ on the positive real axis; then the sides through $c$ are Euclidean radii, meeting at (Euclidean, hence hyperbolic) angle $\gamma$ at the origin. From $d_{\mathrm{hyp}}(0, z) = 2\artanh|z|$, the vertices are
+    $$
+    b = \tanh\tfrac{A}{2} \in \R_+, \qquad a = e^{i\gamma}\tanh\tfrac{B}{2},
+    $$
+    (the side $ca$ has length $B$ since it is opposite $b$, and so on), and the distance formula gives
+    $$
+    \tanh \tfrac{C}{2} = \left|\frac{a - b}{1 - \bar a b}\right|.
+    $$
+    Now use the identities, for $t = \tanh\frac{\lambda}{2}$,
+    $$
+    \cosh \lambda = \frac{1 + t^2}{1 - t^2}, \qquad \sinh \lambda = \frac{2t}{1 - t^2}.
+    $$
+    So
+    $$
+    \cosh C = \frac{|1 - \bar a b|^2 + |a - b|^2}{|1 - \bar a b|^2 - |a - b|^2}.
+    $$
+    Expanding the numerator and denominator,
+    \begin{align*}
+        |1 - \bar a b|^2 \pm |a - b|^2 &= 1 - \bar a b - a \bar b + |a|^2 |b|^2 \pm \left(|a|^2 - \bar a b - a \bar b + |b|^2\right) \\
+        &= \begin{cases}
+            (1 + |a|^2)(1 + |b|^2) - 2(\bar a b + a \bar b) & (+)\\
+            (1 - |a|^2)(1 - |b|^2) & (-)
+        \end{cases}
+    \end{align*}
+    Since $b \in \R$ and $\bar a b + a \bar b = 2 b \re a = 2 |a| b \cos\gamma$, we get
+    \begin{align*}
+    \cosh C &= \frac{(1 + |a|^2)(1 + |b|^2)}{(1 - |a|^2)(1 - |b|^2)} - \frac{2|a|}{1 - |a|^2}\cdot\frac{2 b}{1 - |b|^2}\cos\gamma \\
+    &= \cosh A \cosh B - \sinh A \sinh B \cos\gamma,
+    \end{align*}
+    reading off the hyperbolic functions of $A$ and $B$ via the identities above (note $|b| = \tanh\frac{A}{2}$, $|a| = \tanh\frac{B}{2}$).
+\end{proof}
+
+\begin{remark}
+    For small $A, B, C$, using $\cosh \lambda \approx 1 + \frac{\lambda^2}{2}$ and $\sinh\lambda \approx \lambda$ and keeping second order terms, the formula degenerates to
+    $$
+    C^2 \approx A^2 + B^2 - 2AB\cos\gamma,
+    $$
+    the Euclidean cosine rule -- at small scales, hyperbolic geometry looks Euclidean, as it must since any Riemannian metric is approximately flat at small scales. Also, since $\cos \gamma \geq -1$,
+    $$
+    \cosh C \leq \cosh A \cosh B + \sinh A \sinh B = \cosh(A + B),
+    $$
+    and $\cosh$ is increasing on $\R_{\geq 0}$, so $C \leq A + B$: the triangle inequality, with a sharper quantitative form.
+\end{remark}
+
+\subsection{The Area of a Hyperbolic Triangle}
+
+We now come to the hyperbolic counterpart of the spherical triangle theorem (Theorem \ref{thm:sphericalGB}) -- the Gauss--Bonnet theorem for hyperbolic triangles.
+
+\begin{theorem}[Gauss--Bonnet for Hyperbolic Triangles]\label{thm:hyperbolicGB}
+    Let $T \subseteq \HH$ be a hyperbolic triangle with internal angles $\alpha, \beta, \gamma$ (with angle $0$ at any ideal vertex). Then
+    $$
+    \operatorname{area}_{\mathrm{hyp}}(T) = \pi - \alpha - \beta - \gamma.
+    $$
+    In particular the angle sum of a hyperbolic triangle is always strictly less than $\pi$, and no triangle has area exceeding $\pi$.
+\end{theorem}
+\begin{proof}
+    \emph{Step 1: ideal triangles.} $\Mob(\HH)$ (together with an inversion if needed) acts transitively on triples of distinct boundary points, so all ideal triangles are isometric and we may compute with the ideal triangle in $\mathfrak{h}$ with vertices $-1, 1, \infty$ -- the region above the unit semicircle between the vertical lines $x = \pm 1$:
+    \begin{center}
+        \begin{tikzpicture}[scale=1.1]
+            \draw (-2.1,0) -- (2.1,0);
+            \fill[color={rgb,255:red,74;green,144;blue,226}, opacity=0.15]
+                (-1,2.2) -- (-1,0) arc[start angle=180, end angle=0, radius=1] -- (1,2.2) -- cycle;
+            \draw[color={rgb,255:red,74;green,144;blue,226}] (-1,0) -- (-1,2.2);
+            \draw[color={rgb,255:red,74;green,144;blue,226}] (1,0) -- (1,2.2);
+            \draw[color={rgb,255:red,74;green,144;blue,226}] (-1,0) arc[start angle=180, end angle=0, radius=1];
+            \node[below] at (-1,-0.02) {\small $-1$};
+            \node[below] at (1,-0.02) {\small $1$};
+            \node at (1.75,1.8) {$\mathfrak{h}$};
+        \end{tikzpicture}
+    \end{center}
+    The hyperbolic area element is $\sqrt{EG - F^2}\; dx\, dy = \frac{1}{y^2}\, dx \, dy$, so
+    $$
+    \operatorname{area}(T) = \int_{-1}^1 \int_{\sqrt{1 - x^2}}^{\infty} \frac{dy}{y^2}\, dx = \int_{-1}^1 \frac{dx}{\sqrt{1 - x^2}} = \pi = \pi - 0 - 0 - 0,
+    $$
+    as claimed for ideal triangles.
+
+    \emph{Step 2: triangles with two ideal vertices.} Let $A(\alpha)$ denote the area of a triangle with angles $\alpha, 0, 0$; this is well defined, as such triangles are determined up to isometry by $\alpha$ (put the vertex at $0 \in D$ with one side along $\R_+$; the ideal vertices are then determined). Sliding the finite vertex continuously shows $A$ is continuous, and $A$ is decreasing in $\alpha$ since a triangle of larger angle sits inside one of smaller angle with the same ideal vertices. Now consider the configuration of a triangle with angle $\alpha + \beta$ split by a hyperbolic line into triangles of angles $\alpha$ and $\beta$, with all other vertices ideal: comparing areas of the four triangles formed by the lines in that figure yields the identity
+    $$
+    A(\alpha) + A(\beta) = \pi + A(\alpha + \beta).
+    $$
+    (One can see this cleanly in $\mathfrak{h}$: the triangle $\{-1, 1, \infty\}$ is divided by the vertical line through a point $e^{i\theta}$ of the unit semicircle into two triangles with two ideal vertices each.) Setting $F(\alpha) = \pi - A(\alpha)$, this reads $F(\alpha) + F(\beta) = F(\alpha + \beta)$; $F$ is continuous and monotonic, so $F(\alpha) = \lambda \alpha$ for some constant $\lambda > 0$. Finally the two triangles with angles $\alpha$ and $\pi - \alpha$ obtained by cutting a `bigon' with both vertices ideal along a line satisfy $A(\alpha) + A(\pi - \alpha) = \pi$; substituting gives $\lambda = 1$. So
+    $$
+    A(\alpha) = \pi - \alpha.
+    $$
+
+    \emph{Step 3: one ideal vertex.} Next consider a triangle $T_1$ with one ideal vertex $w$ and finite vertices $a, b$ with angles $\alpha, \beta$. Extend the side from $a$ through $b$ to an ideal point $u$. The triangle $a u w$ has two ideal vertices and angle $\alpha$ at $a$, so has area $A(\alpha) = \pi - \alpha$, and it decomposes as $T_1$ together with the triangle $b u w$, which has two ideal vertices and angle $\pi - \beta$ at $b$. Hence
+    $$
+    \pi - \alpha = \operatorname{area}(T_1) + A(\pi - \beta) = \operatorname{area}(T_1) + \beta \implies \operatorname{area}(T_1) = \pi - \alpha - \beta.
+    $$
+
+    \emph{Step 4: general triangles.} Finally let $T$ have finite vertices $a, b, c$ with angles $\alpha, \beta, \gamma$. Extend the side from $a$ through $b$ to an ideal point $u$, and consider the triangle $a u c$: it has one ideal vertex, angle $\alpha$ at $a$, and angle $\gamma + \delta$ at $c$, where $\delta$ is the angle of the triangle $b u c$ at $c$. By Step 3,
+    $$
+    \operatorname{area}(auc) = \pi - \alpha - (\gamma + \delta),
+    $$
+    while the triangle $buc$ has one ideal vertex, angle $\pi - \beta$ at $b$ and angle $\delta$ at $c$, so
+    $$
+    \operatorname{area}(buc) = \pi - (\pi - \beta) - \delta = \beta - \delta.
+    $$
+    Since $auc$ decomposes as $T \cup buc$,
+    $$
+    \operatorname{area}(T) = \left(\pi - \alpha - \gamma - \delta\right) - \left(\beta - \delta\right) = \pi - \alpha - \beta - \gamma. \qedhere
+    $$
+\end{proof}
+
+\begin{corollary}[Hyperbolic Polygons]
+    A \vocab{geodesic $n$-gon} in $\HH$ -- a disc bounded by $n$ hyperbolic segments -- with internal angles $\alpha_1, \dots, \alpha_n$ has area
+    $$
+    (n - 2)\pi - \sum_{i = 1}^n \alpha_i.
+    $$
+\end{corollary}
+\begin{proof}
+    Cut the polygon into $n - 2$ triangles by geodesic diagonals (possible since any two points of $\HH$ are joined by a unique geodesic) and sum the triangle formula.
+\end{proof}
+
+Compare our three geometries: a triangle with angles $\alpha, \beta, \gamma$ has
+$$
+\operatorname{area} = (\alpha + \beta + \gamma) - \pi \text{ on } S^2, \qquad \alpha + \beta + \gamma = \pi \text{ on } \R^2, \qquad \operatorname{area} = \pi - (\alpha + \beta + \gamma) \text{ on } \HH,
+$$
+which is exactly the statement $\int_T \kappa \, dA = (\alpha + \beta + \gamma) - \pi$ with $\kappa \equiv 1, 0, -1$ respectively. In particular the hyperbolic plane has constant curvature $-1$, as promised (and this can be checked directly: the half-plane metric is $\frac{1}{y^2}(dx^2 + dy^2)$, and the formula for the curvature of a conformal metric gives $\kappa \equiv -1$).
+
+\subsection{Hyperbolic Surfaces}
+
+We built a flat metric on the torus by gluing the sides of a Euclidean square. The same idea, run in the hyperbolic plane, produces metrics of constant curvature $-1$ on all surfaces of genus at least $2$ -- so every compact orientable surface carries one of our three geometries: $S^2$ carries spherical geometry, $T^2$ flat geometry, and everything else hyperbolic geometry.
+
+Recall that the surface $\Sigma_g$ of genus $g$ is obtained from a $4g$-gon by gluing its edges in the pattern $a_1 b_1 a_1^{-1} b_1^{-1} \cdots a_g b_g a_g^{-1} b_g^{-1}$; for $g = 2$:
+\begin{center}
+    \begin{tikzpicture}[scale=1.0, every path/.style={}]
+        \foreach \i in {0,1,4,5} {
+            \draw[postaction={decorate},decoration={markings, mark=at position 0.55 with {\arrow{Stealth}}}]
+                ({90+45*\i}:1.7) -- ({90+45*(\i+1)}:1.7);
+        }
+        \foreach \i in {2,3,6,7} {
+            \draw[postaction={decorate},decoration={markings, mark=at position 0.55 with {\arrow{Stealth}}}]
+                ({90+45*(\i+1)}:1.7) -- ({90+45*\i}:1.7);
+        }
+        \node at ({90+22.5}:1.95) {\small $a_1$};
+        \node at ({135+22.5}:1.95) {\small $b_1$};
+        \node at ({180+22.5}:1.95) {\small $a_1$};
+        \node at ({225+22.5}:1.95) {\small $b_1$};
+        \node at ({270+22.5}:1.95) {\small $a_2$};
+        \node at ({315+22.5}:1.95) {\small $b_2$};
+        \node at ({360+22.5}:1.95) {\small $a_2$};
+        \node at ({405+22.5}:1.95) {\small $b_2$};
+    \end{tikzpicture}
+\end{center}
+(Each label is traversed once in each direction; all eight vertices are identified to a single point of $\Sigma_2$.)
+
+To copy the flat torus construction we need the polygon to be a \emph{hyperbolic} polygon, and for a smooth structure at the glued vertex we need the interior angles to add up to exactly $2\pi$.
+
+\begin{lemma}\label{lem:4ggon}
+    For each $g \geq 2$ there is a regular hyperbolic $4g$-gon with all internal angles equal to $\frac{2\pi}{4g} = \frac{\pi}{2g}$.
+\end{lemma}
+\begin{proof}
+    Place the vertices at the points $r \omega^k$, $k = 0, \dots, 4g - 1$, in the disc model, where $\omega = e^{2\pi i/4g}$ and $r \in (0, 1)$, joined by hyperbolic segments; by symmetry this is a regular hyperbolic $4g$-gon with some internal angle $\beta(r)$. As $r \rightarrow 1$ the polygon converges to the \emph{ideal} regular $4g$-gon, with all angles $0$; as $r \rightarrow 0$, small hyperbolic polygons are nearly Euclidean, so $\beta(r)$ tends to the Euclidean regular $4g$-gon angle $\frac{(4g - 2)\pi}{4g}$. The angle $\beta(r)$ varies continuously, so by the intermediate value theorem it takes the value $\frac{\pi}{2g}$ for some $r$, since
+    $$
+    0 < \frac{\pi}{2g} < \frac{(4g-2)\pi}{4g} \iff 2 < 4g - 2,
+    $$
+    which holds exactly when $g \geq 2$ (this is where genus $\geq 2$ is needed -- for the torus, $g = 1$, the required angle $\pi/2$ is not available for hyperbolic squares, whose angles are strictly less than $\pi/2$... consistent with the torus being flat rather than hyperbolic).
+\end{proof}
+
+\begin{theorem}
+    For every $g \geq 2$, the compact orientable surface $\Sigma_g$ of genus $g$ admits a Riemannian metric locally isometric to $\HH$; in particular it has constant curvature $\kappa \equiv -1$.
+\end{theorem}
+\begin{proof}[Proof (sketch)]
+    Take the regular hyperbolic $4g$-gon $P$ of Lemma \ref{lem:4ggon} with angles $\frac{\pi}{2g}$, with edges labelled and oriented in the pattern $a_1 b_1 a_1^{-1}b_1^{-1}\cdots$. For each pair of edges to be glued there is a hyperbolic isometry carrying one to the other, respecting the orientations and exchanging the sides of the edges (isometries act transitively on `flags' -- a point on an oriented line together with a choice of side). Now define $\Sigma_g = P/\sim$ as a topological surface (as in Section 1), and give it charts as follows:
+    \begin{enumerate}[label=(\roman*)]
+        \item at the image of an interior point of $P$, take a small hyperbolic disc inside $P$, included into $\HH$;
+        \item at the image of an edge point, combine a half-disc at the point with the half-disc at the paired point, transported by the gluing isometry; the two half-discs assemble to an honest disc in $\HH$;
+        \item at the single vertex of $\Sigma_g$: the $4g$ corners of $P$ have angles summing to $4g \cdot \frac{\pi}{2g} = 2\pi$, so transporting them by gluing isometries, they fit together exactly around a point of $\HH$, forming a disc.
+    \end{enumerate}
+    All transition maps between these charts are restrictions of hyperbolic isometries, which are smooth and preserve $g_{\mathrm{hyp}}$. So the locally-defined hyperbolic metrics agree on overlaps and define a Riemannian metric on $\Sigma_g$, locally isometric to $\HH$ by construction.
+\end{proof}
+
+\begin{remark}
+    The quotient description of the flat torus as $\R^2/\Z^2$ has a hyperbolic analogue: the side-pairing isometries generate a subgroup $\Gamma \leq \Mob(\HH)$, and $\Sigma_g = \HH/\Gamma$. This point of view is developed properly in Part II \emph{Algebraic Topology}. There is also a more flexible cut-and-paste construction, assembling $\Sigma_g$ from $2g - 2$ hyperbolic `pairs of pants' -- three-holed spheres with geodesic boundary, themselves glued from two right-angled hyperbolic hexagons -- which exhibits many essentially different hyperbolic metrics on the same surface. The space of such metrics, the \emph{moduli space}, is among the most-studied objects in geometry.
+\end{remark}
+
+\section{The Gauss--Bonnet Theorem}
+
+We have now seen the same phenomenon three times: on the sphere, the plane and the hyperbolic plane, the failure of a triangle's angles to sum to $\pi$ is exactly the integral of the curvature over the triangle. This is no coincidence, and its vast generalisation -- the Gauss--Bonnet theorem -- is the crowning result of the course: it says that curvature, a purely local quantity, integrates up to a purely \emph{topological} one.
+
+Throughout this section, curvature on an abstract surface with a Riemannian metric means the expression from the Theorema Egregium discussion: in geodesic normal coordinates ($E = 1$, $F = 0$),
+$$
+\kappa = -\frac{(\sqrt{G})_{uu}}{\sqrt{G}},
+$$
+which makes sense for any Riemannian metric, embedded or not, and agrees with $\det(Dn)$ for surfaces in $\R^3$. (Geodesic normal coordinates exist in the abstract setting by the same Picard argument as before -- the geodesic equations never mentioned the embedding.)
+
+\subsection{The Local Gauss--Bonnet Theorem}
+
+\begin{definition}[Geodesic Polygon]
+    A \vocab{geodesic $n$-gon} on a surface $\Sigma$ with a Riemannian metric is an open region $R \subseteq \Sigma$ homeomorphic to a disc, whose boundary is a piecewise smooth closed curve made up of $n$ geodesic arcs, meeting at $n$ vertices with internal angles $\alpha_1, \dots, \alpha_n \in (0, 2\pi)$.
+\end{definition}
+\begin{center}
+    \begin{tikzpicture}[scale=1.0]
+        % ambient surface blob
+        \draw (0,0.35) .. controls (1.1,-0.35) and (3.2,-0.3) .. (4.3,0.5)
+              .. controls (4.75,1.3) and (4.6,2.15) .. (3.9,2.7)
+              .. controls (2.7,3.3) and (1.0,3.25) .. (0.35,2.5)
+              .. controls (-0.2,1.85) and (-0.35,1.0) .. cycle;
+        \node at (0.55,0.55) {$\Sigma$};
+        % geodesic quadrilateral
+        \draw[color={rgb,255:red,208;green,2;blue,27}]
+            (1.5,0.9) .. controls (2.1,1.15) and (2.6,1.15) .. (3.2,0.95)
+            .. controls (3.15,1.55) and (3.2,1.95) .. (3.4,2.35)
+            .. controls (2.75,2.2) and (2.3,2.25) .. (1.8,2.45)
+            .. controls (1.85,1.9) and (1.75,1.4) .. (1.5,0.9);
+        \fill (1.5,0.9) circle (1.1pt);
+        \fill (3.2,0.95) circle (1.1pt);
+        \fill (3.4,2.35) circle (1.1pt);
+        \fill (1.8,2.45) circle (1.1pt);
+        \node at (1.78,1.12) {\small $\alpha_1$};
+        \node at (2.95,1.18) {\small $\alpha_2$};
+        \node at (3.1,2.12) {\small $\alpha_3$};
+        \node at (2.02,2.2) {\small $\alpha_4$};
+        \node[color={rgb,255:red,208;green,2;blue,27}] at (2.45,1.68) {$R$};
+    \end{tikzpicture}
+\end{center}
+
+\begin{theorem}[Local Gauss--Bonnet Theorem]\label{thm:localGB}
+    Let $\Sigma$ be an abstract smooth surface with Riemannian metric $g$, and let $R \subseteq \Sigma$ be a geodesic $n$-gon with internal angles $\alpha_1, \dots, \alpha_n$. Then
+    $$
+    \int_R \kappa \, dA = \sum_{i=1}^n \alpha_i - (n - 2)\pi.
+    $$
+\end{theorem}
+
+For $n = 3$ this is exactly `$\int_T \kappa \, dA$ equals the angle excess', generalising Theorems \ref{thm:sphericalGB} and \ref{thm:hyperbolicGB} simultaneously. It is essential that $R$ is a disc: the theorem fails for regions with holes (as we will see below, this failure is precisely what makes the global theorem interesting).
+
+We will not give a complete proof, but the mechanism deserves to be seen, because it is exactly Green's theorem from Vector Calculus. This discussion is non-examinable. Suppose for simplicity that $R$ lies in the image of a single parametrisation in geodesic normal coordinates, so $E = 1$, $F = 0$, and let
+$$
+e = \sigma_u, \qquad f = \frac{\sigma_v}{\sqrt{G}}
+$$
+be the resulting orthonormal frame of the tangent planes. Parametrise $\partial R$ by arc length and consider
+$$
+I = \int_{\partial R} \langle e, \dot f \rangle \, dt.
+$$
+On one hand, writing $\dot f = f_u \dot u + f_v \dot v$ and setting $P = \langle e, f_u \rangle$, $Q = \langle e, f_v \rangle$, Green's theorem gives
+$$
+I = \int_{\partial R} P \, du + Q \, dv = \int_R (Q_u - P_v) \, du\, dv,
+$$
+and a direct computation using the orthonormality relations shows
+$$
+Q_u - P_v = \langle e_u, f_v \rangle - \langle e_v, f_u \rangle = -(\sqrt{G})_{uu} = \kappa \sqrt{G},
+$$
+where $\sqrt{G} = \sqrt{EG - F^2}$ is exactly the area element -- so $I = \int_R \kappa \, dA$.
+On the other hand, let $\theta(t)$ be the angle from $e$ to the tangent $\dot\gamma$ of the boundary, so $\dot\gamma = \cos\theta\, e + \sin\theta \, f$. Along a geodesic arc, differentiating and using $\langle \ddot\gamma, -\sin\theta \, e + \cos\theta\, f \rangle = 0$ (the acceleration has no tangential component) together with orthonormality yields
+$$
+\dot\theta = \langle e, \dot f\rangle.
+$$
+So $I$ also computes the total rotation of the boundary direction relative to the frame, which for a piecewise-geodesic boundary of a disc is $2\pi$ minus the sum of the exterior angles:
+$$
+I = 2\pi - \sum_{i=1}^n (\pi - \alpha_i) = \sum_i \alpha_i - (n - 2)\pi.
+$$
+Equating the two computations of $I$ gives the theorem.
+
+\subsection{The Global Gauss--Bonnet Theorem}
+
+\begin{theorem}[Global Gauss--Bonnet Theorem]\label{thm:globalGB}
+    Let $\Sigma$ be a compact abstract smooth surface with Riemannian metric $g$. Then
+    $$
+    \int_\Sigma \kappa \, dA = 2 \pi \chi(\Sigma),
+    $$
+    where $\chi(\Sigma)$ is the Euler characteristic.
+\end{theorem}
+
+Pause on what this says. The left-hand side depends on the metric -- deform the surface, and $\kappa$ changes pointwise, drastically. The right-hand side is a topological invariant, a difference of counts of vertices, edges and faces. The theorem says all the local changes in curvature miraculously cancel: \emph{total} curvature cannot be changed by any deformation whatsoever. For instance, however you dent a sphere, extra negative curvature in the dent is exactly balanced by positive curvature around its rim.
+
+The global theorem follows from the local one, given one plausible (but nontrivial) fact whose proof, via the exponential map, belongs to Part II:
+
+\begin{lemma}
+    A compact surface with a Riemannian metric admits subdivisions all of whose faces are geodesic polygons.
+\end{lemma}
+
+\begin{proof}[Proof of Theorem \ref{thm:globalGB}]
+    Take such a subdivision, with $V$ vertices, $E$ edges and $F$ faces. Summing the local Gauss--Bonnet theorem over all faces,
+    $$
+    \int_\Sigma \kappa \, dA = \sum_{\text{faces } P} \int_P \kappa \, dA = \sum_{\text{faces } P} \left(\sum_{\text{angles of } P} \alpha - (n_P - 2)\pi\right),
+    $$
+    where $n_P$ is the number of edges of the face $P$. Now:
+    \begin{enumerate}[label=(\roman*)]
+        \item The angles around each vertex sum to $2\pi$, so summing all angles over all faces gives $2\pi V$.
+        \item Each edge is an edge of exactly two faces, so $\sum_P n_P = 2E$.
+        \item $\sum_P 2\pi = 2\pi F$.
+    \end{enumerate}
+    Putting these together,
+    $$
+    \int_\Sigma \kappa \, dA = 2\pi V - 2\pi E + 2\pi F = 2\pi \chi(\Sigma). \qedhere
+    $$
+\end{proof}
+
+\begin{remark}
+    Note the pleasing corollary in the other direction: since $\int_\Sigma \kappa \, dA$ manifestly does not depend on any choice of subdivision, the Gauss--Bonnet theorem re-proves that the Euler characteristic is independent of the subdivision -- for surfaces admitting a Riemannian metric, which is all of them.
+\end{remark}
+
+Let's sanity-check the theorem against everything we have built.
+
+\begin{example}[The Sphere]
+    The round sphere of radius $r$ has $\kappa \equiv 1/r^2$ and area $4\pi r^2$, so
+    $$
+    \int_{S^2} \kappa \, dA = \frac{4 \pi r^2}{r^2} = 4\pi = 2\pi \cdot 2 = 2\pi \chi(S^2).
+    $$
+    Note that Gauss--Bonnet forbids a metric of $\kappa \leq 0$ on the sphere: any compact surface with non-positive curvature has $\chi \leq 0$.
+\end{example}
+
+\begin{example}[The Flat Torus]
+    The flat torus of Example \ref{ex:flattorus} has $\kappa \equiv 0$, so $\int \kappa \, dA = 0 = 2\pi\chi(T^2)$ -- consistent with $\chi(T^2) = 0$. Conversely, Gauss--Bonnet shows any metric on $T^2$ must have total curvature zero; combined with Proposition \ref{prop:ellipticpoint}, this gives another proof that a torus embedded in $\R^3$ must have regions of both positive and negative curvature.
+\end{example}
+
+\begin{example}[Hyperbolic Surfaces]
+    The hyperbolic surface $\Sigma_g$ ($g \geq 2$) built from the regular $4g$-gon with angles $\frac{\pi}{2g}$ has $\kappa \equiv -1$, and its total area is the area of the polygon,
+    $$
+    \operatorname{area}(\Sigma_g) = (4g - 2)\pi - 4g \cdot \frac{\pi}{2g} = (4g - 4)\pi,
+    $$
+    by the hyperbolic polygon area formula. So
+    $$
+    \int_{\Sigma_g} \kappa \, dA = -(4g - 4)\pi = 2\pi(2 - 2g) = 2\pi \chi(\Sigma_g),
+    $$
+    in perfect agreement. In fact Gauss--Bonnet shows that \emph{every} metric of curvature $-1$ on $\Sigma_g$ has the same total area $(4g - 4)\pi$ -- a first hint of the rigidity of hyperbolic geometry.
+\end{example}
+
+\begin{example}[Closed Geodesics Bounding Discs]
+    Let $\Sigma$ be a surface with $\kappa \equiv 0$ (say the flat torus) and suppose $\gamma$ is a closed geodesic bounding a smooth disc $R$. Marking two points of $\gamma$ as vertices makes $R$ a geodesic $2$-gon with both internal angles equal to $\pi$, and the local Gauss--Bonnet theorem would give
+    $$
+    0 = \int_R \kappa \, dA = (\pi + \pi) - (2 - 2)\pi = 2\pi,
+    $$
+    a contradiction. So on a flat surface, no closed geodesic bounds a disc -- every closed geodesic on the flat torus must wrap around the torus. Contrast the sphere, where great circles bound hemispheres: there positive curvature supplies the missing $2\pi$.
+\end{example}
+
+\subsection{Flat Metrics on the Torus}
+
+We close with a brief look at a question the course has equipped us to pose: \emph{how many} geometries can a given surface carry? Take the simplest interesting case, flat metrics on $T^2$.
+
+The construction of Example \ref{ex:flattorus} works for any parallelogram, not just the unit square: if $Q \subseteq \R^2$ is the parallelogram spanned by linearly independent $v_1, v_2$, then $T^2 = \R^2 / (\Z v_1 \oplus \Z v_2)$ inherits a flat metric $g_Q$, of total area equal to the Euclidean area of $Q$. Different parallelograms can give genuinely different geometries:
+
+\begin{lemma}
+    The flat tori built from $Q = [0,1]^2$ and $\hat Q = [0, 10] \times [0, \tfrac{1}{10}]$ have equal area but are not isometric.
+\end{lemma}
+\begin{proof}
+    Geodesics on a flat torus are exactly the images of straight lines in $\R^2$ (the charts are local isometries with $\R^2$, and Picard uniqueness means there are no others). A line through a lift $\hat p$ of $p$ descends to a \emph{closed} geodesic exactly when it passes through another lift of $p$, i.e.\ has rational slope with respect to the lattice. The shortest closed geodesic therefore has length equal to the shortest nonzero lattice vector: $1$ for $\Z^2$, but $\tfrac{1}{10}$ for $10\Z \oplus \tfrac{1}{10}\Z$. Isometries preserve the set of lengths of closed geodesics, so the tori are not isometric.
+\end{proof}
+
+To organise all flat tori, normalise: rotating, reflecting and dilating $Q$ (which changes the metric only by a global isometry and scale), we can take $v_1 = 1 \in \C$ and $v_2 = \tau$ with $\im \tau > 0$. So the upper half-plane $\mathfrak{h}$ -- of all places! -- parametrises flat metrics on $T^2$ up to scale. Two parameters $\tau, \tau'$ give isometric tori (by an orientation-preserving diffeomorphism) exactly when the lattices agree after rotation, which happens exactly when
+$$
+\tau' = \frac{a \tau + b}{c \tau + d} \quad \text{for some} \quad \begin{pmatrix} a & b \\ c & d \end{pmatrix} \in \SL(2, \Z),
+$$
+the subgroup $\SL(2, \Z) \leq \SL(2, \R)$ acting on $\mathfrak{h}$ by M\"obius maps as in the previous section. One obtains:
+
+\begin{theorem}
+    The set of flat metrics on $T^2$, up to dilation and orientation-preserving diffeomorphism, is in natural bijection with the quotient $\mathfrak{h} / \SL(2, \Z)$.
+\end{theorem}
+
+The quotient $\mathfrak{h}/\SL(2,\Z)$ is called the \vocab{moduli space} of flat tori, and it is a remarkable object: a question purely about \emph{flat} geometry is answered by a quotient of the \emph{hyperbolic} plane. The analogous moduli spaces of hyperbolic metrics on $\Sigma_g$ for $g \geq 2$ are central objects of modern geometry.
+
+\subsection*{Where Next}
+
+Several Part II courses pick up where these notes leave off. \emph{Algebraic Topology} proves the classification of surfaces and the topological invariance of $\chi$, and constructs $\Sigma_g = \HH/\Gamma$ properly. \emph{Differential Geometry} develops the second fundamental form further (the trace of $Dn$, the mean curvature, governs soap films as the determinant governs Gauss--Bonnet). \emph{Riemann Surfaces} studies surfaces through complex analysis, where $\Mob(D)$ reappears as the automorphism group of the disc. And \emph{General Relativity} takes the idea that geometry is encoded in a metric and its geodesics, and applies it to spacetime itself.
+
 \end{document}
+
