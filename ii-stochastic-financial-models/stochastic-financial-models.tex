@@ -1043,7 +1043,8 @@ exists. This is the \vocab{marginal} price of the claim -- the price per unit fo
 	For the lower bound, apply Lemma~\ref{lem:supporting} and then Lemma~\ref{lem:foc-with-claim}:
 	\begin{align*}
 		0 = \frac{\EE[U(X_t+tY)-U(X_0)]}{t} &\leq \frac{\EE[U'(X_0)(X_t + tY - X_0)]}{t}\\
-		&= \EE\big[U'(X_0)(Y - (1+r)\pi_t)\big] + \tfrac{1}{t}\EE\big[U'(X_0)(X_t + t\pi_t(1+r) - X_0)\big]\\
+		&= \EE\big[U'(X_0)(Y - (1+r)\pi_t)\big]\\
+		&\qquad{}+ \tfrac{1}{t}\EE\big[U'(X_0)(X_t + t\pi_t(1+r) - X_0)\big]\\
 		&= \EE\big[U'(X_0)(Y - (1+r)\pi_t)\big],
 	\end{align*}
 	since $X_t + t\pi_t(1+r) \in \mathcal{X}(x)$ and Lemma~\ref{lem:foc-with-claim} (with $Y=0$) makes the last expectation vanish. Letting $t \downarrow 0$ gives $\EE[U'(X_0)(Y-(1+r)\pi_0)] \geq 0$.
@@ -1442,7 +1443,7 @@ $$
 In other words -- the discounted wealth of a self-financing strategy is the initial wealth plus the martingale transform of the strategy against the discounted prices. Theorem~\ref{thm:transform} now does an enormous amount of work for us.
 
 \begin{remark}
-	The change from pounds to units of the bank account is our first \vocab{change of numeraire}. A \vocab{numeraire} is any asset with strictly positive price which we use as the unit of account; discounting is the statement that in the numeraire of the bank account the riskless asset has constant price $1$. Choosing a different numeraire will be useful in \S9.
+	The change from pounds to units of the bank account is our first \vocab{change of numeraire}. A \vocab{numeraire} is any asset with strictly positive price which we use as the unit of account; discounting is the statement that in the numeraire of the bank account the riskless asset has constant price $1$. Other choices are possible and sometimes much more convenient; we take this up in \S6.3.
 \end{remark}
 
 \subsection{Arbitrage in Multi-Period Models}
@@ -1478,6 +1479,41 @@ In other words -- the discounted wealth of a self-financing strategy is the init
 \begin{proof}[Proof sketch]
 	The equivalence is proved exactly as in Theorem~\ref{thm:ftap2}. For the formula, note that $(\pi_n/(1+r)^n)$ must be a $\QQ$-martingale (else the augmented market has an arbitrage, by the argument of Theorem~\ref{thm:na-pricing} applied at each time), with terminal value $Y/(1+r)^N$; and a martingale is determined by its terminal value via Proposition~\ref{prop:mart-equiv}(iii).
 \end{proof}
+
+\subsection{Change of Numeraire}
+
+We took it for granted above that the natural thing to divide by is the bank account. It is not the only choice, and being flexible about it is a genuinely useful technique.
+
+\begin{definition}[Numeraire]
+	A \vocab{numeraire} is an adapted process $(N_n)_{0\leq n\leq N}$ with $N_n > 0$ for all $n$, which is the price process of a self-financing portfolio. Prices measured in units of the numeraire are $S_n/N_n$.
+\end{definition}
+
+The bank account $N_n = (1+r)^n$ is the numeraire we have used so far; another asset, or the price of a bond maturing at a fixed date, will do just as well. The point is that arbitrage is a numeraire-independent notion -- multiplying every price by a strictly positive process changes neither the sign of a gain nor its vanishing -- so the fundamental theorem must hold for each choice, and we may pick whichever makes a given computation easiest.
+
+\begin{theorem}[Change of numeraire]\label{thm:numeraire}
+	Let the market be arbitrage-free with risk-neutral measure $\QQ$ (for the bank-account numeraire), and let $N$ be a numeraire with $N_0 = 1$. Define $\QQ^N \sim \QQ$ by
+	$$
+	\frac{\dd\QQ^N}{\dd\QQ} = \frac{N_{\!N}}{(1+r)^{N}}.
+	$$
+	Then $\QQ^N$ is a probability measure, and $(S_n/N_n)$ is a $\QQ^N$-martingale. Moreover the time-$n$ price of a claim $Y$ payable at time $N$ is
+	$$
+	\pi_n = N_n\,\EE_{\QQ^N}\!\left[\frac{Y}{N_{\!N}}\ \Big|\ \FF_n\right].
+	$$
+\end{theorem}
+
+\begin{proof}
+	Since $N$ is the value of a self-financing portfolio, $\tilde N_n = N_n/(1+r)^n$ is a $\QQ$-martingale with $\tilde N_0 = 1$, so the proposed density is positive with $\QQ$-expectation $1$ and $\QQ^N$ is an equivalent probability measure. For a positive $\FF_m$-measurable random variable $Z$ the density relation together with the tower property gives the conditional Bayes formula
+	$$
+	\EE_{\QQ^N}[Z \mid \FF_n] = \frac{\EE_\QQ\big[Z\,\tilde N_m\mid\FF_n\big]}{\tilde N_n}, \qquad n \leq m,
+	$$
+	because $\EE_\QQ[\dd\QQ^N/\dd\QQ \mid \FF_m] = \tilde N_m$. Taking $Z = S_m/N_m$ and $m = N$,
+	$$
+	\EE_{\QQ^N}\!\left[\frac{S_m}{N_m}\ \Big|\ \FF_n\right] = \frac{\EE_\QQ[\tilde S_m\mid\FF_n]}{\tilde N_n} = \frac{\tilde S_n}{\tilde N_n} = \frac{S_n}{N_n},
+	$$
+	using that $\tilde S$ is a $\QQ$-martingale. The pricing formula is the same computation applied to $\pi_m/N_m$, whose $\QQ$-discounted version is a martingale by the second fundamental theorem.
+\end{proof}
+
+The formula is worth reading aloud: \emph{the price of anything, measured in units of the numeraire, is a martingale under the measure associated with that numeraire}. We shall use it in \S9.2, where the numeraire is a foreign bank account and the change of measure resolves what looks like a paradox about exchange rates.
 
 \subsection{The Binomial Model}
 
@@ -1648,7 +1684,7 @@ The identity is best seen as a picture: stacking the call payoff on top of the n
 		\draw[dashed, color=black!45] (1.2,0) -- (1.2,-0.3);
 		\node[below] at (1.2,-0.28) {\footnotesize $K$};
 		\draw[very thick, color=blue] (0,0) -- (1.2,0) -- (2.4,1.2);
-		\node[font=\footnotesize] at (1.2,-1.15) {long call};
+		\node[font=\footnotesize] at (1.2,-1.75) {long call};
 	\end{scope}
 	\node at (3.2,0) {$+$};
 	\begin{scope}[xshift=3.9cm]
@@ -1657,7 +1693,7 @@ The identity is best seen as a picture: stacking the call payoff on top of the n
 		\draw[dashed, color=black!45] (1.2,0) -- (1.2,-0.3);
 		\node[below] at (1.2,-0.28) {\footnotesize $K$};
 		\draw[very thick, color=examplefg] (0,-1.2) -- (1.2,0) -- (2.4,0);
-		\node[font=\footnotesize] at (1.2,-1.15) {short put};
+		\node[font=\footnotesize] at (1.2,-1.75) {short put};
 	\end{scope}
 	\node at (7.1,0) {$=$};
 	\begin{scope}[xshift=7.8cm]
@@ -1666,7 +1702,7 @@ The identity is best seen as a picture: stacking the call payoff on top of the n
 		\draw[dashed, color=black!45] (1.2,0) -- (1.2,-0.3);
 		\node[below] at (1.2,-0.28) {\footnotesize $K$};
 		\draw[very thick, color=black] (0,-1.2) -- (2.4,1.2);
-		\node[font=\footnotesize] at (1.2,-1.15) {stock less $K$};
+		\node[font=\footnotesize] at (1.2,-1.75) {stock less $K$};
 	\end{scope}
 \end{tikzpicture}
 \end{center}
@@ -1737,9 +1773,9 @@ The holder must choose when to exercise using only information available at that
 
 	For comparison, put--call parity gives the \emph{European} put price
 	$$
-	P_0 = C_0 + \frac{K}{(1+r)^3} - S_0 = 17.450 + 86.384 - 100 = 3.833,
+	P_0 = C_0 + \frac{K}{(1+r)^3} - S_0 = 17.450 + 86.384 - 100 = 3.834,
 	$$
-	so the right of early exercise is worth $5.064 - 3.833 = 1.231$, a premium of over $30\%$. The tree of American values, with the exercise nodes ringed, is:
+	so the right of early exercise is worth $5.064 - 3.834 = 1.230$, a premium of over $30\%$. The tree of American values, with the exercise nodes ringed, is:
 \end{example}
 
 \begin{center}
@@ -2033,6 +2069,53 @@ Property (i) is worth dwelling on: Brownian motion is a fractal, statistically i
 	which is a function of $W_s$ alone.
 \end{proof}
 
+Later we shall want to restart the process not at a fixed time but at a random one, and for that the simple Markov property is not enough. The correct strengthening is the following, which we shall use without proof.
+
+\begin{theorem}[Strong Markov property]\label{thm:strong-markov}
+	Let $W$ be a Brownian motion and $T$ an almost surely finite stopping time for $(\FF_t)$. Then
+	$$
+	\big(W_{T+t} - W_T\big)_{t\geq0}
+	$$
+	is a Brownian motion, independent of $\FF_T = \{A : A \cap \{T\leq t\} \in \FF_t \text{ for all } t\}$.
+\end{theorem}
+
+\begin{remark}
+	The proof is a discretisation argument, and it is worth sketching because it shows exactly where continuity is used. Set $T_n = 2^{-n}\lceil 2^nT\rceil$, a stopping time taking countably many values $k2^{-n}$. On the event $\{T_n = k2^{-n}\}\in\FF_{k2^{-n}}$ the simple Markov property applies, and summing over $k$ shows that $(W_{T_n+t}-W_{T_n})_t$ is a Brownian motion independent of $\FF_{T}$. Since $T_n \downarrow T$ and the paths are continuous, $W_{T_n+t}\to W_{T+t}$ almost surely, and the property passes to the limit. Without path continuity the last step fails, and indeed the strong Markov property is genuinely delicate for processes with jumps.
+\end{remark}
+
+It is a good moment to make precise the roughness we noticed in the picture. The relevant quantity is the \vocab{quadratic variation}, and it is really the whole reason that stochastic calculus differs from ordinary calculus.
+
+\begin{theorem}[Quadratic variation]\label{thm:qv}
+	Fix $t>0$ and for each $n$ let $0 = t^n_0 < t^n_1 < \dots < t^n_{m_n} = t$ be a partition of $[0,t]$ with mesh $\delta_n = \max_i(t^n_i - t^n_{i-1}) \to 0$. Then
+	$$
+	Q_n := \sum_{i=1}^{m_n}\big(W_{t^n_i} - W_{t^n_{i-1}}\big)^2 \longrightarrow t \qquad\text{in } L^2.
+	$$
+\end{theorem}
+
+\begin{proof}
+	Write $\Delta_i = W_{t^n_i}-W_{t^n_{i-1}}$ and $h_i = t^n_i - t^n_{i-1}$, so that the $\Delta_i$ are independent with $\Delta_i \sim N(0,h_i)$. Then $\EE[\Delta_i^2] = h_i$, so $\EE[Q_n] = \sum_i h_i = t$ exactly. For the variance, independence gives
+	$$
+	\var(Q_n) = \sum_{i}\var(\Delta_i^2) = \sum_i \big(\EE[\Delta_i^4] - h_i^2\big) = \sum_i \big(3h_i^2 - h_i^2\big) = 2\sum_i h_i^2,
+	$$
+	using $\EE[Z^4] = 3$ for standard normal $Z$. Finally $\sum_i h_i^2 \leq \delta_n\sum_i h_i = \delta_n t \to 0$, so $\EE[(Q_n - t)^2]\to0$.
+\end{proof}
+
+The contrast with a differentiable function $f$ is stark: there $\sum_i(f(t_i)-f(t_{i-1}))^2 \leq \delta_n\sum_i|f(t_i)-f(t_{i-1})|\to0$, since the total variation is finite. So Brownian paths cannot be differentiable, and the following is immediate.
+
+\begin{corollary}
+	Almost surely, the path $s \mapsto W_s$ has infinite total variation on $[0,t]$ for every $t>0$; in particular it is not monotone on any interval, and is not of bounded variation, so $\int_0^t H_s\dd W_s$ cannot be defined pathwise as a Stieltjes integral.
+\end{corollary}
+
+\begin{proof}
+	Along a subsequence, $Q_n \to t$ almost surely. If the path had total variation $V < \infty$ on $[0,t]$ then, by uniform continuity of the path on the compact interval,
+	$$
+	Q_n \leq \Big(\max_i \big|W_{t^n_i} - W_{t^n_{i-1}}\big|\Big)\, V \longrightarrow 0,
+	$$
+	contradicting $Q_n \to t > 0$.
+\end{proof}
+
+The slogan is that $(\dd W_t)^2 = \dd t$: increments of Brownian motion are of size $\sqrt{\dd t}$, so their squares accumulate at rate $\dd t$ rather than vanishing. Everything unusual about It\^o's formula comes from this one fact.
+
 \subsection{Martingale Properties}
 
 \begin{definition}
@@ -2115,7 +2198,7 @@ The key tool for computing with $M_t$ is the following, which says that if we re
 \end{theorem}
 
 \begin{proof}
-	By the strong Markov property, $(W_{T_a+t}-W_{T_a})_{t\geq0} = (W_{T_a+t}-a)_{t\geq0}$ is a Brownian motion independent of $\FF_{T_a}$. By the reflection invariance, so is its negative. Since $\tilde W_{T_a+t} = a - (W_{T_a+t}-a)$, the process $\tilde W$ is obtained from $W$ by replacing the post-$T_a$ increments by their negatives, which does not change the law.
+	By Theorem~\ref{thm:hit-finite} the time $T_a$ is an almost surely finite stopping time, so the strong Markov property (Theorem~\ref{thm:strong-markov}) applies: $(W_{T_a+t}-W_{T_a})_{t\geq0} = (W_{T_a+t}-a)_{t\geq0}$ is a Brownian motion independent of $\FF_{T_a}$. By the reflection invariance, so is its negative. Since $\tilde W_{T_a+t} = a - (W_{T_a+t}-a)$, the process $\tilde W$ is obtained from $W$ by replacing the post-$T_a$ increments by their negatives, which does not change the law.
 \end{proof}
 
 \begin{center}
@@ -2636,7 +2719,7 @@ Two things deserve comment. First, the drift $\mu$ has vanished from the risk-ne
 	$$
 \end{definition}
 
-By construction $(e^{-rt}\pi_t)$ is a $\QQ$-martingale, so the augmented market has no arbitrage; and one can show (though we shall not) that the Black--Scholes model is complete, so this is the \emph{only} arbitrage-free price.
+By construction $(e^{-rt}\pi_t)$ is a $\QQ$-martingale, so the augmented market has no arbitrage. In fact the Black--Scholes model is complete, so this is the \emph{only} arbitrage-free price; we prove this in \S8.5, once we have It\^o's lemma to hand.
 
 \subsection{The Black--Scholes Formula}
 
@@ -2824,7 +2907,7 @@ The derivation above is the modern one. Black and Scholes argued differently, vi
 	all partial derivatives being evaluated at $(t,X_t)$.
 \end{theorem}
 
-We take this as given -- it is proved in Part III. The heuristic is that $(\mathrm{d}W_t)^2 = \mathrm{d}t$: Taylor expanding $f$ to second order, the term $\tfrac12 f_{xx}(\mathrm{d}X_t)^2 = \tfrac12 f_{xx}b_t^2(\mathrm{d}W_t)^2$ is of order $\mathrm{d}t$ and must be retained, because the quadratic variation of Brownian motion over $[0,t]$ is $t$ rather than $0$. This is precisely the roughness of the Brownian path made useful.
+We take this as given -- it is proved in Part III. The heuristic is that $(\mathrm{d}W_t)^2 = \mathrm{d}t$: Taylor expanding $f$ to second order, the term $\tfrac12 f_{xx}(\mathrm{d}X_t)^2 = \tfrac12 f_{xx}b_t^2(\mathrm{d}W_t)^2$ is of order $\mathrm{d}t$ and must be retained, because by Theorem~\ref{thm:qv} the quadratic variation of Brownian motion over $[0,t]$ is $t$ rather than $0$. This is precisely the roughness of the Brownian path made useful.
 
 \begin{proposition}
 	The geometric Brownian motion $S_t = S_0e^{\mu t + \sigma W_t}$ satisfies
@@ -2894,6 +2977,48 @@ Notice again the disappearance of $\mu$: the drift terms cancelled when we chose
 	one checks that $V$ solves the Black--Scholes PDE if and only if $u$ solves $u_\tau = \tfrac12u_{xx}$ with $u(0,x) = g(e^x)$. This is why Black--Scholes prices behave like diffusing heat: the payoff's kink is smoothed out instantly and increasingly with time to maturity.
 \end{remark}
 
+\subsection{Replication and Completeness}
+
+We can now discharge the promise made after Proposition~\ref{prop:bs-rn} and show that the Black--Scholes price is not merely \emph{an} arbitrage-free price but the \emph{only} one, because the claim can be replicated exactly.
+
+The continuous-time analogue of the self-financing condition of \S6.1 is obtained by letting the rebalancing interval shrink. If the agent holds $\theta_t$ shares and $\theta^0_t$ pounds in the bank, with wealth $X_t = \theta^0_t + \theta_tS_t$, then over $[t, t+\dd t]$ no money enters or leaves, so the change in wealth is entirely due to the change in the prices of the assets held:
+
+\begin{definition}[Self-financing, continuous time]
+	An adapted pair $(\theta^0_t,\theta_t)$ is \vocab{self-financing} if the wealth $X_t = \theta_t^0 + \theta_tS_t$ satisfies
+	$$
+	\dd X_t = r\theta^0_t\dd t + \theta_t\dd S_t = r\big(X_t - \theta_tS_t\big)\dd t + \theta_t\dd S_t.
+	$$
+	Equivalently, writing $\tilde X_t = e^{-rt}X_t$ and $\tilde S_t = e^{-rt}S_t$, the discounted wealth satisfies $\dd\tilde X_t = \theta_t\dd\tilde S_t$.
+\end{definition}
+
+The equivalence is a one-line application of It\^o to $e^{-rt}X_t$, and it is the exact analogue of the discrete identity $\tilde X_n = X_0 + (\theta\cdot\tilde S)_n$: in the numeraire of the bank account, a self-financing wealth process is a stochastic integral against the discounted prices, with no drift of its own.
+
+\begin{theorem}[Completeness of the Black--Scholes model]\label{thm:bs-complete}
+	Let $g$ be such that $V(t,s)$, defined by the risk-neutral expectation of \S8.3, is $C^{1,2}$ on $[0,T)\times(0,\infty)$ with bounded $V_s$. Then the self-financing strategy with initial wealth $X_0 = V(0,S_0)$ and
+	$$
+	\theta_t = V_s(t,S_t), \qquad \theta^0_t = V(t,S_t) - S_tV_s(t,S_t),
+	$$
+	satisfies $X_t = V(t,S_t)$ for every $t\leq T$; in particular $X_T = g(S_T)$ almost surely. Hence every such claim is replicable and the Black--Scholes price is the unique arbitrage-free price.
+\end{theorem}
+
+\begin{proof}
+	By Theorem~\ref{thm:bs-pde}, $V$ solves the Black--Scholes PDE. Apply It\^o's lemma to $V(t,S_t)$ under $\QQ$, where $\dd S_t = rS_t\dd t + \sigma S_t\dd\tilde W_t$:
+	$$
+	\dd V(t,S_t) = \Big(V_t + rS_tV_s + \tfrac12\sigma^2S_t^2V_{ss}\Big)\dd t + \sigma S_tV_s\dd\tilde W_t = rV(t,S_t)\dd t + \sigma S_tV_s\dd\tilde W_t,
+	$$
+	the drift having been replaced using the PDE. On the other hand the self-financing wealth process with $\theta_t = V_s(t,S_t)$ satisfies
+	$$
+	\dd X_t = r\big(X_t - \theta_tS_t\big)\dd t + \theta_t\big(rS_t\dd t + \sigma S_t\dd\tilde W_t\big) = rX_t\dd t + \sigma S_tV_s\dd\tilde W_t.
+	$$
+	So $D_t = X_t - V(t,S_t)$ satisfies $\dd D_t = rD_t\dd t$ with $D_0 = 0$, whence $D_t = D_0e^{rt} = 0$ for all $t$. Continuity of $V$ up to $t=T$ gives $X_T = V(T,S_T) = g(S_T)$.
+
+	For uniqueness: if $\pi$ were another arbitrage-free price for the claim, then selling at the higher of $\pi$ and $V(0,S_0)$, buying at the lower, and running the replicating strategy would produce a riskless profit.
+\end{proof}
+
+\begin{remark}
+	The hypotheses are ugly and can be removed. The clean statement is the \vocab{martingale representation theorem}: if $(\FF_t)$ is the filtration generated by a Brownian motion $\tilde W$ and $M$ is a square-integrable $\QQ$-martingale, then there is a previsible $H$ with $M_t = M_0 + \int_0^tH_s\dd\tilde W_s$. Applying this to $M_t = \EE_\QQ[e^{-rT}Y\mid\FF_t]$ and setting $\theta_t = H_t/(\sigma \tilde S_t)$ replicates \emph{any} integrable $\FF_T$-measurable claim, with no smoothness assumed. This is the exact continuous-time analogue of the second fundamental theorem: the risk-neutral measure is unique, so the model is complete.
+\end{remark}
+
 \subsection{The Greeks and Hedging}
 
 The partial derivatives of $V$ have names and are collectively called the \vocab{Greeks}. They measure the sensitivity of the price to each input, and a trading desk manages a book by keeping them within limits.
@@ -2908,10 +3033,13 @@ The partial derivatives of $V$ have names and are collectively called the \vocab
 
 (The name `vega' is not a Greek letter; the convention is that when one runs out of Greek letters one uses the names of stars, or television celebrities.)
 
-\begin{proposition}
+\begin{proposition}\label{prop:greeks}
 	For a European call in the Black--Scholes model,
 	$$
-	\Delta = \Phi(d_1), \qquad \Gamma = \frac{\varphi(d_1)}{s\sigma\sqrt\tau}, \qquad \mathcal{V} = s\sqrt\tau\,\varphi(d_1), \qquad \rho = K\tau e^{-r\tau}\Phi(d_2).
+	\Delta = \Phi(d_1), \qquad \Gamma = \frac{\varphi(d_1)}{s\sigma\sqrt\tau}, \qquad \mathcal{V} = s\sqrt\tau\,\varphi(d_1), \qquad \rho = K\tau e^{-r\tau}\Phi(d_2),
+	$$
+	$$
+	\Theta = -\frac{s\sigma\varphi(d_1)}{2\sqrt\tau} - rKe^{-r\tau}\Phi(d_2).
 	$$
 \end{proposition}
 
@@ -2924,8 +3052,27 @@ The partial derivatives of $V$ have names and are collectively called the \vocab
 	$$
 	\frac{\varphi(d_1)}{\varphi(d_2)} = e^{-(d_1^2-d_2^2)/2} = e^{-\sigma\sqrt\tau\,(d_1 - \sigma\sqrt\tau/2)} = e^{-\log(s/K) - r\tau} = \frac{K e^{-r\tau}}{s}.
 	$$
-	Hence $\Delta = \Phi(d_1)$, and differentiating once more gives $\Gamma$. The remaining Greeks follow similarly, using the same identity to cancel the terms coming from differentiating $d_1$ and $d_2$.
+	Hence $\Delta = \Phi(d_1)$, and differentiating once more gives $\Gamma$. The remaining Greeks follow similarly, using the same identity to cancel the terms coming from differentiating $d_1$ and $d_2$; for $\Theta$ one uses in addition $\partial d_1/\partial t = -\partial d_1/\partial\tau$ and $\partial(d_1 - d_2)/\partial \tau = \sigma/(2\sqrt\tau)$.
 \end{proof}
+
+Two sanity checks on these formulae are worth making. First, all of $\Delta,\Gamma,\mathcal{V},\rho$ are positive and $\Theta$ is negative: a call is worth more if the stock rises, if volatility rises, if rates rise, and less as time runs out. Second, the Greeks are not independent, because the Black--Scholes PDE of Theorem~\ref{thm:bs-pde} is precisely the relation
+$$
+\Theta + rs\Delta + \tfrac12\sigma^2s^2\Gamma = rV
+$$
+among them. In practice this is how a desk thinks about the trade-off it faces: a hedged book is delta-neutral, so $\Theta = rV - \tfrac12\sigma^2s^2\Gamma$, and one is paid theta exactly in compensation for being short gamma.
+
+\begin{example}
+	In the numerical example above ($s = K = 100$, $r=0.05$, $\sigma=0.2$, $\tau=1$) we have $\varphi(d_1) = \varphi(0.35) = 0.3752$, so
+	$$
+	\Gamma = \frac{0.3752}{100\cdot0.2} = 0.01876, \qquad \mathcal{V} = 100\cdot 0.3752 = 37.52,
+	$$
+	$$
+	\Theta = -\tfrac12(100)(0.2)(0.3752) - 0.05\cdot 95.12\cdot 0.5596 = -6.41.
+	$$
+	Checking the relation above: $-6.41 + 0.05\cdot100\cdot0.6368 + \tfrac12(0.04)(10^4)(0.01876) = -6.41+3.18+3.75 = 0.52 = 0.05\cdot 10.45$. \checkmark
+
+	The vega tells us that an extra percentage point of volatility is worth about $\pounds 0.375$ on this option -- a useful rule of thumb, since a one-year at-the-money option always has $\mathcal{V} \approx 0.4 s$.
+\end{example}
 
 Geometrically, $\Delta$ is the slope of the price curve, i.e.\ the number of shares whose value changes at the same rate as the option:
 
@@ -2974,7 +3121,11 @@ Geometrically, $\Delta$ is the slope of the price curve, i.e.\ the number of sha
 \end{proposition}
 
 \begin{proof}
-	Both are immediate from the representation $V(t,s) = e^{-r\tau}\EE\big[g\big(se^{(r-\sigma^2/2)\tau+\sigma\sqrt\tau Z}\big)\big]$: for each fixed value of $Z$ the integrand is an increasing (respectively convex) function of $s$ whenever $g$ is, and both properties survive taking expectations.
+	Both are immediate from the representation
+	$$
+	V(t,s) = e^{-r\tau}\,\EE\big[g\big(se^{(r-\sigma^2/2)\tau+\sigma\sqrt\tau Z}\big)\big]:
+	$$
+	for each fixed value of $Z$ the integrand is an increasing (respectively convex) function of $s$ whenever $g$ is, and both properties survive taking expectations.
 \end{proof}
 
 \subsection{Implied Volatility}
@@ -2992,6 +3143,16 @@ Of the five inputs to the Black--Scholes formula, four -- $s$, $K$, $\tau$, $r$ 
 \begin{definition}[Implied volatility]
 	Given an observed market price $C^{\mathrm{mkt}}$ of a call with strike $K$ and maturity $T$, the \vocab{implied volatility} $\sigma_{\mathrm{imp}}(K,T)$ is the unique $\sigma$ for which the Black--Scholes formula returns $C^{\mathrm{mkt}}$.
 \end{definition}
+
+The inversion has no closed form, but the proposition guarantees that a bisection or Newton search converges, and vega -- being the derivative one needs for Newton's method -- is available in closed form.
+
+\begin{example}
+	Continue with $s = K = 100$, $r = 0.05$, $\tau = 1$, and suppose the option trades at $C^{\mathrm{mkt}} = 12$ rather than the $10.45$ produced by $\sigma = 0.2$. One step of Newton's method from $\sigma_0 = 0.2$, using $\mathcal{V} = 37.52$ from the previous section, gives
+	$$
+	\sigma_1 = 0.2 + \frac{12 - 10.45}{37.52} = 0.2413,
+	$$
+	and the true implied volatility is $0.2411$: a single step is already accurate to four decimal places, because the call price is very nearly linear in $\sigma$ near the money. The market is therefore quoting this option as though the stock will move about $24\%$ over the year rather than $20\%$.
+\end{example}
 
 If the Black--Scholes model were literally correct, then implied volatility would be the same for every strike and maturity, since there is only one $\sigma$ in the model. It is not. Plotting $\sigma_{\mathrm{imp}}$ against strike for a fixed maturity typically gives a curve like the following, known as the \vocab{volatility smile} (or, when it is lopsided as here, the \vocab{skew}).
 
