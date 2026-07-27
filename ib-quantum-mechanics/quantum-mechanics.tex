@@ -1,14 +1,17 @@
 \documentclass[a4paper]{scrartcl}
 
 \usepackage[
-    fancytheorems, 
-    fancyproofs, 
-    noindent, 
+    fancytheorems,
+    fancyproofs,
+    noindent,
     % nokoma
 ]{adam}
 
 
 \usepackage{physics}
+\usepackage{tikz}
+
+\newcommand{\inp}[2]{\langle #1, #2 \rangle}
 
 \title{Quantum Mechanics}
 \author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
@@ -24,54 +27,2135 @@
 
 Quantum mechanics is the mathematical framework used to describe nature at the scale of subatomic particles. These notes will primarily focus on building up this mathematical framework, and not so much on the actual applications or physical background to it.
 
-This article constitutes my notes for the `Quantum Mechanics' course, held in Michaelmas 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly\footnote{In particular, these notes are heavily influenced by the `Principles of Quantum Mechanics' course, along with numerous books.} in quite a few areas (more so than some of my other notes). Still, all lectured material should be covered.
-
-
-
-
+This article constitutes my notes for the `Quantum Mechanics' course, held in Michaelmas 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly\footnote{In particular, these notes are influenced by the `Principles of Quantum Mechanics' course, along with numerous books.} in quite a few areas (more so than some of my other notes). Still, all lectured material should be covered.
 
 \tableofcontents
 
-\section{Foundations of Quantum Mechanics}
+\section{A Quantum Prelude}
 
-\subsection{Classical Mechanics}
+Before we do any mathematics, it is worth spending a little time on the physics that forced quantum mechanics into existence. None of the material in this section is logically necessary for what follows -- we could just write down the axioms and get on with it -- but the axioms will look much less arbitrary if we first see the experiments they were invented to explain.
 
-Write a bit here about the way we think about classical mechanics, and how this makes the presentation of the QM postulates look reasonable.
+The story, compressed into a single sentence, is this: at the turn of the twentieth century it became clear that light (which everyone knew was a wave) sometimes behaves like a stream of particles, and that electrons (which everyone knew were particles) sometimes behave like waves.
 
-{\color{blue}
-\begin{itemize}
-\item The state of a particle at a time $t$ is specified by two quantities: the position $r(t)$ and momentum $p(t)$.
-\item This means that the state of a particle is totally enoded by a point $(x(t), p(t))$ in phase space. 
-\item Knowing these variables at a time $t_0$ allows us to then determine the future state of the particle, using Newton's laws or (and this will look similar to what we do) Hamilton's equations
+\subsection{Light: Waves or Particles?}
+
+First, a quick reminder of the vocabulary of waves, which we will use constantly. A wave with period $T$ in time has frequency $\nu = 1/T$ and \vocab{angular frequency} $\omega = 2\pi/T$; a wave with period $\lambda$ in space (the \vocab{wavelength}) has \vocab{wavenumber} $k = 2\pi/\lambda$. The basic travelling wave in one dimension is $f(x, t) = A e^{i(kx - \omega t)}$, with amplitude $A$, moving at speed $\omega / k$; in three dimensions this becomes the \vocab{plane wave} $A e^{i(\vv{k}\cdot\vv{x} - \omega t)}$, with \vocab{wavevector} $\vv{k}$ and $\lambda = 2\pi/\abs{\vv{k}}$. A governing wave equation imposes a relation $\omega = \omega(\vv{k})$ between the two -- the \vocab{dispersion relation} -- and for any \emph{linear} wave equation, solutions superpose: the sum of two solutions is a solution. All of the interference phenomena below, and indeed quantum mechanics itself, flow from this superposition property.
+
+By 1900 the wave theory of light looked untouchable. Young's double slit experiment (1801--03) showed that light passing through two narrow slits produces an interference pattern -- alternating bright and dark fringes, from the two paths adding in or out of phase -- exactly as water waves do, and Maxwell's theory of electromagnetism (1862--64) identified light as an electromagnetic wave, predicting its speed from the constants of electricity and magnetism.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+% incoming plane waves
+\foreach \x in {-2.4,-2.0,-1.6,-1.2,-0.8}
+    \draw[thin, color=gray] (\x,-1.6) -- (\x,1.6);
+\draw[->] (-2.6,2.0) -- (-1.0,2.0);
+\node[above] at (-1.8,2.0) {\small light};
+% barrier with two slits
+\draw[very thick] (0,-2.2) -- (0,-0.95);
+\draw[very thick] (0,-0.45) -- (0,0.45);
+\draw[very thick] (0,0.95) -- (0,2.2);
+% circular waves from slits
+\foreach \r in {0.35,0.7,1.05,1.4,1.75}
+{
+    \draw[thin, color=gray] (0,0.7) ++(-70:\r) arc (-70:70:\r);
+    \draw[thin, color=gray] (0,-0.7) ++(-70:\r) arc (-70:70:\r);
+}
+% screen
+\draw[very thick] (3.1,-2.2) -- (3.1,2.2);
+\node[below] at (3.1,-2.2) {\small screen};
+% intensity pattern
+\draw[->] (3.5,-2.2) -- (3.5,2.2);
+\draw[thick, color=blue] plot[domain=-2.1:2.1, samples=150] ({3.5 + 1.1*exp(-\x*\x/3)*cos(2.6*\x r)^2}, \x);
+\node[above] at (4.0,2.15) {\small intensity};
+\end{tikzpicture}
+\end{center}
+
+The first cracks appeared with \emph{black-body radiation}. A body heated to temperature $T$ emits radiation, and the simplest system to study is a black body -- a perfectly absorbing surface. Classical physics predicted that the intensity of emitted radiation should grow without bound as the frequency increases, which is plainly wrong (this is the `ultraviolet catastrophe'). The observed spectrum instead has a clear maximum, and Planck (1900) found that this curve could be derived exactly if one assumed that radiation of angular frequency $\omega$ is exchanged only in discrete lumps of energy
 $$
-\frac{\dd x}{\dd t} = \frac{\partial H}{\partial p} \quad \text{and} \quad \frac{\dd p}{\dd t} = - \frac{\partial H}{\partial x}.
+E = \hbar \omega,
 $$
-\item Also for any other physical quantity, we can write them in terms of these two variables. 
-\item In particular, a physical quantity $O$ can really by thought of as a function on phase space $O: M \rightarrow \R$. Things like position, kinetic energy, angular momentum and everything else can be written like this. We evaluate $O(x(t), p(t))$ to get the value at some time $t$, but notice the time dependence is baked into $M$ not $O$.
-\item Classical mechanics is a game of juggling initial conditions, physical iputs (forces and potentials) and observables. We will see that QM is like this.
-\item Generally, QM and CM are different. You can't derive quantum from classical, and any attempt to do so will fail. You should instead use the mathematical framework of CM to build intuition as to the way that the QM framework is built up, and then try and derive your intition from the precise way we will deal with QM.
-\end{itemize}
-}
+where $\hbar \approx 1.05 \times 10^{-34} \, \mathrm{J \, s}$ is the \vocab{reduced Planck constant}\footnote{One often also sees the ordinary Planck constant $h = 2 \pi \hbar$. Quantum mechanics is much more pleasant when written in terms of $\hbar$, so that is what we will use throughout. Note that $\hbar$ has dimensions of energy $\times$ time, or equivalently position $\times$ momentum -- the dimensions of \emph{action}, and also of angular momentum.}.
 
-\subsection{Postulates of Quantum Mechanics}
+Einstein (1905) took this quantisation seriously in his analysis of the \vocab{photoelectric effect}. Take a metal surface in a vacuum and shine light of angular frequency $\omega$ on it; for suitable frequencies, electrons are emitted. If light were purely a wave, we would expect:
+\begin{enumerate}[label=(\roman*)]
+    \item the energy of the emitted electrons to grow with the \emph{intensity} of the light, since a more intense wave carries more energy;
+    \item light of any frequency to eventually eject electrons, provided the intensity is high enough;
+    \item a delay at low intensities, while enough energy is absorbed.
+\end{enumerate}
+Every one of these expectations fails. What is actually observed is that the maximum kinetic energy of the emitted electrons depends only on the frequency,
+$$
+E_{\max} = \hbar \omega - \phi,
+$$
+where $\phi$ is a constant depending on the metal, that no electrons at all are emitted below the threshold frequency $\omega_{\min} = \phi/\hbar$ no matter how intense the light, and that emission is immediate but the \emph{rate} of emission grows with intensity.
 
-We now want to set out the mathematical framework that QM uses. {\color{blue}In particular, it's natural to think about answering the following questions: How is a quantum state represented mathematically? How do we take this representation and calculate physical quantities? Given the state at some time $t_1$, how do we find the state at some time $t_2$? With answers to these we are well on our way.
-}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+\draw[ultra thin, color=lightgray] (-0.5,-1.5) grid (4.5,2.5);
+\draw[<->] (-0.5,0) -- (4.5,0) node[right] {$\omega$};
+\draw[<->] (0,-1.5) -- (0,2.5) node[above] {$E_{\max}$};
+\draw[thick, color=blue] (1.5,0) -- (4.2,2.16);
+\draw[dashed, color=blue] (0,-1.2) -- (1.5,0);
+\node[below] at (1.5,-0.05) {$\omega_{\min}$};
+\node[left] at (0,-1.2) {$-\phi$};
+\node[above left] at (3.4,1.4) {slope $\hbar$};
+\end{tikzpicture}
+\end{center}
 
-The postulates.
+Einstein's explanation is that light of angular frequency $\omega$ arrives in quanta -- \vocab{photons} -- each carrying energy $E = \hbar \omega$, and each photon can liberate at most one electron. An electron bound to the metal with binding energy $\phi$ then escapes with energy at most $\hbar \omega - \phi$, and increasing the intensity increases the number of photons (and hence the emission rate) but not the energy of each one.
 
-{\color{blue}
-\begin{itemize}
-    \item \textbf{State}. The state of a quantum mechanical system at some time $t$ is given by a non-zero \vocab{state vector} $\ket{\psi(t)}$ in a Hilbert space $\mathcal{H}$.
-    \item \textbf{Observables}. To every physically measurable quantity $O$ (an \vocab{observable}) there is a Hermitian operator $\hat{O}: \mathcal{H} \rightarrow \mathcal{H}$ whose eigenvectors form a complete basis.
-    \item \textbf{Measurement}. {\color{red}TODO FILL IN}. The result of a measuring a quantity $O$ results in an eigenvalue of the corresponding operator $\hat{O}$. If we perform a measurement of $O$ on a state $\ket{t}$ and the result is $\lambda$, then the system will be left in a corresponding eigenstate $\ket{\psi_{\lambda}}$ immediately after the measurement.
-    \item \textbf{The Born Rule}. Measure discrete and continuous, bake in normalisation and square integrable or something about inner products.
-    \item \textbf{Time Evolution}. Time evolution of the state vector $\ket{\psi(t)} \in \mathcal{H}$ is described by the time-dependent Schrodinger equation
+Further confirmation came from \emph{Compton scattering} (1923): X-rays scattered off electrons change frequency by an amount depending on the scattering angle, exactly as if each X-ray photon were a relativistic particle with energy $E = \hbar \omega$ and momentum
+$$
+\vv{p} = \hbar \vv{k},
+$$
+where $\vv{k}$ is the wavevector of the light. Indeed, treating the collision as relativistic two-particle scattering (a nice exercise with the kinematics of IA Dynamics and Relativity) and inserting these relations, one predicts the frequency shift
+$$
+\frac{1}{\omega'} = \frac{1}{\omega} + \frac{\hbar}{m_e c^2}(1 - \cos \theta)
+$$
+for X-rays scattered through an angle $\theta$ -- which is exactly what Compton measured. So light carries energy and momentum in particle-like packets, while still interfering like a wave. Remarkably, G.\ I.\ Taylor (1909) repeated the double slit experiment with light so faint that only one photon was in the apparatus at a time -- and the interference pattern still built up, photon by photon. Whatever a photon is, it is not simply a classical particle following one path or the other.
+
+\subsection{Atoms and Their Spectra}
+
+A second, independent crisis was brewing inside the atom. Rutherford's scattering experiment (1911) -- firing $\alpha$ particles at gold foil, and finding that most passed straight through while a few bounced almost straight back -- showed that an atom is mostly empty space, with its positive charge concentrated in a tiny nucleus, orbited by electrons.
+
+This `solar system' picture has two fatal problems.
+\begin{enumerate}[label=(\roman*)]
+    \item An orbiting electron is accelerating, and by classical electromagnetism an accelerating charge radiates. The electron should lose energy continuously and spiral into the nucleus in a fraction of a second. Atoms should not exist.
+    \item Atoms absorb and emit light only at certain discrete frequencies -- the \emph{spectral lines}. For hydrogen these frequencies fit the remarkably simple empirical formula
     $$
-    i \hbar \frac{\partial \ket{\psi(t)}}{\partial t} = H \ket{\psi(t)},
+    \omega_{mn} = 2 \pi c R_0 \left( \frac{1}{n^2} - \frac{1}{m^2} \right), \quad m > n,
     $$
-    where $H$ is the Hamiltonian operator, corresponding to the total energy of the system.
-\end{itemize}
-}
+    where $m, n$ are positive integers and $R_0 \approx 1.1 \times 10^7 \, \mathrm{m}^{-1}$ is the \emph{Rydberg constant}. Nothing in classical mechanics singles out these frequencies.
+\end{enumerate}
+
+(A word on how spectra are seen. Pass a current through a tube of hydrogen and the emitted light, split by a prism, is not a rainbow but a handful of sharp bright lines -- the \emph{emission spectrum}. Shine white light \emph{through} cold hydrogen and the same frequencies appear as dark absorption lines cut out of the continuum. The frequencies are fingerprints of the element -- this is how helium was discovered in the Sun before it was found on Earth -- and any theory of the atom lives or dies by predicting them.)
+
+Bohr (1913) proposed a fix that was as effective as it was unjustified: he postulated that the electron's orbital angular momentum is \emph{quantised},
+$$
+L = m_e v r = n \hbar, \quad n = 1, 2, 3, \dots,
+$$
+so that only certain orbits are allowed, and that radiation is emitted only when the electron jumps between them. Let's see what this gives us. For a circular orbit of radius $r$, the Coulomb force provides the centripetal acceleration:
+$$
+\frac{e^2}{4 \pi \epsilon_0 r^2} = \frac{m_e v^2}{r}.
+$$
+Combining this with $v = n \hbar / m_e r$, we can solve for the allowed radii:
+$$
+r_n = \frac{4 \pi \epsilon_0 \hbar^2}{m_e e^2} \, n^2 = a_0 n^2,
+$$
+where $a_0 \approx 5.3 \times 10^{-11}$ m is the \vocab{Bohr radius}. The energy of the $n$th orbit is then
+$$
+E_n = \frac{1}{2} m_e v^2 - \frac{e^2}{4 \pi \epsilon_0 r} = -\frac{e^2}{8 \pi \epsilon_0 a_0} \cdot \frac{1}{n^2} = - \frac{e^4 m_e}{32 \pi^2 \epsilon_0^2 \hbar^2} \cdot \frac{1}{n^2}.
+$$
+The lowest energy state, $n = 1$, has $E_1 \approx -13.6$ eV, and the energy released in a jump from level $m$ down to level $n$ is carried away by a photon with $\hbar \omega = E_m - E_n$, which reproduces the Rydberg formula exactly, with the right value of $R_0$ in terms of fundamental constants.
+
+This is a genuinely impressive result, and also clearly not the whole story -- nothing explains \emph{why} angular momentum should come in units of $\hbar$, and the model fails completely for atoms with more than one electron. We will return to hydrogen at the very end of these notes, and derive its energy levels honestly.
+
+\subsection{Matter Waves}
+
+The missing idea came from de Broglie (1923--24), who proposed a striking symmetry: if light waves behave like particles, then particles should behave like waves. Specifically, associated to any particle with energy $E$ and momentum $\vv{p}$ there is a wave with
+$$
+\omega = \frac{E}{\hbar}, \quad \vv{k} = \frac{\vv{p}}{\hbar},
+$$
+that is, with wavelength $\lambda = 2 \pi / |\vv{k}| = 2 \pi \hbar / |\vv{p}|$.
+
+This immediately demystifies Bohr's quantisation rule. If the electron is a wave running around a circular orbit of radius $r$, then for the wave to join up with itself we need a whole number of wavelengths to fit around the circumference: $2 \pi r = n \lambda$. But then
+$$
+L = p r = \hbar k \cdot \frac{n \lambda}{2 \pi} = \hbar \cdot \frac{2 \pi}{\lambda} \cdot \frac{n \lambda}{2 \pi} = n \hbar,
+$$
+which is exactly Bohr's condition -- quantisation appears as a standing wave condition.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+\draw[dashed] (0,0) circle (1.5);
+\draw[thick, color=blue] plot[domain=0:360, samples=240, smooth] ({(1.5 + 0.28*sin(6*\x))*cos(\x)}, {(1.5 + 0.28*sin(6*\x))*sin(\x)});
+\fill (0,0) circle (0.06);
+\node[below] at (0,-0.15) {\small $+$};
+\draw[<->] (0.1,0.1) -- (1.15,0.75);
+\node at (0.45,0.65) {\small $r$};
+\end{tikzpicture}
+\end{center}
+
+Is any of this true? Davisson and Germer, and independently G.\ P.\ Thomson (1927--28), fired electrons at crystals and observed diffraction patterns -- interference fringes -- with exactly the wavelength $\lambda = 2 \pi \hbar / |\vv{p}|$ predicted by de Broglie\footnote{There is a pleasing irony here: J.\ J.\ Thomson won a Nobel prize for showing the electron is a particle, and his son G.\ P.\ Thomson won one for showing it is a wave.}. Matter genuinely does interfere with itself.
+
+So by the mid 1920s the experimental picture was clear: both light and matter propagate like waves but are detected like particles, energies and angular momenta of bound systems are quantised, and the classical description fails at atomic scales. Between 1925 and 1930, Heisenberg, Schr\"odinger, Born, Dirac, Pauli and others assembled these fragments into a coherent mathematical theory. Building up (the wave-mechanical formulation of) that theory is the business of the rest of these notes.
+
+\section{Wavefunctions and States}
+
+\subsection{States in Classical Mechanics}
+
+Before setting out the framework of quantum mechanics, it is worth being clear about the abstract structure of the theory it replaces.
+
+In classical mechanics, particle motion is described by Newton's laws. These are a set of second order differential equations, which when coupled with two initial conditions then specify the future motion of the particle for all time. These initial conditions are typically taken to be position and momentum $(x(t_0), p(t_0))$. So Newton's laws really say that the entire state of a particle is encoded by a vector $(x(t), p(t))$ in the \emph{phase space} $M$ of position and momentum. As time passes, the particle's state traces out a path in phase space, but the whole path is determined by the initial vector (along with the differential equation given by Newton's laws).
+
+There is a way of packaging Newton's laws that makes the parallel with quantum mechanics especially close: Hamilton's formulation, in which the dynamics is generated by the total energy $H(x, p) = \frac{p^2}{2m} + U(x)$ through
+$$
+\frac{\dd x}{\dd t} = \frac{\partial H}{\partial p} \quad \text{and} \quad \frac{\dd p}{\dd t} = -\frac{\partial H}{\partial x}.
+$$
+Keep this in mind -- in quantum mechanics too, it will be the energy that generates time evolution (and Ehrenfest's theorem in Section 6 will make the correspondence exact, at the level of averages).
+
+But of course a particle really corresponds to something physical -- it's not really an element of an abstract vector space $M$. We need some way to go from this framework of phase space to physical quantities. This is done by introducing \emph{observables}, which are functions $O: M \rightarrow \R$.
+
+Observables can be all sorts of things -- position, kinetic energy, angular momentum, and everything else. These observables are defined for vectors in $M$, but we typically want to evaluate them at the vector corresponding to our particle's state at some time $t$. Still, we don't factor time into our definition of observables, it's just baked into the point at which we evaluate them.
+
+Classical mechanics is a game of juggling initial conditions, inputs to Newton's laws (such as forces and potentials), and observables. We will see that in the abstract, quantum and classical mechanics are similar in this way: there will be a space of states, a notion of observables, and an equation of motion. What changes -- completely -- is what these things \emph{are}.
+
+One warning before we begin. Classical mechanics and quantum mechanics are fundamentally different -- you can't derive quantum mechanics from classical mechanics, and attempts to introduce it like that will fail. In reality, you should look at the mathematical framework of quantum mechanics and use that to build intuition. To help with this, looking at the \emph{mathematical} framework of classical mechanics may also help, but it shouldn't be where you derive your intuition.
+
+\subsection{The Wavefunction and the Born Rule}
+
+So how do we describe a point particle? In classical mechanics we had the pair of vectors $(\vv{x}, \vv{p})$. The corresponding description in quantum mechanics is the \emph{state} of the particle, which is described by a complex-valued \emph{wavefunction}.
+
+\begin{definition}[Wavefunction]
+    A \vocab{wavefunction} is a complex-valued function $\psi(\vv{x}, t): \R^3 \times \R \rightarrow \C$, satisfying certain mathematical properties dictated by its physical interpretation (described below). At each fixed time $t$, we think of $\psi(\cdot, t)$ as a function of position alone, with $t$ an external parameter.
+\end{definition}
+
+At first sight this is a strange object -- we have replaced six real numbers with an entire complex function. The connection between the wavefunction and the underlying physical particle is given by the \emph{Born rule}, and it is probabilistic.
+
+\begin{axiom}[The Born Rule]
+    The probability density for a particle in the state $\psi$ to be found at position $\vv{x}$ at time $t$ is
+    $$
+    \rho(\vv{x}, t) = \abs{\psi(\vv{x}, t)}^2.
+    $$
+    That is, the probability of finding the particle in a small volume $\delta V$ about $\vv{x}$ is $\rho(\vv{x}, t) \, \delta V$.
+\end{axiom}
+
+The Born rule immediately imposes a restriction on which functions can be wavefunctions. Because the particle has to be \emph{somewhere} with probability 1, we need
+$$
+\int_{\R^3} \abs{\psi(\vv{x}, t)}^2 \dd V = 1,
+$$
+in which case we say $\psi$ is \vocab{normalised}. It is frequently useful to work with unnormalised wavefunctions, for which we only demand that the above integral is finite and non-zero -- such $\psi$ are called \vocab{normalisable}, or \emph{square-integrable}. Given a normalisable wavefunction with
+$$
+\int_{\R^3} \abs{\psi(\vv{x}, t)}^2 \dd V = N,
+$$
+the rescaled wavefunction $\psi / \sqrt{N}$ is then normalised, and it is this rescaled function that the Born rule speaks about.
+
+\begin{example}[Normalising a Gaussian]
+    Let's normalise the (one-dimensional, time-independent) wavefunction
+    $$
+    \psi(x) = C e^{-x^2 / 2 \sigma^2}, \quad \sigma > 0.
+    $$
+    We need $\int_{-\infty}^{\infty} \abs{\psi}^2 \dd x = \abs{C}^2 \int_{-\infty}^{\infty} e^{-x^2/\sigma^2} \dd x = \abs{C}^2 \sigma \sqrt{\pi} = 1$, using the Gaussian integral $\int_{-\infty}^\infty e^{-u^2} \dd u = \sqrt{\pi}$. So we may take
+    $$
+    C = \frac{1}{(\pi \sigma^2)^{1/4}},
+    $$
+    (or this multiplied by any phase). The particle is then found within $[-\sigma, \sigma]$ with probability $\int_{-\sigma}^{\sigma} \abs{\psi}^2 \dd x \approx 0.84$, and the tails, while never exactly zero, are negligible beyond a few multiples of $\sigma$. Wavefunctions of exactly this shape will keep appearing throughout these notes -- as wavepackets, as oscillator ground states, and as the states of minimal uncertainty.
+\end{example}
+
+\begin{remark}[For Pedants]
+    If we have two wavefunctions which differ by a complex phase, $\tilde{\psi}(\vv{x}, t) = e^{i \theta} \psi(\vv{x}, t)$ for some constant $\theta \in \R$, then this does not change the probability density $\rho(\vv{x}, t)$ -- or indeed anything else physically measurable. Because of this, we treat the two wavefunctions $\psi$ and $\tilde{\psi}$ as corresponding to the same state. So states really correspond to rays in the vector space of wavefunctions. We will not fuss about this distinction, but it is worth keeping in mind that overall phases are unphysical, while \emph{relative} phases in a superposition very much are physical, as we are about to see.
+\end{remark}
+
+\subsection{Hilbert Space and Inner Products}
+
+The natural language of quantum mechanics is linear algebra. In a finite dimensional vector space, we have abstract vectors $v$, which can be represented concretely by considering some basis and writing say $v = (v_1, v_2, \dots, v_n)$. In quantum mechanics, we deal with the abstract object of a \emph{state}, and it too can be represented concretely -- the wavefunction $\psi(\vv{x}, t)$ should be thought of as the (continuous) collection of coefficients of the state in the `basis' of positions\footnote{This point of view is developed properly in the `Principles of Quantum Mechanics' course, where states are vectors $\ket{\psi}$ in an abstract Hilbert space, and the wavefunction is the collection of components $\psi(\vv{x}) = \langle \vv{x} | \psi \rangle$. In this course we always work directly with the wavefunction.}.
+
+The set of states we work with is the following.
+
+\begin{definition}[Hilbert Space]
+    The \vocab{Hilbert space} $\mathcal{H}$ is the vector space of normalisable (square-integrable) functions on $\R^3$,
+    $$
+    \mathcal{H} = \left\{ \psi : \R^3 \rightarrow \C \;\Big|\; 0 < \int_{\R^3} \abs{\psi}^2 \dd V < \infty \right\} \cup \{0\}.
+    $$
+\end{definition}
+
+Calling this a vector space is a claim, albeit a small one: we need linear combinations of normalisable functions to be normalisable.
+
+\begin{proposition}[Superposition Principle]
+    If $\psi_1, \psi_2 \in \mathcal{H}$ and $\lambda_1, \lambda_2 \in \C$, then $\lambda_1 \psi_1 + \lambda_2 \psi_2 \in \mathcal{H}$.
+\end{proposition}
+\begin{proof}
+    For any complex numbers $z_1, z_2$ we have $2\abs{z_1}\abs{z_2} \leq \abs{z_1}^2 + \abs{z_2}^2$, and so
+    $$
+    \abs{z_1 + z_2}^2 \leq \abs{z_1}^2 + 2 \abs{z_1} \abs{z_2} + \abs{z_2}^2 \leq 2\abs{z_1}^2 + 2\abs{z_2}^2.
+    $$
+    Applying this pointwise with $z_i = \lambda_i \psi_i(\vv{x})$ and integrating,
+    $$
+    \int_{\R^3} \abs{\lambda_1 \psi_1 + \lambda_2 \psi_2}^2 \dd V \leq 2 \abs{\lambda_1}^2 \int_{\R^3} \abs{\psi_1}^2 \dd V + 2 \abs{\lambda_2}^2 \int_{\R^3} \abs{\psi_2}^2 \dd V < \infty,
+    $$
+    as required.
+\end{proof}
+
+This innocent-looking closure property is where quantum mechanics departs from everything classical: \emph{the superposition of two states is a state}. If $\psi_1$ is `particle here' and $\psi_2$ is `particle there', then $(\psi_1 + \psi_2)/\sqrt{2}$ is a perfectly legitimate physical state, and it is not `here', nor `there', nor `here or there with 50/50 ignorance' -- as interference experiments show, it is something genuinely new. Nothing analogous holds for solutions of Newton's equations.
+
+The Hilbert space also carries an inner product, which will be the central computational tool of the whole course.
+
+\begin{definition}[Inner Product]
+    For wavefunctions $\psi, \phi \in \mathcal{H}$, we define
+    $$
+    \inp{\psi}{\phi} = \int_{\R^3} \psi^* (\vv{x}) \, \phi(\vv{x}) \dd V.
+    $$
+\end{definition}
+
+Note carefully the complex conjugate on the first argument. This inner product has the properties you would hope for.
+
+\begin{proposition}[Properties of the Inner Product]
+    For $\psi, \phi \in \mathcal{H}$ and $\lambda_1, \lambda_2 \in \C$:
+    \begin{enumerate}[label=(\roman*)]
+        \item $\inp{\psi}{\phi}$ is well defined (the integral converges);
+        \item $\inp{\psi}{\phi}^* = \inp{\phi}{\psi}$;
+        \item the inner product is linear in the second argument, $\inp{\psi}{\lambda_1 \phi_1 + \lambda_2 \phi_2} = \lambda_1 \inp{\psi}{\phi_1} + \lambda_2 \inp{\psi}{\phi_2}$, and antilinear in the first, $\inp{\lambda_1 \psi_1 + \lambda_2 \psi_2}{\phi} = \lambda_1^* \inp{\psi_1}{\phi} + \lambda_2^* \inp{\psi_2}{\phi}$;
+        \item $\inp{\psi}{\psi} \geq 0$, with equality (for continuous $\psi$) if and only if $\psi = 0$.
+    \end{enumerate}
+\end{proposition}
+\begin{proof}
+    Properties (ii)--(iv) follow directly from the definition. For (i), we use $2\abs{\psi^* \phi} \leq \abs{\psi}^2 + \abs{\phi}^2$ pointwise, so
+    $$
+    \int_{\R^3} \abs{\psi^* \phi} \dd V \leq \frac{1}{2} \int_{\R^3} \abs{\psi}^2 \dd V + \frac{1}{2}\int_{\R^3} \abs{\phi}^2 \dd V < \infty,
+    $$
+    and the integral converges absolutely.
+\end{proof}
+
+We write $\norm{\psi}^2 = \inp{\psi}{\psi}$, so that $\psi$ is normalised exactly when $\norm{\psi} = 1$. Two useful pieces of terminology, imported straight from linear algebra:
+
+\begin{definition}[Orthonormality and Completeness]
+    A set of wavefunctions $\{\psi_n\}$ is \vocab{orthonormal} if $\inp{\psi_m}{\psi_n} = \delta_{mn}$. It is \vocab{complete} if every $\psi \in \mathcal{H}$ can be expanded as
+    $$
+    \psi = \sum_n \lambda_n \psi_n
+    $$
+    for some constants $\lambda_n \in \C$.
+\end{definition}
+
+For a complete orthonormal set, the expansion coefficients can be extracted with the inner product, just as Fourier coefficients are.
+
+\begin{proposition}[Extracting Coefficients]
+    If $\{\psi_n\}$ is a complete orthonormal set and $\psi = \sum_n \lambda_n \psi_n$, then $\lambda_n = \inp{\psi_n}{\psi}$.
+\end{proposition}
+\begin{proof}
+    Using linearity and orthonormality,
+    $$
+    \inp{\psi_n}{\psi} = \Big\langle \psi_n, \sum_m \lambda_m \psi_m \Big\rangle = \sum_m \lambda_m \inp{\psi_n}{\psi_m} = \sum_m \lambda_m \delta_{nm} = \lambda_n. \qedhere
+    $$
+\end{proof}
+
+This should feel exactly like Fourier series -- and indeed Fourier series will literally appear when we solve the particle in a box.
+
+\begin{example}[A Complete Orthonormal Set]
+    On the interval $[-a, a]$ (which will be the home of the `infinite square well' later), the functions
+    $$
+    \psi_n(x) = \frac{1}{\sqrt{a}} \begin{cases} \cos \frac{n \pi x}{2a} & n \text{ odd}, \\[2pt] \sin \frac{n \pi x}{2a} & n \text{ even}, \end{cases} \quad n = 1, 2, 3, \dots
+    $$
+    form an orthonormal set: for instance, for $m \neq n$ both odd,
+    $$
+    \frac{1}{a}\int_{-a}^{a} \cos \frac{m \pi x}{2a} \cos \frac{n \pi x}{2a} \dd x = \frac{1}{2a} \int_{-a}^a \left( \cos \frac{(m-n)\pi x}{2a} + \cos\frac{(m+n)\pi x}{2a} \right) \dd x = 0,
+    $$
+    with the mixed sine-cosine integrals vanishing by parity. Completeness (for functions vanishing at $\pm a$) is exactly the convergence of Fourier series, which we take on trust from Analysis. This set will turn out to be the set of energy eigenfunctions of a particle in a box, and the expansion coefficients will carry direct physical meaning.
+\end{example}
+
+\subsection{The Postulates of Quantum Mechanics}
+
+We can now clearly set out the mathematical framework that quantum mechanics uses. It's natural to think about answering the following questions: How is a quantum state represented mathematically? How do we take this representation and calculate physical quantities? Given the state at some time $t_1$, how do we find the state at some time $t_2$? With answers to these we are well on our way.
+
+The truth is that you have to start somewhere, and these postulates are where it's going to be. They cannot be derived -- they are justified by the (superb) agreement of their consequences with experiment.
+
+\begin{axiom}[States]
+    The state of a quantum mechanical system at time $t$ is given by a non-zero wavefunction $\psi(\cdot, t)$ in the Hilbert space $\mathcal{H}$, with $\psi$ and $\tilde\psi = \lambda \psi$ (for $\lambda \in \C \setminus \{0\}$) describing the same state.
+\end{axiom}
+
+\begin{axiom}[Observables]
+    Every observable quantity $O$ of the system corresponds to a Hermitian linear operator $\hat{O}: \mathcal{H} \rightarrow \mathcal{H}$.
+\end{axiom}
+
+Here an \vocab{operator} is a linear map $\hat{O} : \mathcal{H} \to \mathcal{H}$, that is
+$$
+\hat{O}(\lambda_1 \psi_1 + \lambda_2 \psi_2) = \lambda_1 \hat{O} \psi_1 + \lambda_2 \hat{O} \psi_2,
+$$
+and \emph{Hermitian} is a symmetry condition with respect to the inner product whose statement and consequences we will develop properly in Section 6 -- for now, think `real eigenvalues guaranteed'. The observables we will meet most often are built from position and momentum:
+\begin{align*}
+    \text{position} \quad & \hat{x}_i \psi = x_i \psi, \\
+    \text{momentum} \quad & \hat{p}_i \psi = -i \hbar \frac{\partial \psi}{\partial x_i}, \\
+    \text{energy} \quad & \hat{H} \psi = -\frac{\hbar^2}{2m} \nabla^2 \psi + U(\vv{x}) \psi,
+\end{align*}
+where the \vocab{Hamiltonian} $\hat{H}$ is the operator version of the classical energy $\frac{\vv{p}^2}{2m} + U(\vv{x})$ of a particle of mass $m$ moving in a potential $U$ -- notice it is exactly what you get by substituting $\hat{p}_i$ for $p_i$. The momentum operator looks like a logical leap right now; we will motivate it when we discuss the Schr\"odinger equation, and again (better) when we compute expectation values.
+
+Next, measurement. You'll notice that in classical mechanics, an observable is a function that takes a state and produces some numerical value -- something that can be thought of as reading out a value from some measurement device. For quantum mechanics we work with states in a vector space, so if we had two different states with two different values of an observable, then since the sum of states is also a state -- what would the observable read on the sum? There is no consistent classical answer. The way quantum mechanics deals with this is as follows.
+
+\begin{axiom}[Measurement]
+    The possible outcomes of a measurement of the observable $O$ are the eigenvalues of the operator $\hat{O}$. The states in which $O$ has a definite, well-defined value are exactly the eigenfunctions of $\hat{O}$: if $\hat{O} \psi = \lambda \psi$, then measuring $O$ in the state $\psi$ returns $\lambda$ with certainty.
+\end{axiom}
+
+\begin{axiom}[The Born Rule, Amplitude Form]
+    Suppose $\psi_1$ and $\psi_2$ are normalised eigenfunctions of $\hat{O}$ with distinct eigenvalues $\lambda_1 \neq \lambda_2$, and consider the superposition
+    $$
+    \psi = \alpha_1 \psi_1 + \alpha_2 \psi_2, \quad \alpha_1, \alpha_2 \in \C.
+    $$
+    Then $\psi$ does not have a well-defined value of $O$. If $O$ is measured in this state, the result is $\lambda_1$ or $\lambda_2$, with probabilities
+    $$
+    \PP(\lambda_1) = \frac{\abs{\alpha_1}^2}{\abs{\alpha_1}^2 + \abs{\alpha_2}^2}, \quad \PP(\lambda_2) = \frac{\abs{\alpha_2}^2}{\abs{\alpha_1}^2 + \abs{\alpha_2}^2},
+    $$
+    and immediately after a measurement returning $\lambda_i$, the state of the system is $\psi_i$.
+\end{axiom}
+
+The general form of this rule (for arbitrarily many eigenfunctions, and with degenerate eigenvalues) will be given in Section 6, once we have established that eigenfunctions of Hermitian operators really do form complete orthonormal sets. Note that this axiom implies that a global phase on a state makes no difference to any probability -- but relative phases between the $\alpha_i$ \emph{can} make a difference to the probabilities of other observables, which is precisely the interference we saw in the double slit experiment. Note also the final sentence -- the notorious `collapse of the wavefunction'. Measurement changes the state, discontinuously.
+
+Finally, dynamics.
+
+\begin{axiom}[Time Evolution]
+    Between measurements, the wavefunction evolves according to the \vocab{time-dependent Schr\"odinger equation}
+    $$
+    i \hbar \frac{\partial \psi}{\partial t} = \hat{H} \psi,
+    $$
+    where $\hat{H}$ is the Hamiltonian operator of the system.
+\end{axiom}
+
+The Hamiltonian is the distinguished observable of the theory: the energy determines the dynamics. The whole of the next section is devoted to this equation.
+
+A final word on the shape of the framework. Where classical mechanics had (phase space, observable functions, Newton/Hamilton's equations), quantum mechanics has (Hilbert space, Hermitian operators, the Schr\"odinger equation) -- the parallel we promised. But the measurement axioms have no classical counterpart at all: they are the genuinely new -- and genuinely strange -- ingredient, and interpreting what they `really mean' (what counts as a measurement? what happens during collapse?) remains contested a century on. Mercifully, using the rules requires no philosophy, and their predictions have never once failed an experimental test. We shall calculate.
+
+\section{The Schr\"odinger Equation}
+
+\subsection{The Time-Dependent Schr\"odinger Equation}
+
+For a particle of mass $m$ moving in a potential $U(\vv{x})$, the time evolution axiom reads explicitly
+$$
+i \hbar \frac{\partial \psi}{\partial t}(\vv{x}, t) = -\frac{\hbar^2}{2m} \nabla^2 \psi(\vv{x}, t) + U(\vv{x}) \psi(\vv{x}, t).
+$$
+This equation is a postulate -- it is not derived from anything -- but we can at least see that it is a \emph{sensible} postulate, by checking it against de Broglie's matter waves.
+
+Consider a free particle, $U = 0$, and try the plane wave
+$$
+\psi(\vv{x}, t) = \exp(i(\vv{k} \cdot \vv{x} - \omega t)).
+$$
+Substituting into the Schr\"odinger equation, the left hand side gives $\hbar \omega \psi$ and the right hand side gives $\frac{\hbar^2 \abs{\vv{k}}^2}{2m} \psi$, so the plane wave is a solution precisely when
+$$
+\hbar \omega = \frac{\hbar^2 \abs{\vv{k}}^2}{2m}.
+$$
+Using the de Broglie relations $E = \hbar \omega$ and $\vv{p} = \hbar \vv{k}$, this dispersion relation is exactly
+$$
+E = \frac{\abs{\vv{p}}^2}{2m},
+$$
+the correct energy-momentum relation for a free non-relativistic particle. So the Schr\"odinger equation is precisely the wave equation whose dispersion relation encodes Newtonian kinematics via de Broglie's dictionary. This also motivates the momentum operator: acting on the plane wave,
+$$
+-i\hbar \nabla \psi = \hbar \vv{k} \, \psi = \vv{p} \psi,
+$$
+so plane waves are eigenfunctions of $\hat{\vv{p}} = -i\hbar\nabla$ with eigenvalue exactly their de Broglie momentum.
+
+\begin{remark}
+    Two structural features are worth noting immediately.
+    \begin{enumerate}[label=(\roman*)]
+        \item The equation is \emph{first order in time}. Contrast Newton's second law, which is second order: there, we needed both position and momentum as initial data. Here a single initial condition -- the wavefunction $\psi(\vv{x}, t_0)$ -- determines the entire future evolution. The wavefunction really is the whole state.
+        \item Time and space appear asymmetrically (first derivative against second derivative). This is how it must be for a non-relativistic theory, but it means the Schr\"odinger equation cannot be compatible with special relativity, where space and time must be treated on an equal footing. The relativistic story (the Dirac equation, quantum field theory) is well beyond this course.
+    \end{enumerate}
+\end{remark}
+
+\begin{remark}
+    The equation is also \emph{linear}: any complex linear combination of solutions is a solution. This is forced on us by the superposition principle, and it is what makes the linear algebra of the previous section the right toolkit.
+\end{remark}
+
+\begin{remark}[What the Wavefunction is Not]
+    It is tempting -- and was tempting historically, to Schr\"odinger himself -- to picture $\psi$ as a physical wave rippling through space, like an electromagnetic field. The Born rule already strains this picture (the wave would have to `collapse' instantaneously everywhere upon measurement), but the decisive objection is that for \emph{two} particles the wavefunction is a function $\psi(\vv{x}_1, \vv{x}_2, t)$ on six-dimensional configuration space, not two waves in ordinary space -- and it need not factorise as $\psi_1(\vv{x}_1)\psi_2(\vv{x}_2)$. (When it doesn't, the particles are said to be \emph{entangled}, which is the doorway to the strangest and most fertile parts of the subject -- but multi-particle systems are beyond this course.) The wavefunction is best regarded as what it is: the mathematical repository of everything knowable about the system.
+\end{remark}
+
+\subsection{Conservation of Probability}
+
+There is a consistency check we had better perform. The Born rule requires the total probability $\int \abs{\psi}^2 \dd V$ to equal $1$ at all times, but the Schr\"odinger equation tells the wavefunction how to evolve -- these had better be compatible, i.e.\ the normalisation of the wavefunction had better be preserved by time evolution. It is, and the proof reveals a conserved current, in close analogy with the conservation of charge in electromagnetism or mass in fluid dynamics.
+
+\begin{theorem}[Conservation of Probability]
+    Let $\psi$ solve the time-dependent Schr\"odinger equation with real potential $U$, and suppose $\psi \rightarrow 0$ suitably fast as $\abs{\vv{x}} \rightarrow \infty$. Define the \vocab{probability current}
+    $$
+    \vv{J}(\vv{x}, t) = -\frac{i \hbar}{2m} \left( \psi^* \nabla \psi - \psi \nabla \psi^* \right).
+    $$
+    Then the probability density $\rho = \abs{\psi}^2$ satisfies the continuity equation
+    $$
+    \frac{\partial \rho}{\partial t} + \nabla \cdot \vv{J} = 0,
+    $$
+    and consequently $\displaystyle \int_{\R^3} \abs{\psi(\vv{x},t)}^2 \dd V$ is constant in time.
+\end{theorem}
+\begin{proof}
+    The Schr\"odinger equation and its complex conjugate give
+    $$
+    \frac{\partial \psi}{\partial t} = \frac{i \hbar}{2m} \nabla^2 \psi - \frac{i}{\hbar} U \psi, \quad
+    \frac{\partial \psi^*}{\partial t} = -\frac{i \hbar}{2m} \nabla^2 \psi^* + \frac{i}{\hbar} U \psi^*,
+    $$
+    where we used that $U$ is real. Then
+    \begin{align*}
+        \frac{\partial \rho}{\partial t} = \frac{\partial}{\partial t} (\psi^* \psi)
+        &= \psi^* \frac{\partial \psi}{\partial t} + \psi \frac{\partial \psi^*}{\partial t} \\
+        &= \frac{i\hbar}{2m} \left( \psi^* \nabla^2 \psi - \psi \nabla^2 \psi^* \right) + \frac{i}{\hbar}\left(- U \psi^* \psi + U \psi \psi^* \right)\\
+        &= \frac{i\hbar}{2m} \nabla \cdot \left( \psi^* \nabla \psi - \psi \nabla \psi^* \right) = -\nabla \cdot \vv{J},
+    \end{align*}
+    where in the second-to-last step we used $\nabla \cdot (\psi^* \nabla \psi) = \psi^* \nabla^2 \psi + \nabla \psi^* \cdot \nabla \psi$, the cross terms cancelling. This is the continuity equation. Integrating over a large ball $B_R$ and applying the divergence theorem,
+    $$
+    \frac{\dd}{\dd t} \int_{B_R} \abs{\psi}^2 \dd V = -\int_{\partial B_R} \vv{J} \cdot \dd \vv{S} \rightarrow 0 \text{ as } R \rightarrow \infty,
+    $$
+    since $\psi$ (and hence $\vv{J}$) vanishes at infinity. So the total integral is conserved.
+\end{proof}
+
+The continuity equation is a stronger statement than mere conservation of the total: it says probability is conserved \emph{locally}. Probability cannot teleport from one region to another; it must flow through the intervening space, with flux $\vv{J}$. We will use the current $\vv{J}$ quantitatively when we study scattering.
+
+\begin{example}[Currents of Basic States]
+    Two instructive special cases (in one dimension, where $J = -\frac{i\hbar}{2m}(\psi^* \psi' - \psi \psi'^*)$):
+    \begin{enumerate}[label=(\roman*)]
+        \item \emph{Real wavefunctions carry no current.} If $\psi = \psi^*$ then the two terms cancel and $J = 0$ -- and more generally the same holds if $\psi$ is real up to a constant phase. All our bound states below can be taken real, so they carry no flux anywhere: they really are `stationary' in the strongest sense.
+        \item \emph{Plane waves carry uniform current.} For $\psi = A e^{i(kx - \omega t)}$,
+        $$
+        J = -\frac{i \hbar}{2m}\left( \abs{A}^2 (ik) - \abs{A}^2 (-ik) \right) = \abs{A}^2 \, \frac{\hbar k}{m},
+        $$
+        which is (density) $\times$ (velocity), with the velocity $p/m = \hbar k/m$. Probability flows steadily to the right (for $k > 0$), consistent with $\rho$ being constant: inflow balances outflow everywhere.
+    \end{enumerate}
+    Complexity of the wavefunction, in both senses of the word, is where motion lives.
+\end{example}
+
+\subsection{Stationary States and the Time-Independent Schr\"odinger Equation}
+
+Faced with a linear PDE, we separate variables. Try a solution of the form
+$$
+\psi(\vv{x}, t) = \chi(\vv{x}) \, T(t).
+$$
+Substituting into the time-dependent Schr\"odinger equation and dividing through by $\chi T$,
+$$
+i \hbar \frac{T'(t)}{T(t)} = \frac{\hat{H} \chi(\vv{x})}{\chi(\vv{x})}.
+$$
+The left hand side depends only on $t$ and the right hand side only on $\vv{x}$, so both are equal to a constant, $E$ say. The time equation $i \hbar T' = E T$ immediately gives
+$$
+T(t) = e^{-iEt/\hbar},
+$$
+while the spatial equation is the following.
+
+\begin{definition}[Time-Independent Schr\"odinger Equation]
+    The \vocab{time-independent Schr\"odinger equation} is the eigenvalue equation
+    $$
+    \hat{H} \chi = E \chi, \quad \text{i.e.} \quad -\frac{\hbar^2}{2m} \nabla^2 \chi(\vv{x}) + U(\vv{x}) \chi(\vv{x}) = E \chi(\vv{x}).
+    $$
+\end{definition}
+
+That is, $\chi$ is an eigenfunction of the Hamiltonian with eigenvalue $E$ -- by the measurement axiom, a state of definite energy $E$. (Since $\hat{H}$ is Hermitian, $E$ is guaranteed to be real; a complex $E$ would also make $\abs{T(t)}$ blow up either forwards or backwards in time, destroying normalisation.)
+
+\begin{definition}[Stationary State]
+    A \vocab{stationary state} of energy $E$ is a solution of the time-dependent Schr\"odinger equation of the form
+    $$
+    \psi(\vv{x}, t) = \chi(\vv{x}) \, e^{-iEt/\hbar},
+    $$
+    where $\chi$ satisfies the time-independent Schr\"odinger equation with eigenvalue $E$.
+\end{definition}
+
+The name is explained by computing the probability density:
+$$
+\rho(\vv{x}, t) = \abs{\psi(\vv{x}, t)}^2 = \abs{\chi(\vv{x})}^2 \abs{e^{-iEt/\hbar}}^2 = \abs{\chi(\vv{x})}^2,
+$$
+which is independent of time. Nothing observable about a stationary state ever changes -- the time dependence is a pure phase. This, incidentally, resolves the stability problem of the atom: an electron in a stationary state has literally nothing about it that evolves, so there is nothing to radiate.
+
+Why do we care so much about this special class of solutions? Because of linearity, and a completeness fact we will establish in Section 6: \emph{every} solution of the time-dependent Schr\"odinger equation is a superposition of stationary states. If the Hamiltonian has (say, discrete) eigenfunctions $\chi_n$ with eigenvalues $E_n$, the general solution is
+$$
+\psi(\vv{x}, t) = \sum_n a_n \chi_n(\vv{x}) \, e^{-iE_n t/\hbar}, \quad a_n \in \C,
+$$
+and the coefficients are fixed by the initial data: $a_n = \inp{\chi_n}{\psi(\cdot, 0)}$. Solving the time-independent equation is therefore not a warm-up problem -- it is the whole problem. Once you know the spectrum of $\hat{H}$, time evolution is just attaching phases.
+
+In general the Hamiltonian can also have a continuous family of eigenfunctions $\chi_\alpha$ with energies $E_\alpha$ (we will meet this for the free particle), in which case sums are replaced by integrals:
+$$
+\psi(\vv{x}, t) = \int A(\alpha) \chi_\alpha(\vv{x}) e^{-i E_\alpha t / \hbar} \dd \alpha.
+$$
+
+It is worth seeing explicitly how superposition brings back genuine time dependence, given that each individual stationary state has none.
+
+\begin{example}[A Two-State Superposition]
+    Suppose $\chi_1, \chi_2$ are orthonormal (real) stationary states with distinct energies $E_1 \neq E_2$, and consider
+    $$
+    \psi(\vv{x}, t) = \frac{1}{\sqrt{2}}\left( \chi_1(\vv{x}) e^{-iE_1 t/\hbar} + \chi_2(\vv{x}) e^{-i E_2 t/\hbar} \right).
+    $$
+    The probability density is
+    \begin{align*}
+        \abs{\psi}^2 &= \frac{1}{2}\left( \chi_1^2 + \chi_2^2 + 2 \chi_1 \chi_2 \cos\left( \frac{(E_2 - E_1) t}{\hbar} \right) \right),
+    \end{align*}
+    which \emph{oscillates} in time, at the single angular frequency
+    $$
+    \omega_{21} = \frac{E_2 - E_1}{\hbar}.
+    $$
+    The probability sloshes back and forth between the regions where $\chi_1 \chi_2 > 0$ and those where $\chi_1 \chi_2 < 0$. Notice that this is precisely the Bohr transition frequency between the two levels -- it is superpositions like this, driven by a coupling to the electromagnetic field, that radiate at the observed spectral frequencies. Note also that the \emph{relative phase} between the two terms is doing real physical work here, as promised in Section 2: replacing $\chi_2 \mapsto e^{i\theta}\chi_2$ shifts the phase of the oscillation.
+\end{example}
+
+A large portion of these notes -- all of the next two sections -- consists of solving the time-independent Schr\"odinger equation for various potentials $U$, and interpreting the answers. It is remarkable how much physics is contained in a single ordinary differential equation.
+
+\section{One-Dimensional Systems}
+
+We now restrict to one spatial dimension, where the time-independent Schr\"odinger equation
+$$
+-\frac{\hbar^2}{2m} \chi''(x) + U(x) \chi(x) = E \chi(x)
+$$
+is an ordinary differential equation, and everything can be computed explicitly. This is not just a pedagogical simplification -- the one-dimensional problems in this section are the hydrogen atoms of quantum mechanics, and (as we will see in Section 7) genuinely three-dimensional problems often reduce to one-dimensional ones.
+
+\subsection{The Free Particle and Wavepackets}
+
+Let's start with the simplest possible potential: $U = 0$. The time-independent Schr\"odinger equation is $-\frac{\hbar^2}{2m}\chi'' = E \chi$, with solutions
+$$
+\chi_k(x) = e^{ikx}, \quad E = \frac{\hbar^2 k^2}{2m},
+$$
+for any $k \in \R$. Attaching the time dependence, we get the \vocab{de Broglie plane waves}
+$$
+\psi_k(x, t) = \exp\left(i k x - \frac{i\hbar k^2}{2m} t\right),
+$$
+which are momentum eigenstates: $\hat{p} \psi_k = \hbar k \psi_k$. Notice that the energy spectrum is \emph{continuous} -- any $E \geq 0$ occurs -- in sharp contrast with the bound systems we study later.
+
+There is, however, an embarrassment:
+$$
+\int_{-\infty}^{\infty} \abs{\psi_k(x,t)}^2 \dd x = \int_{-\infty}^{\infty} 1 \dd x = \infty,
+$$
+so plane waves are not normalisable, and strictly speaking are not states in $\mathcal{H}$ at all\footnote{This is a general feature: normalisability requires $\chi \rightarrow 0$ at infinity, so any eigenfunction that remains oscillatory out to infinity -- any `unbound' state -- fails to be normalisable. The plane wave is the extreme case.}. There are two standard ways of dealing with this, and both are physically illuminating:
+\begin{enumerate}[label=(\roman*)]
+    \item build normalisable solutions as superpositions of plane waves -- \emph{wavepackets};
+    \item keep the plane waves but reinterpret them as describing steady \emph{beams} of particles rather than single particles (we will do this when we study scattering).
+\end{enumerate}
+
+Let's carry out the first honestly. By the superposition principle, for any (reasonable) amplitude function $A(k)$,
+$$
+\psi(x, t) = \int_{-\infty}^{\infty} A(k) \exp\left(ikx - \frac{i \hbar k^2}{2m}t\right) \dd k
+$$
+solves the time-dependent Schr\"odinger equation. Choose a Gaussian profile peaked around a wavenumber $k_0$:
+$$
+A(k) = \exp\left( -\frac{\sigma}{2}(k - k_0)^2 \right), \quad \sigma > 0.
+$$
+The resulting solution is called the \vocab{Gaussian wavepacket}. The integral is doable by hand: the exponent is
+$$
+F(k) = -\frac{\sigma}{2}(k - k_0)^2 + ikx - \frac{i \hbar k^2}{2m} t = -\frac{\alpha}{2} k^2 + \beta k + \delta,
+$$
+where
+$$
+\alpha = \sigma + \frac{i \hbar t}{m}, \quad \beta = \sigma k_0 + i x, \quad \delta = -\frac{\sigma}{2} k_0^2.
+$$
+Completing the square, $F(k) = -\frac{\alpha}{2}\left(k - \frac{\beta}{\alpha}\right)^2 + \frac{\beta^2}{2 \alpha} + \delta$, and shifting the contour of integration (justified since the integrand is entire and decays), we are left with a standard Gaussian integral $\int_{-\infty}^\infty e^{-\alpha u^2/2} \dd u = \sqrt{2\pi/\alpha}$, giving
+$$
+\psi(x, t) = \sqrt{\frac{2 \pi}{\alpha}} \exp\left( \frac{\beta^2}{2\alpha} + \delta \right).
+$$
+This looks opaque, but taking the modulus squared and simplifying (a worthwhile exercise in complex bookkeeping),
+$$
+\rho(x, t) = \abs{\overline{\psi}(x,t)}^2 = \sqrt{\frac{\sigma}{\pi\left(\sigma^2 + \frac{\hbar^2 t^2}{m^2}\right)}} \exp\left( -\frac{\sigma \left(x - \frac{\hbar k_0}{m} t\right)^2}{\sigma^2 + \frac{\hbar^2 t^2}{m^2}} \right),
+$$
+where $\overline{\psi}$ is the normalised wavepacket. This is a Gaussian bump, and we can read off the physics directly.
+
+\begin{center}
+\begin{tikzpicture}
+\draw[<->] (-3.4,0) -- (3.4,0) node[right] {$x$};
+\draw[->] (0,-1.4) -- (0,1.5);
+\draw[dashed, color=gray] plot[smooth] coordinates {(-3.150,0.002) (-2.700,0.012) (-2.430,0.029) (-2.160,0.062) (-1.890,0.121) (-1.620,0.218) (-1.350,0.357) (-1.080,0.535) (-0.810,0.734) (-0.540,0.919) (-0.270,1.052) (0.000,1.100) (0.270,1.052) (0.540,0.919) (0.810,0.734) (1.080,0.535) (1.350,0.357) (1.620,0.218) (1.890,0.121) (2.160,0.062) (2.430,0.029) (2.700,0.012) (3.150,0.002)};
+\draw[dashed, color=gray] plot[smooth] coordinates {(-3.150,-0.002) (-2.700,-0.012) (-2.430,-0.029) (-2.160,-0.062) (-1.890,-0.121) (-1.620,-0.218) (-1.350,-0.357) (-1.080,-0.535) (-0.810,-0.734) (-0.540,-0.919) (-0.270,-1.052) (0.000,-1.100) (0.270,-1.052) (0.540,-0.919) (0.810,-0.734) (1.080,-0.535) (1.350,-0.357) (1.620,-0.218) (1.890,-0.121) (2.160,-0.062) (2.430,-0.029) (2.700,-0.012) (3.150,-0.002)};
+\draw[thick, color=blue] plot coordinates {(-3.150,-0.001) (-3.060,0.000) (-2.970,0.003) (-2.880,0.006) (-2.790,0.009) (-2.745,0.009) (-2.700,0.008) (-2.610,0.002) (-2.520,-0.010) (-2.430,-0.025) (-2.340,-0.037) (-2.295,-0.039) (-2.250,-0.037) (-2.160,-0.016) (-2.070,0.026) (-1.980,0.079) (-1.890,0.121) (-1.845,0.130) (-1.800,0.126) (-1.710,0.071) (-1.620,-0.042) (-1.530,-0.185) (-1.440,-0.301) (-1.373,-0.331) (-1.305,-0.288) (-1.215,-0.108) (-1.125,0.175) (-1.035,0.463) (-0.945,0.634) (-0.922,0.645) (-0.855,0.585) (-0.765,0.290) (-0.675,-0.175) (-0.585,-0.646) (-0.495,-0.934) (-0.450,-0.961) (-0.382,-0.834) (-0.292,-0.386) (-0.202,0.235) (-0.113,0.799) (-0.045,1.050) (0.000,1.100) (0.045,1.050) (0.113,0.799) (0.203,0.235) (0.293,-0.386) (0.383,-0.834) (0.450,-0.961) (0.495,-0.934) (0.585,-0.646) (0.675,-0.175) (0.765,0.290) (0.855,0.585) (0.923,0.645) (0.945,0.634) (1.035,0.463) (1.125,0.175) (1.215,-0.108) (1.305,-0.288) (1.373,-0.331) (1.440,-0.301) (1.530,-0.185) (1.620,-0.042) (1.710,0.071) (1.800,0.126) (1.845,0.130) (1.935,0.103) (2.025,0.052) (2.115,0.003) (2.205,-0.029) (2.273,-0.039) (2.340,-0.037) (2.430,-0.025) (2.520,-0.010) (2.610,0.002) (2.700,0.008) (2.745,0.009) (2.790,0.009) (2.880,0.006) (2.970,0.003) (3.060,0.000) (3.150,-0.001)};
+\draw[->, thick] (1.1,1.25) -- (2.1,1.25);
+\node[above] at (1.6,1.25) {$\frac{\hbar k_0}{m}$};
+\end{tikzpicture}
+\end{center}
+
+The peak of the bump is at
+$$
+\langle x \rangle = \int_{-\infty}^{\infty} x \, \rho(x,t) \dd x = \frac{\hbar k_0}{m} t,
+$$
+so the packet moves with constant velocity $\hbar k_0 / m = p_0 / m$, exactly the classical velocity of a particle of momentum $p_0 = \hbar k_0$. The width of the bump,
+$$
+\Delta x = \sqrt{\langle x^2 \rangle - \langle x \rangle^2} = \sqrt{\frac{1}{2}\left( \sigma + \frac{\hbar^2 t^2}{m^2 \sigma} \right)},
+$$
+\emph{grows} with time: wavepackets spread. This is dispersion -- the different plane-wave components travel at different speeds, so the packet cannot hold itself together. One can similarly compute (using the momentum operator $\hat{p} = -i\hbar \frac{\partial}{\partial x}$)
+$$
+\langle p \rangle = \int_{-\infty}^\infty \overline{\psi}^* \left( -i \hbar \frac{\partial}{\partial x} \right) \overline{\psi} \dd x = \hbar k_0, \quad
+\Delta p = \frac{\hbar}{\sqrt{2\left(\sigma + \frac{\hbar^2 t^2}{m^2 \sigma}\right)}},
+$$
+so momentum is sharp to precision $\Delta p$, which \emph{shrinks} as the packet spreads. At $t = 0$ we find the tidy relation
+$$
+\Delta x \, \Delta p = \frac{\hbar}{2}.
+$$
+A tightly localised packet (small $\sigma$) has a wildly uncertain momentum, and vice versa -- with the product bounded below. Compare the two extremes: a plane wave has $\Delta p = 0$ but $\Delta x = \infty$. This trade-off is not an artefact of the Gaussian: it is the \emph{uncertainty principle}, which we will state and prove in general in Section 6 -- and we will see there that the Gaussian is precisely the minimising shape.
+
+\subsection{The Infinite Square Well}
+
+Our first genuinely quantum system is a particle trapped in a box: the \vocab{infinite square well}
+$$
+U(x) = \begin{cases}
+    0 & \abs{x} \leq a, \\
+    \infty & \abs{x} > a.
+\end{cases}
+$$
+The infinite potential should be understood as a limit (of the finite well of the next-but-one subsection, say): its effect is that the wavefunction must vanish wherever $U = \infty$, since otherwise the term $U \chi$ in the Schr\"odinger equation is infinite. So $\chi(x) = 0$ for $\abs{x} > a$, and by continuity we get boundary conditions
+$$
+\chi(\pm a) = 0.
+$$
+(At an infinite jump in $U$ we insist only that $\chi$ is continuous; $\chi'$ is allowed to jump. At any finite discontinuity of $U$, both $\chi$ and $\chi'$ must be continuous -- we will use this repeatedly.)
+
+Inside the well the equation is free:
+$$
+\chi'' + k^2 \chi = 0, \quad k = \sqrt{\frac{2mE}{\hbar^2}},
+$$
+with general solution $\chi(x) = A \sin kx + B \cos kx$. (One can check directly that $E \leq 0$ gives only the zero solution.) The boundary conditions read
+$$
+A \sin ka + B \cos ka = 0, \quad -A \sin ka + B \cos ka = 0,
+$$
+adding and subtracting: $B \cos ka = 0$ and $A \sin ka = 0$. We cannot have both $A = B = 0$, and $\sin ka$, $\cos ka$ never vanish together, so exactly one of the following holds:
+\begin{enumerate}[label=(\roman*)]
+    \item $A = 0$ and $\cos ka = 0$, giving $k = \frac{n \pi}{2a}$ with $n$ odd, and even eigenfunctions $\chi \propto \cos kx$;
+    \item $B = 0$ and $\sin ka = 0$, giving $k = \frac{n \pi}{2a}$ with $n$ even, and odd eigenfunctions $\chi \propto \sin kx$.
+\end{enumerate}
+Fixing the constants by normalisation, $\int_{-a}^{a} \abs{\chi_n}^2 \dd x = 1$, we obtain a discrete family of stationary states, one for each positive integer $n$:
+$$
+\chi_n(x) = \frac{1}{\sqrt{a}} \begin{cases}
+    \cos \frac{n \pi x}{2a} & n \text{ odd}, \\[2pt]
+    \sin \frac{n \pi x}{2a} & n \text{ even},
+\end{cases}
+\qquad
+E_n = \frac{\hbar^2 k_n^2}{2m} = \frac{\hbar^2 \pi^2 n^2}{8 m a^2}.
+$$
+
+\begin{center}
+\begin{tikzpicture}
+% walls
+\draw[very thick] (-2,0) -- (-2,4.1);
+\draw[very thick] (2,0) -- (2,4.1);
+\draw[thick] (-3.0,0) -- (3.0,0);
+\node[below] at (-2,0) {$-a$};
+\node[below] at (2,0) {$a$};
+% levels
+\draw[dashed, color=gray] (-2,0.35) -- (2,0.35);
+\draw[dashed, color=gray] (-2,1.4) -- (2,1.4);
+\draw[dashed, color=gray] (-2,3.15) -- (2,3.15);
+\node[right] at (2.1,0.35) {\small $E_1$};
+\node[right] at (2.1,1.4) {\small $E_2$};
+\node[right] at (2.1,3.15) {\small $E_3$};
+% wavefunctions
+\draw[thick, color=blue, samples=80, smooth] plot[domain=-2:2] (\x, {0.35 + 0.32*cos(45*\x)});
+\draw[thick, color=blue, samples=80, smooth] plot[domain=-2:2] (\x, {1.4 + 0.32*sin(90*\x)});
+\draw[thick, color=blue, samples=100, smooth] plot[domain=-2:2] (\x, {3.15 + 0.32*cos(135*\x)});
+\node[left] at (-2.1,0.35) {\small $\chi_1$};
+\node[left] at (-2.1,1.4) {\small $\chi_2$};
+\node[left] at (-2.1,3.15) {\small $\chi_3$};
+\end{tikzpicture}
+\end{center}
+
+This small computation displays most of the characteristic features of bound quantum systems, so let's pause and stare at it.
+
+\begin{enumerate}[label=(\roman*)]
+    \item \emph{The energy is quantised.} Only the discrete values $E_n \propto n^2$ occur -- the boundary conditions act exactly like the `standing wave' condition in de Broglie's picture: an integer number of half-wavelengths must fit in the box.
+    \item \emph{The ground state energy is not zero.} The lowest possible energy is $E_1 = \hbar^2\pi^2/8ma^2 > 0$: a confined quantum particle cannot sit still. This is forced by the uncertainty principle -- confinement to $\Delta x \sim a$ requires $\Delta p \gtrsim \hbar/a$, and hence kinetic energy of order $\hbar^2 / m a^2$.
+    \item \emph{Nodes.} The $n$th eigenfunction has $n - 1$ interior zeros, at which the particle is never found. It is genuinely strange that a particle can be found on both sides of a point it can never be found at; resist the temptation to think of the particle as `moving' -- the state is stationary.
+    \item \emph{The classical limit.} For large $n$, the density $\abs{\chi_n}^2$ oscillates so rapidly that any realistic position measurement averages it out to the constant $1/2a$ -- the uniform distribution a classical bouncing particle would give.
+\end{enumerate}
+
+\begin{remark}
+    The eigenfunctions $\{\chi_n\}$ are precisely a Fourier basis for $[-a, a]$, so completeness of eigenfunctions of $\hat{H}$ is, in this example, exactly the classical statement that Fourier series converge. The general solution of the time-dependent problem in the box,
+    $$
+    \psi(x,t) = \sum_{n=1}^\infty a_n \chi_n(x) e^{-iE_n t/\hbar},
+    $$
+    is a Fourier series with rotating coefficients.
+\end{remark}
+
+\begin{example}[Position Statistics in the Ground State]
+    Let's compute the position statistics of the ground state $\chi_1 = \frac{1}{\sqrt{a}}\cos\frac{\pi x}{2a}$. By symmetry $\langle x \rangle = 0$ (the density is even), and
+    $$
+    \langle x^2 \rangle = \frac{1}{a} \int_{-a}^{a} x^2 \cos^2 \frac{\pi x}{2 a} \dd x
+    = \frac{1}{2a}\int_{-a}^{a} x^2 \left( 1 + \cos \frac{\pi x}{a} \right) \dd x
+    = \frac{a^2}{3} - \frac{2 a^2}{\pi^2},
+    $$
+    where the second integral is done by integrating by parts twice. So
+    $$
+    \Delta x = a \sqrt{\frac{1}{3} - \frac{2}{\pi^2}} \approx 0.36 \, a,
+    $$
+    somewhat less than the value $a/\sqrt{3} \approx 0.58 \, a$ for a uniform distribution -- the ground state huddles towards the middle of the box. For the momentum, $\langle p \rangle = 0$ (again by symmetry -- or note $\chi_1$ is real, so its current $J$ vanishes), while $\langle p^2 \rangle = 2m E_1 = \hbar^2 \pi^2/4a^2$, since $\chi_1$ is an eigenfunction of $\hat{p}^2 = 2m\hat{H}$ inside the well. Multiplying,
+    $$
+    \Delta x \, \Delta p = \frac{\pi \hbar}{2} \sqrt{\frac{1}{3} - \frac{2}{\pi^2}} \approx 0.57 \, \hbar > \frac{\hbar}{2},
+    $$
+    comfortably (but not extravagantly) consistent with the uncertainty principle we will prove in Section 6.
+\end{example}
+
+\begin{exercise}
+    Show that in the $n$th eigenstate, $\Delta x \, \Delta p = \frac{n \pi \hbar}{2}\sqrt{\frac{1}{3} - \frac{2}{n^2\pi^2}}$, which grows linearly in $n$ -- highly excited states are far from minimal uncertainty.
+\end{exercise}
+
+\subsection{Parity}
+
+You will have noticed that every eigenfunction of the infinite well was either even or odd. This is not a coincidence, and it is worth isolating the mechanism, since we will use it as a labour-saving device repeatedly.
+
+\begin{proposition}[Parity of Eigenfunctions]
+    Suppose the potential is even, $U(-x) = U(x)$, and that $\chi$ is an eigenfunction of $\hat{H}$ whose eigenvalue $E$ is \emph{non-degenerate} (no other linearly independent eigenfunction has the same eigenvalue). Then $\chi$ is either even or odd.
+\end{proposition}
+\begin{proof}
+    If $U$ is even then the map $x \mapsto -x$ leaves the time-independent Schr\"odinger equation unchanged, so if $\chi(x)$ is a solution with eigenvalue $E$, so is $\tilde{\chi}(x) = \chi(-x)$. By non-degeneracy, $\tilde{\chi}$ must be proportional to $\chi$, say $\chi(-x) = \alpha \chi(x)$. Applying this twice,
+    $$
+    \chi(x) = \chi(-(-x)) = \alpha \chi(-x) = \alpha^2 \chi(x),
+    $$
+    so $\alpha^2 = 1$, i.e.\ $\alpha = \pm 1$. Then $\alpha = 1$ makes $\chi$ even and $\alpha = -1$ makes it odd.
+\end{proof}
+
+Even when eigenvalues are degenerate, we can always \emph{choose} a basis of even and odd eigenfunctions (take $\chi(x) \pm \chi(-x)$). The upshot for computations: for a symmetric potential we may search for even solutions and odd solutions separately, which roughly halves the work. In the language of operators, the \vocab{parity operator} $\hat{P} \chi(x) = \chi(-x)$ commutes with $\hat{H}$, and we are choosing simultaneous eigenfunctions of both -- a point we will return to in Section 6.
+
+In fact, in one dimension the non-degeneracy hypothesis comes for free, which is why every bound state we compute in this section is automatically even or odd.
+
+\begin{proposition}[No Degeneracy in One Dimension]
+    Bound state energy levels of the one-dimensional Schr\"odinger equation are non-degenerate.
+\end{proposition}
+\begin{proof}
+    Suppose $\chi_1$ and $\chi_2$ are both normalisable eigenfunctions with the same eigenvalue $E$. Consider the Wronskian
+    $$
+    W(x) = \chi_1 \chi_2' - \chi_2 \chi_1'.
+    $$
+    Differentiating and using the Schr\"odinger equation for each ($\chi_i'' = \frac{2m}{\hbar^2}(U - E)\chi_i$),
+    $$
+    W' = \chi_1 \chi_2'' - \chi_2 \chi_1'' = \frac{2m}{\hbar^2}(U - E)(\chi_1 \chi_2 - \chi_2 \chi_1) = 0,
+    $$
+    so $W$ is constant. Since bound states (and their derivatives) decay at infinity, $W \rightarrow 0$, so $W \equiv 0$. Then wherever the functions are non-zero,
+    $$
+    \frac{\chi_1'}{\chi_1} = \frac{\chi_2'}{\chi_2},
+    $$
+    and integrating gives $\ln \chi_1 = \ln \chi_2 + \text{const}$, i.e.\ $\chi_1 \propto \chi_2$. So the two eigenfunctions represent the same state.
+\end{proof}
+
+(In three dimensions this argument collapses -- there is no Wronskian -- and degeneracy returns with a vengeance, as we will see: it is one of the main new phenomena of Section 7.)
+
+\begin{exercise}
+    Show that the parity operator $\hat{P}$ is Hermitian, that $\hat{P}^2 = \hat{I}$, and deduce that its eigenvalues are $\pm 1$ with the eigenfunctions being exactly the even and odd functions. Show also that $[\hat{H}, \hat{P}] = 0$ if and only if the potential is even.
+\end{exercise}
+
+\subsection{The Finite Square Well}
+
+Now let's make the walls finite: consider
+$$
+U(x) = \begin{cases}
+    0 & \abs{x} \leq a, \\
+    U_0 & \abs{x} > a,
+\end{cases}
+$$
+with $U_0 > 0$. We look for \vocab{bound states}: normalisable eigenfunctions, which requires $0 < E < U_0$ (for $E > U_0$ solutions oscillate at infinity, giving the scattering states of the next section). Classically a particle with $E < U_0$ is imprisoned in $\abs{x} \leq a$ forever. Quantum mechanically, something more interesting happens.
+
+By parity, we may look for even and odd solutions separately; we will do the even case in detail. Write
+$$
+k = \sqrt{\frac{2mE}{\hbar^2}}, \quad \kappa = \sqrt{\frac{2m(U_0 - E)}{\hbar^2}},
+$$
+both real and positive. Inside the well, $\chi'' = -k^2 \chi$, and the even solution is $\chi = B\cos kx$. Outside, $\chi'' = \kappa^2 \chi$, with solutions $e^{\pm \kappa x}$; normalisability kills the growing exponential on each side, and evenness ties the two coefficients together, leaving
+$$
+\chi(x) = \begin{cases}
+    C e^{\kappa x} & x < -a, \\
+    B \cos kx & \abs{x} \leq a, \\
+    C e^{-\kappa x} & x > a.
+\end{cases}
+$$
+Since $U$ has only a finite jump at $x = \pm a$, both $\chi$ and $\chi'$ must be continuous there. At $x = a$:
+$$
+B \cos ka = C e^{-\kappa a}, \quad -kB\sin ka = -\kappa C e^{-\kappa a}.
+$$
+Dividing the second equation by the first (both sides are non-zero for a non-trivial solution),
+$$
+k \tan ka = \kappa.
+$$
+This, together with the defining relation
+$$
+k^2 + \kappa^2 = \frac{2 m U_0}{\hbar^2},
+$$
+determines the allowed energies. These are transcendental equations, so we solve them graphically. Introduce the dimensionless variables $\xi = ka$ and $\eta = \kappa a$; then we need the intersections of
+$$
+\eta = \xi \tan \xi \quad \text{ and } \quad \xi^2 + \eta^2 = r_0^2, \quad r_0 = a\sqrt{\frac{2 m U_0}{\hbar^2}},
+$$
+in the quadrant $\xi, \eta > 0$: the branches of $\xi \tan \xi$ against a circle whose radius $r_0$ measures how `big' the well is (in depth and width together).
+
+\begin{center}
+\begin{tikzpicture}[scale=0.82]
+\draw[->] (0,0) -- (5.6,0) node[right] {$\xi$};
+\draw[->] (0,0) -- (0,5.4) node[above] {$\eta$};
+% tan branches
+\draw[thick, color=blue] plot[smooth] coordinates {(0.001,0.000) (0.115,0.013) (0.207,0.043) (0.298,0.092) (0.390,0.160) (0.481,0.251) (0.573,0.369) (0.664,0.520) (0.756,0.712) (0.847,0.958) (0.938,1.281) (1.007,1.593) (1.076,1.992) (1.121,2.325) (1.167,2.732) (1.213,3.242) (1.259,3.899) (1.281,4.304) (1.304,4.777) (1.313,5.0)};
+\draw[thick, color=blue] plot[smooth] coordinates {(3.142,0.000) (3.230,0.285) (3.318,0.591) (3.406,0.922) (3.494,1.286) (3.582,1.689) (3.670,2.145) (3.759,2.666) (3.847,3.274) (3.913,3.803) (3.957,4.200) (4.001,4.641) (4.023,4.880) (4.033,5.0)};
+\node[color=blue] at (2.55,3.4) {\small $\eta = \xi \tan \xi$};
+% circles
+\draw[thick] plot[smooth] coordinates {(2.000,0.000) (1.974,0.321) (1.897,0.633) (1.771,0.929) (1.599,1.201) (1.385,1.442) (1.136,1.646) (0.857,1.807) (0.556,1.921) (0.241,1.985) (0.000,2.000)};
+\draw[thick] plot[smooth] coordinates {(5.000,0.000) (4.964,0.603) (4.855,1.197) (4.675,1.773) (4.427,2.324) (4.115,2.840) (3.743,3.316) (3.316,3.743) (2.840,4.115) (2.324,4.427) (1.773,4.675) (1.197,4.855) (0.603,4.964) (0.000,5.000)};
+\node at (2.15,-0.35) {\small $r_0 = 2$};
+\node at (4.75,-0.35) {\small $r_0 = 5$};
+% intersection dots
+\fill[color=blue] (1.030,1.715) circle (0.07);
+\fill[color=blue] (1.306,4.828) circle (0.07);
+\fill[color=blue] (3.828,3.212) circle (0.07);
+\end{tikzpicture}
+\end{center}
+
+Each intersection $(\xi_n, \eta_n)$ gives a bound state with energy
+$$
+E_n = \frac{\hbar^2 \xi_n^2}{2 m a^2}.
+$$
+Reading off the picture:
+\begin{enumerate}[label=(\roman*)]
+    \item There is \emph{always} at least one even bound state, no matter how small $r_0$ (i.e.\ how shallow or narrow the well): the first branch of $\xi \tan \xi$ starts at the origin, so the circle always crosses it.
+    \item There are only ever \emph{finitely many} bound states: the circle has finite radius, and the branches of $\xi \tan \xi$ are spaced $\pi$ apart. Deeper and wider wells (larger $r_0$) support more bound states -- in the figure, $r_0 = 2$ gives one even bound state, while $r_0 = 5$ gives two.
+    \item As $U_0 \rightarrow \infty$, $r_0 \rightarrow \infty$ and the intersections approach the asymptotes $\xi_n \rightarrow \frac{n\pi}{2}$ ($n$ odd) -- exactly the even levels of the infinite well, as they had better.
+\end{enumerate}
+The odd solutions run identically: inside the well $\chi = A \sin kx$, outside the same decaying exponentials but now with opposite signs on the two sides, and the matching at $x = a$ gives
+$$
+-k \cot ka = \kappa, \quad \text{i.e.} \quad -\xi \cot \xi = \eta.
+$$
+The branches of $-\xi\cot\xi$ interleave with those of $\xi \tan \xi$ (the first becomes positive only for $\xi > \pi/2$), so the even and odd levels alternate up the spectrum, just as in the infinite well -- and an odd bound state exists only once $r_0 > \pi/2$, i.e.\ only if the well is deep enough. This condition will return with new significance in the three-dimensional theory (\S 7.2).
+
+Here is what the ground state actually looks like:
+
+\begin{center}
+\begin{tikzpicture}[scale=1.05]
+% potential
+\draw[very thick] (-3.2,1.3) -- (-1,1.3) -- (-1,0) -- (1,0) -- (1,1.3) -- (3.2,1.3);
+\draw[->] (-3.4,0) -- (3.4,0) node[right] {$x$};
+\node[below] at (-1,-0.05) {$-a$};
+\node[below] at (1,-0.05) {$a$};
+\node[above] at (-2.5,1.3) {$U_0$};
+% wavefunction
+\begin{scope}[yscale=0.95]
+\draw[thick, color=blue] plot[smooth] coordinates {(-3.200,0.012) (-3.000,0.017) (-2.800,0.024) (-2.600,0.033) (-2.400,0.047) (-2.200,0.066) (-2.000,0.093) (-1.800,0.131) (-1.600,0.184) (-1.400,0.259) (-1.200,0.365) (-1.100,0.434) (-1.000,0.515)};
+\draw[thick, color=blue] plot[smooth] coordinates {(-1.000,0.515) (-0.900,0.600) (-0.800,0.679) (-0.700,0.751) (-0.600,0.815) (-0.500,0.870) (-0.400,0.916) (-0.300,0.953) (-0.200,0.979) (-0.100,0.995) (0.000,1.000) (0.100,0.995) (0.200,0.979) (0.300,0.953) (0.400,0.916) (0.500,0.870) (0.600,0.815) (0.700,0.751) (0.800,0.679) (0.900,0.600) (1.000,0.515)};
+\draw[thick, color=blue] plot[smooth] coordinates {(1.000,0.515) (1.100,0.434) (1.200,0.365) (1.400,0.259) (1.600,0.184) (1.800,0.131) (2.000,0.093) (2.200,0.066) (2.400,0.047) (2.600,0.033) (2.800,0.024) (3.000,0.017) (3.200,0.012)};
+\end{scope}
+\node[color=blue] at (0.55,1.15) {$\chi_1$};
+\end{tikzpicture}
+\end{center}
+
+The striking feature is the exponential tails: $\chi \neq 0$ in the region $\abs{x} > a$, which a classical particle of this energy can never enter. The particle has positive probability of being found in the \emph{classically forbidden region}. The tails decay over the length scale $1/\kappa$; note that the closer $E$ is to the top of the well, the smaller $\kappa$ and the further the state leaks out. This leakage is the seed of \emph{quantum tunnelling}, which we will meet properly in the next section.
+
+\subsection{The Harmonic Oscillator}
+
+The final -- and most important -- one-dimensional system is the \vocab{harmonic oscillator}:
+$$
+U(x) = \frac{1}{2} m \omega^2 x^2.
+$$
+Its importance comes from a Taylor expansion: near a generic stable equilibrium $x_0$ of \emph{any} potential, $U(x) \approx U(x_0) + \frac{1}{2}U''(x_0)(x - x_0)^2$, so every small oscillation in nature -- molecular vibrations, phonons in crystals, modes of the electromagnetic field -- is approximately a harmonic oscillator. Classically the particle oscillates as $x = A\cos(\omega t + \phi)$ with any amplitude, so any energy $E \geq 0$ is possible.
+
+The time-independent Schr\"odinger equation is
+$$
+-\frac{\hbar^2}{2m} \chi''(x) + \frac{1}{2} m \omega^2 x^2 \chi(x) = E \chi(x).
+$$
+First we tidy up: the natural length scale is $\sqrt{\hbar / m\omega}$, so substitute
+$$
+\xi = \sqrt{\frac{m \omega}{\hbar}} \, x, \quad \varepsilon = \frac{2E}{\hbar \omega},
+$$
+which reduces the equation to the dimensionless form
+$$
+-\frac{\dd^2 \chi}{\dd \xi^2} + \xi^2 \chi = \varepsilon \chi.
+$$
+Let's think about how solutions must behave for large $\abs{\xi}$: there $\chi'' \approx \xi^2 \chi$, which has solutions behaving like $e^{\pm \xi^2/2}$, and normalisability forces the decaying one. Indeed, we can spot one exact solution immediately: $\chi = e^{-\xi^2/2}$ satisfies $\chi'' = (\xi^2 - 1)\chi$, so it is an eigenfunction with $\varepsilon = 1$, that is
+$$
+\chi_0(x) = \left(\frac{m\omega}{\pi\hbar}\right)^{1/4} \exp\left( -\frac{m \omega}{2 \hbar} x^2 \right), \quad E_0 = \frac{\hbar \omega}{2}.
+$$
+A Gaussian! (And in fact this is the ground state, as the count of nodes will confirm.)
+
+Guided by the asymptotics, for the general solution we make the ansatz
+$$
+\chi(\xi) = f(\xi) \, e^{-\xi^2/2}.
+$$
+Substituting in, $f$ must satisfy \vocab{Hermite's equation}:
+$$
+f'' - 2 \xi f' + (\varepsilon - 1) f = 0.
+$$
+The point $\xi = 0$ is regular, so we look for a power series solution $f(\xi) = \sum_{n \geq 0} a_n \xi^n$. Substituting and comparing coefficients of $\xi^n$:
+$$
+(n+2)(n+1) a_{n+2} - 2n a_n + (\varepsilon - 1) a_n = 0,
+$$
+which gives the recurrence
+$$
+a_{n+2} = \frac{2n + 1 - \varepsilon}{(n+1)(n+2)} \, a_n.
+$$
+The even coefficients are determined by $a_0$ and the odd ones by $a_1$; by parity (the potential is even!) we may take exactly one of $a_0, a_1$ to be non-zero.
+
+Now, the crucial question: does the series terminate? Here is why it must.
+
+\begin{proposition}
+    If the series for $f$ does not terminate, then $\chi = f e^{-\xi^2/2}$ is not normalisable.
+\end{proposition}
+\begin{proof}
+    Suppose the series is infinite. For large $n$ the recurrence gives
+    $$
+    \frac{a_{n+2}}{a_n} = \frac{2n + 1 - \varepsilon}{(n+1)(n+2)} \sim \frac{2}{n}.
+    $$
+    Compare with the function $g(\xi) = e^{\xi^2} = \sum_m \frac{\xi^{2m}}{m!} = \sum_n b_n \xi^n$, whose coefficients satisfy
+    $$
+    \frac{b_{n+2}}{b_n} = \frac{(n/2)!}{(n/2+1)!} = \frac{2}{n + 2} \sim \frac{2}{n}.
+    $$
+    So the tails of the two series agree asymptotically, and $f(\xi)$ grows like $e^{\xi^2}$ as $\abs{\xi} \rightarrow \infty$ (this comparison can be made rigorous). But then
+    $$
+    \chi(\xi) = f(\xi) e^{-\xi^2/2} \sim e^{\xi^2/2},
+    $$
+    which blows up, and is certainly not normalisable.
+\end{proof}
+
+So $f$ must be a polynomial: the series must terminate. Looking at the recurrence, the coefficient $a_{N+2}$ vanishes (with $a_N \neq 0$) exactly when
+$$
+\varepsilon = 2N + 1, \quad N = 0, 1, 2, \dots,
+$$
+and undoing the substitution $\varepsilon = 2E/\hbar\omega$, we have proven the following famous result.
+
+\begin{theorem}[Spectrum of the Harmonic Oscillator]
+    The energy levels of the quantum harmonic oscillator are
+    $$
+    E_N = \left( N + \frac{1}{2} \right) \hbar \omega, \quad N = 0, 1, 2, \dots
+    $$
+\end{theorem}
+
+The energy levels form an exactly evenly-spaced ladder, with spacing $\hbar \omega$ -- precisely the quantum of energy $\hbar\omega$ that Planck and Einstein needed for radiation of frequency $\omega$. The ground state energy $\frac{1}{2}\hbar \omega$ is again non-zero (the `zero-point energy').
+
+The corresponding polynomials $f_N =: H_N$, normalised conventionally, are the \vocab{Hermite polynomials}, the first few being
+$$
+H_0(\xi) = 1, \quad H_1(\xi) = 2\xi, \quad H_2(\xi) = 4\xi^2 - 2, \quad H_3(\xi) = 8 \xi^3 - 12 \xi,
+$$
+and the eigenfunctions -- the \emph{Hermite functions} -- are
+$$
+\chi_N(\xi) = C_N \, H_N(\xi) \, e^{-\xi^2/2}, \quad C_N = \left(\frac{m\omega}{\pi \hbar}\right)^{1/4}\frac{1}{\sqrt{2^N N!}},
+$$
+each a polynomial oscillation inside a Gaussian envelope, with $\chi_N$ having exactly $N$ nodes and parity $(-1)^N$. (Orthogonality of the $\chi_N$, i.e.\ $\int H_M H_N e^{-\xi^2} \dd \xi = 2^N N! \sqrt{\pi} \, \delta_{MN}$, is automatic from the general theory of the next section: they are eigenfunctions of a Hermitian operator with distinct eigenvalues.)
+
+\begin{center}
+\begin{tikzpicture}
+% parabola
+\draw[thick] plot[domain=-2.16:2.16, samples=80, smooth] (\x, {\x*\x/1.5});
+\draw[->] (0,0) -- (0,3.5);
+\draw[->] (-2.9,0) -- (2.9,0) node[right] {$x$};
+% levels (between classical turning points)
+\draw[dashed, color=gray] (-0.75,0.375) -- (0.75,0.375);
+\draw[dashed, color=gray] (-1.30,1.125) -- (1.30,1.125);
+\draw[dashed, color=gray] (-1.68,1.875) -- (1.68,1.875);
+\draw[dashed, color=gray] (-1.98,2.625) -- (1.98,2.625);
+\node[right] at (3.0,0.375) {\small $E_0 = \frac{1}{2}\hbar\omega$};
+\node[right] at (3.0,1.125) {\small $E_1 = \frac{3}{2}\hbar\omega$};
+\node[right] at (3.0,1.875) {\small $E_2 = \frac{5}{2}\hbar\omega$};
+\node[right] at (3.0,2.625) {\small $E_3 = \frac{7}{2}\hbar\omega$};
+% chi_0
+\begin{scope}[shift={(0,0.375)}]
+\draw[thick, color=blue] plot[smooth] coordinates {(-2.700,0.001) (-2.400,0.002) (-2.100,0.008) (-1.950,0.013) (-1.800,0.021) (-1.650,0.034) (-1.500,0.051) (-1.350,0.075) (-1.200,0.106) (-1.050,0.143) (-0.900,0.185) (-0.750,0.230) (-0.600,0.276) (-0.450,0.317) (-0.300,0.351) (-0.150,0.372) (0.000,0.380) (0.150,0.372) (0.300,0.351) (0.450,0.317) (0.600,0.276) (0.750,0.230) (0.900,0.185) (1.050,0.143) (1.200,0.106) (1.350,0.075) (1.500,0.051) (1.650,0.034) (1.800,0.021) (1.950,0.013) (2.100,0.008) (2.400,0.002) (2.700,0.001)};
+\end{scope}
+% chi_1
+\begin{scope}[shift={(0,1.125)}]
+\draw[thick, color=blue] plot[smooth] coordinates {(-2.700,-0.003) (-2.400,-0.012) (-2.100,-0.035) (-1.950,-0.055) (-1.800,-0.084) (-1.650,-0.123) (-1.500,-0.170) (-1.350,-0.223) (-1.200,-0.279) (-1.050,-0.329) (-0.900,-0.366) (-0.750,-0.380) (-0.600,-0.364) (-0.450,-0.314) (-0.300,-0.231) (-0.150,-0.123) (0.000,0.000) (0.150,0.123) (0.300,0.231) (0.450,0.314) (0.600,0.364) (0.750,0.380) (0.900,0.366) (1.050,0.329) (1.200,0.279) (1.350,0.223) (1.500,0.170) (1.650,0.123) (1.800,0.084) (1.950,0.055) (2.100,0.035) (2.400,0.012) (2.700,0.003)};
+\end{scope}
+% chi_2
+\begin{scope}[shift={(0,1.875)}]
+\draw[thick, color=blue] plot[smooth] coordinates {(-2.700,0.013) (-2.400,0.039) (-2.100,0.097) (-1.950,0.141) (-1.800,0.196) (-1.650,0.256) (-1.500,0.314) (-1.350,0.360) (-1.200,0.380) (-1.050,0.364) (-0.900,0.304) (-0.750,0.201) (-0.600,0.067) (-0.450,-0.078) (-0.300,-0.208) (-0.150,-0.299) (0.000,-0.332) (0.150,-0.299) (0.300,-0.208) (0.450,-0.078) (0.600,0.067) (0.750,0.201) (0.900,0.304) (1.050,0.364) (1.200,0.380) (1.350,0.360) (1.500,0.314) (1.650,0.256) (1.800,0.196) (1.950,0.141) (2.100,0.097) (2.400,0.039) (2.700,0.013)};
+\end{scope}
+% chi_3
+\begin{scope}[shift={(0,2.625)}]
+\draw[thick, color=blue] plot[smooth] coordinates {(-2.700,-0.035) (-2.400,-0.094) (-2.100,-0.197) (-1.950,-0.261) (-1.800,-0.322) (-1.650,-0.366) (-1.500,-0.379) (-1.350,-0.348) (-1.200,-0.264) (-1.050,-0.136) (-0.900,0.020) (-0.750,0.170) (-0.600,0.280) (-0.450,0.320) (-0.300,0.277) (-0.150,0.160) (0.000,0.000) (0.150,-0.160) (0.300,-0.277) (0.450,-0.320) (0.600,-0.280) (0.750,-0.170) (0.900,-0.020) (1.050,0.136) (1.200,0.264) (1.350,0.348) (1.500,0.379) (1.650,0.366) (1.800,0.322) (1.950,0.261) (2.100,0.197) (2.400,0.094) (2.700,0.035)};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+Note that each $\chi_N$ leaks past the classical turning points (where the dashed level meets the parabola) into the classically forbidden region, just as in the finite well. And the classical limit works as it did in the box: a classical oscillator of amplitude $A$ spends most time near the turning points (where it moves slowest), with position distribution $1/\pi\sqrt{A^2 - x^2}$, and for large $N$ the rapidly-oscillating $\abs{\chi_N}^2$ locally averages to exactly this -- largest near the turning points, smallest in the middle -- the opposite of the ground state, which piles up in the centre. The Hermite functions form a complete orthonormal set for $\mathcal{H}$ -- another instance of the completeness of Hamiltonian eigenfunctions that we keep running into, and will address head-on in Section 6.
+
+\begin{example}[Half-Oscillator]
+    As a quick test of understanding, consider the potential $U(x) = \frac{1}{2}m\omega^2 x^2$ for $x > 0$ and $U(x) = \infty$ for $x \leq 0$. An eigenfunction must vanish at $x = 0$ and solve the oscillator equation for $x > 0$ -- so the eigenfunctions are exactly the \emph{odd} oscillator eigenfunctions restricted to $x > 0$, and the spectrum is
+    $$
+    E = \left(2j + 1 + \frac{1}{2}\right) \hbar\omega, \quad j = 0, 1, 2, \dots,
+    $$
+    i.e.\ every other level of the full oscillator, starting at $\frac{3}{2}\hbar\omega$.
+\end{example}
+
+Before moving on, it is worth collecting the qualitative features that all our bound state problems have shared, since they hold for essentially any one-dimensional potential well.
+\begin{enumerate}[label=(\roman*)]
+    \item In the \emph{classically allowed} region ($E > U(x)$), the Schr\"odinger equation reads $\chi'' = -k(x)^2 \chi$: the eigenfunction oscillates, faster where $E - U$ is larger.
+    \item In the \emph{classically forbidden} region ($E < U(x)$), $\chi'' = \kappa(x)^2 \chi$: the eigenfunction grows or decays roughly exponentially, and normalisability selects decay -- giving the tunnelling tails we keep seeing.
+    \item Matching an oscillation smoothly onto decaying tails at both ends is only possible for special values of $E$ -- this is, at bottom, \emph{why} bound state energies are quantised.
+    \item The $n$th bound state (ordering by energy) has $n - 1$ nodes: higher energy means faster oscillation means more sign changes. Together with non-degeneracy and parity, this gives a reliable sanity check on any claimed spectrum.
+\end{enumerate}
+
+\section{Scattering in One Dimension}
+
+So far we have studied bound states -- normalisable eigenfunctions with discrete energies. We now turn to the complementary situation: a particle fired \emph{at} a potential from far away, which may bounce back or pass through. This is a scattering problem, and it is where the non-normalisable solutions we discarded earlier earn their keep.
+
+\subsection{Beams and Probability Flux}
+
+The physically honest way to describe a localised incoming particle is a wavepacket, say a Gaussian wavepacket centred far to the left of the potential and moving right. At late times, the packet splits into a reflected packet moving left and a transmitted packet moving right, and we would define the \vocab{reflection and transmission coefficients}
+$$
+R = \lim_{t \to \infty} \int_{-\infty}^{0} \abs{\psi(x,t)}^2 \dd x, \quad T = \lim_{t \to \infty} \int_{0}^{\infty} \abs{\psi(x,t)}^2 \dd x,
+$$
+the probabilities of each outcome, with $R + T = 1$ automatic from conservation of probability. This is doable but computationally painful. Happily, there is a much slicker approach: the \vocab{beam interpretation}.
+
+Take the plane wave stationary state
+$$
+\psi_k(x, t) = A e^{ikx} e^{-i E_k t/\hbar}, \quad E_k = \frac{\hbar^2 k^2}{2m},
+$$
+and instead of apologising for $\rho_k = \abs{A}^2$ being constant (non-normalisable), \emph{reinterpret} it: $\psi_k$ describes not one particle but a steady beam of independent particles, each with momentum $\hbar k$, with constant average density $\abs{A}^2$ per unit length. The probability current of Section 3 becomes the particle flux of the beam:
+$$
+J_k = -\frac{i \hbar}{2m}\left( \psi_k^* \frac{\partial \psi_k}{\partial x} - \psi_k \frac{\partial \psi_k^*}{\partial x} \right) = \abs{A}^2 \frac{\hbar k}{m},
+$$
+which is just (density) $\times$ (velocity $p/m$), exactly as for a classical beam. Reflection and transmission coefficients are then \emph{ratios of fluxes}:
+$$
+R = \frac{\abs{J_{\text{ref}}}}{\abs{J_{\text{inc}}}}, \quad T = \frac{\abs{J_{\text{trans}}}}{\abs{J_{\text{inc}}}}.
+$$
+One can show (by building wavepackets out of these stationary states) that the two approaches agree, so we will happily use the easier one.
+
+One structural fact makes flux bookkeeping in one dimension especially clean.
+
+\begin{proposition}[Flux is Constant in Stationary States]
+    For a stationary state in one dimension, the probability current $J(x)$ is independent of $x$.
+\end{proposition}
+\begin{proof}
+    For a stationary state, $\rho = \abs{\chi}^2$ is independent of $t$, so the continuity equation $\partial_t \rho + \partial_x J = 0$ reduces to $\partial_x J = 0$.
+\end{proof}
+
+So in any scattering problem, whatever flux flows in must flow out: evaluating $J$ far to the left and far to the right of the potential and equating them will give us $R + T = 1$ automatically, whatever the shape of the obstacle in between.
+
+\subsection{The Potential Step}
+
+Our first scattering problem is the \vocab{potential step}
+$$
+U(x) = \begin{cases}
+    0 & x \leq 0, \\
+    U_0 & x > 0,
+\end{cases}
+$$
+with a beam of particles of energy $E$ incident from the left. There are two regimes, depending on whether the beam has enough energy to climb the step.
+
+\emph{Case 1: $E > U_0$.} Write
+$$
+k = \sqrt{\frac{2mE}{\hbar^2}}, \quad \bar{k} = \sqrt{\frac{2m(E - U_0)}{\hbar^2}},
+$$
+both real. The stationary Schr\"odinger equation solves separately on each side:
+$$
+\chi(x) = \begin{cases}
+    e^{ikx} + B e^{-ikx} & x \leq 0, \\
+    C e^{i \bar{k} x} & x > 0.
+\end{cases}
+$$
+We have already inserted the physics here, so let's spell it out. On the left, $e^{ikx}$ is the incident beam (normalised to unit amplitude, which we may do) and $B e^{-ikx}$ is the reflected beam. On the right, $C e^{i\bar{k}x}$ is the transmitted beam; a term $D e^{-i\bar{k}x}$ would describe a beam coming in from $x = +\infty$, which our experimental setup does not contain, so $D = 0$.
+
+$U$ has a finite jump, so $\chi$ and $\chi'$ are continuous at $x = 0$:
+$$
+1 + B = C, \quad ik(1 - B) = i \bar{k} C,
+$$
+giving
+$$
+B = \frac{k - \bar{k}}{k + \bar{k}}, \quad C = \frac{2k}{k + \bar{k}}.
+$$
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+% potential
+\draw[very thick] (-3.2,0) -- (0,0) -- (0,0.8) -- (3.2,0.8);
+\node[right] at (3.25,0.8) {\small $U_0$};
+\draw[dashed, color=gray] (-3.2,1.9) -- (3.2,1.9);
+\node[left] at (-3.25,1.9) {\small $E$};
+% waves
+\draw[thick, color=blue, samples=160, smooth] plot[domain=-3.2:0] (\x, {1.9 + 0.42*cos(229.2*\x)});
+\draw[thick, color=blue, samples=100, smooth] plot[domain=0:3.2] (\x, {1.9 + 0.42*cos(114.6*\x)});
+% arrows
+\draw[->, thick] (-2.9,2.65) -- (-1.9,2.65);
+\node[above] at (-2.4,2.65) {\small $e^{ikx}$};
+\draw[<-, thick] (-2.9,1.15) -- (-1.9,1.15);
+\node[below] at (-2.4,1.15) {\small $B e^{-ikx}$};
+\draw[->, thick] (1.7,2.65) -- (2.7,2.65);
+\node[above] at (2.2,2.65) {\small $C e^{i \bar{k} x}$};
+\node[below] at (0,-0.05) {$0$};
+\end{tikzpicture}
+\end{center}
+
+Now compute fluxes. On the left the current splits into incident and reflected parts, $J_{\text{inc}} = \frac{\hbar k}{m}$ and $J_{\text{ref}} = -\frac{\hbar k}{m}\abs{B}^2$; on the right $J_{\text{trans}} = \frac{\hbar \bar{k}}{m} \abs{C}^2$. So
+$$
+R = \abs{B}^2 = \left( \frac{k - \bar{k}}{k + \bar{k}} \right)^2, \quad
+T = \frac{\bar{k}}{k}\abs{C}^2 = \frac{4 k \bar{k}}{(k + \bar{k})^2}.
+$$
+Note the extra factor of $\bar{k}/k$ in $T$ -- transmission compares \emph{fluxes}, not amplitudes, and the transmitted beam moves more slowly. You can check directly that
+$$
+R + T = \frac{(k - \bar{k})^2 + 4 k \bar{k}}{(k + \bar{k})^2} = 1,
+$$
+as conservation of probability demands. Sanity checks: as $E \rightarrow U_0$ (so $\bar{k} \rightarrow 0$) we get $R \rightarrow 1$ -- a barely-clearing beam is entirely reflected -- and as $E \rightarrow \infty$ we get $T \rightarrow 1$. But notice that for any finite energy $R > 0$: \emph{a quantum particle can be reflected by a step it has enough energy to climb}. This has no classical analogue.
+
+\emph{Case 2: $E < U_0$.} Now $\bar{k} = i \kappa$ is purely imaginary, with $\kappa = \sqrt{2m(U_0 - E)/\hbar^2} > 0$, and the solution for $x > 0$ becomes
+$$
+\chi(x) = C e^{-\kappa x},
+$$
+where we discarded the growing exponential. The matching gives the same formulae with $\bar k = i\kappa$:
+$$
+B = \frac{k - i \kappa}{k + i \kappa},
+$$
+which has $\abs{B} = 1$, so $R = 1$: total reflection, as a classical particle would do. But the wavefunction is \emph{not} zero beyond the step -- it decays exponentially, penetrating the forbidden region to depth $\sim 1/\kappa$, just like the tails of the finite-well bound states. There is no transmitted flux ($\chi$ real up to phase for $x>0$ gives $J = 0$), so nothing is `getting through' in steady state -- but the non-zero amplitude in the wall is about to become very important.
+
+\begin{example}[Reflection by a Cliff]
+    Here is a variant that classical intuition gets badly wrong. Take a \emph{downward} step, $U = 0$ for $x \leq 0$ and $U = -U_0 < 0$ for $x > 0$, with a beam incident from the left with energy $E > 0$. A classical particle simply speeds up over the edge, with certainty. Quantum mechanically the algebra of Case 1 applies verbatim with $\bar{k} = \sqrt{2m(E + U_0)}/\hbar > k$, so
+    $$
+    R = \left( \frac{k - \bar{k}}{k + \bar{k}} \right)^2 > 0,
+    $$
+    and in the low energy limit $E \ll U_0$ we have $\bar{k} \gg k$ and $R \rightarrow 1$: a slow particle is almost certainly \emph{reflected by the attractive drop}. Reflection is caused by any sharp change in the potential -- in either direction -- because it is a wave phenomenon (an impedance mismatch), not a matter of insufficient energy. This is why cold neutrons bounce off material surfaces, which is quantitatively the basis of neutron mirrors and the storage of ultracold neutrons in bottles.
+\end{example}
+
+\subsection{The Potential Barrier and Tunnelling}
+
+Now make the wall thin: consider the \vocab{potential barrier}
+$$
+U(x) = \begin{cases}
+    U_0 & 0 < x < a, \\
+    0 & \text{otherwise},
+\end{cases}
+$$
+with a beam incident from the left with energy $0 < E < U_0$ -- classically, guaranteed to bounce off. Write as usual
+$$
+k = \sqrt{\frac{2mE}{\hbar^2}}, \quad \kappa = \sqrt{\frac{2m(U_0 - E)}{\hbar^2}}.
+$$
+The solution has three pieces:
+$$
+\chi(x) = \begin{cases}
+    e^{ikx} + A e^{-ikx} & x \leq 0, \\
+    B e^{-\kappa x} + C e^{\kappa x} & 0 < x < a, \\
+    D e^{ikx} & x \geq a.
+\end{cases}
+$$
+Note that inside the barrier we must keep \emph{both} exponentials -- the barrier is finite, so neither blows up -- and on the right we keep only the outgoing beam. Continuity of $\chi$ and $\chi'$ at $x = 0$ and $x = a$ gives four equations:
+\begin{align*}
+    1 + A &= B + C, & ik(1 - A) &= \kappa(C - B), \\
+    B e^{-\kappa a} + C e^{\kappa a} &= D e^{ika}, & \kappa(C e^{\kappa a} - B e^{-\kappa a}) &= ik D e^{ika},
+\end{align*}
+four linear equations in the four unknowns $A, B, C, D$. Solving (eliminate $B$ and $C$ first), one finds
+$$
+D = \frac{-4 i \kappa k \, e^{-ika}}{(\kappa - ik)^2 e^{\kappa a} - (\kappa + ik)^2 e^{-\kappa a}},
+$$
+and the transmission coefficient $T = \abs{D}^2$ (the incident and transmitted beams travel at the same speed) simplifies, after some algebra with $\sinh$, to
+$$
+T = \frac{4 k^2 \kappa^2}{(k^2 + \kappa^2)^2 \sinh^2 (\kappa a) + 4 k^2 \kappa^2}.
+$$
+The key point: \emph{$T > 0$}. The beam has energy strictly less than the barrier, and some of it gets through anyway. This is \vocab{quantum tunnelling}.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+% potential barrier
+\draw[very thick] (-3.0,0) -- (0,0) -- (0,1.2) -- (1,1.2) -- (1,0) -- (4.0,0);
+\node[above] at (0.5,1.2) {\small $U_0$};
+\node[below] at (0,-0.05) {$0$};
+\node[below] at (1,-0.05) {$a$};
+% wavefunction
+\begin{scope}[shift={(0,2.2)},yscale=0.42]
+\draw[thick, color=blue] plot[smooth] coordinates {(-3.000,-0.870) (-2.900,-0.423) (-2.800,0.062) (-2.700,0.541) (-2.600,0.971) (-2.500,1.315) (-2.400,1.542) (-2.325,1.622) (-2.250,1.620) (-2.150,1.492) (-2.050,1.230) (-1.950,0.858) (-1.850,0.410) (-1.750,-0.075) (-1.650,-0.554) (-1.550,-0.982) (-1.450,-1.323) (-1.350,-1.546) (-1.275,-1.623) (-1.200,-1.619) (-1.100,-1.486) (-1.000,-1.221) (-0.900,-0.846) (-0.800,-0.396) (-0.700,0.089) (-0.600,0.566) (-0.500,0.993) (-0.400,1.331) (-0.300,1.551) (-0.200,1.631) (-0.100,1.566) (-0.050,1.480) (0.000,1.361)};
+\draw[thick, color=blue] plot[smooth] coordinates {(0.000,1.361) (0.100,1.117) (0.200,0.918) (0.300,0.755) (0.400,0.623) (0.500,0.515) (0.600,0.429) (0.700,0.359) (0.800,0.304) (0.900,0.261) (1.000,0.229)};
+\draw[thick, color=blue] plot[smooth] coordinates {(1.000,0.229) (1.100,0.191) (1.200,0.137) (1.300,0.070) (1.400,-0.003) (1.500,-0.076) (1.600,-0.142) (1.700,-0.195) (1.800,-0.231) (1.900,-0.246) (2.000,-0.240) (2.100,-0.212) (2.200,-0.165) (2.300,-0.103) (2.400,-0.032) (2.500,0.042) (2.600,0.112) (2.700,0.172) (2.800,0.216) (2.900,0.242) (2.975,0.247) (3.050,0.239) (3.150,0.210) (3.250,0.163) (3.350,0.101) (3.450,0.030) (3.550,-0.044) (3.650,-0.113) (3.750,-0.173) (3.850,-0.217) (3.950,-0.242) (4.000,-0.246)};
+\end{scope}
+\draw[->, thick] (-2.8,3.25) -- (-1.9,3.25);
+\node[above] at (-2.35,3.25) {\small incident};
+\draw[->, thick] (2.9,3.05) -- (3.8,3.05);
+\node[above] at (3.35,3.05) {\small transmitted};
+\end{tikzpicture}
+\end{center}
+
+The figure shows $\re \chi$: an incident-plus-reflected standing wave pattern on the left, exponential decay through the barrier, and a small transmitted wave -- of the same wavelength as the incident one, but much smaller amplitude -- emerging on the right.
+
+For a tall or wide barrier, $\kappa a \gg 1$, we have $\sinh(\kappa a) \approx \frac{1}{2}e^{\kappa a}$ and so
+$$
+T \approx \frac{16 k^2 \kappa^2}{(k^2 + \kappa^2)^2} \, e^{-2 \kappa a} \; \propto \; \exp\left( -\frac{2a}{\hbar} \sqrt{2m (U_0 - E)} \right).
+$$
+The transmission probability decays \emph{exponentially} with the barrier width and with the square root of its height. This exponential sensitivity is why tunnelling is invisible for everyday objects but ubiquitous at atomic scales, and it is quantitatively responsible for, among other things, $\alpha$-decay of nuclei (the decay rate spans some twenty orders of magnitude across nuclei, tracking the exponential above), nuclear fusion in the Sun (protons tunnel through their Coulomb repulsion), and the scanning tunnelling microscope (where the exponential dependence of the tunnelling current on the tip--surface distance gives sub-atomic resolution).
+
+\begin{exercise}
+    Put numbers in: for an electron tunnelling through a vacuum gap with $U_0 - E \approx 4$ eV (a typical metal work function), show that $2\kappa \approx 2 \, \text{\AA}^{-1}$, so that increasing a scanning tunnelling microscope's tip-surface gap by a single \aa ngstr\"om suppresses the current by a factor of $e^2 \approx 7$. This is why the STM can resolve individual atoms.
+\end{exercise}
+
+\begin{remark}[Scattering Above the Barrier]
+    The case $E > U_0$ is obtained from our formulae by the replacement $\kappa \mapsto i \bar{k}$ with $\bar{k} = \sqrt{2m(E - U_0)}/\hbar$, which turns $\sinh$ into $\sin$:
+    $$
+    T = \frac{4 k^2 \bar{k}^2}{(k^2 - \bar{k}^2)^2 \sin^2(\bar{k} a) + 4 k^2 \bar{k}^2}.
+    $$
+    Classically $T$ would be $1$; quantum mechanically $T < 1$ in general (reflection by a barrier you can clear, just as at the step) -- \emph{except} at the special energies where $\sin \bar{k} a = 0$, i.e.\ $\bar{k} a = n \pi$, where $T = 1$ exactly. These perfect transmissions are \vocab{resonances}: a whole number of half-wavelengths fits across the barrier, and the reflected waves from its two edges interfere destructively. The same effect for a potential \emph{well} explains the Ramsauer--Townsend effect, in which noble gases are bizarrely transparent to electrons of one particular energy.
+\end{remark}
+
+\section{Operators, Measurement and Uncertainty}
+
+We now pay our debts. Several times we have leaned on properties of Hermitian operators -- real eigenvalues, orthogonal eigenfunctions, completeness -- and on a still-unproven uncertainty principle. This section develops the operator theory of quantum mechanics properly, and it is here that the structure of the subject really lives.
+
+\subsection{Expectation Values}
+
+The Born rule makes the outcome of a measurement a random variable, so the natural first question is: what is its mean? For position this needs no new ideas -- the probability density is $\abs{\psi}^2$, so (working in one dimension, with $\psi$ normalised)
+$$
+\langle \hat{x} \rangle_\psi = \int_{-\infty}^{\infty} x \abs{\psi(x, t)}^2 \dd x = \int_{-\infty}^{\infty} \psi^* \, x \, \psi \dd x = \inp{\psi}{\hat{x} \psi}.
+$$
+The final expression is the one that generalises. For any observable with operator $\hat{A}$, we define the \vocab{expectation value} of $\hat A$ in the (normalised) state $\psi$ as
+$$
+\langle \hat{A} \rangle_\psi = \inp{\psi}{\hat{A} \psi} = \int \psi^* (\hat{A} \psi) \dd x.
+$$
+We will justify, in \S 6.3 below, that this really is the mean of the measurement distribution given by the Born rule. But first, let's use it to close a gap from Section 2: why is momentum represented by $-i\hbar \partial_x$? Here is a satisfying consistency check: \emph{the expectation of momentum is the mass times the velocity of the expectation of position}. Assume $\psi$ solves the Schr\"odinger equation. Then using the continuity equation $\partial_t \abs{\psi}^2 = -\partial_x J$,
+\begin{align*}
+    m \frac{\dd}{\dd t} \langle \hat x \rangle_\psi
+    &= m \int_{-\infty}^{\infty} x \, \frac{\partial \abs{\psi}^2}{\partial t} \dd x
+    = -m \int_{-\infty}^{\infty} x \, \frac{\partial J}{\partial x} \dd x
+    = m \int_{-\infty}^{\infty} J \dd x \\
+    &= -\frac{i \hbar}{2} \int_{-\infty}^{\infty} \left( \psi^* \frac{\partial \psi}{\partial x} - \psi \frac{\partial \psi^*}{\partial x} \right) \dd x
+    = -i\hbar \int_{-\infty}^{\infty} \psi^* \frac{\partial \psi}{\partial x} \dd x = \langle \hat{p} \rangle_\psi,
+\end{align*}
+integrating by parts twice (boundary terms vanish for normalisable states). So with $\hat{p} = -i\hbar\partial_x$, the quantum expectations obey the classical kinematic relation $\langle p \rangle = m \frac{\dd}{\dd t}\langle x \rangle$ -- this is the first instalment of Ehrenfest's theorem, coming shortly.
+
+\subsection{Hermitian Operators}
+
+\begin{definition}[Hermitian Conjugate]
+    The \vocab{Hermitian conjugate} (or adjoint) of an operator $\hat{A}$ is the operator $\hat{A}^\dagger$ defined by
+    $$
+    \inp{\hat{A}^\dagger \psi}{\phi} = \inp{\psi}{\hat{A} \phi} \quad \text{for all } \psi, \phi \in \mathcal{H}.
+    $$
+\end{definition}
+
+Directly from the definition one checks the algebraic rules
+$$
+(\lambda_1 \hat{A}_1 + \lambda_2 \hat{A}_2)^\dagger = \lambda_1^* \hat{A}_1^\dagger + \lambda_2^* \hat{A}_2^\dagger, \quad (\hat{A}\hat{B})^\dagger = \hat{B}^\dagger \hat{A}^\dagger.
+$$
+
+\begin{definition}[Hermitian Operator]
+    An operator $\hat{A}$ is \vocab{Hermitian} (self-adjoint) if $\hat{A}^\dagger = \hat{A}$, that is if
+    $$
+    \inp{\hat{A} \psi}{\phi} = \inp{\psi}{\hat{A} \phi} \quad \text{for all } \psi, \phi \in \mathcal{H}.
+    $$
+\end{definition}
+
+\begin{example}[The Basic Observables are Hermitian]
+    The position operator is Hermitian, essentially because $x$ is real:
+    $$
+    \inp{\hat{x}\psi}{\phi} = \int (x \psi)^* \phi \dd x = \int \psi^* (x \phi) \dd x = \inp{\psi}{\hat{x} \phi}.
+    $$
+    The momentum operator is Hermitian, by integration by parts -- and note how the factor of $i$ is essential, absorbing the minus sign that integration by parts produces:
+    $$
+    \inp{\hat{p}\psi}{\phi} = \int \left(-i\hbar \frac{\partial \psi}{\partial x}\right)^{\!*} \phi \dd x = i \hbar \int \frac{\partial \psi^*}{\partial x} \phi \dd x = -i\hbar\int \psi^* \frac{\partial \phi}{\partial x} \dd x = \inp{\psi}{\hat{p}\phi},
+    $$
+    the boundary terms vanishing since states decay at infinity. (So $\partial_x$ alone is \emph{anti}-Hermitian; the $-i\hbar$ fixes it.) Similarly, integrating by parts twice shows $\hat{p}^2$ (and hence the kinetic energy) is Hermitian, and multiplication by a real potential $U(x)$ is Hermitian just like $\hat{x}$ -- so the Hamiltonian $\hat{H} = \frac{\hat{p}^2}{2m} + U(\hat{x})$ is Hermitian.
+\end{example}
+
+While we have the machinery out, here is a small but structurally important observation.
+
+\begin{proposition}[Energies are Bounded Below]
+    For any normalised state $\psi$, the kinetic energy has $\langle \hat{T} \rangle_\psi \geq 0$, and consequently every energy eigenvalue satisfies $E \geq \min U$.
+\end{proposition}
+\begin{proof}
+    Integrating by parts (boundary terms vanishing as usual),
+    $$
+    \langle \hat{T} \rangle_\psi = -\frac{\hbar^2}{2m}\int \psi^* \frac{\partial^2 \psi}{\partial x^2} \dd x = \frac{\hbar^2}{2m} \int \abs{\frac{\partial \psi}{\partial x}}^2 \dd x \geq 0.
+    $$
+    If $\hat{H}\chi = E \chi$ with $\chi$ normalised, then $E = \langle \hat T \rangle_\chi + \langle U \rangle_\chi \geq 0 + \min U$.
+\end{proof}
+
+This is the promise, made when we stated the axioms, that the Hamiltonian's spectrum is bounded below -- there is a stable state of least energy, and matter cannot cascade down through an endless ladder of ever-lower energies. (It also confirms little facts we used along the way, e.g.\ that the infinite well has no eigenvalues with $E \leq 0$.)
+
+Now the two fundamental structural facts, both with proofs that are one-line applications of Hermiticity.
+
+\begin{proposition}[Real Eigenvalues]
+    The eigenvalues of a Hermitian operator are real.
+\end{proposition}
+\begin{proof}
+    Let $\hat{A} \psi = a \psi$ with $\psi$ normalised. Then
+    $$
+    a = \inp{\psi}{\hat{A} \psi} = \inp{\hat{A}\psi}{\psi} = a^* \inp{\psi}{\psi} = a^*,
+    $$
+    using Hermiticity in the middle step. So $a \in \R$.
+\end{proof}
+
+\begin{proposition}[Orthogonal Eigenfunctions]
+    Eigenfunctions of a Hermitian operator with distinct eigenvalues are orthogonal.
+\end{proposition}
+\begin{proof}
+    Let $\hat{A}\psi_1 = a_1 \psi_1$ and $\hat{A} \psi_2 = a_2 \psi_2$ with $a_1 \neq a_2$. Then
+    $$
+    a_1 \inp{\psi_1}{\psi_2} = \inp{\hat A \psi_1}{\psi_2} = \inp{\psi_1}{\hat{A} \psi_2} = a_2 \inp{\psi_1}{\psi_2},
+    $$
+    (using $a_1 \in \R$ for the first equality), so $(a_1 - a_2)\inp{\psi_1}{\psi_2} = 0$, and since $a_1 \neq a_2$ we get $\inp{\psi_1}{\psi_2} = 0$.
+\end{proof}
+
+These are exactly the statements you know for real symmetric (or complex Hermitian) matrices, transplanted to infinite dimensions -- along with their proofs. The remaining matrix fact, diagonalisability, is also what we want, but its infinite-dimensional proof is genuinely beyond this course, so we record it as an article of faith.
+
+\begin{fact}[Completeness of Eigenfunctions]
+    The eigenfunctions (discrete and continuous together) of a Hermitian operator form a complete basis of $\mathcal{H}$: every state can be expanded in them.
+\end{fact}
+
+For every operator in this course, completeness can be checked concretely (e.g.\ Fourier series for the infinite well, Hermite functions for the oscillator), so nothing we do rests on an unproved generality.
+
+\begin{remark}[Continuous Spectra and Improper Eigenfunctions]
+    The caveat `discrete and continuous together' is doing real work. The momentum operator has \emph{no} normalisable eigenfunctions at all -- its would-be eigenfunctions are the plane waves $e^{ikx}$, with a continuum of eigenvalues $\hbar k$ -- and the position operator is even worse: $\hat{x}\psi = x_0 \psi$ forces $\psi$ to vanish everywhere except at the point $x_0$, so its `eigenfunctions' are the Dirac delta functions $\delta(x - x_0)$. Neither family lives in $\mathcal{H}$, but both are complete in the integral sense: the expansion of a state in position eigenfunctions is the tautology $\psi(x) = \int \psi(x_0) \delta(x - x_0) \dd x_0$, and the expansion in momentum eigenfunctions is precisely the \emph{Fourier transform},
+    $$
+    \psi(x) = \frac{1}{\sqrt{2\pi\hbar}} \int_{-\infty}^{\infty} \tilde{\psi}(p) \, e^{ipx/\hbar} \dd p.
+    $$
+    The measurement rules extend with sums replaced by integrals: $\abs{\psi(x_0)}^2$ is the probability density for position measurements -- so the Born rule of Section 2 is exactly the continuous-spectrum case of the general measurement axioms -- and $\abs{\tilde\psi(p)}^2$ is the probability density for momentum measurements. Making all this rigorous takes functional analysis beyond this course, but using it takes only care.
+\end{remark} Applied to the Hamiltonian, this fact is what justifies the claim of Section 3 that stationary states suffice:
+
+\begin{corollary}[General Solution of the Schr\"odinger Equation]
+    Every solution of the time-dependent Schr\"odinger equation may be written
+    $$
+    \psi(x, t) = \sum_n a_n \chi_n(x) e^{-i E_n t/\hbar}, \quad a_n = \inp{\chi_n}{\psi(\cdot, 0)},
+    $$
+    where $\{\chi_n\}$ is a complete orthonormal set of eigenfunctions of $\hat{H}$ (with integrals over any continuous part of the spectrum understood).
+\end{corollary}
+
+\subsection{Measurement}
+
+We can now state the measurement rules in their final form, generalising the two-state Born rule of Section 2. Let $\hat{O}$ be an observable with a complete orthonormal set of eigenfunctions $\{\psi_n\}$ and eigenvalues $\{\lambda_n\}$, and let $\psi = \sum_n a_n \psi_n$ be a normalised state.
+
+\begin{enumerate}[label=(\roman*)]
+    \item A measurement of $O$ returns some eigenvalue of $\hat{O}$.
+    \item If the eigenvalues are non-degenerate, the probability of the outcome $\lambda_n$ is
+    $$
+    \PP(O = \lambda_n) = \abs{a_n}^2 = \abs{\inp{\psi_n}{\psi}}^2.
+    $$
+    \item If an eigenvalue $\lambda$ is degenerate, with orthonormal eigenfunctions $\{\psi_i\}_{i \in I}$ spanning its eigenspace, then $\PP(O = \lambda) = \sum_{i \in I} \abs{a_i}^2$.
+    \item (\emph{The projection postulate.}) If the measurement returns $\lambda$, the state immediately afterwards is the normalised projection of $\psi$ onto the $\lambda$-eigenspace:
+    $$
+    \psi \mapsto \frac{1}{\sqrt{\sum_{i \in I}\abs{a_i}^2}}\sum_{i \in I} a_i \psi_i ,
+    $$
+    which for a non-degenerate eigenvalue is simply $\psi_n$. An immediately repeated measurement therefore returns $\lambda$ again with certainty.
+\end{enumerate}
+
+Let us sanity-check this. The probabilities sum to one:
+$$
+\sum_n \abs{a_n}^2 = \sum_{n,m} a_n^* a_m \inp{\psi_n}{\psi_m} = \Big\langle \sum_n a_n \psi_n, \sum_m a_m \psi_m \Big\rangle = \inp{\psi}{\psi} = 1,
+$$
+using orthonormality -- this is just Parseval's theorem. And the mean of the distribution is
+$$
+\sum_n \lambda_n \abs{a_n}^2 = \sum_{n, m} a_n^* \lambda_m a_m \delta_{nm} = \Big\langle \sum_n a_n \psi_n, \sum_m a_m \lambda_m \psi_m \Big\rangle = \inp{\psi}{\hat{O} \psi} = \langle \hat{O} \rangle_\psi,
+$$
+confirming that the expectation value defined in \S 6.1 is indeed the statistical mean of measurement outcomes. Notice how tightly the mathematics interlocks with the physics here: Hermiticity guarantees the outcomes (eigenvalues) are real numbers, orthogonality makes the probabilities well defined and additive, and completeness guarantees every state can actually be measured.
+
+Let's do a full worked example, in the system where we can compute everything.
+
+\begin{example}[Measuring the Energy of a Particle in a Box]
+    Take the infinite square well of \S 4.2 (width $2a$, eigenfunctions $\chi_n$, energies $E_n = \hbar^2\pi^2 n^2/8ma^2$), and suppose the particle is prepared in the state
+    $$
+    \psi = \frac{1}{\sqrt{6}} \chi_1 + \sqrt{\frac{2}{3}} \, \chi_2 + \frac{1}{\sqrt{6}} \chi_3.
+    $$
+    (This is normalised: $\frac16 + \frac23 + \frac16 = 1$.) Measuring the energy:
+    \begin{enumerate}[label=(\roman*)]
+        \item The possible outcomes are $E_1$, $E_2$, $E_3$ only -- no other value can ever occur, however many times we repeat the experiment on identically prepared systems.
+        \item Their probabilities are $\abs{a_n}^2$: we get $E_1$ with probability $\frac{1}{6}$, $E_2$ with probability $\frac{2}{3}$, and $E_3$ with probability $\frac{1}{6}$.
+        \item The mean outcome is
+        $$
+        \langle \hat{H} \rangle_\psi = \frac{1}{6}E_1 + \frac{2}{3}E_2 + \frac{1}{6}E_3 = \left( \frac{1}{6} + \frac{8}{3} + \frac{3}{2} \right) E_1 = \frac{13}{3} E_1,
+        $$
+        which -- note well -- is not itself an allowed outcome of any single measurement.
+        \item If the measurement returns $E_2$, the state collapses to $\chi_2$, and all subsequent energy measurements return $E_2$ with certainty. The information about the original coefficients is irretrievably gone.
+    \end{enumerate}
+    Suppose instead we had measured \emph{position} first, getting some value near $x_0$, and then energy. The position measurement collapses $\psi$ to a state sharply peaked at $x_0$, which is \emph{not} an energy eigenstate but a fresh superposition of all the $\chi_n$ -- so the subsequent energy measurement can now return values other than $E_1, E_2, E_3$ with non-zero probability. Measurements of incompatible observables interfere with each other's statistics; this is the operational meaning of non-commutation, made quantitative by the uncertainty principle below.
+\end{example}
+
+\begin{example}[A Flat Start]
+    For a slightly less rigged example, prepare the particle in the box in the \emph{uniform} state $\psi(x, 0) = 1/\sqrt{2a}$ (constant across the well). The expansion coefficients are genuine Fourier integrals: for $n$ even, $a_n = 0$ by parity, while for $n$ odd,
+    $$
+    a_n = \inp{\chi_n}{\psi} = \frac{1}{\sqrt{2a}} \cdot \frac{1}{\sqrt{a}} \int_{-a}^{a} \cos \frac{n \pi x}{2a} \dd x = \frac{\sqrt{2}}{a} \cdot \frac{2a}{n \pi} \sin \frac{n \pi}{2} = \pm\frac{2 \sqrt{2}}{n \pi}.
+    $$
+    So an energy measurement returns $E_1$ with probability $\abs{a_1}^2 = 8/\pi^2 \approx 0.81$, $E_3$ with probability $8/9\pi^2 \approx 0.09$, and so on -- one can check $\sum_{n \text{ odd}} 8/n^2\pi^2 = 1$ using $\sum_{n \text{ odd}} 1/n^2 = \pi^2/8$. Every possible outcome is an odd level, with rapidly decaying probabilities; and since the state is not an eigenstate, $\psi(x, t)$ genuinely evolves, sloshing around the box forever (with, pleasingly, exact revivals: all the phases $e^{-iE_n t/\hbar}$ realign at $t = 16ma^2/\pi\hbar$, since each $E_n/E_1 = n^2$ is an integer).
+\end{example}
+
+\begin{remark}[The Measurement Problem]
+    It would be dishonest not to flag the elephant in the room. We have given the theory \emph{two} rules of evolution: the Schr\"odinger equation (deterministic, linear, continuous) between measurements, and collapse (probabilistic, nonlinear, discontinuous) during them -- without ever saying what physically counts as a `measurement'. A measuring device is itself made of atoms; applying the Schr\"odinger equation to the device plus particle produces a superposition of `pointer states', not a definite outcome -- this is the content of Schr\"odinger's famous cat. How (or whether) collapse really happens is called the \emph{measurement problem}, and proposed resolutions (decoherence, many-worlds, hidden variables, objective collapse, \dots) remain genuinely contested. None of this ambiguity infects the predictions: for every experiment anyone has devised, the rules above say what the statistics will be, and they have always been right. We take the pragmatic road, as does the course.
+\end{remark}
+
+\subsection{Commutators}
+
+Operators, unlike numbers, need not commute -- and essentially all distinctively quantum phenomena trace back to this. The failure to commute is measured by the following bracket.
+
+\begin{definition}[Commutator]
+    The \vocab{commutator} of operators $\hat{A}$ and $\hat{B}$ is
+    $$
+    [\hat{A}, \hat{B}] = \hat{A}\hat{B} - \hat{B}\hat{A}.
+    $$
+\end{definition}
+
+The commutator is antisymmetric, $[\hat{A}, \hat{B}] = -[\hat{B}, \hat{A}]$, linear in each slot, and satisfies the Leibniz-type rules
+$$
+[\hat{A}, \hat{B}\hat{C}] = [\hat{A}, \hat{B}]\hat{C} + \hat{B}[\hat{A}, \hat{C}], \quad
+[\hat{A}\hat{B}, \hat{C}] = \hat{A}[\hat{B}, \hat{C}] + [\hat{A}, \hat{C}]\hat{B},
+$$
+which are checked by expanding everything out (and are worth internalising -- they let you avoid ever expanding everything out again).
+
+\begin{example}[The Canonical Commutation Relation]
+    The most important commutator in quantum mechanics is between position and momentum. Apply the operators to a test wavefunction (never manipulate bare operators when unsure!):
+    \begin{align*}
+        \hat{x}\hat{p} \, \psi &= x \left( -i\hbar \frac{\partial \psi}{\partial x} \right) = -i\hbar x \frac{\partial \psi}{\partial x}, \\
+        \hat{p}\hat{x} \, \psi &= -i\hbar \frac{\partial}{\partial x}(x \psi) = -i \hbar \psi - i \hbar x \frac{\partial \psi}{\partial x}.
+    \end{align*}
+    Subtracting, $[\hat{x}, \hat{p}]\psi = i\hbar\psi$ for every $\psi$, so
+    $$
+    [\hat{x}, \hat{p}] = i \hbar,
+    $$
+    (times the identity operator). This is the \vocab{canonical commutation relation}, and one can regard it as the mathematical core of quantum mechanics -- everything in this section flows from it.
+\end{example}
+
+Commuting observables are exactly the simultaneously measurable ones, in the following sense.
+
+\begin{definition}[Simultaneously Diagonalisable]
+    Hermitian operators $\hat{A}$, $\hat{B}$ are \vocab{simultaneously diagonalisable} if there is a complete basis $\{\psi_i\}$ of joint eigenfunctions: $\hat{A}\psi_i = \lambda_i \psi_i$ and $\hat{B} \psi_i = \mu_i \psi_i$.
+\end{definition}
+
+\begin{theorem}[Compatibility Criterion]
+    Hermitian operators $\hat{A}$ and $\hat{B}$ are simultaneously diagonalisable if and only if $[\hat{A}, \hat{B}] = 0$.
+\end{theorem}
+\begin{proof}
+    ($\Rightarrow$) Given a complete joint eigenbasis, for each basis element
+    $$
+    [\hat{A}, \hat{B}]\psi_i = \hat{A}(\mu_i \psi_i) - \hat{B}(\lambda_i \psi_i) = (\lambda_i \mu_i - \mu_i \lambda_i)\psi_i = 0,
+    $$
+    and by linearity and completeness $[\hat{A}, \hat{B}]\psi = 0$ for every $\psi$.
+
+    ($\Leftarrow$) Suppose $[\hat{A}, \hat{B}] = 0$, and let $V_\lambda$ be the eigenspace of $\hat{A}$ for eigenvalue $\lambda$. For $\psi \in V_\lambda$,
+    $$
+    \hat{A}(\hat{B}\psi) = \hat{B}(\hat{A}\psi) = \lambda (\hat{B} \psi),
+    $$
+    so $\hat{B}$ maps $V_\lambda$ into itself. The restriction of $\hat{B}$ to each $V_\lambda$ is still Hermitian, so (by completeness applied within $V_\lambda$) we may pick a basis of each $V_\lambda$ consisting of eigenfunctions of $\hat{B}$. These are joint eigenfunctions, and running over all $\lambda$ they form a complete basis of $\mathcal{H}$.
+\end{proof}
+
+If $[\hat{A}, \hat{B}] = 0$ we call the observables \vocab{compatible}: in a joint eigenstate both have definite values, so both can be known simultaneously with perfect precision, and measuring one does not disturb the (collapsed) eigenstate of the other. By contrast $[\hat{x}, \hat{p}] = i\hbar \neq 0$: position and momentum are incompatible, and no state whatsoever has definite values of both. The uncertainty principle below is the quantitative version of this statement. We have also already used this circle of ideas twice without saying so: parity commutes with a symmetric Hamiltonian (\S 4.3), and in Section 7 the set $\{\hat{H}, \hat{L}^2, \hat{L}_z\}$ of mutually commuting operators will organise the whole three-dimensional theory.
+
+\begin{remark}[Labelling States]
+    Compatibility also solves a bookkeeping problem that degeneracy creates. If an eigenvalue of $\hat{A}$ is degenerate, the outcome of measuring $A$ does not pin down the state -- we need more information. The fix is to find further observables commuting with $\hat{A}$ (and each other), and keep adding them until the joint eigenspaces are one-dimensional; such a maximal collection is called a \emph{complete set of commuting observables}, and the corresponding eigenvalues (`quantum numbers') then label a basis of states unambiguously. For the hydrogen atom the set will be $\{\hat H, \hat L^2, \hat L_z\}$ with quantum numbers $(N, \ell, m)$ -- this is precisely why atomic states are labelled by three quantum numbers, and the scheme survives (with spin added) into the periodic table.
+\end{remark}
+
+\subsection{Ehrenfest's Theorem}
+
+If quantum mechanics is right, it is right about tennis balls too, so classical mechanics must be hiding inside it somewhere. The precise statement is that \emph{expectation values obey classical-looking equations of motion}, and the commutator controls the dynamics.
+
+\begin{theorem}[Ehrenfest's Theorem]
+    Let $\psi$ evolve by the Schr\"odinger equation, and let $\hat{A}$ be an observable with no explicit time dependence. Then
+    $$
+    \frac{\dd}{\dd t} \langle \hat{A} \rangle_\psi = \frac{i}{\hbar} \left\langle [\hat{H}, \hat{A}] \right\rangle_\psi.
+    $$
+\end{theorem}
+\begin{proof}
+    Differentiating under the integral,
+    $$
+    \frac{\dd}{\dd t} \inp{\psi}{\hat{A} \psi} = \Big\langle \frac{\partial \psi}{\partial t}, \hat{A} \psi \Big\rangle + \Big\langle \psi, \hat{A} \frac{\partial \psi}{\partial t} \Big\rangle.
+    $$
+    The Schr\"odinger equation gives $\frac{\partial \psi}{\partial t} = \frac{1}{i\hbar}\hat{H}\psi$, so, using antilinearity in the first argument and Hermiticity of $\hat{H}$,
+    $$
+    \frac{\dd}{\dd t} \langle \hat{A} \rangle_\psi = -\frac{1}{i\hbar}\inp{\hat H \psi}{\hat{A}\psi} + \frac{1}{i \hbar} \inp{\psi}{\hat{A}\hat{H}\psi}
+    = \frac{i}{\hbar} \left( \inp{\psi}{\hat H \hat A \psi} - \inp{\psi}{\hat{A}\hat{H}\psi} \right) = \frac{i}{\hbar}\langle [\hat H, \hat A] \rangle_\psi. \qedhere
+    $$
+\end{proof}
+
+(If $\hat{A}$ does depend explicitly on time, one simply adds $\langle \partial \hat{A}/\partial t \rangle_\psi$ to the right hand side; we will never need this.) Let's harvest the consequences, for a particle with $\hat{H} = \frac{\hat{p}^2}{2m} + U(\hat{x})$.
+
+\begin{enumerate}[label=(\roman*)]
+    \item \emph{Energy conservation}: taking $\hat{A} = \hat{H}$, since $[\hat H, \hat H] = 0$,
+    $$
+    \frac{\dd}{\dd t}\langle \hat{H} \rangle_\psi = 0.
+    $$
+    \item \emph{Velocity}: taking $\hat{A} = \hat{x}$, we need $[\hat{H}, \hat{x}] = \frac{1}{2m}[\hat{p}^2, \hat{x}]$. By the Leibniz rule and the canonical commutation relation,
+    $$
+    [\hat p^2, \hat x] = \hat p [\hat p, \hat x] + [\hat p, \hat x]\hat p = -2i\hbar \hat p,
+    $$
+    so
+    $$
+    \frac{\dd}{\dd t} \langle \hat{x} \rangle_\psi = \frac{i}{\hbar} \cdot \left(\frac{-2 i \hbar}{2m}\right) \langle \hat{p}\rangle_\psi = \frac{\langle \hat{p} \rangle_\psi}{m},
+    $$
+    recovering (now effortlessly) the relation we derived by hand in \S 6.1.
+    \item \emph{Newton's second law}: taking $\hat{A} = \hat{p}$, only the potential contributes, and on a test function
+    $$
+    [U(\hat x), \hat{p}]\psi = U \left(-i\hbar \psi'\right) + i\hbar (U\psi)' = i \hbar U'(x) \psi,
+    $$
+    so
+    $$
+    \frac{\dd}{\dd t} \langle \hat{p} \rangle_\psi = -\left\langle U'(\hat x) \right\rangle_\psi.
+    $$
+\end{enumerate}
+\begin{example}[The Oscillator Swings Classically]
+    For the harmonic oscillator, $U'(x) = m\omega^2 x$ is \emph{linear}, so $\langle U'(\hat x) \rangle = m \omega^2 \langle \hat{x} \rangle$ exactly, and Ehrenfest's equations close up:
+    $$
+    \frac{\dd}{\dd t}\langle \hat x \rangle = \frac{\langle \hat p \rangle}{m}, \quad \frac{\dd}{\dd t} \langle \hat{p} \rangle = -m\omega^2 \langle \hat{x} \rangle
+    \implies \frac{\dd^2}{\dd t^2}\langle \hat{x} \rangle = -\omega^2 \langle \hat{x} \rangle.
+    $$
+    So for \emph{any} state whatsoever -- however spread out, however wildly non-classical -- the mean position of an oscillator swings sinusoidally at exactly the classical frequency $\omega$. (In a stationary state, of course, $\langle \hat x \rangle = 0$ for all time: the oscillation only shows up in superpositions of neighbouring levels, which oscillate at frequency $(E_{N+1} - E_N)/\hbar = \omega$ -- everything is consistent.)
+\end{example}
+
+Together, (ii) and (iii) say that $\langle \hat x \rangle$ and $\langle \hat p \rangle$ obey exactly Newton's equations, with the force averaged over the state\footnote{Note the subtlety: the classical trajectory would require $\frac{\dd}{\dd t}\langle p \rangle = -U'(\langle x \rangle)$, but what we actually get is $-\langle U'(x) \rangle$. These agree when $U'$ is linear (free particle, uniform force, harmonic oscillator) or when the state is sharply peaked -- which is exactly the classical limit.}. Classical mechanics is the story of the means; quantum mechanics is the story of the whole distribution.
+
+\subsection{The Uncertainty Principle}
+
+Having discussed the means of measurement distributions, we turn to their spreads.
+
+\begin{definition}[Uncertainty]
+    The \vocab{uncertainty} of the observable $A$ in the (normalised) state $\psi$ is $\Delta_\psi A \geq 0$, where
+    $$
+    (\Delta_\psi A)^2 = \left\langle (\hat{A} - \langle \hat{A} \rangle_\psi)^2 \right\rangle_\psi = \langle \hat{A}^2 \rangle_\psi - \langle \hat{A} \rangle_\psi^2.
+    $$
+\end{definition}
+
+This is precisely the variance of the measurement distribution (the second equality is the usual expand-the-square manipulation, using linearity of expectation values). The uncertainty vanishes exactly on states where the observable has a definite value:
+
+\begin{lemma}
+    $(\Delta_\psi A)^2 \geq 0$, with equality if and only if $\psi$ is an eigenfunction of $\hat{A}$.
+\end{lemma}
+\begin{proof}
+    Write $\hat{A}' = \hat{A} - \langle \hat{A} \rangle_\psi$ (a Hermitian operator, since $\langle \hat A \rangle_\psi$ is real). By Hermiticity,
+    $$
+    (\Delta_\psi A)^2 = \inp{\psi}{\hat{A}'^2 \psi} = \inp{\hat{A}' \psi}{\hat{A}' \psi} = \norm{\hat{A}' \psi}^2 \geq 0,
+    $$
+    with equality iff $\hat{A}'\psi = 0$, i.e.\ iff $\hat{A} \psi = \langle \hat{A}\rangle_\psi \psi$.
+\end{proof}
+
+The engine of the uncertainty principle is the Cauchy--Schwarz inequality, which holds in any inner product space.
+
+\begin{theorem}[Cauchy--Schwarz Inequality]
+    For $\psi, \phi \in \mathcal{H}$,
+    $$
+    \abs{\inp{\psi}{\phi}}^2 \leq \inp{\psi}{\psi} \inp{\phi}{\phi},
+    $$
+    with equality if and only if $\phi = \lambda \psi$ for some $\lambda \in \C$ (or $\psi = 0$).
+\end{theorem}
+\begin{proof}
+    We may assume $\psi \neq 0$. For any $\lambda \in \C$,
+    $$
+    0 \leq \inp{\phi - \lambda \psi}{\phi - \lambda \psi} = \inp{\phi}{\phi} - \lambda \inp{\phi}{\psi} - \lambda^* \inp{\psi}{\phi} + \abs{\lambda}^2 \inp{\psi}{\psi}.
+    $$
+    Choose the minimising value $\lambda = \inp{\psi}{\phi} / \inp{\psi}{\psi}$; the right hand side becomes
+    $$
+    \inp{\phi}{\phi} - \frac{\abs{\inp{\psi}{\phi}}^2}{\inp{\psi}{\psi}} \geq 0,
+    $$
+    which rearranges to the claim. Equality forces $\inp{\phi - \lambda\psi}{\phi - \lambda \psi} = 0$, i.e.\ $\phi = \lambda \psi$.
+\end{proof}
+
+\begin{theorem}[Generalised Uncertainty Principle]
+    For observables $A$, $B$ and any normalised state $\psi$,
+    $$
+    \Delta_\psi A \; \Delta_\psi B \geq \frac{1}{2} \abs{ \left\langle [\hat{A}, \hat{B}] \right\rangle_\psi }.
+    $$
+\end{theorem}
+\begin{proof}
+    Let $\hat{A}' = \hat{A} - \langle \hat{A}\rangle_\psi$ and $\hat{B}' = \hat{B} - \langle \hat{B} \rangle_\psi$, both Hermitian, and note $[\hat{A}', \hat{B}'] = [\hat{A}, \hat{B}]$ (the subtracted constants commute with everything). By the lemma above and Cauchy--Schwarz,
+    $$
+    (\Delta_\psi A)^2 (\Delta_\psi B)^2 = \norm{\hat{A}'\psi}^2 \norm{\hat{B}'\psi}^2 \geq \abs{\inp{\hat{A}'\psi}{\hat{B}'\psi}}^2 = \abs{\inp{\psi}{\hat{A}'\hat{B}'\psi}}^2,
+    $$
+    using Hermiticity of $\hat{A}'$ at the last step. Now split the product into commutator and anticommutator parts:
+    $$
+    \hat{A}'\hat{B}' = \frac{1}{2}[\hat{A}', \hat{B}'] + \frac{1}{2}\{\hat{A}', \hat{B}'\}, \quad \{\hat{A}', \hat{B}'\} = \hat{A}'\hat{B}' + \hat{B}'\hat{A}'.
+    $$
+    The anticommutator of Hermitian operators is Hermitian, so $\langle \{\hat{A}', \hat{B}'\}\rangle_\psi$ is \emph{real}; the commutator is anti-Hermitian ($[\hat{A}', \hat{B}']^\dagger = -[\hat{A}', \hat{B}']$), so $\langle [\hat{A}', \hat{B}'] \rangle_\psi$ is purely \emph{imaginary} (both by the argument in the proof that Hermitian operators have real expectations). Hence the two contributions are the real and imaginary parts of $\inp{\psi}{\hat{A}'\hat{B}'\psi}$, and
+    $$
+    \abs{\inp{\psi}{\hat{A}'\hat{B}'\psi}}^2 = \frac{1}{4}\abs{\langle [\hat{A}, \hat{B}] \rangle_\psi}^2 + \frac{1}{4}\abs{\langle \{\hat{A}', \hat{B}'\} \rangle_\psi}^2 \geq \frac{1}{4}\abs{\langle [\hat{A}, \hat{B}] \rangle_\psi}^2.
+    $$
+    Taking square roots gives the theorem.
+\end{proof}
+
+\begin{corollary}[Heisenberg's Uncertainty Principle]
+    For any normalised state $\psi$,
+    $$
+    \Delta_\psi x \; \Delta_\psi p \geq \frac{\hbar}{2}.
+    $$
+\end{corollary}
+\begin{proof}
+    Take $\hat{A} = \hat{x}$, $\hat{B} = \hat{p}$ in the theorem: $[\hat{x}, \hat{p}] = i\hbar$, so the right hand side is $\frac{1}{2}\abs{i\hbar} = \frac{\hbar}{2}$, independent of the state.
+\end{proof}
+
+Let us be clear about what this does and does not say. It is a statement about \emph{states}, not about clumsy measuring devices: no quantum state, however cleverly prepared, has both a sharp position and a sharp momentum. It underlies phenomena we have already met -- zero-point energies (confinement forces momentum spread, hence kinetic energy), the stability of atoms (an electron squashed into the nucleus would have enormous momentum uncertainty), and the spreading of wavepackets.
+
+\begin{remark}[Energy-Time Uncertainty]
+    You will often see a companion relation $\Delta E \, \Delta t \gtrsim \hbar$ quoted. Beware: time is \emph{not} an observable in quantum mechanics (there is no operator $\hat{t}$), so this cannot be an instance of the theorem above. The honest statement comes from Ehrenfest: for any observable $A$,
+    $$
+    \Delta_\psi H \cdot \Delta_\psi A \geq \frac{1}{2}\abs{\langle [\hat H, \hat A] \rangle_\psi} = \frac{\hbar}{2} \abs{\frac{\dd}{\dd t} \langle \hat{A} \rangle_\psi},
+    $$
+    so defining $\tau_A = \Delta_\psi A / \abs{\frac{\dd}{\dd t}\langle \hat A \rangle_\psi}$ -- the time it takes the statistics of $A$ to change noticeably -- we get $\Delta_\psi H \cdot \tau_A \geq \hbar/2$. States with sharp energy change slowly (a stationary state, with $\Delta H = 0$, never changes at all); fast dynamics requires energy spread. This is the sense in which short-lived excited states have broad spectral lines.
+\end{remark}
+
+The uncertainty principle is not only a prohibition -- used with a little courage, it is a computational tool.
+
+\begin{example}[Estimating the Ground State Energy of the Oscillator]
+    For the harmonic oscillator, the ground state must balance two competing costs: potential energy grows if the state spreads out, kinetic energy grows (via the uncertainty principle) if it is squeezed. Let's estimate the minimum. For a state centred at the origin with $\langle \hat x \rangle = \langle \hat p \rangle = 0$ (as holds for the ground state, by parity), we have $\langle \hat{x}^2 \rangle = (\Delta x)^2$ and $\langle \hat{p}^2 \rangle = (\Delta p)^2$, so
+    $$
+    \langle \hat{H} \rangle = \frac{(\Delta p)^2}{2m} + \frac{1}{2} m \omega^2 (\Delta x)^2
+    \geq \frac{\hbar^2}{8 m (\Delta x)^2} + \frac{1}{2} m \omega^2 (\Delta x)^2,
+    $$
+    using $\Delta p \geq \hbar / 2 \Delta x$. Minimising over $\Delta x$ (by calculus, or AM--GM), the minimum of the right hand side is at $(\Delta x)^2 = \hbar/2m\omega$, giving
+    $$
+    \langle \hat{H} \rangle \geq \frac{\hbar \omega}{4} + \frac{\hbar \omega}{4} = \frac{\hbar \omega}{2}.
+    $$
+    This lower bound is exactly the true ground state energy $E_0 = \frac{1}{2}\hbar\omega$ -- the bound is achieved because the true ground state is a Gaussian, i.e.\ a minimal uncertainty state (see below). The same crude argument applied to hydrogen (balancing $\hbar^2/2m_e r^2$ against $-e^2/4\pi\epsilon_0 r$) predicts both the Bohr radius and the $-13.6$ eV ground state energy up to factors of order one: the sizes and energies of atoms are set by the uncertainty principle.
+\end{example}
+
+Which states are the most classical, saturating the bound? Tracing through the proof, equality requires equality in Cauchy--Schwarz, $\hat{B}'\psi = \lambda \hat{A}'\psi$, \emph{and} vanishing of the anticommutator term, which together force $\lambda$ to be purely imaginary: $(\hat{p} - \langle p \rangle)\psi = i c (\hat{x} - \langle x \rangle)\psi$ for some real $c$. Centering things at the origin for simplicity, this is the ODE
+$$
+-i\hbar \psi' = i c x \psi \implies \psi(x) = C \exp\left(-\frac{c x^2}{2\hbar}\right),
+$$
+a \emph{Gaussian} (with $c > 0$ for normalisability). So the minimal-uncertainty states are exactly the Gaussian wavepackets of \S 4.1 -- which is why the Gaussian packet computation gave $\Delta x \Delta p = \hbar/2$ exactly at $t = 0$ -- and, pleasingly, why the oscillator ground state (a Gaussian!) is the physical state that comes closest to sitting classically still at the bottom of the well.
+
+\section{Quantum Mechanics in Three Dimensions}
+
+Real particles live in three dimensions, so it is time to go back to the full Schr\"odinger equation
+$$
+i \hbar \frac{\partial \psi}{\partial t} = -\frac{\hbar^2}{2m} \nabla^2 \psi + U(\vv{x}) \psi,
+$$
+with wavefunctions normalised over $\R^3$. Everything from Sections 2, 3 and 6 -- inner products, Hermitian operators, measurement, stationary states -- was set up in $\R^3$ from the start, so carries over verbatim. What is genuinely new in three dimensions is \emph{angular momentum}, and the associated richness of degeneracy.
+
+The observables now come in triples: $\hat{x}_i \psi = x_i \psi$ and $\hat{p}_i = -i\hbar \frac{\partial}{\partial x_i}$ for $i = 1, 2, 3$, with canonical commutation relations
+$$
+[\hat{x}_i, \hat{p}_j] = i \hbar \, \delta_{ij}, \quad [\hat{x}_i, \hat{x}_j] = [\hat{p}_i, \hat{p}_j] = 0.
+$$
+Different coordinate directions are compatible: it is $x_i$ and $p_i$ \emph{in the same direction} that refuse to commute.
+
+\subsection{Separable Solutions}
+
+When the potential splits as a sum $U(\vv{x}) = U_1(x_1) + U_2(x_2) + U_3(x_3)$, the time-independent Schr\"odinger equation separates in Cartesian coordinates: substituting $\chi(\vv{x}) = \chi_1(x_1)\chi_2(x_2)\chi_3(x_3)$, each factor satisfies a one-dimensional Schr\"odinger equation with potential $U_i$, and the energies add. All our one-dimensional work is thus immediately recycled.
+
+\begin{example}[The Three-Dimensional Harmonic Oscillator]
+    For $U = \frac{1}{2} m \omega^2 \abs{\vv{x}}^2 = \sum_i \frac{1}{2}m\omega^2 x_i^2$, the separable eigenfunctions are products of Hermite functions, with
+    $$
+    E_{n_1 n_2 n_3} = \left( n_1 + n_2 + n_3 + \tfrac{3}{2} \right) \hbar \omega, \quad n_i \in \{0, 1, 2, \dots\}.
+    $$
+    The energy depends only on $n = n_1 + n_2 + n_3$, so the level $E = (n + \frac{3}{2})\hbar\omega$ has degeneracy equal to the number of ways of writing $n$ as an ordered sum of three non-negative integers, namely $\binom{n+2}{2} = \frac{1}{2}(n+1)(n+2)$. This is our first meeting with large degeneracies -- a symptom of the symmetry of the potential, as we are about to understand properly.
+\end{example}
+
+\begin{example}[Particle in a Cubical Box]
+    Similarly, for a particle confined to a cube of side $L$ (infinite walls, one corner at the origin), the eigenfunctions are products of one-dimensional box modes $\sin(n_i \pi x_i / L)$, with
+    $$
+    E = \frac{\hbar^2 \pi^2}{2 m L^2} \left( n_1^2 + n_2^2 + n_3^2 \right), \quad n_i \in \{1, 2, 3, \dots\}.
+    $$
+    The ground state $(1,1,1)$ is unique, but the first excited level, $(2,1,1), (1,2,1), (1,1,2)$, is three-fold degenerate -- the three states are related by rotating the box, so the degeneracy is again symmetry in action. (Higher up, `accidental' coincidences like $1^2 + 1^2 + 5^2 = 3^2 + 3^2 + 3^2 = 27$ appear as well.) Counting the number of lattice points with $n_1^2 + n_2^2 + n_3^2 \leq 2mEL^2/\hbar^2\pi^2$ gives the \emph{density of states} for a quantum gas -- the starting point of statistical mechanics.
+\end{example}
+
+\subsection{Spherically Symmetric Potentials and the Radial Equation}
+
+The potentials nature actually likes -- above all the Coulomb potential -- are not sums but are \vocab{spherically symmetric}: $U = U(r)$ where $r = \abs{\vv{x}}$. The right coordinates are spherical polars $(r, \theta, \phi)$,
+$$
+x = r \sin\theta\cos\phi, \quad y = r \sin\theta \sin\phi, \quad z = r \cos\theta,
+$$
+in which the Laplacian takes the form
+$$
+\nabla^2 = \frac{1}{r} \frac{\partial^2}{\partial r^2} \, r + \frac{1}{r^2} \left[ \frac{1}{\sin \theta} \frac{\partial}{\partial \theta} \left( \sin \theta \frac{\partial}{\partial \theta} \right) + \frac{1}{\sin^2 \theta} \frac{\partial^2}{\partial \phi^2} \right].
+$$
+
+As a first pass, let's look for eigenfunctions that share the symmetry of the potential: $\chi = \chi(r)$ only. Then only the radial part of the Laplacian acts,
+$$
+\nabla^2 \chi(r) = \frac{1}{r}\frac{\dd^2}{\dd r^2}\big( r \chi(r) \big) = \chi'' + \frac{2}{r}\chi',
+$$
+and the time-independent Schr\"odinger equation becomes
+$$
+-\frac{\hbar^2}{2m} \left( \chi'' + \frac{2}{r}\chi' \right) + U(r) \chi = E \chi.
+$$
+There is a substitution that makes this look one-dimensional: let
+$$
+\sigma(r) = r \chi(r).
+$$
+Then the equation collapses to
+$$
+-\frac{\hbar^2}{2m} \sigma''(r) + U(r) \sigma(r) = E \sigma(r),
+$$
+which is \emph{exactly} the one-dimensional Schr\"odinger equation -- but on the half-line $r \geq 0$. The boundary conditions carry the memory of three dimensions: normalisability now reads
+$$
+\int_{\R^3} \abs{\chi}^2 \dd V = 4\pi \int_0^\infty \abs{\chi(r)}^2 r^2 \dd r = 4 \pi \int_0^\infty \abs{\sigma(r)}^2 \dd r < \infty,
+$$
+and for $\chi = \sigma / r$ to be well behaved at the origin we need
+$$
+\sigma(0) = 0.
+$$
+So: radial problems are one-dimensional problems on $r > 0$ with a hard wall at $r = 0$ -- precisely the setting of the half-oscillator example of \S 4.5. A useful slogan: \emph{the $s$-wave states of a 3D well are the odd states of the corresponding 1D well}.
+
+\begin{example}[The Spherical Potential Well]
+    Take $U(r) = 0$ for $r \leq a$ and $U(r) = U_0$ for $r > a$, and look for bound states $0 < E < U_0$. With the usual $k = \sqrt{2mE}/\hbar$ and $\kappa = \sqrt{2m(U_0 - E)}/\hbar$, the equation for $\sigma$ is the finite-well equation, and the condition $\sigma(0) = 0$ selects the \emph{odd} solutions:
+    $$
+    \sigma(r) = \begin{cases}
+        A \sin kr & r \leq a, \\
+        B e^{-\kappa r} & r > a.
+    \end{cases}
+    $$
+    Matching $\sigma$ and $\sigma'$ at $r = a$ gives
+    $$
+    -k \cot ka = \kappa,
+    $$
+    to be solved against $k^2 + \kappa^2 = 2mU_0/\hbar^2$, i.e.\ in the dimensionless variables of \S 4.4, the intersections of $\eta = -\xi \cot \xi$ with the circle of radius $r_0$. The first branch of $-\xi\cot\xi$ only becomes positive for $\xi > \pi/2$, so there is \emph{no bound state at all} unless $r_0 > \pi/2$, i.e.\ unless
+    $$
+    U_0 a^2 > \frac{\pi^2 \hbar^2}{8m}.
+    $$
+    Contrast the one-dimensional finite well, which always had a bound state: in three dimensions, a well must be deep or wide enough to trap a particle. (This is physically relevant: the deuteron -- the proton-neutron bound state -- is only just bound, and this criterion is essentially the estimate nuclear physicists use for the strength of the nuclear force.)
+\end{example}
+
+To go beyond spherically symmetric \emph{states}, we need to understand the angular part of the Laplacian -- and that operator turns out to be precisely the angular momentum.
+
+\subsection{Angular Momentum}
+
+Classically, angular momentum $\vv{L} = \vv{x} \times \vv{p}$ is the conserved quantity associated with rotational symmetry, and conservation of $\vv{L}$ is what reduces classical central-force motion to a one-dimensional radial problem. We now build the quantum analogue, by direct substitution.
+
+\begin{definition}[Angular Momentum Operators]
+    The \vocab{angular momentum operators} are
+    $$
+    \hat{\vv{L}} = \hat{\vv{x}} \times \hat{\vv{p}} = -i \hbar \, \vv{x} \times \nabla, \quad \text{i.e.} \quad \hat{L}_i = -i\hbar \, \epsilon_{ijk} x_j \frac{\partial}{\partial x_k},
+    $$
+    together with the \vocab{total angular momentum}
+    $$
+    \hat{L}^2 = \hat{L}_1^2 + \hat{L}_2^2 + \hat{L}_3^2.
+    $$
+\end{definition}
+
+(There is no ordering ambiguity in the definition: $\hat L_i$ involves only products like $\hat{x}_2 \hat{p}_3$ with different indices, which commute.) Each $\hat{L}_i$ is Hermitian, being built from commuting Hermitian factors, and so is $\hat{L}^2$.
+
+The central computation is the commutator of two components. Let's do one honestly, acting on a test function and using $[\hat x_i, \hat p_j] = i\hbar\delta_{ij}$:
+\begin{align*}
+    [\hat{L}_1, \hat{L}_2] &= [\hat{x}_2 \hat{p}_3 - \hat{x}_3 \hat{p}_2, \; \hat{x}_3 \hat{p}_1 - \hat{x}_1 \hat{p}_3] \\
+    &= [\hat{x}_2 \hat{p}_3, \hat{x}_3 \hat{p}_1] + [\hat x_3 \hat p_2, \hat x_1 \hat p_3] \\
+    &= \hat{x}_2 [\hat{p}_3, \hat{x}_3] \hat{p}_1 + \hat{x}_1 [\hat{x}_3, \hat{p}_3] \hat{p}_2
+    = i \hbar ( \hat{x}_1 \hat{p}_2 - \hat{x}_2 \hat{p}_1 ) = i \hbar \hat{L}_3,
+\end{align*}
+where the two dropped commutators vanish because all their factors commute. The same computation with indices cycled gives the full set of \vocab{angular momentum commutation relations}:
+$$
+[\hat{L}_i, \hat{L}_j] = i \hbar \, \epsilon_{ijk} \hat{L}_k.
+$$
+So the three components of angular momentum are mutually \emph{incompatible}: no state has definite values of two different components (except the states with $\hat{\vv{L}}\psi = 0$). We cannot know the angular momentum vector; the best we can hope for is one component, plus the total length. And indeed:
+
+\begin{proposition}
+    $[\hat{L}^2, \hat{L}_i] = 0$ for each $i$.
+\end{proposition}
+\begin{proof}
+    Using the Leibniz rule and the commutation relations (take $i = 3$, the others being identical):
+    \begin{align*}
+        [\hat{L}^2, \hat{L}_3] &= \sum_{j=1}^3 \left( \hat{L}_j [\hat{L}_j, \hat{L}_3] + [\hat{L}_j, \hat{L}_3]\hat{L}_j \right)\\
+        &= i\hbar\left( -\hat{L}_1 \hat{L}_2 - \hat{L}_2 \hat{L}_1 + \hat{L}_2 \hat{L}_1 + \hat{L}_1 \hat{L}_2 \right) = 0,
+    \end{align*}
+    the $j = 3$ terms vanishing outright.
+\end{proof}
+
+By convention we choose the compatible pair to be $\hat{L}^2$ and $\hat{L}_3 = \hat{L}_z$. Moreover, angular momentum is compatible with any spherically symmetric Hamiltonian.
+
+\begin{proposition}
+    For $\hat{H} = \frac{\hat{p}^2}{2m} + U(r)$ with $U$ spherically symmetric,
+    $$
+    [\hat{H}, \hat{L}_i] = 0 \quad \text{and} \quad [\hat{H}, \hat{L}^2] = 0.
+    $$
+\end{proposition}
+\begin{proof}[Proof (Sketch)]
+    First, using the Leibniz rules and the canonical commutation relations, one computes
+    $$
+    [\hat{L}_i, \hat{x}_j] = i \hbar \epsilon_{ijk} \hat{x}_k, \quad [\hat{L}_i, \hat{p}_j] = i \hbar \epsilon_{ijk} \hat{p}_k
+    $$
+    -- both position and momentum transform as vectors. From these,
+    $$
+    [\hat{L}_i, \hat{p}^2] = \sum_j \left( \hat{p}_j [\hat L_i, \hat p_j] + [\hat L_i, \hat p_j] \hat p_j \right) = i\hbar \epsilon_{ijk}\left( \hat p_j \hat p_k + \hat p_k \hat p_j \right) = 0,
+    $$
+    since a symmetric expression is contracted against the antisymmetric $\epsilon_{ijk}$. Identically $[\hat{L}_i, \hat{x}^2] = 0$, and more generally $\hat{L}_i$ commutes with any function of $r$ alone (e.g.\ by noting $\hat{L}_i$ involves only angular derivatives, as the spherical coordinate expressions below make manifest). Hence $[\hat{H}, \hat{L}_i] = 0$, and then $[\hat{H}, \hat{L}^2] = 0$ follows by the Leibniz rule.
+\end{proof}
+
+So rotations are symmetries, and angular momentum is conserved (by Ehrenfest's theorem, $\frac{\dd}{\dd t}\langle \hat L_i \rangle = 0$), exactly as classically. So for a central potential we have a triple of mutually commuting observables
+$$
+\{ \hat{H}, \hat{L}^2, \hat{L}_z \},
+$$
+and by the compatibility theorem of \S 6.4 we can look for a complete set of \emph{joint} eigenfunctions of all three at once. (This set is in fact maximal -- there is no further independent operator commuting with all of them -- so these three quantum numbers are a complete label for the states.) This is the quantum version of `use conservation of $\vv{L}$ to reduce to a radial problem', and it is exactly how we will crack the hydrogen atom.
+
+\subsection{Spherical Harmonics}
+
+To find the joint eigenfunctions, we express the angular momentum operators in spherical polar coordinates. For $\hat{L}_z$ the computation is short enough to do in full: holding $r$ and $\theta$ fixed and varying $\phi$, we have $\partial x/\partial \phi = -r\sin\theta\sin\phi = -y$ and $\partial y / \partial \phi = r \sin\theta\cos\phi = x$ (and $\partial z/\partial\phi = 0$), so by the chain rule
+$$
+\frac{\partial}{\partial \phi} = x \frac{\partial}{\partial y} - y \frac{\partial}{\partial x},
+$$
+which is exactly $\hat{L}_z / (-i\hbar)$. That is, we get the beautifully simple
+$$
+\hat{L}_z = -i\hbar \frac{\partial}{\partial \phi},
+$$
+(rotation about the $z$-axis is translation in $\phi$ -- compare $\hat p = -i\hbar\partial_x$!) and, by a longer but entirely similar computation,
+$$
+\hat{L}^2 = -\hbar^2 \left[ \frac{1}{\sin\theta} \frac{\partial}{\partial \theta}\left( \sin \theta \frac{\partial}{\partial \theta} \right) + \frac{1}{\sin^2\theta} \frac{\partial^2}{\partial \phi^2} \right].
+$$
+Comparing with the Laplacian in spherical polars, we discover the identity
+$$
+-\hbar^2 \nabla^2 = -\frac{\hbar^2}{r}\frac{\partial^2}{\partial r^2} r + \frac{\hat{L}^2}{r^2},
+$$
+i.e.\ the angular part of the kinetic energy \emph{is} $\hat{L}^2 / 2mr^2$ -- exactly the centrifugal term of classical mechanics.
+
+The operators $\hat L_z, \hat L^2$ act only on angles, so we look for their joint eigenfunctions as functions $Y(\theta, \phi)$ on the unit sphere:
+$$
+\hat{L}_z Y = \hbar m \, Y, \quad \hat{L}^2 Y = \lambda \, Y.
+$$
+Separating $Y(\theta, \phi) = P(\theta) \, \Phi(\phi)$, the $\hat{L}_z$ equation gives $-i\hbar \Phi' = \hbar m \Phi$, so
+$$
+\Phi(\phi) = e^{i m \phi}.
+$$
+Now, the point with coordinates $\phi$ and $\phi + 2\pi$ is the \emph{same point of space}, so single-valuedness of the wavefunction demands $e^{2\pi i m} = 1$:
+$$
+m \in \Z.
+$$
+The eigenvalues of any angular momentum component are integer multiples of $\hbar$ -- quantisation of angular momentum has just fallen out of periodicity, with no extra input. ($m$ is called the \vocab{magnetic} (or azimuthal) \vocab{quantum number}.)
+
+Substituting into the $\hat{L}^2$ equation gives an ODE in $\theta$ alone:
+$$
+\frac{1}{\sin \theta} \frac{\dd}{\dd \theta}\left( \sin \theta \, \frac{\dd P}{\dd \theta} \right) - \frac{m^2}{\sin^2 \theta} P = -\frac{\lambda}{\hbar^2} P.
+$$
+This is the \emph{associated Legendre equation} (in the variable $u = \cos\theta$). The analysis is of the same flavour as the Hermite story -- generic solutions blow up at the poles $\theta = 0, \pi$, and demanding regularity quantises the eigenvalue -- so we just quote the result: regular solutions exist precisely when
+$$
+\lambda = \hbar^2 \ell(\ell + 1), \quad \ell \in \{0, 1, 2, \dots\}, \quad \abs{m} \leq \ell,
+$$
+and are the \emph{associated Legendre functions}
+$$
+P_{\ell, m}(\cos \theta) = (\sin \theta)^{\abs{m}} \, \frac{\dd^{\abs{m}}}{\dd (\cos\theta)^{\abs{m}}} P_\ell(\cos \theta),
+$$
+where $P_\ell$ is the $\ell$th Legendre polynomial. The constraint $\abs{m} \leq \ell$ appears because $P_\ell$ has degree $\ell$, so differentiating more than $\ell$ times gives zero -- and it is the quantum counterpart of the classical triviality $\abs{L_z} \leq \abs{\vv{L}}$. We call $\ell$ the \vocab{total angular momentum quantum number}.
+
+\begin{definition}[Spherical Harmonics]
+    The joint eigenfunctions
+    $$
+    Y_{\ell, m}(\theta, \phi) = P_{\ell, m}(\cos\theta) \, e^{i m \phi}, \quad \hat{L}^2 Y_{\ell,m} = \hbar^2 \ell(\ell+1) Y_{\ell, m}, \quad \hat{L}_z Y_{\ell, m} = \hbar m Y_{\ell, m},
+    $$
+    are called the \vocab{spherical harmonics}.
+\end{definition}
+
+For each $\ell$ there are exactly $2\ell + 1$ values of $m$, and the $Y_{\ell,m}$ form a complete orthogonal family on the sphere (as they must, being eigenfunctions of Hermitian operators with distinct eigenvalue pairs). The first few, normalised so that $\int_{S^2} \abs{Y}^2 = 1$:
+$$
+Y_{0,0} = \frac{1}{\sqrt{4\pi}}, \quad
+Y_{1,0} = \sqrt{\frac{3}{4 \pi}} \cos \theta, \quad
+Y_{1, \pm 1} = \mp \sqrt{\frac{3}{8\pi}} \sin\theta \, e^{\pm i \phi}.
+$$
+\begin{example}[Verifying $Y_{1,0}$]
+    Let's check directly that $Y = \cos\theta$ does what we claim. It has no $\phi$ dependence, so $\hat{L}_z Y = -i\hbar \, \partial Y/\partial\phi = 0$: indeed $m = 0$. For $\hat{L}^2$:
+    $$
+    \hat{L}^2 Y = -\frac{\hbar^2}{\sin\theta}\frac{\partial}{\partial \theta}\left( \sin\theta \cdot (-\sin\theta) \right)
+    = \frac{\hbar^2}{\sin \theta} \cdot 2 \sin\theta\cos\theta = 2 \hbar^2 \cos \theta,
+    $$
+    so $\hat{L}^2 Y = \ell(\ell+1)\hbar^2 Y$ with $\ell = 1$, as claimed. A measurement of $\vv{L}^2$ in this state returns $2\hbar^2$ -- note, \emph{not} $\hbar^2$: the eigenvalues of $\hat{L}^2$ are $\ell(\ell+1)\hbar^2$, never a perfect square times $\hbar^2$, one of several places where the true quantum answer differs from the Bohr model's $L^2 = n^2 \hbar^2$.
+\end{example}
+
+It is worth having a picture of these. Plotting $\abs{Y_{\ell,m}}$ radially against direction (a cross-section through the $z$-axis is shown; the full shapes are these curves revolved about the vertical axis):
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+% Y00
+\draw[dashed, color=gray] (0,-1.6) -- (0,1.6);
+\draw[thick, color=blue] (0,0) circle (1.0);
+\node at (0,-2.0) {\small $\abs{Y_{0,0}}$};
+% Y10
+\begin{scope}[shift={(4.0,0)}]
+\draw[dashed, color=gray] (0,-1.6) -- (0,1.6);
+\draw[thick, color=blue, samples=181, smooth] plot[domain=0:360] ({1.3*abs(cos(\x))*sin(\x)}, {1.3*abs(cos(\x))*cos(\x)});
+\node at (0,-2.0) {\small $\abs{Y_{1,0}}$};
+\node[right] at (0.05,1.5) {\small $z$};
+\end{scope}
+% Y1pm1
+\begin{scope}[shift={(8.0,0)}]
+\draw[dashed, color=gray] (0,-1.6) -- (0,1.6);
+\draw[thick, color=blue, samples=181, smooth] plot[domain=0:360] ({1.3*abs(sin(\x))*sin(\x)}, {1.3*abs(sin(\x))*cos(\x)});
+\node at (0,-2.0) {\small $\abs{Y_{1,\pm 1}}$};
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+The state $Y_{0,0}$ is isotropic (no angular momentum, no preferred direction); $Y_{1,0}$ concentrates along the $z$-axis; $Y_{1,\pm1}$ concentrate in the equatorial plane. Readers who have met atomic orbitals will recognise the $s$ and $p$ orbitals -- chemistry's $p_x, p_y, p_z$ are real linear combinations of $Y_{1,0}$ and $Y_{1, \pm 1}$.
+
+\begin{example}[Measuring $L_z$]
+    Suppose a particle's angular dependence is proportional to $\sin\theta\cos\phi$ (this is the `$p_x$ orbital' -- and one can check it is orthogonal to $Y_{0,0}$ and $Y_{1,0}$ directly, e.g.\ $\int_{S^2} \cos\theta \sin\theta\cos\phi \dd \Omega = 0$ since the $\phi$-integral of $\cos\phi$ vanishes). What does a measurement of $L_z$ give? First expand in spherical harmonics: since $\cos \phi = \frac{1}{2}(e^{i\phi} + e^{-i\phi})$,
+    $$
+    \sin\theta\cos\phi = \frac{1}{2}\sin\theta \, e^{i \phi} + \frac{1}{2} \sin \theta \, e^{-i\phi} \propto Y_{1,1} - Y_{1,-1}
+    $$
+    (up to the normalisation constants), an equal-weight superposition of $m = 1$ and $m = -1$. So by the measurement postulates, $L_z$ returns $+\hbar$ or $-\hbar$, each with probability $\frac{1}{2}$ -- and never $0$, even though $\langle \hat{L}_z \rangle = 0$. A measurement of $\vv{L}^2$ on the same state returns $2\hbar^2$ with certainty, since only $\ell = 1$ appears. This is the whole apparatus of Section 6 -- expansion, Born rule, compatible observables -- running in its natural habitat.
+\end{example}
+
+Finally, let's put the pieces together for a general central potential. Since $\{\hat H, \hat L^2, \hat L_z\}$ commute, we may take energy eigenfunctions of the separated form
+$$
+\chi(r, \theta, \phi) = R(r) \, Y_{\ell, m}(\theta, \phi),
+$$
+and substituting into $\hat{H}\chi = E\chi$ using $-\hbar^2\nabla^2 = -\frac{\hbar^2}{r}\partial_r^2 \, r + \frac{\hat{L}^2}{r^2}$, the spherical harmonic passes through everything and cancels, leaving the \vocab{radial Schr\"odinger equation}
+$$
+-\frac{\hbar^2}{2m}\left( R'' + \frac{2}{r}R' \right) + \underbrace{\left( U(r) + \frac{\hbar^2 \ell(\ell+1)}{2mr^2} \right)}_{U_{\text{eff}}(r)} R = E R.
+$$
+This is a one-dimensional problem in the \emph{effective potential} $U_{\text{eff}}$: the true potential plus the centrifugal barrier $\hbar^2\ell(\ell+1)/2mr^2$, which pushes states with angular momentum away from the origin. Note two facts worth savouring:
+\begin{enumerate}[label=(\roman*)]
+    \item taking $\ell = 0$ recovers exactly the spherically symmetric analysis of \S 7.2 -- the `$s$-wave' states;
+    \item $m$ does not appear in the radial equation at all, so every energy level automatically comes with degeneracy at least $2\ell + 1$: rotating a state costs no energy. Degeneracy is symmetry made visible.
+\end{enumerate}
+
+\section{The Hydrogen Atom}
+
+We have assembled everything needed for the crown jewel of the course: the quantum mechanics of the hydrogen atom, the problem whose experimental fingerprints (the spectral lines of Section 1) forced the whole theory into being.
+
+Hydrogen is one electron bound to one proton. The proton is nearly two thousand times heavier, so we model it as fixed at the origin\footnote{More honestly, one works in the centre-of-mass frame and replaces $m_e$ by the reduced mass $\mu = m_e m_p/(m_e + m_p) \approx 0.9995 \, m_e$ -- a correction well below the accuracy we care about here (though spectroscopists can see it: it is how deuterium was discovered).}, creating the Coulomb potential in which the electron moves:
+$$
+U(r) = -\frac{e^2}{4 \pi \epsilon_0} \cdot \frac{1}{r}.
+$$
+Since $U \rightarrow 0$ at infinity, bound states -- normalisable eigenfunctions -- must have $E < 0$, and these are what we look for.
+
+\subsection{The s-wave States}
+
+Let's warm up with the spherically symmetric states, $\ell = 0$, following \S 7.2 -- this case already contains the entire energy spectrum. The radial equation reads
+$$
+-\frac{\hbar^2}{2 m_e}\left( \chi'' + \frac{2}{r} \chi' \right) - \frac{e^2}{4 \pi \epsilon_0 r} \chi = E \chi.
+$$
+Tidy up by defining the (positive) constants
+$$
+\nu^2 = -\frac{2 m_e E}{\hbar^2}, \quad \beta = \frac{e^2 m_e}{2 \pi \epsilon_0 \hbar^2},
+$$
+so the equation becomes
+$$
+\chi'' + \frac{2}{r} \chi' + \left( \frac{\beta}{r} - \nu^2 \right) \chi = 0.
+$$
+As $r \rightarrow \infty$ this is $\chi'' \approx \nu^2 \chi$, so solutions behave like $e^{\pm \nu r}$ and normalisability selects the decaying exponential. As with the harmonic oscillator, we peel off the asymptotics: substitute
+$$
+\chi(r) = f(r) \, e^{-\nu r},
+$$
+giving
+$$
+f'' + \frac{2}{r}(1 - \nu r) f' + \frac{1}{r}(\beta - 2 \nu) f = 0.
+$$
+Try a power series $f(r) = \sum_{n \geq 0} a_n r^n$ (one checks first, by trying $f \sim r^c$, that the indicial equation $c(c+1) = 0$ forces $c = 0$; the root $c = -1$ would make $\chi \sim 1/r$, which is not acceptable at the origin). Substituting and comparing coefficients of $r^{n-1}$:
+$$
+n(n+1) \, a_n = \big( 2 \nu n - \beta \big) a_{n - 1},
+$$
+that is,
+$$
+a_n = \frac{2 \nu n - \beta}{n(n+1)} \, a_{n-1}.
+$$
+Once again everything hinges on whether the series terminates. If it does not, then asymptotically $a_n / a_{n-1} \sim 2\nu/n$, which is precisely the growth rate of the coefficients of $e^{2 \nu r}$ -- so $f$ would grow like $e^{2\nu r}$, overwhelming the decaying factor and making $\chi \sim e^{\nu r}$ non-normalisable (the same comparison argument as for the oscillator). So the series must terminate: there is an integer $N \geq 1$ with $a_{N} = 0$ and $a_{N - 1} \neq 0$, which by the recurrence means
+$$
+2 \nu N = \beta, \quad \text{i.e.} \quad \nu = \frac{\beta}{2N}.
+$$
+Unwinding the definitions of $\nu$ and $\beta$, we have found the energy levels:
+$$
+E_N = -\frac{\hbar^2 \nu^2}{2 m_e} = -\frac{e^4 m_e}{32 \pi^2 \epsilon_0^2 \hbar^2} \cdot \frac{1}{N^2},
+$$
+in exact agreement with the Bohr model, and hence with the observed spectrum -- but this time derived from an honest wave equation, with no orbits postulated.
+
+The eigenfunctions are polynomials (of degree $N - 1$, the \emph{Laguerre polynomials}) times a decaying exponential. In particular the ground state, $N = 1$, is a pure exponential:
+$$
+\chi_1(r) = \frac{1}{\sqrt{\pi a_0^3}} \, e^{-r/a_0}, \quad a_0 = \frac{1}{\nu}\bigg|_{N=1} = \frac{2}{\beta} = \frac{4 \pi \epsilon_0 \hbar^2}{m_e e^2},
+$$
+where the decay length is exactly the Bohr radius $a_0 \approx 5.3 \times 10^{-11}$ m of Section 1.
+
+\begin{example}[The Size of the Atom]
+    Where is the electron? Let's compute the expected radius in the ground state:
+    $$
+    \langle r \rangle = \int_{\R^3} \chi_1^* \, r \, \chi_1 \dd V = \frac{4 \pi}{\pi a_0^3} \int_0^\infty r^3 e^{-2r/a_0} \dd r = \frac{4}{a_0^3} \cdot \frac{3! \, a_0^4}{2^4} = \frac{3}{2} a_0,
+    $$
+    using $\int_0^\infty r^3 e^{-\alpha r} \dd r = 3!/\alpha^4$. So the quantum atom is one and a half times larger, on average, than Bohr's orbit -- a genuinely different (and experimentally correct) prediction. The electron is not on a circle of radius $a_0$; it is in a fuzzy exponential cloud.
+\end{example}
+
+\begin{example}[Energy Bookkeeping in the Ground State]
+    In the same way, $\langle 1/r \rangle = 4 \pi \cdot \frac{1}{\pi a_0^3}\int_0^\infty r \, e^{-2r/a_0} \dd r = 1/a_0$, so the expected potential energy in the ground state is
+    $$
+    \langle U \rangle = -\frac{e^2}{4 \pi \epsilon_0} \left\langle \frac{1}{r} \right\rangle = -\frac{e^2}{4 \pi \epsilon_0 a_0} = 2 E_1,
+    $$
+    and hence the expected kinetic energy is $\langle T \rangle = E_1 - \langle U \rangle = -E_1 > 0$. So
+    $$
+    \langle T \rangle = -\frac{1}{2}\langle U \rangle,
+    $$
+    which is precisely the \emph{virial theorem} for an inverse-square force law, in expectation -- another classical relation surviving intact as a statement about means. Numerically: the electron has kinetic energy $+13.6$ eV and potential energy $-27.2$ eV, and it costs $13.6$ eV to pull it away.
+\end{example}
+
+\subsection{The General Solution}
+
+Now the full problem, with angular momentum. By \S 7.4 we take
+$$
+\chi(r, \theta, \phi) = R(r) \, Y_{\ell, m}(\theta, \phi),
+$$
+where the radial function satisfies
+$$
+R'' + \frac{2}{r} R' + \left( \frac{\beta}{r} - \nu^2 - \frac{\ell(\ell+1)}{r^2} \right) R = 0.
+$$
+The large-$r$ asymptotics are unchanged (the centrifugal term is subleading), so again $R = g(r) e^{-\nu r}$. Near the origin the centrifugal term dominates: trying $g \sim r^c$ gives the indicial equation
+$$
+c(c + 1) = \ell(\ell+1) \implies c = \ell \text{ or } c = -\ell - 1,
+$$
+and regularity at the origin forces $c = \ell$ -- states with angular momentum are suppressed like $r^\ell$ near the centre, pushed out by the centrifugal barrier. So we write
+$$
+g(r) = r^\ell \sum_{n \geq 0} a_n r^n,
+$$
+and the same machinery as before (substitute, compare coefficients) produces the recurrence
+$$
+a_n = \frac{2\nu (n + \ell) - \beta}{n (n + 2\ell + 1)} \, a_{n-1}.
+$$
+Again the series must terminate or $R$ grows like $e^{\nu r}$; terminating at the $n_{\max}$-th term requires
+$$
+2 \nu (n_{\max} + \ell) = \beta, \quad n_{\max} \geq 1.
+$$
+Defining the \vocab{principal quantum number} $N = n_{\max} + \ell$, we get $\nu = \beta/2N$ exactly as before, and therefore \emph{exactly the same energy levels}
+$$
+E_N = -\frac{e^4 m_e}{32 \pi^2 \epsilon_0^2 \hbar^2} \cdot \frac{1}{N^2} = -\frac{\hbar^2}{2 m_e a_0^2} \cdot \frac{1}{N^2},
+$$
+now with the constraint $\ell \leq N - 1$ (since $n_{\max} \geq 1$). The full set of stationary states is indexed by three quantum numbers:
+$$
+\chi_{N, \ell, m}(r, \theta, \phi) = R_{N, \ell}(r) \, Y_{\ell, m}(\theta, \phi), \quad
+\begin{cases}
+    N = 1, 2, 3, \dots \\
+    \ell = 0, 1, \dots, N - 1, \\
+    m = -\ell, \dots, \ell,
+\end{cases}
+$$
+with $R_{N, \ell}(r) = r^\ell g_{N, \ell}(r) e^{-r/N a_0}$ and $g_{N, \ell}$ a polynomial of degree $N - \ell - 1$ (a \emph{generalised Laguerre polynomial}). In spectroscopic notation, states with $\ell = 0, 1, 2, \dots$ are called $s, p, d, \dots$ states; the state $\chi_{2,1,m}$ is `$2p$', and so on.
+
+\begin{example}[The First Few Radial Functions]
+    The recurrence makes these easy to generate. For $N = 1$, $\ell = 0$ the polynomial is a constant, giving the ground state we already know. For $N = 2$, $\ell = 0$ we have $\nu = 1/2a_0$ and one step of the recurrence gives $a_1 / a_0 = (2\nu - \beta)/2 = -\nu$, while for $N = 2$, $\ell = 1$ the polynomial is again constant. Normalising:
+    \begin{align*}
+        R_{1,0}(r) &= \frac{2}{a_0^{3/2}} \, e^{-r/a_0}, \\
+        R_{2,0}(r) &= \frac{1}{\sqrt{2} \, a_0^{3/2}} \left( 1 - \frac{r}{2 a_0} \right) e^{-r/2a_0}, \\
+        R_{2,1}(r) &= \frac{1}{2\sqrt{6} \, a_0^{3/2}} \cdot \frac{r}{a_0} \, e^{-r/2a_0}.
+    \end{align*}
+    Note the general features on display: $N - \ell - 1$ radial nodes ($R_{2,0}$ vanishes at $r = 2a_0$; $R_{2,1}$ has none), the $r^\ell$ suppression at the origin, and the decay length $N a_0$ growing with the principal quantum number -- excited atoms are physically bigger.
+\end{example}
+
+The energy depends on $N$ \emph{alone} -- not on $\ell$ or $m$. So the level $E_N$ is highly degenerate:
+$$
+D(N) = \sum_{\ell = 0}^{N-1} (2 \ell + 1) = N^2.
+$$
+The $m$-degeneracy is the rotational symmetry we understood in \S 7.4; but the $\ell$-degeneracy -- states with visibly different shapes and different angular momenta sharing an energy exactly -- is special to the $1/r$ potential, and is called an \emph{accidental} degeneracy. (It is not really an accident: the Coulomb problem has a hidden extra conserved quantity, the Runge--Lenz vector, just as in the classical Kepler problem where it is responsible for orbits being closed ellipses. But that story belongs to another course.)
+
+It is illuminating to look at the \emph{radial probability density} $P(r) = r^2 \abs{R_{N,\ell}(r)}^2$ (the $r^2$ from the volume element: $P(r) \delta r$ is the probability of finding the electron at radius between $r$ and $r + \delta r$):
+
+\begin{center}
+\begin{tikzpicture}
+\draw[->] (0,0) -- (6.4,0) node[right] {$r / a_0$};
+\draw[->] (0,-0.02) -- (0,2.5);
+\foreach \x in {1,...,13}
+    \draw ({0.42*\x},0) -- ({0.42*\x},-0.07);
+\node[below] at (0.42,-0.05) {\scriptsize $1$};
+\node[below] at (2.1,-0.05) {\scriptsize $5$};
+\node[below] at (4.2,-0.05) {\scriptsize $10$};
+% 1s
+\draw[thick, color=blue] plot[smooth] coordinates {(0.000,0.000) (0.042,0.131) (0.084,0.429) (0.126,0.790) (0.168,1.150) (0.210,1.472) (0.252,1.735) (0.294,1.933) (0.336,2.067) (0.378,2.142) (0.420,2.165) (0.462,2.145) (0.504,2.090) (0.546,2.008) (0.588,1.907) (0.672,1.670) (0.756,1.416) (0.840,1.172) (0.924,0.951) (1.008,0.758) (1.092,0.597) (1.176,0.464) (1.260,0.357) (1.344,0.272) (1.428,0.206) (1.512,0.155) (1.596,0.116) (1.680,0.086) (1.764,0.063) (1.848,0.047) (1.932,0.034) (2.016,0.025) (2.100,0.018) (2.268,0.010) (2.436,0.005) (2.604,0.003) (2.772,0.001) (2.940,0.001) (3.150,0.000) (3.600,0.000) (4.200,0.000) (5.000,0.000) (5.880,0.000)};
+\node[color=blue] at (0.62,2.32) {\small $1s$};
+% 2s
+\draw[thick, color={rgb,255:red,208;green,2;blue,27}] plot[smooth] coordinates {(0.000,0.000) (0.084,0.052) (0.168,0.136) (0.252,0.192) (0.336,0.208) (0.420,0.184) (0.504,0.140) (0.588,0.088) (0.672,0.040) (0.756,0.012) (0.840,0.000) (0.924,0.012) (1.008,0.040) (1.092,0.092) (1.176,0.152) (1.260,0.224) (1.344,0.300) (1.428,0.380) (1.512,0.452) (1.596,0.524) (1.680,0.588) (1.764,0.640) (1.848,0.684) (1.932,0.720) (2.016,0.744) (2.100,0.760) (2.184,0.764) (2.268,0.760) (2.352,0.752) (2.436,0.736) (2.520,0.712) (2.604,0.688) (2.688,0.660) (2.772,0.628) (2.856,0.592) (2.940,0.560) (3.024,0.524) (3.108,0.488) (3.192,0.452) (3.276,0.420) (3.360,0.388) (3.444,0.356) (3.528,0.324) (3.612,0.296) (3.696,0.268) (3.780,0.244) (3.864,0.220) (3.948,0.200) (4.032,0.180) (4.116,0.164) (4.200,0.144) (4.368,0.116) (4.536,0.092) (4.704,0.072) (4.872,0.056) (5.040,0.044) (5.208,0.036) (5.376,0.028) (5.544,0.020) (5.712,0.016) (5.880,0.012)};
+\node[color={rgb,255:red,208;green,2;blue,27}] at (2.25,1.0) {\small $2s$};
+% 2p
+\draw[thick, color=black!60] plot[smooth] coordinates {(0.000,0.000) (0.168,0.003) (0.336,0.031) (0.504,0.104) (0.672,0.221) (0.840,0.361) (1.008,0.502) (1.176,0.623) (1.344,0.712) (1.512,0.765) (1.680,0.781) (1.848,0.767) (2.016,0.728) (2.184,0.672) (2.352,0.606) (2.520,0.535) (2.688,0.465) (2.856,0.397) (3.024,0.334) (3.192,0.278) (3.360,0.229) (3.528,0.187) (3.696,0.151) (3.864,0.121) (4.032,0.096) (4.200,0.076) (4.368,0.059) (4.536,0.046) (4.704,0.036) (4.872,0.028) (5.040,0.021) (5.208,0.016) (5.376,0.012) (5.544,0.009) (5.712,0.007) (5.880,0.005)};
+\node[color=black!60] at (1.35,0.9) {\small $2p$};
+\end{tikzpicture}
+\end{center}
+
+The $1s$ density peaks exactly at $r = a_0$ (differentiate $r^2 e^{-2r/a_0}$ and see) -- so Bohr's orbit survives as the \emph{most probable} radius of the ground state. The $2s$ state shows a radial node (a spherical shell where the electron is never found), while $2p$ has none but is pushed outwards by the centrifugal barrier; both are concentrated roughly four times ($N^2$) further out than $1s$.
+
+\begin{exercise}
+    Show that the radial density of the $2p$ state, $P(r) \propto r^4 e^{-r/a_0}$, peaks at exactly $r = 4 a_0 = 2^2 a_0$ -- the Bohr orbit for $N = 2$ -- and more generally that the `circular' states ($\ell = N - 1$, whose radial functions $r^{N-1}e^{-r/Na_0}$ have no nodes) peak at exactly $r = N^2 a_0$. The Bohr model lives on inside quantum mechanics as the family of maximal-angular-momentum states.
+\end{exercise}
+
+\subsection{The Hydrogen Spectrum}
+
+Finally, let's close the loop with Section 1. An atom in an excited state can drop to a lower level, emitting a photon carrying the energy difference\footnote{The mechanism of the transition -- the coupling of the atom to the electromagnetic field -- is outside our theory: strictly, our stationary states never change. Getting this right requires quantum electrodynamics; the energy bookkeeping, which is all we need for the spectrum, does not.}: a transition from level $M$ down to level $N < M$ produces a photon of angular frequency
+$$
+\hbar \omega = E_M - E_N = \frac{e^4 m_e}{32 \pi^2 \epsilon_0^2 \hbar^2} \left( \frac{1}{N^2} - \frac{1}{M^2} \right),
+$$
+which is precisely the Rydberg formula, with the Rydberg constant now expressed in fundamental constants (and matching its measured value). Transitions down to $N = 1$ form the \emph{Lyman series} (ultraviolet), those down to $N = 2$ the \emph{Balmer series} (the visible lines that gave the game away historically), down to $N = 3$ the \emph{Paschen series} (infrared), and so on.
+
+\begin{example}[The Red Line of Hydrogen]
+    The lowest Balmer transition, $3 \rightarrow 2$, releases
+    $$
+    E_3 - E_2 = 13.6 \left( \frac{1}{4} - \frac{1}{9} \right) \text{eV} = 13.6 \cdot \frac{5}{36} \text{ eV} \approx 1.89 \text{ eV},
+    $$
+    corresponding to a wavelength $\lambda = 2 \pi \hbar c / (E_3 - E_2) \approx 656$ nm -- the famous red line H$\alpha$, visible in a discharge tube in any teaching lab, and responsible for the red glow of emission nebulae across the night sky. It is hard to think of another place in physics where a short power series computation connects so directly to the colour of things.
+\end{example}
+
+\begin{center}
+\begin{tikzpicture}[scale=0.95]
+% levels
+\draw[dashed] (0,0) -- (5.4,0);
+\node[right] at (5.45,0) {\small $E = 0$};
+\draw[thick] (0,-5.0) -- (5.4,-5.0);
+\draw[thick] (0,-1.25) -- (5.4,-1.25);
+\draw[thick] (0,-0.556) -- (5.4,-0.556);
+\draw[thick] (0,-0.3125) -- (5.4,-0.3125);
+\draw[thick] (0,-0.2) -- (5.4,-0.2);
+\node[right] at (5.45,-5.0) {\small $N = 1$};
+\node[right] at (5.45,-1.25) {\small $N = 2$};
+\node[right] at (5.45,-0.62) {\small $N = 3$};
+\node[left] at (-0.05,-5.0) {\small $-13.6$ eV};
+\node[left] at (-0.05,-1.25) {\small $-3.4$ eV};
+\node[left] at (-0.05,-0.556) {\small $-1.5$ eV};
+% Lyman
+\draw[->, thick, color=blue] (0.7,-1.25) -- (0.7,-4.93);
+\draw[->, thick, color=blue] (1.1,-0.556) -- (1.1,-4.93);
+\draw[->, thick, color=blue] (1.5,-0.3125) -- (1.5,-4.93);
+\node[color=blue] at (1.1,-5.35) {\small Lyman};
+% Balmer
+\draw[->, thick, color={rgb,255:red,208;green,2;blue,27}] (2.9,-0.556) -- (2.9,-1.18);
+\draw[->, thick, color={rgb,255:red,208;green,2;blue,27}] (3.3,-0.3125) -- (3.3,-1.18);
+\draw[->, thick, color={rgb,255:red,208;green,2;blue,27}] (3.7,-0.2) -- (3.7,-1.18);
+\node[color={rgb,255:red,208;green,2;blue,27}] at (3.3,-1.6) {\small Balmer};
+\end{tikzpicture}
+\end{center}
+
+For $E > 0$ the spectrum of $\hat{H}$ is continuous -- these are the scattering states of an ionised electron flying past a proton -- which is why the discrete lines accumulate at the \emph{ionisation energy} $13.6$ eV and give way to a continuum beyond.
+
+Let's take stock of what quantum mechanics has achieved here, compared with the Bohr model it replaces.
+\begin{enumerate}[label=(\roman*)]
+    \item The energy levels and spectrum come out identically -- and correctly -- but now as eigenvalues of a differential operator, with the quantisation forced by normalisability, not decreed.
+    \item The angular momentum is completely different, and Bohr's was wrong: the true eigenvalues of $\hat{L}^2$ are $\hbar^2 \ell(\ell+1)$ with $\ell \leq N - 1$, not $\hbar^2 N^2$ -- so the ground state has \emph{zero} angular momentum (it agrees with Bohr's $L = N\hbar$ only in the limit of large $\ell$). The electron does not orbit.
+    \item The model explains what Bohr could not: the degeneracies $N^2$ (visible in the splitting of spectral lines in electric and magnetic fields), and the relative intensities of the lines, via the shapes of the wavefunctions.
+\end{enumerate}
+
+\subsection{Beyond Hydrogen}
+
+It is natural to ask how far this machinery reaches. For an atom of atomic number $Z$ -- a nucleus of charge $+Ze$ with $Z$ electrons -- the honest Hamiltonian acts on a wavefunction $\psi(\vv{x}_1, \dots, \vv{x}_Z)$ of all the electron positions at once:
+$$
+\hat{H} = \sum_{j=1}^{Z} \left( -\frac{\hbar^2}{2m_e}\nabla_j^2 - \frac{Z e^2}{4 \pi \epsilon_0 \abs{\vv{x}_j}} \right) + \sum_{j < k} \frac{e^2}{4\pi\epsilon_0 \abs{\vv{x}_j - \vv{x}_k}}.
+$$
+The last sum -- the electron-electron repulsion -- is what ruins everything: without it, the equation would separate, and the eigenfunctions would just be products of hydrogen-like states
+$$
+\psi = \chi_{(1)}(\vv{x}_1) \chi_{(2)}(\vv{x}_2) \cdots \chi_{(Z)}(\vv{x}_Z), \quad E = \sum_j E_{(j)},
+$$
+each factor a state $\chi_{N, \ell, m}$ in the (rescaled, $a_0 \mapsto a_0/Z$) Coulomb potential. With the repulsion, no exact solution is known for any $Z \geq 2$, and one falls back on treating the product form as an approximation in which each electron sees an averaged, screened nuclear charge. This is crude but structurally right, and two extra ingredients -- both beyond this course, both essential -- turn it into the periodic table:
+\begin{enumerate}[label=(\roman*)]
+    \item electrons carry \emph{spin}, an internal two-valued degree of freedom with no classical analogue, doubling the count of states at each level from $N^2$ to $2N^2$;
+    \item identical electrons obey the \emph{Pauli exclusion principle}: no two may occupy the same state.
+\end{enumerate}
+Filling the one-electron levels from the bottom, two electrons at a time per orbital, gives shells of sizes $2, 8, 18, \dots = 2N^2$, and the chemistry of an element is governed by its outermost, partially-filled shell -- the periodicity of the periodic table is the level structure of the hydrogen atom, doubled and stacked. (The screening breaks the accidental $\ell$-degeneracy, which is why the shells actually fill in the slightly scrambled order familiar from chemistry.)
+
+Getting all of this right -- spin, identical particles, perturbative approximations, and the deeper structure (Dirac notation, abstract Hilbert spaces, symmetries) hiding beneath the wave mechanics we have used -- is the business of the sequel courses, `Principles of Quantum Mechanics' above all.
+
+And that is a fitting place to stop. From five axioms about wavefunctions we have recovered -- and corrected -- the atom.
 
 \end{document}
