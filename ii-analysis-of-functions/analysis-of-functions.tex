@@ -77,7 +77,7 @@ Finally Sections \ref{sec:sobolev} and \ref{sec:pde} put everything to work. Sob
 
 \section{Measure and Integration}\label{sec:measure}
 
-We assume the reader has met the Lebesgue integral. This section is a review: it fixes notation, records the results we shall use constantly, and adds the three theorems of Littlewood that describe how far measurable objects are from classical ones.
+We assume the reader has met the Lebesgue integral. This section is a review: it fixes notation, records the results we shall use constantly, and adds the three theorems of Littlewood that describe how far measurable objects are from classical ones. Everything up to and including the convergence theorems is proved in my Probability and Measure notes, and I shall not repeat those proofs here; the same applies to the relations between the various modes of convergence (almost everywhere, in measure, in $L^p$), which are set out there in detail and which we use without comment.
 
 \subsection{Measure spaces}
 
@@ -285,12 +285,24 @@ H\"older's inequality is the reason conjugate exponents are worth naming. It say
 	If $\norm{f+g}_{L^p} = 0$ we are done; otherwise divide by $\norm{f+g}_{L^p}^{p/q}$ and use $p - p/q = 1$.
 \end{proof}
 
-So $L^p(E,\mu)$ is a normed vector space. We will also want the following integral form of Minkowski's inequality, which says that `the norm of an integral is at most the integral of the norms' -- a continuous version of the triangle inequality. Its proof is the same duality argument as above and is left as an exercise.
+So $L^p(E,\mu)$ is a normed vector space. We will also want the following integral form of Minkowski's inequality, which says that `the norm of an integral is at most the integral of the norms' -- a continuous version of the triangle inequality, with the sum replaced by an integral.
 
 \begin{lemma}[Minkowski's integral inequality]\label{lem:minkint}
 	Let $F : \R^n \times \R^n \to \C$ be measurable with $F(\cdot, y) \in L^p$ for a.e.\ $y$, and let $1 \le p < \infty$. Then
 	$$\left( \int_{\R^n} \left| \int_{\R^n} F(x,y) \dd y \right|^p \dd x \right)^{1/p} \le \int_{\R^n} \left( \int_{\R^n} |F(x,y)|^p \dd x \right)^{1/p} \dd y.$$
 \end{lemma}
+
+\begin{proof}
+	For $p = 1$ this is exactly Tonelli's theorem, so suppose $1 < p < \infty$, and write $G(x) = \int_{\R^n}|F(x,y)|\dd y$, which dominates the modulus of the inner integral on the left. Suppose first that $\norm{G}_{L^p} < \infty$. Then, using Tonelli to exchange the order of integration and then H\"older in the $x$ variable,
+	\begin{align*}
+		\int_{\R^n} G(x)^p \dd x &= \int_{\R^n}G(x)^{p-1}\int_{\R^n}|F(x,y)|\dd y \dd x \\
+		&= \int_{\R^n}\left( \int_{\R^n}G(x)^{p-1}|F(x,y)|\dd x\right)\dd y \\
+		&\le \int_{\R^n}\norm{G^{p-1}}_{L^q}\norm{F(\cdot,y)}_{L^p}\dd y = \norm{G}_{L^p}^{p/q}\int_{\R^n}\norm{F(\cdot,y)}_{L^p}\dd y,
+	\end{align*}
+	since $(p-1)q = p$. If $\norm{G}_{L^p} = 0$ there is nothing to prove; otherwise divide by $\norm{G}_{L^p}^{p/q}$ and use $p - p/q = 1$.
+
+	It remains to remove the assumption $\norm{G}_{L^p}<\infty$. Replace $F$ by $F\ii_{K \times K'}$ for compact sets $K, K'$ and by $\min(|F|, m)$: for the truncated function $G$ is bounded with bounded support, so the above applies, and the right-hand side only increases if we untruncate. Letting $m \to \infty$ and $K, K' \uparrow \R^n$, monotone convergence gives the general case.
+\end{proof}
 
 \subsection{Completeness}
 
@@ -357,8 +369,8 @@ The following picture summarises the two situations. On the left, a finite measu
 	\begin{scope}[xshift=8cm]
 		\draw[thick, color=blue] (-1.0,0) circle (1.6);
 		\draw[thick, color=blue] (1.0,0) circle (1.6);
-		\node at (-2.0,1.1) {\small $L^1$};
-		\node at (2.0,1.1) {\small $L^2$};
+		\node at (-2.0,0.8) {\small $L^1$};
+		\node at (2.0,0.8) {\small $L^2$};
 		\fill[color=blue] (-1.6,-0.2) circle (0.05);
 		\node[color=blue, below] at (-1.6,-0.3) {\small $f$};
 		\fill[color=blue] (1.6,-0.2) circle (0.05);
@@ -379,7 +391,7 @@ There is one general statement that survives on any measure space, and it is a u
 \end{proposition}
 
 \begin{proof}
-	Suppose $q < \infty$; the case $q = \infty$ is an easier variant. Write $|f|^r = |f|^{\theta r} |f|^{(1-\theta)r}$ and apply H\"older with the conjugate pair $\frac{p}{\theta r}$ and $\frac{q}{(1-\theta)r}$, which are indeed conjugate by the definition of $\theta$:
+	Suppose that $q < \infty$; the case $q = \infty$ is a similar but easier variant. We factorise $|f|^r = |f|^{\theta r} |f|^{(1-\theta)r}$ and apply H\"older with the pair $p/(\theta r)$ and $q/((1-\theta)r)$, which are indeed conjugate by the definition of $\theta$:
 	$$\int |f|^r \le \left( \int |f|^p \right)^{\theta r / p} \left( \int |f|^q \right)^{(1-\theta) r/q}.$$
 	Taking $r$-th roots gives the result.
 \end{proof}
@@ -430,7 +442,7 @@ We now come to the single most useful technique in the course. The idea is very 
 	whenever the integral exists.
 \end{definition}
 
-The integral certainly exists for every $x$ when, say, $f \in L^1(\R^n)$ and $g \in L^\infty(\R^n)$, or when $f, g \in C_c(\R^n)$. More generally, H\"older shows the integral converges absolutely when $f \in L^p$ and $g \in L^q$ for conjugate $p,q$. The following bookkeeping lemma records the algebraic properties.
+The integral certainly exists for every $x$ when, say, $f \in L^1(\R^n)$ and $g \in L^\infty(\R^n)$, or when $f, g \in C_c(\R^n)$; we shall see in a moment exactly how much integrability is needed. The following bookkeeping lemma records the algebraic properties.
 
 \begin{lemma}\label{lem:convalg}
 	For $f, g, h \in C_c^\infty(\R^n)$ we have $f * g = g*f$ and $(f*g)*h = f*(g*h)$. Moreover
@@ -440,6 +452,31 @@ The integral certainly exists for every $x$ when, say, $f \in L^1(\R^n)$ and $g 
 \begin{proof}
 	Commutativity is the substitution $z = x - y$; associativity and the last identity are Fubini together with a change of variables, all of which is justified since everything in sight is continuous and compactly supported. (The hypotheses can be weakened considerably -- for instance the last identity holds for $f, g \in L^1$ -- but this version suffices for us.)
 \end{proof}
+
+Before turning to regularity we should record when the defining integral converges, and in which space the answer lives. The following is the basic estimate, and the case $q = 1$ of it is the one we shall use on almost every subsequent page.
+
+\begin{theorem}[Young's convolution inequality]\label{thm:youngconv}
+	Let $1 \le p \le \infty$.
+	\begin{enumerate}[label=(\roman*)]
+		\item If $f \in L^p(\R^n)$ and $g \in L^1(\R^n)$ then $(f*g)(x)$ converges absolutely for almost every $x$, and $f * g \in L^p(\R^n)$ with
+		$$\norm{f*g}_{L^p}\le\norm{f}_{L^p}\norm{g}_{L^1}.$$
+		\item If $f \in L^p(\R^n)$ and $g \in L^q(\R^n)$ with $q$ conjugate to $p$, then $(f*g)(x)$ converges absolutely for \emph{every} $x$, and $f * g \in L^\infty(\R^n)$ with $\norm{f*g}_{L^\infty}\le\norm{f}_{L^p}\norm{g}_{L^q}$.
+	\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+	(i) For $p = \infty$ this is immediate, so take $p < \infty$ and set $F(x,y) = f(x-y)g(y)$. Then for each fixed $y$,
+	$$\norm{F(\cdot,y)}_{L^p}=|g(y)| \left( \int_{\R^n}|f(x-y)|^p\dd x\right)^{1/p}=|g(y)|\norm{f}_{L^p}$$
+	by translation invariance of Lebesgue measure. Minkowski's integral inequality (Lemma \ref{lem:minkint}) applied to $|F|$ gives
+	$$\left( \int_{\R^n}\left( \int_{\R^n}|f(x-y)g(y)|\dd y\right)^p\dd x\right)^{1/p}\le\int_{\R^n}|g(y)|\norm{f}_{L^p}\dd y = \norm{f}_{L^p}\norm{g}_{L^1}.$$
+	In particular the inner integral is finite for almost every $x$, which is the absolute convergence, and the resulting function dominates $|f*g|$.
+
+	(ii) This is H\"older applied at each fixed $x$, using that $y \mapsto f(x-y)$ has the same $L^p$ norm as $f$.
+\end{proof}
+
+\begin{remark}
+	The two cases are the endpoints of the general statement: if $1 \le p,q,r\le\infty$ satisfy $\frac1p+\frac1q=1+\frac1r$ then $\norm{f*g}_{L^r}\le\norm{f}_{L^p}\norm{g}_{L^q}$. One can deduce this from the two cases above by interpolation, or prove it directly by splitting $|f(x-y)g(y)|$ into three factors and applying H\"older with three exponents. We shall not need it.
+\end{remark}
 
 Convolution is very much a smoothing operation, in a sense the next result makes precise: $f * g$ inherits the \emph{best} regularity of its two factors, not the worst. To state it we need the standard notation for higher derivatives.
 
@@ -591,16 +628,17 @@ Here is the picture. Convolving a rough function with $\phi_\varepsilon$ rounds 
 \begin{tikzpicture}[scale=1.0]
 	\draw[<->] (-0.3,0) -- (7.3,0);
 	\draw[<->] (0,-0.3) -- (0,2.6);
-	% rough function (grey, dashed)
-	\draw[thick, dashed, color=gray] (0.3,0) -- (0.3,1.4) -- (1.6,1.4) -- (1.6,0.5)
+	% rough function (grey, solid, drawn first so its corners stick out)
+	\draw[thick, color=gray] (0.3,0) -- (0.3,1.4) -- (1.6,1.4) -- (1.6,0.5)
 		-- (2.6,0.5) -- (3.4,1.8) -- (4.4,1.8) -- (4.4,0.8) -- (5.6,0.8)
 		-- (5.6,1.5) -- (6.6,1.5) -- (6.6,0);
-	\node[color=gray] at (0.9,2.15) {\small $g$};
+	\node[color=gray] at (0.75,1.75) {\small $g$};
 	% mollified (blue, rounded)
-	\draw[thick, color=blue, rounded corners=10pt] (0.3,0) -- (0.3,1.4) -- (1.6,1.4) -- (1.6,0.5)
+	\draw[thick, color=blue, rounded corners=13pt] (0.3,0) -- (0.3,1.4) -- (1.6,1.4) -- (1.6,0.5)
 		-- (2.6,0.5) -- (3.4,1.8) -- (4.4,1.8) -- (4.4,0.8) -- (5.6,0.8)
 		-- (5.6,1.5) -- (6.6,1.5) -- (6.6,0);
-	\node[color=blue] at (5.0,2.15) {\small $\phi_\varepsilon * g$};
+	\node[color=blue] at (5.05,2.15) {\small $\phi_\varepsilon * g$};
+	\draw[color=blue, ->, shorten >=2pt] (5.05,1.95) -- (5.6,1.35);
 \end{tikzpicture}
 \end{center}
 
@@ -991,19 +1029,20 @@ Pictorially: a point outside a closed convex set can be cut off from it by a hyp
 
 \begin{center}
 \begin{tikzpicture}[scale=1.0]
-	% closed convex set B
-	\draw[thick, color=blue] plot[smooth cycle, tension=0.7] coordinates
-		{(0,0) (1.4,-0.5) (2.6,0.2) (2.8,1.4) (1.6,2.1) (0.3,1.5)};
-	\node[color=blue] at (1.5,0.9) {$B$};
-	% compact convex A
-	\draw[thick, color=blue] (5.0,0.9) ellipse (0.75 and 0.55);
-	\node[color=blue] at (5.0,0.9) {$A$};
+	% compact convex A, on the side where $\re\Lambda$ is small
+	\draw[thick, color=blue] (0.85,0.9) ellipse (0.75 and 0.55);
+	\node[color=blue] at (0.85,0.9) {$A$};
 	% separating hyperplanes
-	\draw[thick] (3.55,-0.6) -- (3.55,2.6);
-	\draw[dashed] (3.95,-0.6) -- (3.95,2.6);
-	\node[below] at (3.55,-0.65) {\small $\re \Lambda = \gamma_2$};
-	\node[below] at (4.35,2.9) {\small $\re \Lambda = \gamma_1$};
-	\draw[->] (4.35,2.75) -- (3.97,2.4);
+	\draw[thick] (2.45,-0.7) -- (2.45,2.7);
+	\draw[thick] (3.05,-0.7) -- (3.05,2.7);
+	\node[below] at (2.45,-0.75) {\small $\re \Lambda = \gamma_1$};
+	\node[above] at (3.05,2.75) {\small $\re \Lambda = \gamma_2$};
+	% closed convex set B
+	\begin{scope}[xshift=3.9cm]
+		\draw[thick, color=blue] plot[smooth cycle, tension=0.7] coordinates
+			{(0,0) (1.4,-0.5) (2.6,0.2) (2.8,1.4) (1.6,2.1) (0.3,1.5)};
+		\node[color=blue] at (1.5,0.9) {$B$};
+	\end{scope}
 \end{tikzpicture}
 \end{center}
 
@@ -1029,7 +1068,7 @@ Pictorially: a point outside a closed convex set can be cut off from it by a hyp
 
 \subsection{Consequences of Baire category}
 
-We record, without proof, three theorems from Linear Analysis which all follow from the Baire category theorem (a complete metric space is not a countable union of nowhere dense sets). Their common feature is that they turn a pointwise or algebraic hypothesis into a uniform or topological conclusion.
+We record, without proof, three theorems from Linear Analysis which all follow from the Baire category theorem (a complete metric space is not a countable union of nowhere dense sets). Their common feature is that they turn a pointwise or algebraic hypothesis into a uniform or topological conclusion. Proofs of all three, and of Baire's theorem itself, are in my Linear Analysis notes; the same is true of the Hilbert space material of Section \ref{sec:duality} and of the spectral theorem for compact self-adjoint operators, which we shall borrow in Section \ref{sec:pde}.
 
 \begin{theorem}[Principle of uniform boundedness]\label{thm:ubp}
 	Let $X$ be a Banach space, $Y$ a normed space, and $\mathcal{T} \subseteq \mathcal{B}(X,Y)$ a family of bounded operators with $\sup_{T \in \mathcal{T}}\norm{Tx} < \infty$ for every $x \in X$. Then $\sup_{T\in\mathcal{T}}\norm{T} < \infty$.
@@ -1134,6 +1173,29 @@ Since $X \subseteq X''$, the weak-$*$ topology on $X'$ is coarser than its weak 
 	by Theorem \ref{thm:lpdual}. When $1 < p < \infty$ the space is reflexive and this is the same as weak-$*$ convergence. For $f_i \in L^\infty(\R^n) = L^1(\R^n)'$, weak-$*$ convergence means testing against all $g \in L^1$, which is strictly weaker than weak convergence, since $(L^\infty)'$ is strictly bigger than $L^1$.
 \end{example}
 
+Oscillation is by far the more common of the two mechanisms, and it is worth having a general statement. The following says that a rapidly oscillating periodic function converges weakly to its mean -- the oscillations are not damped, they are simply averaged out by any fixed test function.
+
+\begin{proposition}[Oscillating sequences]\label{prop:oscillation}
+	Let $g \in L^\infty(\R)$ be $1$-periodic with mean $\ol g = \int_0^1 g(t)\dd t$, and set $g_m(x) = g(mx)$. Then $g_m \wsto \ol g$ in $L^\infty(\R) = L^1(\R)'$; that is,
+	$$\int_\R h(x)g(mx)\dd x \longrightarrow \ol g \int_\R h(x) \dd x \quad \text{for every } h \in L^1(\R).$$
+\end{proposition}
+
+\begin{proof}
+	Each $g_m$ has $\norm{g_m}_{L^\infty}=\norm{g}_{L^\infty}$, so the functionals $\Lambda_m(h)=\int hg_m$ have uniformly bounded norms on $L^1(\R)$. A uniformly bounded family of functionals which converges on a dense subset converges everywhere: if $\norm{\Lambda_m}\le C$ and $\Lambda_m(h_0)$ converges for $h_0$ in a dense set, then for general $h$ and $\varepsilon>0$ we may pick $h_0$ with $\norm{h-h_0}_{L^1}<\varepsilon$ and estimate $|\Lambda_m(h)-\Lambda_{m'}(h)|\le 2C\varepsilon+|\Lambda_m(h_0)-\Lambda_{m'}(h_0)|$, so $(\Lambda_m(h))$ is Cauchy.
+
+	So it is enough to treat $h = \ii_{[a,b]}$, since finite linear combinations of such indicators are dense in $L^1(\R)$. Substituting $t = mx$,
+	$$\int_a^b g(mx)\dd x = \frac 1m \int_{ma}^{mb}g(t)\dd t.$$
+	The interval $[ma,mb]$ has length $m(b-a)$ and so contains $N_m = \lfloor m(b-a)\rfloor$ complete periods of $g$, each contributing $\ol g$, together with a leftover interval of length at most $1$ on which the integral is at most $\norm{g}_{L^\infty}$ in modulus. Hence
+	$$\left| \frac 1m\int_{ma}^{mb}g - \frac{N_m}{m}\ol g\right| \le \frac{\norm{g}_{L^\infty}}{m} \longrightarrow 0,$$
+	and $N_m/m \to b-a$, giving the claim.
+\end{proof}
+
+\begin{example}\label{ex:squarestrick}
+	Take $g(x)=\sin(2\pi x)$, so $\ol g = 0$ and $u_m(x) = \sin(2\pi mx)\wsto 0$. But now consider $u_m^2 = \sin^2(2\pi m x)$: this is again of the form $G(mx)$ for the $1$-periodic $G = \sin^2(2\pi\, \cdot)$, whose mean is $1/2$, so
+	$$u_m \wsto 0 \quad \text{while} \quad u_m^2 \wsto \tfrac12 \ne 0 = \left( \text{weak limit of } u_m\right)^2.$$
+	This little computation deserves to be remembered, because it is the whole difficulty of the last third of the course in miniature. Weak limits do not commute with nonlinear operations. Any functional built by integrating a nonlinear function of $u$ will therefore fail to be weakly \emph{continuous}, and the best we can hope for is an inequality in one direction. Note which direction we got here: $\frac 12 > 0$, so the limit of $\int u_m^2$ is \emph{larger} than $\int u^2$. That is lower semicontinuity, and Section \ref{sec:direct} explains why convexity of the integrand always makes it fall this way.
+\end{example}
+
 \begin{remark}
 	Two warnings. First, the weak topology is \emph{not} metrisable on an infinite-dimensional space (though it is metrisable on bounded sets when $X'$ is separable), so one must be careful with sequential arguments; we shall always be in the situation where sequences suffice. Second, weak convergence is strictly weaker than strong convergence, but by Proposition \ref{prop:weakbounded} a weakly convergent sequence is still bounded, and one always has
 	$$\norm{x} \le \liminf_{n\to\infty}\norm{x_n} \quad \text{when } x_n \weakto x,$$
@@ -1142,7 +1204,13 @@ Since $X \subseteq X''$, the weak-$*$ topology on $X'$ is coarser than its weak 
 
 \subsection{Banach--Alaoglu}
 
-Now the pay-off.
+Now the pay-off. It is worth recalling first the one compactness theorem for function spaces that we already have, from the topology of $C(K)$: it buys strong (uniform) convergence, but at the price of a hypothesis -- equicontinuity -- that is much too strong to verify in practice.
+
+\begin{theorem}[Arzel\`a--Ascoli, a weak form]\label{thm:arzela}
+	Let $(f_i)$ be a sequence of functions $[0,1]\to\C$ which is bounded and equicontinuous. Then $(f_i)$ has a uniformly convergent subsequence.
+\end{theorem}
+
+What follows is the trade we advertised: we drop equicontinuity entirely, keep only boundedness, and accept a much weaker form of convergence in exchange.
 
 \begin{theorem}[Banach--Alaoglu]\label{thm:alaoglu}
 	Let $X$ be a normed space and $\ol{B}' = \{\Lambda \in X' : \norm{\Lambda}_{X'}\le 1\}$ the closed unit ball of the dual. Then $\ol{B}'$ is compact in the weak-$*$ topology.
@@ -1182,7 +1250,8 @@ The theorem is worth pausing over. The closed unit ball of $X'$ is never norm-co
 \begin{center}
 \begin{tikzpicture}[scale=1.0]
 	\draw[thick, color=blue] (0,0) circle (2.1);
-	\node[color=blue] at (-1.55,1.55) {$\ol B'$};
+	\node[color=blue] at (-2.35,1.95) {$\ol B'$};
+	\draw[color=blue, shorten >=2pt] (-2.15,1.75) -- (-1.62,1.3);
 	% a sequence with no strongly convergent subsequence, but a weak-* limit
 	\foreach \a/\r in {20/1.85, 75/1.9, 130/1.8, 185/1.88, 240/1.82, 300/1.9, 350/1.75} {
 		\fill[color=blue] (\a:\r) circle (0.05);
@@ -1331,6 +1400,39 @@ Putting the pieces together we obtain the theorem we shall use.
 	The norm itself is convex and continuous, so $u \mapsto \norm{u}$ is weakly lower semicontinuous: this recovers the inequality $\norm{u^*}\le\liminf\norm{u_n}$ for $u_n \weakto u^*$ that we saw directly earlier. More usefully, so is $u \mapsto \norm{u}^2 - 2\re\Lambda(u)$ for a fixed $\Lambda \in X'$, and this functional has bounded sublevel sets since
 	$$\norm{u}^2 - 2\re\Lambda(u) \ge \norm{u}^2 - 2\norm{\Lambda}\norm{u} \to \infty$$
 	as $\norm{u}\to\infty$. So it attains its infimum. In a Hilbert space this is a long-winded proof of the Riesz representation theorem; on a Sobolev space it will be a proof that the Dirichlet problem has a solution.
+\end{example}
+
+Convexity is not a technical convenience that a cleverer argument might remove. Here is the standard example showing that without it the conclusion is simply false.
+
+\begin{example}[Bolza]\label{ex:bolza}
+	Work on $X = H_0^1((0,1))$ -- a space we shall construct properly in Section \ref{sec:sobolev}, but for now the reader may think of piecewise smooth functions on $[0,1]$ vanishing at the endpoints. Define
+	$$S[u]=\int_0^1\left( \left(u'(x)^2-1\right)^2+u(x)^2\right)\dd x.$$
+	Clearly $S \ge 0$. I claim $\inf S = 0$, but that no $u$ attains it.
+
+	That the infimum is not attained is easy: $S[u]=0$ would force $u = 0$ almost everywhere, hence $u' = 0$ almost everywhere, and then the first term of the integrand equals $1$ everywhere, so $S[u]=1$. Contradiction.
+
+	That the infimum is nevertheless $0$ is the interesting half. Let $u_m$ be the sawtooth of slope $\pm1$ with $2m$ teeth: $u_m(0)=0$, $u_m' = \pm 1$ alternating on the intervals of length $1/(2m)$. Then $u_m' (x)^2= 1$ everywhere except at the finitely many corners, so the first term vanishes, while $|u_m|\le 1/(4m)$ pointwise, so
+	$$S[u_m]=\int_0^1u_m^2\le\frac{1}{16m^2}\longrightarrow 0.$$
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+	\draw[<->] (-0.4,0) -- (6.6,0);
+	\draw[<->] (0,-0.9) -- (0,1.1);
+	\node[below] at (6.0,-0.1) {\small $1$};
+	\draw[dotted] (6.0,0) -- (6.0,0.75);
+	% u_2 : 4 teeth of half-width 0.75, height 0.75
+	\draw[thick, color=gray] (0,0) -- (0.75,0.75) -- (2.25,-0.75) -- (3.75,0.75)
+		-- (5.25,-0.75) -- (6.0,0);
+	\node[color=gray] at (0.95,0.95) {\small $u_2$};
+	% u_6 : 12 teeth of half-width 0.25, height 0.25
+	\draw[thick, color=blue] (0,0) -- (0.25,0.25) -- (0.75,-0.25) -- (1.25,0.25)
+		-- (1.75,-0.25) -- (2.25,0.25) -- (2.75,-0.25) -- (3.25,0.25)
+		-- (3.75,-0.25) -- (4.25,0.25) -- (4.75,-0.25) -- (5.25,0.25)
+		-- (5.75,-0.25) -- (6.0,0);
+	\node[color=blue] at (4.55,0.7) {\small $u_6$};
+	\draw[color=blue, ->, shorten >=2pt] (4.55,0.55) -- (4.3,0.3);
+\end{tikzpicture}
+\end{center}
+	The minimising sequence oscillates faster and faster; by Proposition \ref{prop:oscillation} it converges weakly (indeed uniformly) to $0$, and $S[0]=1 > 0 = \lim S[u_m]$. So $S$ is \emph{not} weakly lower semicontinuous, and the direct method breaks at exactly the step Theorem \ref{thm:convexweaklsc} was designed to supply. The culprit is visible in the integrand: $z \mapsto (z^2-1)^2$ has two wells and is not convex, so the gradient prefers to spend its time at the two values $\pm 1$ rather than at their average $0$.
 \end{example}
 
 \begin{remark}
@@ -1532,8 +1634,16 @@ The Fourier transform is not defined on $L^2$ by the integral formula -- an $L^2
 	$$\ip{f}{g}_{L^2} = (2\pi)^{-n}\ip{\hat f}{\hat g}_{L^2}, \qquad \text{in particular} \qquad \norm{\hat f}_{L^2}=(2\pi)^{n/2}\norm{f}_{L^2}.$$
 \end{theorem}
 
-\begin{proof}[Proof sketch]
-	For $f, g \in \Sch(\R^n)$ this is a computation: put $h = \ol{g}$, note $\hat{\ol g}(\xi) = \ol{\hat g(-\xi)}$, and apply the inversion theorem to $f * \check{\ol g}$ at the origin. The general case follows because $\Sch$ is dense in $L^1 \cap L^2$ for the norm $\norm{\cdot}_{L^1}+\norm{\cdot}_{L^2}$, by mollification and truncation as in Corollary \ref{cor:ccinftydense}.
+\begin{proof}
+	\emph{The Schwartz case.} Let $f, g \in \Sch(\R^n)$ and set $h(y) = \ol{g(-y)}$, so that $h \in \Sch(\R^n)$ too, and
+	$$\hat h(\xi)=\int_{\R^n}\ol{g(-y)}e^{-i(y\cdot\xi)}\dd y = \ol{\int_{\R^n}g(z)e^{-i(z\cdot\xi)}\dd z}=\ol{\hat g(\xi)},$$
+	substituting $z = -y$. Now put $k = f * h$, which lies in $\Sch(\R^n)$ (it is smooth by Theorem \ref{thm:convsmooth}, and rapidly decreasing because each derivative is a convolution of two rapidly decreasing functions). On the one hand, $\hat k = \hat f\hat h = \hat f \ol{\hat g}$ by Lemma \ref{lem:ftbasic}(iii), so evaluating the inversion formula of Theorem \ref{thm:ftinv} at $x = 0$ gives
+	$$k(0) = \frac{1}{(2\pi)^n}\int_{\R^n}\hat k(\xi)\dd\xi = \frac{1}{(2\pi)^n}\int_{\R^n}\hat f(\xi)\ol{\hat g(\xi)}\dd\xi.$$
+	On the other hand, directly from the definition of the convolution,
+	$$k(0)=\int_{\R^n}f(y)h(-y)\dd y = \int_{\R^n}f(y)\ol{g(y)}\dd y.$$
+	Comparing the two, and conjugating to match our convention $\ip{f}{g}_{L^2}=\int\ol fg$, gives $\ip{f}{g}_{L^2}=(2\pi)^{-n}\ip{\hat f}{\hat g}_{L^2}$ for Schwartz $f, g$.
+
+	\emph{The general case.} Let $f \in L^1 \cap L^2$. Truncating and mollifying as in Corollary \ref{cor:ccinftydense} produces $f_m \in C_c^\infty(\R^n)\subseteq\Sch(\R^n)$ with $f_m \to f$ in $L^1$ \emph{and} in $L^2$ simultaneously: indeed $f\ii_{B_R(0)}\to f$ in both norms by dominated convergence, and $\phi_\varepsilon * (f \ii_{B_R(0)})\to f\ii_{B_R(0)}$ in both norms by Theorem \ref{thm:mollify}. By the Schwartz case applied to differences, $\norm{\hat f_m - \hat f_l}_{L^2}=(2\pi)^{n/2}\norm{f_m-f_l}_{L^2}$, so $(\hat f_m)$ is Cauchy in $L^2$ and converges to some $F \in L^2$. But $\norm{\hat f_m - \hat f}_{L^\infty}\le\norm{f_m-f}_{L^1}\to 0$, so $\hat f_m \to \hat f$ uniformly, and hence (along a subsequence, using $L^2$ convergence) $F = \hat f$ almost everywhere. Therefore $\hat f \in L^2$ with $\norm{\hat f}_{L^2}=\lim_m\norm{\hat f_m}_{L^2}=(2\pi)^{n/2}\lim_m\norm{f_m}_{L^2}=(2\pi)^{n/2}\norm{f}_{L^2}$, and the polarised identity for $\ip{f}{g}$ follows in the same way.
 \end{proof}
 
 So $(2\pi)^{-n/2}\FF$ is an isometry from $L^1 \cap L^2$, which is dense in $L^2$, into $L^2$. A densely defined isometry into a complete space extends uniquely to an isometry of the closure, and we obtain:
@@ -1696,6 +1806,22 @@ This is again a distribution, by Lemma \ref{lem:distcont}. So \emph{every distri
 \end{center}
 \end{example}
 
+Here is a second example, slightly more delicate, which shows that distributions can also repair \emph{divergent} integrals and not merely non-existent derivatives.
+
+\begin{example}[Principal value]\label{ex:pv}
+	The function $1/x$ is not locally integrable on $\R$, so it does not define a distribution by integration. Nevertheless the symmetric divergences at $0^+$ and $0^-$ cancel, and
+	$$\mathrm{p.v.}\!\left(\frac 1x\right)[\varphi]=\lim_{\varepsilon\downarrow0}\int_{|x|>\varepsilon}\frac{\varphi(x)}{x}\dd x$$
+	does define a distribution on $\R$. To see that the limit exists, split the integral at $|x|=1$. The outer part $\int_{|x|>1}\varphi(x)/x\dd x$ converges absolutely, since $|1/x|\le1$ there and $\varphi$ has compact support. For the inner part, the oddness of $1/x$ gives $\int_{\varepsilon<|x|<1}\dd x/x = 0$, so we may subtract $\varphi(0)$ for free:
+	$$\int_{\varepsilon<|x|<1}\frac{\varphi(x)}{x}\dd x = \int_{\varepsilon<|x|<1}\frac{\varphi(x)-\varphi(0)}{x}\dd x,$$
+	and now the integrand is bounded in modulus by $\sup|\varphi'|$ by the mean value theorem, so the limit exists by dominated convergence. The same estimate bounds
+	$$\left| \mathrm{p.v.}\!\left(\frac 1x\right)[\varphi]\right|\le 2\sup_\R|\varphi'| + \left(\int_{|x|>1, \, x \in K}\frac{\dd x}{|x|}\right)\sup_\R|\varphi|$$
+	for $\varphi$ supported in a compact $K$, so Lemma \ref{lem:distcont} applies and the principal value is a distribution of order (at most) $1$. It is genuinely of order $1$, and in particular is not a measure.
+
+	It is also, as one would hope, a derivative. The function $\log|x|$ \emph{is} locally integrable, and I claim $D\log|x| = \mathrm{p.v.}(1/x)$. Indeed, for $\varphi \in \DD(\R)$, integrating by parts on $\{x>\varepsilon\}$ and on $\{x<-\varepsilon\}$ separately,
+	$$-\int_{|x|>\varepsilon}\log|x|\,\varphi'(x)\dd x = \log\varepsilon\left(\varphi(\varepsilon)-\varphi(-\varepsilon)\right)+\int_{|x|>\varepsilon}\frac{\varphi(x)}{x}\dd x.$$
+	Since $|\varphi(\varepsilon)-\varphi(-\varepsilon)|\le2\varepsilon\sup|\varphi'|$ and $\varepsilon\log\varepsilon\to0$, the boundary term vanishes in the limit, and dominated convergence handles the left-hand side. So $D\log|x|[\varphi]=-\int\log|x|\varphi' = \mathrm{p.v.}(1/x)[\varphi]$, as claimed. The reader who has met contour integration will recognise the principal value as the real part of the Sokhotski--Plemelj formula.
+\end{example}
+
 With these operations we can make sense of linear partial differential equations in $\DD'(\Omega)$: given $a_\alpha \in C^\infty(\Omega)$ and $w \in \DD'(\Omega)$, we may ask for $u \in \DD'(\Omega)$ with
 $$\sum_{|\alpha|\le k}a_\alpha D^\alpha u = w.$$
 Solutions in this sense are called \vocab{weak} or \vocab{distributional} solutions, and the whole point of the last part of the course is that they are much easier to find than classical ones -- after which one works to prove that they are classical after all.
@@ -1800,7 +1926,10 @@ which makes sense because $u_2 * \varphi \in \DD(\R^n)$ by Lemma \ref{lem:distco
 
 \begin{proof}
 	Test against $\varphi \in \DD(\R^n)$ and use Lemma \ref{lem:distconv}(i) repeatedly:
-	$$(D^\alpha(u_1*u_2))*\varphi=(u_1*u_2)*D^\alpha\varphi = u_1*(u_2*D^\alpha\varphi)=u_1*((D^\alpha u_2)*\varphi)=(u_1*D^\alpha u_2)*\varphi,$$
+	\begin{align*}
+		(D^\alpha(u_1*u_2))*\varphi &= (u_1*u_2)*D^\alpha\varphi = u_1*(u_2*D^\alpha\varphi) \\
+		&= u_1*((D^\alpha u_2)*\varphi)=(u_1*D^\alpha u_2)*\varphi,
+	\end{align*}
 	and the other equality is the same computation with the roles reversed.
 \end{proof}
 
@@ -1922,7 +2051,9 @@ So we may define the \vocab{mean} $M[u]=u[\psi]$ of a periodic distribution, and
 
 	Take a periodic partition of unity $\psi$ and set $\wt\psi(x)=\psi(x/2\pi)$, so that $\sum_y\tau_{2\pi y}\wt\psi=1$. Put $v_y=(\tau_{2\pi y}\wt\psi)u$, supported at the single point $2\pi y$, with $\sum_yv_y=u$. From $(e_{-y'}-1)v_y=0$ and $e^{-i(x_j-2\pi y_j)}-1=(x_j-2\pi y_j)\kappa(x_j)$ with $\kappa$ smooth and non-vanishing near $2\pi y_j$, we get $(x_j-2\pi y_j)v_y=0$ for each $j$. Taylor expanding $\varphi(x)=\varphi(2\pi y)+\sum_j(x_j-2\pi y_j)\varphi_j(x)$ with $\varphi_j$ smooth, and using that $v_y$ has compact support so extends to $\Ecal$, gives $v_y[\varphi]=\varphi(2\pi y)v_y[1]$; that is, $v_y=c_y\delta_{2\pi y}$ with $c_y=u[\tau_{2\pi y}\wt\psi]$.
 
-	For the bound, Lemma \ref{lem:Eprime} applied in $\Sch'$ gives $N,k,C$ with $|u[\varphi]|\le C\sup_{x,|\alpha|\le k}|(1+|x|)^ND^\alpha\varphi(x)|$, whence
+	For the bound, Lemma \ref{lem:Eprime} applied in $\Sch'$ supplies $N,k,C$ such that
+	$$|u[\varphi]|\le C\sup_{x,|\alpha|\le k}\left|(1+|x|)^ND^\alpha\varphi(x)\right|,$$
+	whence
 	$$|c_y|\le C\sup_{x,|\alpha|\le k}\left|(1+|x+2\pi y|)^ND^\alpha\wt\psi(x)\right|\le C'(1+|y|)^N. \qedhere$$
 \end{proof}
 
@@ -1979,6 +2110,24 @@ The weak derivative is unique when it exists, by Corollary \ref{cor:duboisreymon
 	Let $(f_j)$ be Cauchy. Then each $(D^\alpha f_j)$ is Cauchy in $L^p$, so converges to some $g_\alpha \in L^p$ by Theorem \ref{thm:rieszfischer}. Write $f = g_0$. For $\varphi\in C_c^\infty(\Omega)$, H\"older gives $\int D^\alpha f_j\varphi\to\int g_\alpha\varphi$ and $\int f_jD^\alpha\varphi\to\int fD^\alpha\varphi$, so passing to the limit in the defining identity shows $g_\alpha = D^\alpha f$ weakly. Hence $f \in W^{k,p}$ and $f_j \to f$ in the norm.
 \end{proof}
 
+Weak derivatives obey the rules one expects, provided one does not ask for too much. They are linear, and they commute with each other (both facts are inherited from $\DD'(\Omega)$, where they are immediate from the definition). The product rule holds against a smooth factor, which is exactly the case we shall need when localising with a cut-off function.
+
+\begin{lemma}[Leibniz rule]\label{lem:leibniz}
+	Let $u \in W^{1,p}(\Omega)$ and $\chi \in C^\infty(\Omega)$ with $\chi$ and $D\chi$ bounded. Then $\chi u \in W^{1,p}(\Omega)$ and
+	$$D_i(\chi u) = \chi D_iu + (D_i\chi)u.$$
+\end{lemma}
+
+\begin{proof}
+	Both terms on the right lie in $L^p(\Omega)$ by boundedness of $\chi$ and $D\chi$. Let $\varphi \in C_c^\infty(\Omega)$; then $\chi\varphi \in C_c^\infty(\Omega)$ is a legitimate test function, and $D_i(\chi\varphi)=\chi D_i\varphi+(D_i\chi)\varphi$ classically. So
+	\begin{align*}
+		\int_\Omega \chi u \, D_i\varphi \dd x &= \int_\Omega u\left( D_i(\chi\varphi)-(D_i\chi)\varphi\right)\dd x \\
+		&= -\int_\Omega (D_iu)\chi\varphi\dd x - \int_\Omega u (D_i\chi)\varphi\dd x,
+	\end{align*}
+	using the definition of the weak derivative of $u$ against the test function $\chi\varphi$. This is precisely the assertion.
+\end{proof}
+
+Iterating gives the corresponding statement for higher derivatives: if $u \in W^{k,p}(\Omega)$ and $\chi\in C_c^\infty(\Omega)$ then $\chi u \in W^{k,p}(\Omega)$, with $D^\alpha(\chi u)$ given by the usual Leibniz expansion. What one \emph{cannot} do is multiply two Sobolev functions and expect the product rule, or apply the chain rule with a merely continuous outer function; these require separate arguments and extra hypotheses.
+
 \begin{example}\label{ex:kink}
 	\begin{enumerate}[label=(\roman*)]
 		\item Let $u(x)=|x|$ on $(-2,2)$. Then $u$ is not differentiable at $0$, but for $\varphi\in C_c^\infty((-2,2))$,
@@ -2005,7 +2154,8 @@ The weak derivative is unique when it exists, by Corollary \ref{cor:duboisreymon
 		\draw[color=blue, fill=white] (0,-1) circle (0.06);
 		\draw[color=blue, fill=white] (0,1) circle (0.06);
 		\node[color=blue] at (1.35,1.45) {\small $Du$};
-		\node[right] at (0.08,-0.28) {\scriptsize $-1$};
+		\node[left] at (-0.08,1) {\scriptsize $1$};
+		\node[right] at (0.08,-1) {\scriptsize $-1$};
 	\end{scope}
 \end{tikzpicture}
 \end{center}
@@ -2022,6 +2172,19 @@ On $\Omega=\R^n$ with $p = 2$ we can say something much sharper, because the Fou
 \end{definition}
 
 For $s \in \Z_{\ge0}$ we have $H^s(\R^n)=W^{s,2}(\R^n)$ with equivalent norms, by the remarks above. But now $s$ may be any real number: fractional orders measure fractional differentiability, and negative orders describe distributions rougher than functions. For instance $\delta_0 \in H^s(\R^n)$ exactly when $s < -n/2$, since $\hat{\delta_0}=1$ and $\int(1+|\xi|^2)^s\dd\xi<\infty$ iff $2s<-n$.
+
+The Fourier description makes the following density statement almost trivial, and we shall use it repeatedly to reduce statements about $H^s$ to computations with Schwartz functions.
+
+\begin{lemma}\label{lem:schwartzdense}
+	For every $s \in \R$, the space $\Sch(\R^n)$ is dense in $H^s(\R^n)$.
+\end{lemma}
+
+\begin{proof}
+	Let $u \in H^s(\R^n)$, so that $w = (1+|\xi|^2)^{s/2}\hat u \in L^2(\R^n)$. By Corollary \ref{cor:ccinftydense} choose $\psi \in C_c^\infty(\R^n)$ with $\norm{w - \psi}_{L^2}<(2\pi)^{n/2}\varepsilon$, and set
+	$$v = \FF^{-1}\!\left[ (1+|\xi|^2)^{-s/2}\psi\right].$$
+	The function $\xi\mapsto(1+|\xi|^2)^{-s/2}$ is smooth on all of $\R^n$, so $(1+|\xi|^2)^{-s/2}\psi \in C_c^\infty(\R^n)\subseteq\Sch(\R^n)$, whence $v \in \Sch(\R^n)$ by Corollary \ref{cor:fsiso}. And
+	$$\norm{u-v}_{H^s}^2=\frac{1}{(2\pi)^n}\int_{\R^n}(1+|\xi|^2)^s\left|\hat u - \hat v\right|^2\dd\xi = \frac{1}{(2\pi)^n}\norm{w-\psi}^2_{L^2}<\varepsilon^2. \qedhere$$
+\end{proof}
 
 \subsection{The Sobolev embedding theorem}
 
@@ -2042,7 +2205,7 @@ Here is the theorem that makes Sobolev spaces worth the trouble.
 	$$c_k\int_{\R^n}\frac{\dd\xi}{(1+|\xi|^2)^{s-k}}=c^2_{k,n,s}<\infty$$
 	precisely because $2(s-k)>n$. Hence $\sup_{x,|\alpha|\le k}|D^\alpha f(x)|\le c_{n,k,s}\norm{f}_{H^s}$ for $f\in\Sch(\R^n)$.
 
-	For general $f \in H^s(\R^n)$, approximate: there are $f_m\in\Sch(\R^n)$ with $f_m\to f$ in $H^s$ and (after passing to a subsequence) almost everywhere. The sequence $(f_m)$ is Cauchy in $H^s$, hence by the estimate Cauchy in $C^k(\R^n)$ with the uniform norm on all derivatives up to order $k$; that space is complete, so $f_m\to f^*$ in $C^k$. Since also $f_m\to f$ a.e., $f = f^*$ a.e.
+	For general $f \in H^s(\R^n)$, approximate: by Lemma \ref{lem:schwartzdense} there are $f_m\in\Sch(\R^n)$ with $f_m\to f$ in $H^s$, hence in $L^2$, and so (after passing to a subsequence) almost everywhere. The sequence $(f_m)$ is Cauchy in $H^s$, hence by the estimate Cauchy in $C^k(\R^n)$ with the uniform norm on all derivatives up to order $k$; that space is complete, so $f_m\to f^*$ in $C^k$. Since also $f_m\to f$ a.e., $f = f^*$ a.e.
 \end{proof}
 
 The moral is that \emph{differentiability can be bought with integrability, at an exchange rate of $n/2$ derivatives}. It is a genuinely surprising statement: membership of $H^s$ is a statement about integrals, and yet for $s$ large enough it forces pointwise regularity. Note also that the threshold is sharp: in $\R^n$ with $n \ge 2$, the function $\log\log(1+1/|x|)$ near the origin is in $H^{n/2}$ but unbounded, so $s = k+n/2$ will not do.
@@ -2279,7 +2442,7 @@ Note that if $s>n/2+k$ and $u \in H^s_{\mathrm{loc}}(\Omega)$ then $u \in C^k(\O
 \end{theorem}
 
 \begin{proof}
-	Fix a compact $K\subseteq\Omega$ and $\chi_K\in C_c^\infty(\Omega)$ with $\chi_K\equiv1$ on $K$, and set $w = \chi_Ku$. For any $\varphi\in\Sch(\R^n)$ the function $v = \chi_K\varphi$ lies in $C_c^\infty(\Omega)\subseteq H_0^1(\Omega)$, so it is admissible as a test function. Substituting and moving the cut-off across the derivatives (the product rule for weak derivatives, which holds because $\chi_K$ is smooth) gives
+	Fix a compact $K\subseteq\Omega$ and $\chi_K\in C_c^\infty(\Omega)$ with $\chi_K\equiv1$ on $K$, and set $w = \chi_Ku$. For any $\varphi\in\Sch(\R^n)$ the function $v = \chi_K\varphi$ lies in $C_c^\infty(\Omega)\subseteq H_0^1(\Omega)$, so it is admissible as a test function. Substituting and moving the cut-off across the derivatives, which is legitimate by the Leibniz rule of Lemma \ref{lem:leibniz}, gives
 	$$\int_{\R^n}\ol w(-\nabla^2\varphi+\varphi)\dd x = \int_{\R^n}\ol g\varphi\dd x, \qquad g = f\chi_K - 2Du\cdot D\chi_K-u\nabla^2\chi_K.$$
 	So $w \in H^1(\R^n)$ solves $-\nabla^2w+w=g$ in $\Sch'(\R^n)$, and $g \in L^2 = H^0$ since $u \in H^1$ and $f \in L^2$. By Proposition \ref{prop:regularityRn}, $w \in H^2(\R^n)$. As $K$ was arbitrary, $u \in H^2_{\mathrm{loc}}(\Omega)$.
 
