@@ -1,640 +1,2363 @@
-% \documentclass[a3paper, 10pt]{article}
+\documentclass[a4paper]{scrartcl}
 
-% \usepackage[nokoma, noindent]{adam}
-% \usepackage[landscape,margin=0.5in]{geometry}
-% \usepackage{tikz-cd}
-% \usepackage{multicol}
+\usepackage[
+	fancytheorems,
+	fancyproofs,
+	noindent
+]{adam}
 
-% \setlist[enumerate]{leftmargin=8mm}
-% \setlist[itemize]{leftmargin=8mm}
+\usepackage{tikz}
 
-% \newcommand{\enumpre}{}
-% % % \newcommand{\enumpre}{\vspace{-1.5\baselineskip}}
-% \renewcommand{\vocab}[1]{\emph{#1}}
-
-
-\documentclass[a4paper, 10pt]{amsart}
-
-\usepackage[nokoma]{adam}
-% \usepackage[margin=0.75in]{geometry}
-\usepackage{tikz-cd}
-
-\setlist[enumerate]{leftmargin=8mm}
-\setlist[itemize]{leftmargin=8mm}
-
-\newcommand{\enumpre}{\vspace{-1.5\baselineskip}}
-
-
-
+\DeclareMathOperator{\disc}{disc}
+\DeclareMathOperator{\Li}{Li}
+\newcommand{\leg}[2]{\left( \frac{#1}{#2} \right)}
 
 \title{Number Theory}
-\author{Mathematical Tripos Part II}
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
 \date{\today}
+
+\allowdisplaybreaks
 
 \begin{document}
 
 \maketitle
 
+Number theory is the study of the integers, which is to say the study of the two operations $+$ and $\times$ and the friction between them. Addition on its own is dull, and multiplication on its own is not much better; it is the fact that the primes -- the atoms of multiplication -- are scattered so unpredictably along the additive line $\dots, -1, 0, 1, 2, \dots$ that gives the subject its character. Almost every question we will ask has an embarrassingly simple statement, and almost none of them has an easy answer.
 
+This article constitutes my notes for the `Number Theory' course, held in Michaelmas 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered.
 
-\begin{center}
-\emph{Familiarity with IA Numbers and Sets is assumed.}
-\end{center}
+\tableofcontents
 
-\section{Divisibility}
+\section{Introduction}
 
-% \begin{definition}[$\N$ and $\Z$]
-%     We denote by $\N$ the set of \emph{natural numbers} $1, 2, 3, \dots$ and by $\Z$ the set of \emph{integers}.
-% \end{definition}
+Familiarity with IA Numbers and Sets is assumed throughout, and the first two sections are largely a review of that material -- albeit a review conducted with rather different priorities. Where in IA we were content to know that a greatest common divisor exists, here we will care how quickly we can find one; where in IA the primes were a curiosity, here we will want to count them.
 
-% \begin{definition}[Division]
-%     For $a, b \in \N$, we say that $b$ \emph{divides} $a$ if there exists $c \in \N$ such that $a = bc$. We then write $b \mid a$. If $b$ does not divide $a$, we write $b \nmid a$. 
-% \end{definition}
+Before we start on any of that, it is worth being clear about the sort of questions the subject is trying to answer. Here are three, all of which are still open.
+
+\begin{conjecture}[Twin Prime Conjecture]
+	There are infinitely many primes $p$ for which $p + 2$ is also prime.
+\end{conjecture}
+
+Nobody knows. The best that is known, following a spectacular breakthrough of Zhang in 2013 and the subsequent Polymath project, is that there are infinitely many primes $p$ such that at least one of $p+2, p+4, \dots, p+246$ is prime. That is a long way from $246 = 2$, but it is infinitely closer than we were before.
+
+\begin{conjecture}[Riemann Hypothesis]
+	Writing $\pi(x)$ for the number of primes at most $x$ and
+	$$
+	\Li(x) = \int_2^x \frac{\dd t}{\log t},
+	$$
+	we have $|\pi(x) - \Li(x)| \leq \sqrt{x} \log x$ for all $x \geq 3$.
+\end{conjecture}
+
+This is one of many equivalent formulations, and it says that the primes are distributed as regularly as one could possibly hope. We will meet the Riemann zeta function in \S6, and see where the hypothesis actually lives. The best unconditional result in this direction is of the shape
+$$
+|\pi(x) - \Li(x)| \leq \frac{Cx}{(\log x)^{3/4}} e^{-c \sqrt{\log x}},
+$$
+which is very much weaker.
+
+\begin{conjecture}
+	There is a polynomial-time algorithm which, given $N = pq$ with $p$ and $q$ prime, returns $p$.
+\end{conjecture}
+
+Here the consensus is that the answer is `no', and a great deal of the world's cryptography is betting on it. We will look at what \emph{can} be done in \S8. Notice the change of flavour: this is a question about \emph{algorithms}, and one of the pleasant surprises of the course is how naturally the algorithmic questions sit alongside the classical ones.
+
+Since we will be making claims about algorithms, we should say what we mean.
+
+\begin{definition}[Polynomial Time]
+	An algorithm taking an integer $N > 0$ as input runs in \vocab{polynomial time} if it terminates after at most $C(\log N)^k$ elementary operations, for some constants $C, k > 0$. If the input is a list $N_1, \dots, N_s$, we ask instead for at most $C(\max_i \log N_i)^k$ operations.
+\end{definition}
+
+The point of taking $\log N$ rather than $N$ is that $\log N$ is (up to a constant) the number of \emph{digits} of $N$, which is how long it takes merely to write $N$ down. Addition and multiplication of integers run in polynomial time, and we will see shortly that so does Euclid's algorithm. Trial division does not: to factor $N = pq$ with $p, q$ each of fifty digits by dividing by every integer up to $\sqrt{N}$ would take of the order of $10^{50}$ divisions, which at a generous $2^{30}$ divisions per second is around $10^{33}$ years.
+
+\section{Euclid's Algorithm}
+
+We begin at the beginning, with division.
 
 \begin{theorem}[Division Algorithm]
-    Given $a, b \in \Z$ with $b > 0$, there exists $q, r \in \Z$ with $a = bq + r$ and $0 \leq r < b$.
+	Given $a, b \in \Z$ with $b > 0$, there exist $q, r \in \Z$ with $a = bq + r$ and $0 \leq r < b$. Moreover $q$ and $r$ are unique.
 \end{theorem}
 \begin{proof}
-  Let $S=\{a-n b: n \mathbb{Z}\}$, then $S$ contains some nonnegative integer. Let the smallest be $r$. Then $r<b$, as otherwise $r-b \in S$ would be nonnegative and smaller than $r$. So $a-q b=r$ for some $q \in \mathbb{Z}$, or $a=q b+r$.
+	Let $S = \{a - nb : n \in \Z\}$. Then $S$ contains some nonnegative integer (take $n$ very negative if $a < 0$), so by well-ordering it contains a least nonnegative element $r$, say $r = a - qb$. We must have $r < b$, as otherwise $r - b \in S$ would be nonnegative and smaller than $r$. So $a = qb + r$ as required.
+
+	For uniqueness, if $a = qb + r = q'b + r'$ with $0 \leq r, r' < b$ then $b(q - q') = r' - r$, and $|r' - r| < b$ forces $q = q'$ and hence $r = r'$.
 \end{proof}
 
 \begin{definition}
-  If $r = 0$, we write $b \mid a$ (``$b$ \emph{divides} $a$''), otherwise we write $b \nmid a$.
+	If $r = 0$ above, we write $b \mid a$ and say that $b$ \vocab{divides} $a$; otherwise we write $b \nmid a$.
 \end{definition}
 
-Given $a_1, \dots, a_n \in \Z$ not all zero, let $I = \{\lambda_1 a_1 + \cdots + \lambda_n a_n \mid \lambda_i \in \Z\}$. Then for $a, b \in I$ and $l, m \in \Z$, we have $la + mb \in I$.
+Given $a_1, \dots, a_n \in \Z$ not all zero, let
+$$
+I = \{\lambda_1 a_1 + \cdots + \lambda_n a_n \mid \lambda_i \in \Z\}
+$$
+be the set of integer combinations of the $a_i$. Note that for $a, b \in I$ and $l, m \in \Z$ we have $la + mb \in I$; in the language of IB Groups, Rings and Modules, $I$ is an ideal of $\Z$. The following lemma says that $\Z$ is a principal ideal domain, though we will not need to say it that way.
 
-\begin{lemma}
-  $I = d \Z = \{md \mid m \in \Z\}$ for some $d > 0$.
+\begin{lemma}\label{lem:ideal}
+	$I = d\Z = \{md \mid m \in \Z\}$ for some $d > 0$.
 \end{lemma}
 \begin{proof}
-  Let $d$ be the least positive element in $I$. Then $d\Z \subset I$. Conversely, if $a \in I$, write $a = qd + r$ for some $0 \leq r < a$. If $r = 0$, then $a \in d \Z$. Otherwise, $r = a - qd \in I$ is positive and smaller than $d$, contradiction.
+	Let $d$ be the least positive element of $I$, which exists since $I$ contains a nonzero element and is closed under negation. Certainly $d\Z \subseteq I$. Conversely, if $a \in I$ then we may write $a = qd + r$ with $0 \leq r < d$. If $r = 0$ then $a \in d\Z$. Otherwise $r = a - qd$ is an element of $I$ which is positive and smaller than $d$, a contradiction.
 \end{proof}
 
-In particular, $d \mid a_i$ for all $i$; Conversely, if $c \mid a_i$ for all $i$, then $d \Z = I \subset c \Z$, hence $c \mid d$.
+In particular $d \mid a_i$ for all $i$, since each $a_i \in I = d\Z$. Conversely, if $c \mid a_i$ for all $i$ then every integer combination of the $a_i$ is a multiple of $c$, so $d\Z = I \subseteq c\Z$ and hence $c \mid d$. Thus $d$ deserves its name.
 
 \begin{definition}
-  We write $d = \gcd(a_1, \dots, a_n)$ or $(a_1$, $\dots$, $a_n)$ and say $d$ is the \emph{greatest common divisor} of $a_1, \dots, a_n$.
+	We write $d = \gcd(a_1, \dots, a_n)$, or more compactly $(a_1, \dots, a_n)$, and call $d$ the \vocab{greatest common divisor} of $a_1, \dots, a_n$. If $(a, b) = 1$ we say $a$ and $b$ are \vocab{coprime}.
 \end{definition}
 
-\begin{corollary}[Bézout]
-  Suppose $a, b, c \in \Z$ and $a, b$ not both 0. There exists $x, y \in \Z$ such that $ax + by = c$ if and only if $(a, b) \mid c$.
+\begin{corollary}[Bézout]\label{cor:bezout}
+	Suppose $a, b, c \in \Z$ with $a, b$ not both $0$. Then there exist $x, y \in \Z$ with $ax + by = c$ if and only if $(a, b) \mid c$.
 \end{corollary}
+\begin{proof}
+	The set of achievable $c$ is exactly $I = (a,b)\Z$ by \autoref{lem:ideal}.
+\end{proof}
 
-% \begin{definition}
-%     The \emph{greatest common divisor} $(a, b)$ of natural numbers $a, b$ is the largest integer $d$ such that $d\mid a$ and $d\mid b$.
-% \end{definition}
-
-% \begin{theorem}
-%     \begin{enumerate}[label=(\roman*)]
-%         \item Every common divisor of $a$ and $b$ divides their greatest common divisor $(a, b)$. 
-%         \item Every common multiple of $a$ and $b$ is a multiple of the least common multiple $[a, b]$.
-%     \end{enumerate}
-% \end{theorem}
-% \begin{proof}
-%     We prove (ii) first. Set $m = [a, b]$ and suppose $\ell > m$ is another common multiple of $a$ and $b$. Then we can write $\ell = qm + r$. If $r \neq 0$, then $r$ is a common multiple of $a$ and $b$ with $r < m$, which is a contradiction. For (i), set $d = (a, b)$ and suppose that $e \mid a$ and $e \mid b$. Then $a$ is a common multiple of $d$ and $e$, so by (ii) it is a multiple of $[d, e]$, as is $b$. Now $[d, e]\mid a$, $[d, e] \mid b$ together with $[d, e] \geq d$ implies $[d, e]=d$. Consequently, $e \mid d$.
-% \end{proof}
-
-% \begin{theorem}
-%     For $a, b \in \N$, $(a, b)[a ,b] = ab$.
-% \end{theorem}
-% \begin{proof}
-%     $ab/(a, b)$ is a common multiple of $a$ and $b$, and so $[a, b] = ab/(a, b)k$ for some $k \in \N$. Then $(a, b)k \mid a$ and $(a, b)k \mid b$ hence $k = 1$. 
-% \end{proof}
-
-% \begin{theorem}\label{thm:4}
-%     If $(a, b) = 1$ and $a \mid bc$, then $a \mid c$.
-% \end{theorem}
-% \begin{proof}
-%     Observe that $bc$ is a common multiple of $a$ and $b$ so $[a, b] \mid bc$ implies $ab \mid bc$, and thus $a \mid c$.
-% \end{proof}
-
-% \begin{theorem}
-%     $S = \{ax + by \mid x, y \in \Z\}$ is precisely the set of multiple of $(a, b)$.
-% \end{theorem}
-% \begin{proof}
-%     Denote by $d$ the smallest element of $S$. Note that if $s, s' \in S$, then $s \pm s' \in S$ and $\lambda s \in S$ for $\lambda \in \Z$. It then follows from the division algorithm that $S$ is precisely the set of multiples of $d$. Then $d \mid a$, $d\mid b$ and $(a, b) \mid ax + by = d$, so $d = (a, b)$.
-% \end{proof}
+This is all very well, but it is not yet an \emph{algorithm}: \autoref{lem:ideal} produces $d$ by minimising over an infinite set. The algorithm is due to Euclid, and consists of iterating the division algorithm.
 
 \begin{theorem}[Euclid's Algorithm]
-Given $a, b\in \N$ with $a > b$, setting $b = r_0>0$ we can repeatedly apply the division algorithm to get
-\begin{align*}
-  a &= q_1 r_0 + r_1 \\
-  b &= q_2 r_1 + r_2 \\
-  r_1 &= q_3 r_2 + r_3 \\
-  \vdots \\
-  r_{k-1} &= q_{k+1} r_{k} + 0,
-\end{align*}
-where $0 < r_i < r_{i - 1}$ for $i \leq k$.
-Then $r_k = (a, b)$.
+	Given $a, b \in \N$ with $a > b$, set $r_0 = b$ and apply the division algorithm repeatedly:
+	\begin{align*}
+		a &= q_1 r_0 + r_1, \\
+		r_0 &= q_2 r_1 + r_2, \\
+		r_1 &= q_3 r_2 + r_3, \\
+		&\;\;\vdots \\
+		r_{k - 2} &= q_k r_{k-1} + r_k, \\
+		r_{k-1} &= q_{k+1} r_k + 0,
+	\end{align*}
+	where $0 < r_i < r_{i-1}$ for $i \leq k$. Then $r_k = (a, b)$.
 \end{theorem}
 \begin{proof}
-  Note that $r_k \mid r_0$ and $r_k \mid a$, so $r_k \leq (a, b)$. Also if $m \mid a$ and $m \mid b$ then $m\mid r_k$. Hence $(a, b) \leq r_k$, and $(a, b) = r_k$.
+	The sequence $r_0 > r_1 > \cdots \geq 0$ is a strictly decreasing sequence of nonnegative integers, so it does terminate. Reading the last line upwards, $r_k \mid r_{k-1}$, then $r_k \mid r_{k-2}$, and so on all the way up, so $r_k \mid b$ and $r_k \mid a$; hence $r_k \leq (a,b)$. Reading downwards instead, if $m \mid a$ and $m \mid b$ then $m \mid r_1$, then $m \mid r_2$, and so on, so $m \mid r_k$. Taking $m = (a,b)$ gives $(a, b) \leq r_k$, and so $(a,b) = r_k$.
 \end{proof}
+
+Unwinding the equations from the bottom expresses $r_k$ as an integer combination of $a$ and $b$, which is a constructive form of \autoref{cor:bezout}. Let us do one.
+
+\begin{example}
+	Take $a = 4321$ and $b = 1234$. Euclid's algorithm gives
+	\begin{align*}
+		4321 &= 3 \times 1234 + 619, \\
+		1234 &= 1 \times 619 + 615, \\
+		619 &= 1 \times 615 + 4, \\
+		615 &= 153 \times 4 + 3, \\
+		4 &= 1 \times 3 + 1, \\
+		3 &= 3 \times 1 + 0,
+	\end{align*}
+	so $(4321, 1234) = 1$. Working back up,
+	\begin{align*}
+		1 &= 4 - 3 = 4 - (615 - 153 \times 4) = 154 \times 4 - 615 \\
+		&= 154 \times (619 - 615) - 615 = 154 \times 619 - 155 \times 615 \\
+		&= 154 \times 619 - 155 \times (1234 - 619) = 309 \times 619 - 155 \times 1234 \\
+		&= 309 \times (4321 - 3 \times 1234) - 155 \times 1234 = 309 \times 4321 - 1082 \times 1234.
+	\end{align*}
+	One checks that $309 \times 4321 = 1335189$ and $1082 \times 1234 = 1335188$, so indeed the difference is $1$.
+\end{example}
+
+There is a pleasant way to see the algorithm. Take an $a \times b$ rectangle and repeatedly cut off the largest square you can; the algorithm terminates exactly when the remaining rectangle is tiled by squares, and the side of the last square is $(a, b)$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.19]
+	\draw[thin] (0,0) rectangle (30,18);
+	\draw[thin] (0,0) rectangle (18,18);
+	\draw[thin] (18,6) rectangle (30,18);
+	\draw[thin] (18,0) rectangle (24,6);
+	\draw[thin] (24,0) rectangle (30,6);
+	\node at (9,9) {$18$};
+	\node at (24,12) {$12$};
+	\node at (21,3) {\small $6$};
+	\node at (27,3) {\small $6$};
+	\draw[<->] (0,-2.5) -- (30,-2.5) node[midway,fill=white,inner sep=1pt] {$30$};
+	\draw[<->] (-2.5,0) -- (-2.5,18) node[midway,fill=white,inner sep=1pt] {$18$};
+\end{tikzpicture}
+\end{center}
+
+Here $30 = 1 \times 18 + 12$, then $18 = 1 \times 12 + 6$, then $12 = 2 \times 6$, and $(30, 18) = 6$ is the side of the smallest square.
+
+How fast is this? The key observation is that $r_{i+1} \leq r_{i-1}/2$ always. Indeed, if $r_{i+1} < r_i/2$ then certainly $r_{i+1} < r_{i-1}/2$ since $r_i < r_{i-1}$; and if instead $r_{i+1} \geq r_i/2$, then from $r_{i-1} = q_{i+1}r_i + r_{i+1}$ with $q_{i+1} \geq 1$ we get $r_{i-1} \geq r_i + r_{i+1} \geq 2r_{i+1}$. So the remainders at least halve every two steps, and the algorithm terminates after $O(\log b)$ divisions.
+
+\begin{corollary}
+	Euclid's algorithm runs in polynomial time.
+\end{corollary}
+
+Contrast this with the `obvious' method of computing $(a,b)$, namely factorising both and comparing: nobody knows how to factorise in polynomial time, and Euclid's algorithm cheerfully avoids the need to.
+
+\begin{definition}
+	An integer $n > 1$ is \vocab{prime} if its only positive divisors are $1$ and $n$; otherwise it is \vocab{composite}.
+\end{definition}
 
 \begin{lemma}[Euclid's Lemma]
-  Let $p$ be a prime and let $a, b\in \Z$. Then $p \mid ab$ if and only if $p \mid a$ or $p \mid b$.
+	Let $p$ be prime and $a, b \in \Z$. Then $p \mid ab$ if and only if $p \mid a$ or $p \mid b$.
 \end{lemma}
 \begin{proof}
-  The ``if'' direction is clear. Conversely, suppose $p \mid a b$ yet $p \nmid a$, then $(a, p) \neq p$ but $(a, p) \mid p$ and $p$ is prime, so $(a, p)=1$, therefore there are some integers $n, y$ such that $a x+p y=1$. Now $b=b(a x+p y)=x(a b)+(b y) p \implies p \mid b$
+	The `if' direction is clear. Conversely, suppose $p \mid ab$ but $p \nmid a$. Then $(a, p)$ divides $p$ and is not $p$, so $(a,p) = 1$ and by Bézout there are $x, y \in \Z$ with $ax + py = 1$. Multiplying by $b$,
+	$$
+	b = b(ax + py) = x(ab) + (by)p,
+	$$
+	and $p$ divides both terms on the right, so $p \mid b$.
 \end{proof}
 
-\begin{theorem}[Fundamental Theorem of Arithmetic] 
-  Every $n>1$ can be written a a product of primes. Furthermore, this is unique up to reordering.
+This fails badly for composite numbers: $6 \mid 4 \times 9$ but $6 \nmid 4$ and $6 \nmid 9$. It is precisely this property that makes the primes the right atoms.
+
+\begin{theorem}[Fundamental Theorem of Arithmetic]
+	Every integer $n > 1$ can be written as a product of primes, and this factorisation is unique up to reordering.
 \end{theorem}
 \begin{proof}
-  Existence follows easily by strong induction. For uniqueness we also use induction. Suppose that $n$ has two prime factorisations $n=p_1 \cdots p_k=q_1 \cdots q_l$. We have $p_1 \mid q_1 \cdots q_k$, so $p_1 \mid q_i$ for some $i$. We can label that prime $q_1$. Hence $p_1=q_1$. So $n / p_1=p_2 \cdots p_k=q_2 \cdots q_l$, and by induction $k=l$ and $p_2=q_2, p_3=q_3$, etc.
-\end{proof}
-% \begin{definition}[Prime]
-% A natural number $n > 1$ is \emph{prime} if it is divisible only by $1$ and itself.
-% \end{definition}
+	Existence follows by strong induction: either $n$ is prime, or $n = ab$ with $1 < a, b < n$ and we apply the inductive hypothesis to each of $a, b$.
 
-% \begin{theorem}[Fundamental Theorem of Arithmetic]
-%     Every natural number $> 1$ has a unique factorisation into prime numbers. 
-% \end{theorem}
-% \begin{proof}[Proof Sketch]
-% Existence is constructive. For uniqueness, we use \autoref{thm:4} and induction.
-% \end{proof}
+	For uniqueness, suppose some $n > 1$ has two genuinely different factorisations and take the least such $n$, say
+	$$
+	n = p_1 \cdots p_k = q_1 \cdots q_l.
+	$$
+	Then $p_1 \mid q_1 \cdots q_l$, so by Euclid's lemma $p_1 \mid q_i$ for some $i$, and since $q_i$ is prime, $p_1 = q_i$. Relabelling, $p_1 = q_1$, and then $n/p_1 = p_2 \cdots p_k = q_2 \cdots q_l$ is a smaller integer with two different factorisations unless $k = l$ and the remaining primes agree after reordering. This contradicts minimality.
+\end{proof}
+
+\begin{remark}
+	Collecting multiplicities, every $n \geq 1$ has a unique expression $n = \prod_p p^{v_p(n)}$ where the product is over primes and all but finitely many exponents vanish. If $m = \prod_p p^{\alpha_p}$ and $n = \prod_p p^{\beta_p}$ then
+	$$
+	(m, n) = \prod_p p^{\min(\alpha_p, \beta_p)}, \qquad [m, n] = \prod_p p^{\max(\alpha_p, \beta_p)},
+	$$
+	where $[m,n]$ denotes the least common multiple, and in particular $(m,n)[m,n] = mn$. This is a perfectly good \emph{description} of the gcd, and a perfectly awful way to \emph{compute} it.
+\end{remark}
+
+\begin{definition}
+	For a prime $p$ and $n \geq 1$, the exponent $v_p(n)$ above is the \vocab{$p$-adic valuation} of $n$.
+\end{definition}
+
+We record the basic properties: $v_p(mn) = v_p(m) + v_p(n)$, and $p^k \mid n$ if and only if $v_p(n) \geq k$. A slightly less obvious formula, which we will need when we come to Bertrand's postulate, is Legendre's:
+$$
+v_p(n!) = \sum_{i = 1}^\infty \left\lfloor \frac{n}{p^i} \right\rfloor,
+$$
+the point being that among $1, \dots, n$ exactly $\lfloor n/p^i \rfloor$ are divisible by $p^i$, and each such contributes one to the count for every $i$ up to its valuation.
+
+Finally, the oldest theorem in the subject.
 
 \begin{theorem}[Euclid]
-    The number of primes is infinite.
+	There are infinitely many primes.
 \end{theorem}
 \begin{proof}
-  If there was finitely many primes, say $p_1, \dots, p_k$, then the number $N = p_1 p_2 \cdots p_k + 1$ would have no prime factors which is a contradiction.
+	Suppose there were only finitely many, say $p_1, \dots, p_k$. Then $N = p_1 p_2 \cdots p_k + 1$ is greater than $1$, so it has a prime factor; but that factor is some $p_i$, which then divides $N - p_1 \cdots p_k = 1$, a contradiction.
 \end{proof}
+
+\begin{remark}
+	It is worth noticing what this argument does and does not give. It shows that the $k$-th prime is at most $p_1 \cdots p_{k-1} + 1$, which yields the bound $p_k \leq 2^{2^k}$ and hence $\pi(x) \gg \log \log x$. That is a spectacularly bad bound -- the truth is $\pi(x) \sim x/\log x$ -- and improving it will occupy us in \S6.
+\end{remark}
 
 \section{Congruences}
 
+\subsection{Modular Inverses}
+
 \begin{definition}
-Let $n \geq 1$ be an integer. We say $a$ is \emph{congruent} to $b$ modulo $n$, written $a \equiv b \pmod{n}$, if $n \mid a - b$.
+	Let $n \geq 1$ be an integer. We say $a$ is \vocab{congruent} to $b$ modulo $n$, written $a \equiv b \pmod n$, if $n \mid a - b$.
 \end{definition}
 
-\begin{theorem}
-  There exists $x$ such that $ax \equiv 1 \pmod{n}$ if and only if $(a, n) = 1$.
-\end{theorem}
+This is an equivalence relation on $\Z$, and we write $\Z/n\Z$ for the set of equivalence classes $a + n\Z$. The operations
+$$
+(a + n\Z) + (b + n\Z) = (a + b) + n\Z, \qquad (a + n\Z)(b + n\Z) = ab + n\Z
+$$
+are well defined, making $\Z/n\Z$ into a ring. The whole point of working modulo $n$ is that it turns an infinite problem into a finite one; the price is that we lose information, and much of the art lies in choosing $n$ so as to lose the right information.
+
+\begin{lemma}\label{lem:inverse}
+	Let $a \in \Z$ and $n \geq 1$. The following are equivalent.
+	\begin{enumerate}[label=(\roman*)]
+		\item $(a, n) = 1$.
+		\item There is $b \in \Z$ with $ab \equiv 1 \pmod n$.
+		\item $a + n\Z$ generates the additive group $(\Z/n\Z, +)$.
+	\end{enumerate}
+	When these hold we call $b$ a \vocab{multiplicative inverse} of $a$ modulo $n$.
+\end{lemma}
 \begin{proof}
-    The ``only if'' direction is clear. For the ``if'' direction, by Bézout we can write $ax + ny = 1$ for some $d$, and so $ax \equiv 1 \pmod{n}$ as required.
+	(i) $\Rightarrow$ (ii). By Bézout there are $b, c$ with $ab + cn = 1$, so $ab \equiv 1 \pmod n$.
+
+	(ii) $\Rightarrow$ (i). If $ab - 1 = kn$ then $ab - kn = 1$, so any common divisor of $a$ and $n$ divides $1$.
+
+	(ii) $\Rightarrow$ (iii). The subgroup generated by $a$ contains $ba \equiv 1$, hence contains everything.
+
+	(iii) $\Rightarrow$ (ii). If $a$ generates then some multiple $ba$ of $a$ is congruent to $1$.
 \end{proof}
 
-\begin{theorem}[Chinese Remainder Theorem]
-    Given $m_1$, $\dots$, $m_k \in \N$ pairwise coprime, the set of congruences $x \equiv a_i \pmod{m_i}$, $1 \leq i \leq k$, has a unique solution $x$ modulo $M = m_1 \cdots m_k$.
+Note that Euclid's algorithm computes the inverse for us, and does so in polynomial time; this is the reason that modular arithmetic is computationally cheap.
+
+\begin{definition}
+	We write $(\Z/n\Z)^\times$ for the group of units of $\Z/n\Z$, that is the set of classes satisfying the conditions of \autoref{lem:inverse}.
+\end{definition}
+
+\begin{definition}[Euler's Totient Function]
+	Let $\phi(n) = |(\Z/n\Z)^\times|$, so that $\phi(n)$ is the number of $1 \leq a \leq n$ with $(a, n) = 1$. By convention $\phi(1) = 1$.
+\end{definition}
+
+\begin{theorem}[Euler--Fermat]\label{thm:eulerfermat}
+	If $a, n \in \Z$ with $n \geq 1$ and $(a, n) = 1$, then $a^{\phi(n)} \equiv 1 \pmod n$.
 \end{theorem}
 \begin{proof}
-  Write $M_i=M / m_i$, then $\left(m_i, M_i\right)=1$ for all $i$. Therefore for each $i$ there is a $b_i$ such that $M_i b_i \equiv 1\pmod{m_i}$. We also have $M_i b_i \equiv 0 \pmod{m_j}$ for all $j \neq i$. Take $x=\sum_i a_i b_i M_i$. For uniqueness, if $x, y$ satisfies the system, then $m_i \mid x-y$ for all $i$, therefore $M \mid x-y$ since there is no prime that divides two distinct $m_i$'s.
+	By Lagrange's theorem applied to the group $(\Z/n\Z)^\times$, the order of $a$ divides the order $\phi(n)$ of the group.
 \end{proof}
 
-\begin{theorem}[Fermat's Little Theorem]
-  If $a, p \in \Z$ with $p$ prime, then $a^p \equiv a \pmod{p}$.
+\begin{theorem}[Fermat's Little Theorem]\label{thm:flt}
+	If $p$ is prime and $a \in \Z$, then $a^p \equiv a \pmod p$. If moreover $p \nmid a$, then $a^{p-1} \equiv 1 \pmod p$.
 \end{theorem}
 \begin{proof}
-  For $p = 2$ this is true. Then for $p \neq 2$, $a^p - (a-1)^p \equiv 1 \pmod{p}$ by the binomial theorem. 
+	If $p \mid a$ both sides are $0$. Otherwise $(a, p) = 1$ and $\phi(p) = p - 1$, so \autoref{thm:eulerfermat} applies.
 \end{proof}
 
-\begin{definition}[Euler Totient Function]
-Let $\phi(n)$ denote the number of integers $a$, $1 \leq a \leq n$, with $(a, n) = 1$.
+\begin{remark}
+	There is a proof of Fermat's little theorem which avoids group theory entirely: by the binomial theorem, $a^p - (a-1)^p \equiv 1 \pmod p$ since $p \mid \binom{p}{j}$ for $0 < j < p$, and then one inducts on $a$.
+\end{remark}
+
+\subsection{Systems of Linear Congruences}
+
+Suppose we want $x$ with
+$$
+x \equiv 4 \pmod 7, \qquad x \equiv 5 \pmod{12}.
+$$
+The trick is to solve the two `pure' problems first. If we can find $u$ with $u \equiv 1 \pmod 7$ and $u \equiv 0 \pmod{12}$, and $v$ with $v \equiv 0 \pmod 7$ and $v \equiv 1 \pmod{12}$, then $x = 4u + 5v$ works. And finding $u$ and $v$ is just Bézout: since $(7, 12) = 1$ we have $7 \times (-5) + 12 \times 3 = 1$, so we may take $u = 36$ and $v = -35$. Then $x = 4 \times 36 + 5 \times (-35) = -31$, and indeed $-31 = -35 + 4 \equiv 4 \pmod 7$ and $-31 = -36 + 5 \equiv 5 \pmod{12}$. The general solution is $x \equiv -31 \equiv 53 \pmod{84}$.
+
+Generalising is straightforward.
+
+\begin{theorem}[Chinese Remainder Theorem]\label{thm:crt}
+	Let $m_1, \dots, m_k \in \N$ be pairwise coprime and let $a_1, \dots, a_k \in \Z$. Then the system
+	$$
+	x \equiv a_i \pmod{m_i}, \qquad 1 \leq i \leq k
+	$$
+	has a solution $x$, unique modulo $M = m_1 \cdots m_k$.
+\end{theorem}
+\begin{proof}
+	Write $M_i = M/m_i$. Since the $m_j$ are pairwise coprime, $(m_i, M_i) = 1$, so there is $b_i$ with $M_i b_i \equiv 1 \pmod{m_i}$. Also $M_i b_i \equiv 0 \pmod{m_j}$ for $j \neq i$, since $m_j \mid M_i$. Hence $x = \sum_i a_i b_i M_i$ satisfies $x \equiv a_i b_i M_i \equiv a_i \pmod{m_i}$ for each $i$.
+
+	For uniqueness, if $x$ and $y$ both satisfy the system then $m_i \mid x - y$ for all $i$, and since the $m_i$ are pairwise coprime, $M \mid x - y$.
+\end{proof}
+
+Algebraically the theorem says that the reduction map
+$$
+\theta : \Z/M\Z \longrightarrow \Z/m_1\Z \times \cdots \times \Z/m_k\Z
+$$
+is an isomorphism of rings. It is worth drawing the picture in a small case, since it makes the statement obvious: below is $\Z/15\Z$ laid out as a $3 \times 5$ grid, the row recording the residue mod $3$ and the column the residue mod $5$. Every cell is filled exactly once, which is precisely the content of the theorem.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+	\foreach \k in {0,...,5} { \draw[thin, gray] (\k+0.5,0.5) -- (\k+0.5,-2.5); }
+	\foreach \k in {0,1,2,3} { \draw[thin, gray] (0.5,0.5-\k) -- (5.5,0.5-\k); }
+	\foreach \j in {0,...,4} { \node[font=\small] at (\j+1, 0.95) {$\j$}; }
+	\foreach \i in {0,...,2} { \node[font=\small] at (0.05, -\i) {$\i$}; }
+	\node[font=\small] at (3,1.5) {mod $5$};
+	\node[font=\small, rotate=90] at (-0.55,-1) {mod $3$};
+	\foreach \n/\i/\j in {0/0/0, 6/0/1, 12/0/2, 3/0/3, 9/0/4,
+	                      10/1/0, 1/1/1, 7/1/2, 13/1/3, 4/1/4,
+	                      5/2/0, 11/2/1, 2/2/2, 8/2/3, 14/2/4}
+		{ \node at (\j+1, -\i) {$\n$}; }
+\end{tikzpicture}
+\end{center}
+
+Since $\theta$ is a ring isomorphism it restricts to an isomorphism on unit groups,
+$$
+(\Z/M\Z)^\times \cong (\Z/m_1\Z)^\times \times \cdots \times (\Z/m_k\Z)^\times,
+$$
+and comparing sizes gives the following.
+
+\begin{corollary}\label{cor:phimult}
+	If $m_1, \dots, m_k$ are pairwise coprime and $M = \prod_i m_i$, then $\phi(M) = \prod_i \phi(m_i)$.
+\end{corollary}
+
+\begin{remark}
+	A warning: one cannot in general split off prime powers further. For example $\Z/4\Z$ is \emph{not} isomorphic to $(\Z/2\Z)^2$.
+\end{remark}
+
+\subsection{Multiplicative Functions}
+
+The totient function is the first of several arithmetic functions we will meet, all of which share a convenient property.
+
+\begin{definition}
+	A function $f : \N \to \C$ is \vocab{multiplicative} if $f(mn) = f(m)f(n)$ whenever $(m, n) = 1$, and \vocab{totally multiplicative} if $f(mn) = f(m)f(n)$ for all $m, n$.
+\end{definition}
+
+A multiplicative function with $f$ not identically zero has $f(1) = 1$, and is determined by its values on prime powers. Standard examples are $\phi$, the divisor count $\tau(n) = |\{d : d \mid n\}|$, and more generally $\sigma_k(n) = \sum_{d \mid n} d^k$ (so $\sigma_0 = \tau$ and $\sigma_1 = \sigma$, the sum of divisors). None of these is totally multiplicative: $\tau(4) = 3 \neq 4 = \tau(2)^2$.
+
+That $\sigma_k$ is multiplicative is not quite obvious, and it is worth isolating the reason.
+
+\begin{lemma}\label{lem:divsum}
+	If $f$ is multiplicative then so is $g(n) = \sum_{d \mid n} f(d)$.
+\end{lemma}
+\begin{proof}
+	If $(m, n) = 1$ then every divisor $d$ of $mn$ factors uniquely as $d = d_1 d_2$ with $d_1 \mid m$, $d_2 \mid n$, and automatically $(d_1, d_2) = 1$. So
+	$$
+	g(mn) = \sum_{d \mid mn} f(d) = \sum_{d_1 \mid m} \sum_{d_2 \mid n} f(d_1 d_2) = \left( \sum_{d_1 \mid m} f(d_1) \right) \left( \sum_{d_2 \mid n} f(d_2) \right) = g(m)g(n). \qedhere
+	$$
+\end{proof}
+
+Taking $f(n) = n^k$, which is totally multiplicative, gives that $\sigma_k$ is multiplicative.
+
+\begin{theorem}\label{thm:phiformula}
+	Let $p$ be prime and $m, n \geq 1$. Then
+	\begin{enumerate}[label=(\roman*)]
+		\item $\phi(p^m) = p^m - p^{m-1} = p^m(1 - p^{-1})$;
+		\item $\phi(n) = n \prod_{p \mid n} \left(1 - \frac 1p\right)$;
+		\item $\sum_{d \mid n} \phi(d) = n$.
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	(i) Among $1, \dots, p^m$ the integers not coprime to $p^m$ are exactly the multiples of $p$, of which there are $p^{m-1}$.
+
+	(ii) Follows from (i) and \autoref{cor:phimult}.
+
+	(iii) The function $g(n) = \sum_{d \mid n} \phi(d)$ is multiplicative by \autoref{lem:divsum}, and $g(p^m) = 1 + (p - 1) + \cdots + (p^m - p^{m-1}) = p^m$ telescopes. So $g$ and the identity agree on prime powers and are both multiplicative, hence agree everywhere.
+\end{proof}
+
+An alternative proof of (iii) which is worth remembering: classify $1 \leq m \leq n$ by the value of $(m, n)$. There are exactly $\phi(n/d)$ integers $m$ with $(m,n) = d$, namely $d$ times those integers up to $n/d$ coprime to $n/d$; summing over $d \mid n$ gives $n = \sum_{d \mid n} \phi(n/d) = \sum_{d \mid n} \phi(d)$.
+
+\subsection{Polynomial Congruences}
+
+Linear congruences we understand completely. What about higher degree? Here are three warnings.
+
+\begin{example}
+	\begin{enumerate}[label=(\roman*)]
+		\item $x^2 + 2 \equiv 0 \pmod 5$ has no solutions, since the squares mod $5$ are $0, 1, 4$.
+		\item $x^3 + 1 \equiv 0 \pmod 7$ has the three solutions $x \equiv 3, 5, 6$.
+		\item $x^2 - 1 \equiv 0 \pmod 8$ has the four solutions $x \equiv 1, 3, 5, 7$.
+	\end{enumerate}
+\end{example}
+
+The last of these should be startling: a quadratic with four roots. The explanation is that $\Z/8\Z$ is not an integral domain, and the familiar bound `degree $n$ implies at most $n$ roots' needs one.
+
+\begin{definition}
+	For a commutative ring $R$, write $R[X]$ for the ring of polynomials $a_0 + a_1 X + \cdots + a_n X^n$ with $a_i \in R$.
 \end{definition}
 
 \begin{remark}
-  Directly from the definition we get that $\phi(p^k) = p^k - p^{k-1}$ for $p$ prime, that $\phi(n)$ is multiplicative and thus $\phi(n) = n \prod_{p \mid n} (1 - 1/p)$.
+	Polynomials are equal when their coefficients are equal, which is not the same as the induced functions being equal. Over $R = \Z/p\Z$ the polynomials $X^p - X$ and $0$ are distinct elements of $R[X]$ but define the same function $R \to R$, by Fermat's little theorem.
 \end{remark}
 
-\begin{theorem}[Euler-Fermat]
-  If $a, n \in \Z$ have $(a, n) = 1$, then $a^{\phi(n)} \equiv 1 \pmod{p}$.
+\begin{proposition}[Division Algorithm for Polynomials]
+	Let $f, g \in R[X]$ with $\deg g = m > 0$ and the leading coefficient of $g$ invertible in $R$. Then there are $q, r \in R[X]$ with $f = qg + r$ and $\deg r < m$.
+\end{proposition}
+\begin{proof}
+	Induct on $n = \deg f$. If $n < m$ take $q = 0$, $r = f$. Otherwise write $f = aX^n + \cdots$ and $g = bX^m + \cdots$; then $f' = f - ab^{-1}X^{n - m}g$ has degree strictly less than $n$, so by induction $f' = q'g + r$ with $\deg r < m$, and $f = (ab^{-1}X^{n-m} + q')g + r$.
+\end{proof}
+
+\begin{corollary}[Remainder Theorem]
+	If $f \in R[X]$ and $\alpha \in R$ then $f(X) = (X - \alpha)q(X) + f(\alpha)$ for some $q \in R[X]$.
+\end{corollary}
+\begin{proof}
+	Divide by $X - \alpha$, whose leading coefficient is $1$; the remainder has degree $0$, so is a constant $r$, and putting $X = \alpha$ gives $r = f(\alpha)$.
+\end{proof}
+
+\begin{theorem}\label{thm:roots}
+	Let $R$ be an integral domain and let $f \in R[X]$ be nonzero of degree $n$. Then $f$ has at most $n$ distinct roots in $R$.
 \end{theorem}
 \begin{proof}
-By Lagrange's theorem (on groups), the order of $a$ in $(\Z/n\Z)^\times$ divides the order of the group, $\phi(n)$.
+	Induct on $n$. For $n = 0$ the polynomial is a nonzero constant and has no roots. For $n > 0$, if $f$ has no roots we are done; otherwise let $\alpha$ be a root, so $f = (X - \alpha)q$ with $\deg q = n - 1$. Any root $\beta$ of $f$ satisfies $(\beta - \alpha)q(\beta) = 0$, and since $R$ is a domain either $\beta = \alpha$ or $q(\beta) = 0$. By induction $q$ has at most $n - 1$ roots, so $f$ has at most $n$.
 \end{proof}
+
+\begin{corollary}[Lagrange]\label{cor:lagrange}
+	Let $p$ be prime and let $f(X) = a_0 + a_1 X + \cdots + a_n X^n$ be an integer polynomial with $p \nmid a_n$. Then $f(x) \equiv 0 \pmod p$ has at most $n$ solutions modulo $p$.
+\end{corollary}
+\begin{proof}
+	$\Z/p\Z$ is a field, hence an integral domain, and the reduction of $f$ has degree $n$ there.
+\end{proof}
+
+A pretty application:
 
 \begin{theorem}[Wilson]
-$(p - 1)! \equiv -1 \pmod{p}$.
+	If $p$ is prime then $(p-1)! \equiv -1 \pmod p$.
 \end{theorem}
 \begin{proof}
-  We can pair up terms in the product $(p-1)!$ with their inverses which then multiply to one, but this leaves only $1$ and $p - 1$ unpaired.
+	Consider $f(X) = X^{p-1} - 1 - \prod_{a=1}^{p-1}(X - a)$ over $\Z/p\Z$. Both terms are monic of degree $p - 1$, so $\deg f \leq p - 2$; but by Fermat's little theorem $f$ vanishes at each of $1, \dots, p-1$, which is $p - 1$ roots. By \autoref{thm:roots} we must have $f = 0$. Comparing constant terms, $-1 - (-1)^{p-1}(p-1)! \equiv 0$, so $(p-1)! \equiv -1 \pmod p$ for odd $p$, and directly for $p = 2$.
 \end{proof}
 
-\begin{theorem}[Lagrange]
-  Let $p$ be a prime and let $f(x)$ be an integer polynomial of degree $n$. Then $f(x) \equiv 0 \pmod{p}$ has at most $n$ solutions modulo $p$.
-\end{theorem}
+\begin{remark}
+	Alternatively, pair each $a \in \{1, \dots, p-1\}$ with its inverse. The pairing is a genuine involution with no fixed points except where $a^2 \equiv 1$, i.e.\ $a \equiv \pm 1$, so the product collapses to $1 \times (p-1) \equiv -1$.
+\end{remark}
+
+\subsection{Primitive Roots}
+
+We now come to the real business of this section: understanding $(\Z/n\Z)^\times$ as a group.
 
 \begin{definition}
-  For $a, n \in \Z$ with $n > 0$, the \emph{order} of $a$ modulo $n$ is the least positive integer $d$ such that $a^d \equiv 1 \pmod{n}$. We say that $a$ is a \emph{primitive root} if its order is $\phi(n)$.
+	For $(a, n) = 1$, the \vocab{order} of $a$ modulo $n$, written $\ord_n(a)$, is the least $d \geq 1$ with $a^d \equiv 1 \pmod n$. We call $a$ a \vocab{primitive root} modulo $n$ if $\ord_n(a) = \phi(n)$, that is, if $a$ generates $(\Z/n\Z)^\times$.
 \end{definition}
 
-\begin{theorem}
-There exists a primitive root mod $n$ if and only if $n = 2, 4, p^j$ or $2p^j$, where $p$ is an odd prime.
+By Lagrange's theorem $\ord_n(a) \mid \phi(n)$ always, and more generally $a^m \equiv 1 \pmod n$ if and only if $\ord_n(a) \mid m$.
+
+\begin{theorem}\label{thm:primroot}
+	If $p$ is prime then $(\Z/p\Z)^\times$ is cyclic.
 \end{theorem}
 \begin{proof}
-For $n = 2, 4$ this is easy. 
-We first find a primitive root modulo $p$.
-Let $\psi_p(d)$ count the number of $1, 2, \dots, p - 1$ of order $d$ modulo $p$. Observe that $\psi_p(d) = 0$ if $d \nmid p - 1$, so $\sum_{d \mid p -1} \psi_p(d) = p - 1$. If $a$ has order $d$, $\{a, a^2, \dots, a^d\}$ are solutions to $x^d \equiv 1 \pmod{p}$ and hence are all of them by Lagrange. 
-So $\psi(d) \leq \phi(d)$. But $\sum_{d \mid n} \phi(d) = n$ as $\phi(d)$ counts $\{m \mid (m, n) = n/d\}$. Thus $\psi(d) = \phi(d)$ for all $d$. In particular, there are $\phi(p - 1)$ elements of order $p - 1$. Let $g$ be one of them.
+	Let $\psi(d)$ be the number of elements of $(\Z/p\Z)^\times$ of order exactly $d$. Every element has some order dividing $p - 1$, so
+	$$
+	\sum_{d \mid p - 1} \psi(d) = p - 1.
+	$$
+	We claim $\psi(d) \leq \phi(d)$ for each $d \mid p-1$. Indeed, if $\psi(d) = 0$ this is clear. Otherwise pick $a$ of order $d$; then $a, a^2, \dots, a^d$ are $d$ distinct solutions of $X^d - 1 \equiv 0 \pmod p$, and by \autoref{cor:lagrange} they are \emph{all} of them. So every element of order $d$ lies in $\langle a \rangle$, and a cyclic group of order $d$ has exactly $\phi(d)$ generators. Hence $\psi(d) \leq \phi(d)$.
 
-If $n = p^j$, $j > 1$, suppose $g$ has orders $p^ks$ modulo $n$, $s \mid p - 1$. By Fermat's Little Theorem $g^{p^k s} \equiv g^s \pmod{p}$, so $s = p - 1$. $g^{p - 1} \equiv 1 \pmod{p^2}$ implies $(g + p)^{p - 1} \equiv 1 + (p - 1)g^{p - 2}p \not \equiv 1 \pmod{p^2}$, so WLOG $g^{p -1} \not \equiv 1 \pmod{p^2}$, thus $g$ is a primitive root mod $p^2$. $g^{p^{j -2} (p - 1)} = (1 + \ell p)^{p^{j - 2}} \equiv 1 + \ell p ^{j - 1} \not \equiv 1 \pmod{p^j}$, so $g$ is also a primitive root mod $p^j$ for all $j \geq 2$. One of $g, g+p^j$ is odd, and thus also serves as a primitive root mod $2p^j$, noting $\phi(2p^j) = \phi(p^j)$.
-
-For the other direction, for $n$ not a prime power, 
-$n = rs$ with $(r, s) = 1$ and $\phi(r), \phi(s)$ both even. $a^{\phi(n)}/2 \equiv a^{\phi(r) \phi(s)/2} \equiv 1$ modulo $r$ and $s$. So $a^{\phi(n)/2} \equiv 1 \pmod{n}$. 
-For $n = 2^j$, $j \geq 3$, $a^2 \equiv 1 \pmod{8}$ for all odd $a$, thus $a^{2^{k + 1}} \equiv (a^2)^{2^k} \equiv 1 \pmod{2^{k + 3}}$.
+	But $\sum_{d \mid p-1}\phi(d) = p - 1$ by \autoref{thm:phiformula}(iii), so the inequalities $\psi(d) \leq \phi(d)$ must all be equalities. In particular $\psi(p-1) = \phi(p-1) \geq 1$, so a primitive root exists.
 \end{proof}
 
+\begin{example}
+	Take $p = 19$, so $\phi(19) = 18$. The order of $2$ divides $18$, so it is one of $1, 2, 3, 6, 9, 18$. Now $2^9 = 512 = 26 \times 19 + 18 \equiv -1 \pmod{19}$, so the order does not divide $9$; and $2^6 = 64 \equiv 7 \not\equiv 1$. So $\ord_{19}(2) = 18$ and $2$ is a primitive root modulo $19$. There are $\phi(18) = 6$ primitive roots in all, namely $2, 3, 10, 13, 14, 15$.
+\end{example}
+
+\begin{remark}
+	The proof of \autoref{thm:primroot} is thoroughly non-constructive: it tells us that $\phi(p-1)$ of the residues are primitive roots but gives us no way of finding one except by trial. It is a genuinely open problem how small the least primitive root modulo $p$ must be. Unconditionally one can show it is $O(p^{1/4 + \varepsilon})$; on the generalised Riemann hypothesis one gets $O(\log^6 p)$. Relatedly:
+\end{remark}
+
+\begin{conjecture}[Artin]
+	For any integer $g$ which is not a perfect square and not $-1$, there are infinitely many primes $p$ for which $g$ is a primitive root.
+\end{conjecture}
+
+This is open for every single $g$, though it is known that at least one of $2, 3, 5$ works.
+
+Let us now deal with prime powers. Powers of $2$ are badly behaved.
+
+\begin{example}
+	$(\Z/8\Z)^\times = \{\pm 1, \pm 3\}$, and every element squares to $1$: $3^2 = 9 \equiv 1$, $5^2 = 25 \equiv 1$, $7^2 = 49 \equiv 1$. So $(\Z/8\Z)^\times$ has exponent $2$ and cannot be cyclic (it is a Klein four-group). Since reduction gives a surjection $(\Z/2^k\Z)^\times \to (\Z/8\Z)^\times$ for $k \geq 3$, and a quotient of a cyclic group is cyclic, no $(\Z/2^k\Z)^\times$ with $k \geq 3$ is cyclic either.
+\end{example}
+
+For odd primes the situation is much better, and rests on the following lifting computation.
+
+\begin{lemma}\label{lem:lift}
+	Let $p > 2$ be prime, $k \geq 1$ and $y \in \Z$. Then $(1 + p^k y)^p \equiv 1 + p^{k+1}y \pmod{p^{k+2}}$.
+\end{lemma}
+\begin{proof}
+	Expanding by the binomial theorem,
+	$$
+	(1 + p^k y)^p = 1 + p^{k+1}y + \sum_{j = 2}^{p-1} \binom{p}{j}(p^k y)^j + p^{kp}y^p.
+	$$
+	For $2 \leq j \leq p - 1$ we have $p \mid \binom pj$ and $kj \geq k + 2$ (since $k \geq 1$, $j \geq 2$), so those terms are divisible by $p^{k+2}$ comfortably. The last term has exponent $kp \geq 3k \geq k + 2$ since $p \geq 3$ and $k \geq 1$. The claim follows.
+\end{proof}
+
+\begin{remark}
+	It is exactly here that $p = 2$ fails: for $p = 2, k = 1$ we would need $kp = 2 \geq k + 2 = 3$, which is false, and indeed $(1 + 2)^2 = 9 \equiv 1 \not\equiv 1 + 4 \pmod 8$. For $p = 2$ and $k \geq 2$ the same proof does work.
+\end{remark}
+
+\begin{lemma}\label{lem:primroot2}
+	Let $p > 2$ be prime and $k \geq 1$. If $g$ is a primitive root modulo $p$ with $g^{p-1} \not\equiv 1 \pmod{p^2}$, then $g$ is a primitive root modulo $p^k$ for every $k \geq 1$.
+\end{lemma}
+\begin{proof}
+	The case $k = 1$ is given, so assume $k \geq 2$. Let $d = \ord_{p^k}(g)$, so $d \mid \phi(p^k) = p^{k-1}(p-1)$. Reducing modulo $p$, we see $g^d \equiv 1 \pmod p$, so $(p - 1) \mid d$. Hence $d = p^{j}(p-1)$ for some $0 \leq j \leq k - 1$, and it suffices to rule out $j \leq k - 2$; equivalently to show $g^{p^{k-2}(p-1)} \not\equiv 1 \pmod{p^k}$.
+
+	Write $g^{p-1} = 1 + py$ with $p \nmid y$, which is exactly the hypothesis. Applying \autoref{lem:lift} repeatedly,
+	$$
+	g^{p^{i}(p-1)} = (1 + py)^{p^i} \equiv 1 + p^{i+1}y \pmod{p^{i + 2}},
+	$$
+	by induction on $i$. Taking $i = k - 2$ gives $g^{p^{k-2}(p-1)} \equiv 1 + p^{k-1}y \pmod{p^{k}}$, and $p \nmid y$ means this is not $1 \pmod{p^k}$.
+\end{proof}
+
+\begin{theorem}\label{thm:pkcyclic}
+	If $p > 2$ is prime then $(\Z/p^k\Z)^\times$ is cyclic for every $k \geq 1$.
+\end{theorem}
+\begin{proof}
+	Let $g$ be a primitive root modulo $p$. If $g^{p-1} \not\equiv 1 \pmod{p^2}$ we are done by \autoref{lem:primroot2}. Otherwise set $h = (1 + p)g$, which is still a primitive root modulo $p$ since $h \equiv g \pmod p$. Now
+	$$
+	h^{p-1} = (1+p)^{p-1}g^{p-1} \equiv (1 + p)^{p-1} \equiv 1 + (p-1)p \equiv 1 - p \pmod{p^2},
+	$$
+	which is not $1$ modulo $p^2$. So $h$ satisfies the hypothesis of \autoref{lem:primroot2}.
+\end{proof}
+
+\begin{example}
+	We saw that $3$ is a primitive root modulo $7$. Now $3^6 - 1 = 728 = 7 \times 104$, and $104$ is not divisible by $7$, so $3^6 \not\equiv 1 \pmod{49}$. Hence $3$ is a primitive root modulo $7^k$ for every $k$.
+\end{example}
+
+We can now settle the question completely.
+
+\begin{theorem}
+	There is a primitive root modulo $n$ if and only if $n = 1, 2, 4, p^k$ or $2p^k$, where $p$ is an odd prime.
+\end{theorem}
+\begin{proof}
+	For $n = 1, 2, 4$ one checks directly ($1$, $1$ and $3$ respectively). The case $n = p^k$ is \autoref{thm:pkcyclic}. For $n = 2p^k$, note $\phi(2p^k) = \phi(p^k)$, and if $g$ is a primitive root modulo $p^k$ then whichever of $g$ and $g + p^k$ is odd is coprime to $2p^k$ and still has order $\phi(p^k)$ modulo $p^k$, hence modulo $2p^k$.
+
+	Conversely, suppose $n$ is none of these. If $n = 2^k$ with $k \geq 3$ we have seen that $(\Z/n\Z)^\times$ is not cyclic. Otherwise $n$ has at least two coprime factors $n = rs$ with $r, s > 2$ and $(r,s) = 1$, so $\phi(r)$ and $\phi(s)$ are both even. Then for any $a$ coprime to $n$,
+	$$
+	a^{\phi(n)/2} = a^{\phi(r)\phi(s)/2} = \left(a^{\phi(r)}\right)^{\phi(s)/2} \equiv 1 \pmod r,
+	$$
+	and symmetrically modulo $s$, so $a^{\phi(n)/2} \equiv 1 \pmod n$ and no element has order $\phi(n)$.
+\end{proof}
+
+For completeness, here is the structure in the remaining case.
+
+\begin{proposition}
+	For $k \geq 3$ we have $(\Z/2^k\Z)^\times \cong \Z/2\Z \times \Z/2^{k-2}\Z$, generated by $-1$ and $5$.
+\end{proposition}
+\begin{proof}
+	The version of \autoref{lem:lift} valid for $p = 2, k \geq 2$ gives $(1 + 4y)^{2^i} \equiv 1 + 2^{i+2}y \pmod{2^{i+3}}$, and applying this with $y = 1$ shows $5^{2^{k-3}} \equiv 1 + 2^{k-1} \not\equiv 1 \pmod{2^k}$, whereas $5^{2^{k-2}} \equiv 1 \pmod{2^k}$. So $5$ has order $2^{k-2}$. Also $-1 \notin \langle 5 \rangle$, since every power of $5$ is $1 \pmod 4$. Hence $\langle -1 \rangle \times \langle 5 \rangle$ has order $2^{k-1} = \phi(2^k)$ and is everything.
+\end{proof}
+
+Combining with the Chinese remainder theorem, we have a complete description of $(\Z/n\Z)^\times$ for every $n$: it is a product of cyclic groups, one for each prime power in the factorisation of $n$ (with the powers of $2$ contributing a $\Z/2\Z \times \Z/2^{k-2}\Z$).
 
 \section{Quadratic Residues}
 
+Having dealt with linear congruences, the next case is quadratic. When is $x^2 \equiv a \pmod n$ soluble? By the Chinese remainder theorem it is enough to answer this for prime powers, and by a lifting argument much like \autoref{lem:lift} it is essentially enough to answer it for primes. So we fix an odd prime $p$ and ask which $a$ are squares modulo $p$. The answer, quadratic reciprocity, is one of the great theorems of the subject, and is genuinely surprising: whether $q$ is a square mod $p$ turns out to be almost the same question as whether $p$ is a square mod $q$, and there is no obvious reason why the two should have anything to do with one another.
+
+\subsection{Euler's Criterion and Gauss's Lemma}
+
 \begin{definition}
-We call $a$ a \emph{quadratic residue} modulo $n$ if there exists $x$ such that $x^2 \equiv a \pmod{n}$.
+	Let $p$ be an odd prime and $a \in \Z$ with $p \nmid a$. We say $a$ is a \vocab{quadratic residue} modulo $p$ if $x^2 \equiv a \pmod p$ for some $x$, and a \vocab{quadratic non-residue} otherwise.
+\end{definition}
+
+\begin{lemma}\label{lem:halfqr}
+	Let $p$ be an odd prime. There are exactly $(p-1)/2$ quadratic residues modulo $p$.
+\end{lemma}
+\begin{proof}
+	Consider $\sigma : (\Z/p\Z)^\times \to (\Z/p\Z)^\times$, $x \mapsto x^2$. This is two-to-one, since $x^2 \equiv y^2$ if and only if $p \mid (x+y)(x-y)$ if and only if $x \equiv \pm y$, and $y \not\equiv -y$ as $p$ is odd. The residues are the image of $\sigma$, which therefore has size $(p-1)/2$.
+\end{proof}
+
+\begin{remark}
+	Equivalently, taking a primitive root $g$, the residues are exactly the even powers $\{g^{2n}\}$, of which there are $(p-1)/2$. So the squares form the unique index-two subgroup of the cyclic group $(\Z/p\Z)^\times$.
+\end{remark}
+
+\begin{definition}[Legendre Symbol]
+	Let $p$ be an odd prime and $a \in \Z$. The \vocab{Legendre symbol} is
+	$$
+	\leg ap = \begin{cases}
+		0 & \text{if } p \mid a, \\
+		1 & \text{if } a \text{ is a quadratic residue modulo } p, \\
+		-1 & \text{if } a \text{ is a quadratic non-residue modulo } p.
+	\end{cases}
+	$$
+\end{definition}
+
+Here is a picture of the situation modulo $17$: the residues $1, 2, 4, 8, 9, 13, 15, 16$ are shown as filled dots and the non-residues $3, 5, 6, 7, 10, 11, 12, 14$ as open ones.
+
+\begin{center}
+\begin{tikzpicture}
+	\draw[thin, gray] (0,0) circle (1.85);
+	\foreach \k in {1,2,4,8,9,13,15,16} {
+		\pgfmathsetmacro{\ang}{90 - \k*360/17}
+		\fill[blue] (\ang:1.85) circle (2.6pt);
+		\node[font=\small, blue] at (\ang:2.28) {$\k$};
+	}
+	\foreach \k in {3,5,6,7,10,11,12,14} {
+		\pgfmathsetmacro{\ang}{90 - \k*360/17}
+		\draw[blue] (\ang:1.85) circle (2.6pt);
+		\node[font=\small] at (\ang:2.28) {$\k$};
+	}
+	\fill[gray] (90:1.85) circle (1.6pt);
+	\node[font=\small, gray] at (90:2.28) {$0$};
+\end{tikzpicture}
+\end{center}
+
+Notice that the picture is symmetric about the vertical axis, which reflects the fact that $-1$ is a residue mod $17$ (so $a$ and $-a$ are residues together). We will prove that shortly. Notice also that there is no visible pattern in which dots are filled -- and indeed finding the least non-residue $n(p)$ quickly is an open problem, the best unconditional bound being $n(p) = O(p^\theta)$ for any $\theta > 1/(4\sqrt e)$.
+
+The first serious tool is the following.
+
+\begin{theorem}[Euler's Criterion]\label{thm:euler}
+	Let $p$ be an odd prime and $a \in \Z$. Then
+	$$
+	\leg ap \equiv a^{(p-1)/2} \pmod p.
+	$$
+\end{theorem}
+\begin{proof}
+	If $p \mid a$ both sides are $0$, so assume $p \nmid a$. By Fermat's little theorem $(a^{(p-1)/2})^2 = a^{p-1} \equiv 1$, so $a^{(p-1)/2} \equiv \pm 1 \pmod p$.
+
+	If $a \equiv x^2$ is a residue then $a^{(p-1)/2} \equiv x^{p-1} \equiv 1$. So all $(p-1)/2$ residues are roots of $X^{(p-1)/2} - 1$; but by \autoref{cor:lagrange} this polynomial has at most $(p-1)/2$ roots, so they are exactly the residues. Hence if $a$ is a non-residue then $a^{(p-1)/2} \equiv -1$.
+\end{proof}
+
+Since $p$ is odd, $0, 1, -1$ are distinct modulo $p$, so this congruence really does determine the symbol. Two immediate consequences:
+
+\begin{corollary}\label{cor:multiplicative}
+	For an odd prime $p$ and $a, b \in \Z$,
+	$$
+	\leg{ab}p = \leg ap \leg bp.
+	$$
+\end{corollary}
+
+In other words $a \mapsto \left( \frac ap \right)$ is a homomorphism $(\Z/p\Z)^\times \to \{\pm 1\}$. In particular the product of two non-residues is a residue, which is not obvious from the definition.
+
+\begin{corollary}\label{cor:minusone}
+	For an odd prime $p$,
+	$$
+	\leg{-1}p = (-1)^{(p-1)/2} = \begin{cases}
+		1 & \text{if } p \equiv 1 \pmod 4, \\
+		-1 & \text{if } p \equiv 3 \pmod 4.
+	\end{cases}
+	$$
+\end{corollary}
+
+Euler's criterion is already an algorithm: computing $a^{(p-1)/2} \bmod p$ by repeated squaring (write $(p-1)/2$ in binary and multiply together the relevant $a^{2^i}$) takes $O(\log p)$ multiplications, so the Legendre symbol is computable in polynomial time. We will find something better still, but first we need a more refined counting statement.
+
+\begin{definition}
+	The \vocab{numerically least residue} of $a$ modulo $n$ is the unique $a'$ with $a' \equiv a \pmod n$ and $-n/2 < a' \leq n/2$.
+\end{definition}
+
+\begin{theorem}[Gauss's Lemma]\label{thm:gauss}
+	Let $p$ be an odd prime and $a$ with $p \nmid a$. For $1 \leq j \leq (p-1)/2$, let $a_j$ be the numerically least residue of $aj$ modulo $p$. Then
+	$$
+	\leg ap = (-1)^\mu, \qquad \mu = \left|\left\{ 1 \leq j \leq \tfrac{p-1}2 : a_j < 0 \right\}\right|.
+	$$
+\end{theorem}
+\begin{proof}
+	Write $a_j = \varepsilon_j c_j$ with $\varepsilon_j \in \{\pm 1\}$ and $1 \leq c_j \leq (p-1)/2$; then $\mu = |\{j : \varepsilon_j = -1\}|$. We claim the $c_j$ are distinct. If $c_j = c_k$ then $aj \equiv \pm ak \pmod p$, so $j \equiv \pm k$; but $j, k \in \{1, \dots, (p-1)/2\}$, so $j \equiv -k$ is impossible and $j = k$.
+
+	Hence $\{c_1, \dots, c_{(p-1)/2}\} = \{1, \dots, (p-1)/2\}$ and
+	$$
+	a^{(p-1)/2}\left(\tfrac{p-1}2\right)! \equiv \prod_{j=1}^{(p-1)/2}(aj) \equiv \prod_{j=1}^{(p-1)/2}\varepsilon_j c_j \equiv (-1)^\mu \left(\tfrac{p-1}2\right)! \pmod p.
+	$$
+	Cancelling the factorial, which is coprime to $p$, gives $a^{(p-1)/2} \equiv (-1)^\mu$, and Euler's criterion finishes the job.
+\end{proof}
+
+Let us use it.
+
+\begin{example}\label{ex:two}
+	Take $a = 2$. Then $2j$ for $1 \leq j \leq (p-1)/2$ runs over the even numbers $2, 4, \dots, p-1$, and $2j$ has negative least residue exactly when $2j > p/2$, i.e.\ $j > p/4$. So
+	$$
+	\mu = \left|\left\{ \tfrac p4 < j \leq \tfrac{p-1}2 \right\}\right| = \frac{p-1}{2} - \left\lfloor \frac p4 \right\rfloor.
+	$$
+	Checking the four cases $p \equiv 1, 3, 5, 7 \pmod 8$ gives $\mu$ even, odd, odd, even respectively, so
+	$$
+	\leg 2p = (-1)^{(p^2 - 1)/8} = \begin{cases}
+		1 & \text{if } p \equiv \pm 1 \pmod 8, \\
+		-1 & \text{if } p \equiv \pm 3 \pmod 8.
+	\end{cases}
+	$$
+	For instance $\left( \frac2{17} \right) = 1$, consistent with $6^2 = 36 \equiv 2 \pmod{17}$.
+\end{example}
+
+\begin{example}
+	Taking $a = -1$, every $-j$ has negative least residue, so $\mu = (p-1)/2$ and we recover \autoref{cor:minusone}.
+\end{example}
+
+\subsection{Quadratic Reciprocity}
+
+\begin{theorem}[Law of Quadratic Reciprocity]\label{thm:qr}
+	Let $p$ and $q$ be distinct odd primes. Then
+	$$
+	\leg pq \leg qp = (-1)^{\frac{p-1}2 \cdot \frac{q-1}2}.
+	$$
+	Equivalently, $\left( \frac pq \right) = \left( \frac qp \right)$ unless $p \equiv q \equiv 3 \pmod 4$, in which case $\left( \frac pq \right) = -\left( \frac qp \right)$.
+\end{theorem}
+
+Before the proof, let us set up the counting. Consider the rectangle of lattice points
+$$
+S = \left\{ (j, m) \in \Z^2 : 1 \leq j \leq \tfrac{p-1}2, \ 1 \leq m \leq \tfrac{q-1}{2} \right\},
+$$
+so that $|S| = \frac{p-1}2 \cdot \frac{q-1}2$. By Gauss's lemma, $\left( \frac qp \right) = (-1)^\mu$ where $\mu$ counts those $j$ with $qj$ having negative least residue mod $p$, that is, those $j$ for which there exists $m$ with
+$$
+\left(m - \tfrac12\right)p < qj < mp, \qquad \text{i.e.} \qquad 0 < mp - qj < \tfrac p2.
+$$
+Such an $m$ is unique, and satisfies $1 \leq m \leq (q-1)/2$: indeed $mp < qj + p/2 \leq q(p-1)/2 + p/2 < qp/2$, so $m < q/2$. So $\mu = |\{(j,m) \in S : 0 < mp - qj < p/2\}|$, and symmetrically $\left( \frac pq \right) = (-1)^\nu$ with $\nu = |\{(j,m) \in S : 0 < qj - mp < q/2\}|$.
+
+Note that $mp - qj$ is never zero on $S$, since $p \nmid qj$. So $S$ is partitioned into four pieces: the two `bands' counted by $\mu$ and $\nu$, together with
+$$
+A = \left\{ (j,m) \in S : mp - qj > \tfrac p2 \right\}, \qquad B = \left\{ (j,m) \in S : qj - mp > \tfrac q2 \right\}.
+$$
+The picture for $p = 11$, $q = 7$ looks as follows, with the fifteen points of $S$ drawn and the three lines $mp = qj$, $mp - qj = p/2$ and $qj - mp = q/2$ marked. The filled points are those counted by $\mu$ and $\nu$; the open points make up $A$ (above) and $B$ (below).
+
+\begin{center}
+\begin{tikzpicture}[xscale=1.35, yscale=1.0]
+	\draw[gray, thin] (0.5,0.5) rectangle (5.5,3.5);
+	% line 11y = 7x
+	\draw[thin] (0.5,0.3182) -- (5.5,3.5);
+	% line 11y - 7x = 5.5
+	\draw[thin, dashed] (0.5,0.8182) -- (4.7143,3.5);
+	% line 7x - 11y = 3.5
+	\draw[thin, dashed] (1.2857,0.5) -- (5.5,3.1818);
+	\foreach \x/\y in {1/1, 3/2, 4/3, 2/1, 5/3} { \fill[blue] (\x,\y) circle (2.4pt); }
+	\foreach \x/\y in {1/2, 1/3, 2/2, 2/3, 3/3, 3/1, 4/1, 4/2, 5/1, 5/2} { \draw[blue] (\x,\y) circle (2.4pt); }
+	\node[font=\small] at (1.5,3.3) {$A$};
+	\node[font=\small] at (4.5,0.72) {$B$};
+	\foreach \x in {1,...,5} { \node[font=\small] at (\x,0.2) {$\x$}; }
+	\foreach \y in {1,2,3} { \node[font=\small] at (0.28,\y) {$\y$}; }
+	\node[font=\small] at (3,-0.25) {$j$};
+	\node[font=\small] at (-0.15,2) {$m$};
+	\draw[->, gray, thin] (2.05,2.9) to[bend left=20] (3.9,1.1);
+\end{tikzpicture}
+\end{center}
+
+Here $\mu = 3$ (the points $(1,1), (3,2), (4,3)$) and $\nu = 2$ (the points $(2,1), (5,3)$), while $|A| = |B| = 5$. The grey arrow indicates the symmetry which pairs $A$ with $B$; it takes $(2,3)$ to $(4,1)$.
+
+\begin{proof}[Proof of \autoref{thm:qr}]
+	With the notation above, $S$ is the disjoint union of the $\mu$-set, the $\nu$-set, $A$ and $B$, so
+	$$
+	\frac{p-1}2 \cdot \frac{q-1}2 = |S| = \mu + \nu + |A| + |B|.
+	$$
+	We claim $|A| = |B|$. Consider the map
+	$$
+	(j, m) \longmapsto (j', m') = \left(\tfrac{p+1}2 - j, \ \tfrac{q+1}2 - m\right),
+	$$
+	which is an involution of $S$. A short computation gives
+	$$
+	qj' - m'p = q\left(\tfrac{p+1}2 - j\right) - p\left(\tfrac{q+1}2 - m\right) = \frac{q - p}{2} - (qj - mp) = (mp - qj) - \frac{p - q}{2}.
+	$$
+	So if $(j,m) \in A$, meaning $mp - qj > p/2$, then $qj' - m'p > p/2 - (p-q)/2 = q/2$ and $(j', m') \in B$. By symmetry the involution maps $B$ into $A$, so it restricts to a bijection $A \to B$ and $|A| = |B|$.
+
+	Therefore $\mu + \nu \equiv |S| = \frac{p-1}2\cdot\frac{q-1}2 \pmod 2$, and
+	$$
+	\leg pq \leg qp = (-1)^{\nu}(-1)^{\mu} = (-1)^{\frac{p-1}2 \cdot \frac{q-1}2}. \qedhere
+	$$
+\end{proof}
+
+The practical content is that $\left( \frac pq \right)$ is determined by $q \bmod p$ together with $p, q \bmod 4$, and that we may flip symbols upside down at the cost of a sign. Combined with \autoref{cor:multiplicative}, \autoref{cor:minusone} and \autoref{ex:two}, this gives a fast way to evaluate symbols.
+
+\begin{example}
+	\begin{enumerate}[label=(\roman*)]
+		\item For a prime $p \geq 5$, reciprocity gives $\left( \frac 3p \right) = (-1)^{(p-1)/2}\left( \frac p3 \right)$, and unwinding the four cases modulo $12$,
+		$$
+		\leg 3p = \begin{cases} 1 & \text{if } p \equiv \pm 1 \pmod{12}, \\ -1 & \text{if } p \equiv \pm 5 \pmod{12}. \end{cases}
+		$$
+		\item Since $73 \equiv 1 \pmod 4$ we may flip freely:
+		$$
+		\leg{19}{73} = \leg{73}{19} = \leg{16}{19} = 1,
+		$$
+		so $19$ is a quadratic residue modulo $73$. (Indeed $26^2 = 676 = 9 \times 73 + 19$.)
+		\item A longer one:
+		\begin{align*}
+			\leg{34}{97} &= \leg{2}{97}\leg{17}{97} = \leg{17}{97} = \leg{97}{17} \\
+			&= \leg{12}{17} = \leg{3}{17}\leg{2}{17}^2 = \leg{3}{17} = -1,
+		\end{align*}
+		using $97 \equiv 1 \pmod 8$ for the second symbol and $17 \equiv 5 \pmod{12}$ at the end. So $34$ is a non-residue modulo $97$.
+	\end{enumerate}
+\end{example}
+
+There is a catch. To apply reciprocity to $\left( \frac an \right)$ we must first factorise $a$ into primes, and factorisation is expensive. The fix is to extend the symbol so that it makes sense for composite `denominators' too, and to check that reciprocity survives.
+
+\subsection{The Jacobi Symbol}
+
+\begin{definition}[Jacobi Symbol]
+	Let $n \geq 1$ be odd with $n = p_1 \cdots p_k$ a factorisation into (not necessarily distinct) primes, and let $a \in \Z$. The \vocab{Jacobi symbol} is
+	$$
+	\leg an = \prod_{i=1}^k \leg a{p_i},
+	$$
+	a product of Legendre symbols, with the convention $\left( \frac a1 \right) = 1$.
+\end{definition}
+
+Note $\left( \frac an \right) = 0$ exactly when $(a, n) \neq 1$.
+
+\begin{proposition}\label{prop:jacobi}
+	Let $m, n \geq 1$ be odd and $a, b \in \Z$. Then
+	\begin{enumerate}[label=(\roman*)]
+		\item $a \equiv b \pmod n$ implies $\left( \frac an \right) = \left( \frac bn \right)$;
+		\item $\left( \frac{ab}n \right) = \left( \frac an \right)\left( \frac bn \right)$ and $\left( \frac a{mn} \right) = \left( \frac am \right)\left( \frac an \right)$;
+		\item $\left( \frac{-1}n \right) = (-1)^{(n-1)/2}$ and $\left( \frac 2n \right) = (-1)^{(n^2 - 1)/8}$.
+	\end{enumerate}
+\end{proposition}
+\begin{proof}
+	(i) and (ii) are immediate from the definition and the corresponding facts for the Legendre symbol. For (iii) one needs the elementary identities
+	$$
+	\frac{x - 1}{2} + \frac{y-1}2 \equiv \frac{xy - 1}{2} \pmod 2, \qquad \frac{x^2 - 1}8 + \frac{y^2 - 1}8 \equiv \frac{(xy)^2 - 1}8 \pmod 2
+	$$
+	for odd $x, y$; the first because $(x-1)(y-1) \equiv 0 \pmod 4$, the second because $(x^2 - 1)(y^2-1) \equiv 0 \pmod{16}$. Writing $n = p_1 \cdots p_k$ and summing the identity over the factors gives the result.
+\end{proof}
+
+\begin{theorem}[Reciprocity for the Jacobi Symbol]\label{thm:jacobirecip}
+	Let $m, n \geq 1$ be odd. Then
+	$$
+	\leg mn \leg nm = (-1)^{\frac{m-1}2\cdot\frac{n-1}2}.
+	$$
+\end{theorem}
+\begin{proof}
+	If $(m, n) > 1$ both sides of $\left( \frac mn \right)\left( \frac nm \right)$ vanish, so assume $(m,n) = 1$ and write $m = p_1 \cdots p_k$, $n = q_1 \cdots q_l$ with $\{p_i\} \cap \{q_j\} = \emptyset$. By \autoref{thm:qr},
+	\begin{align*}
+		\leg mn &= \prod_{i=1}^k \prod_{j=1}^l \leg{p_i}{q_j} = \prod_{i=1}^k\prod_{j=1}^l (-1)^{\frac{p_i - 1}2 \cdot \frac{q_j - 1}2}\leg{q_j}{p_i}.
+	\end{align*}
+	Using the first identity in the proof of \autoref{prop:jacobi} repeatedly, $\sum_i \frac{p_i - 1}{2} \equiv \frac{m-1}{2}$ and $\sum_j \frac{q_j-1}2 \equiv \frac{n-1}2 \pmod 2$, so the accumulated sign is $(-1)^{\frac{m-1}2\cdot\frac{n-1}2}$, and the remaining product is $\left( \frac nm \right)$.
+\end{proof}
+
+\begin{remark}
+	The Jacobi symbol is \emph{not} a test for quadratic residuacity. If $a$ is a square modulo $n$ then certainly $\left( \frac an \right) = 1$, but the converse fails: $\left( \frac2{15} \right) = \left( \frac23 \right)\left( \frac25 \right) = (-1)(-1) = 1$, yet $2$ is not a square modulo $15$. In general the symbol only records the \emph{parity} of the number of prime factors modulo which $a$ fails to be a square.
+\end{remark}
+
+What the Jacobi symbol buys us is speed. To compute $\left( \frac an \right)$ we may reduce $a$ modulo $n$, pull out powers of $2$ using \autoref{prop:jacobi}(iii), and flip using \autoref{thm:jacobirecip} -- and at no point do we need to factorise anything. The resulting algorithm is essentially Euclid's, and runs in polynomial time.
+
+\begin{example}
+	Let us evaluate $\left( \frac{7411}{9283} \right)$. Both are odd; $7411 \equiv 3$ and $9283 \equiv 3 \pmod 4$, so flipping costs a sign:
+	\begin{align*}
+		\leg{7411}{9283} &= -\leg{9283}{7411} = -\leg{1872}{7411} = -\leg{2}{7411}^4\leg{117}{7411} = -\leg{117}{7411},
+	\end{align*}
+	since $1872 = 2^4 \times 117$. Now $117 \equiv 1 \pmod 4$, so
+	$$
+	-\leg{117}{7411} = -\leg{7411}{117} = -\leg{40}{117} = -\leg 2{117}^3 \leg 5{117} = -\leg{5}{117},
+	$$
+	as $117 \equiv 5 \pmod 8$ gives $\left( \frac2{117} \right) = -1$ and $(-1)^3 = -1$ combines with $40 = 2^3 \times 5$. Finally $\left( \frac 5{117} \right) = \left( \frac{117}5 \right) = \left( \frac 25 \right) = -1$, so
+	$$
+	\leg{7411}{9283} = -(-1)\cdot(-1) = -1.
+	$$
+	No factorisation was required at any stage. Note that $9283 = 9283$ is in fact prime, so this really does tell us that $7411$ is a non-residue modulo $9283$.
+\end{example}
+
+\begin{remark}
+	One may ask about higher powers. If $p \equiv 2 \pmod 3$ then every element of $(\Z/p\Z)^\times$ is a cube (the map $x \mapsto x^3$ is injective since $3 \nmid p-1$), so the question is only interesting for $p \equiv 1 \pmod 3$, where one defines a cubic residue symbol taking values in the cube roots of unity. The ultimate generalisation of all such statements is Artin's reciprocity law, which describes how primes factorise in abelian extensions of number fields; that is a story for Part III.
+\end{remark}
+
+\section{Binary Quadratic Forms}
+
+Here is a question which looks like it belongs to the previous section but does not quite fit there: which integers are a sum of two squares? Equivalently, which $N$ are in the image of the function $f(x,y) = x^2 + y^2$? Fermat knew the answer.
+
+\begin{theorem}[Sums of Two Squares]\label{thm:twosquares}
+	Let $N \in \N$. Then $N = x^2 + y^2$ for some $x, y \in \Z$ if and only if every prime $p \equiv 3 \pmod 4$ divides $N$ to an even power.
+\end{theorem}
+
+We can immediately do half of it.
+
+\begin{proof}[Proof of the `only if' direction]
+	Suppose $N = x^2 + y^2$ and $p \equiv 3 \pmod 4$ is a prime dividing $N$. If $p \nmid y$ then $y$ is invertible mod $p$ and $(xy^{-1})^2 \equiv -1 \pmod p$, contradicting \autoref{cor:minusone}. So $p \mid y$, and then $p \mid x$ too, so $p^2 \mid N$ and $N/p^2 = (x/p)^2 + (y/p)^2$. Repeating, $p$ divides $N$ to an even power.
+\end{proof}
+
+For the converse we may reduce a good deal. Writing $N = M^2 K$ with $K$ squarefree, we need only represent $K$; and by the identity
+$$
+(x^2 + y^2)(w^2 + z^2) = (xw + yz)^2 + (xz - yw)^2,
+$$
+which says that the norm on $\Z[i]$ is multiplicative, it suffices to represent each prime factor of $K$. Since $2 = 1^2 + 1^2$, everything comes down to the following: \emph{every prime $p \equiv 1 \pmod 4$ is a sum of two squares}. This turns out to require a genuinely new idea, and the idea is to consider not just $x^2 + y^2$ but all quadratic forms at once.
+
+\subsection{Equivalence and Discriminants}
+
+\begin{definition}
+	A \vocab{binary quadratic form} (BQF) is a polynomial $f(x,y) = ax^2 + bxy + cy^2$ with $a, b, c \in \Z$. We often write $f = (a,b,c)$ for short. We say $f$ \vocab{represents} $n$ if $n = f(x,y)$ for some $x, y \in \Z$.
+\end{definition}
+
+It is helpful to record $f$ as a matrix. Setting
+$$
+M_f = \begin{pmatrix} a & b/2 \\ b/2 & c\end{pmatrix}, \qquad f(x,y) = \begin{pmatrix} x & y \end{pmatrix} M_f \begin{pmatrix} x \\ y\end{pmatrix}.
+$$
+The entries of $M_f$ need not be integers, but its determinant is a quarter of an integer, which is all we shall need.
+
+\begin{definition}
+	A \vocab{unimodular substitution} is a change of variables $(X, Y) = (x, y)A$ with $A \in \SL_2(\Z)$. Two BQFs $f, g$ are \vocab{equivalent}, written $f \sim g$, if $g(x,y) = f(X, Y)$ for some such substitution.
+\end{definition}
+
+Since $\SL_2(\Z)$ is a group, this is an equivalence relation; concretely, $\SL_2(\Z)$ acts on forms by $M_g = A M_f A^\intercal$. Because $A$ and $A^{-1}$ both have integer entries, equivalent forms represent exactly the same integers -- which is the whole point of the definition.
+
+\begin{example}
+	Let $f = (1, 0, 1)$ and $g = (4, 12, 10)$. Then
+	$$
+	g(x,y) = 4x^2 + 12xy + 10y^2 = (2x + 3y)^2 + y^2 = f(2x + 3y, y),
+	$$
+	so $g$ is obtained from $f$ by the substitution with matrix $\left(\begin{smallmatrix} 2 & 3 \\ 0 & 1\end{smallmatrix}\right)$. But this matrix has determinant $2$, not $1$, and indeed $f$ and $g$ are \emph{not} equivalent: $f$ represents $1$ and $g$ does not. The inverse substitution does not have integer entries, so the argument above breaks down.
+\end{example}
+
+\begin{definition}
+	The \vocab{discriminant} of $f = (a,b,c)$ is $\disc(f) = b^2 - 4ac = -4\det M_f$.
+\end{definition}
+
+The reason for the name is the completed square: for $a \neq 0$,
+$$
+4af(x,y) = (2ax + by)^2 - dy^2, \qquad d = \disc(f),
+$$
+which we shall use repeatedly.
+
+\begin{lemma}
+	Equivalent forms have the same discriminant.
+\end{lemma}
+\begin{proof}
+	If $M_g = AM_fA^\intercal$ with $\det A = 1$ then $\det M_g = \det M_f$, so $\disc(g) = -4\det M_g = -4\det M_f = \disc(f)$.
+\end{proof}
+
+The converse is false, and this failure is the entire subject: $x^2 + 6y^2$ and $2x^2 + 3y^2$ both have discriminant $-24$, but the first represents $1$ and the second does not, so they are inequivalent.
+
+\begin{lemma}
+	There is a BQF of discriminant $d$ if and only if $d \equiv 0$ or $1 \pmod 4$.
+\end{lemma}
+\begin{proof}
+	If $d = b^2 - 4ac$ then $d \equiv b^2 \equiv 0, 1 \pmod 4$. Conversely, if $d \equiv 0 \pmod 4$ take $(1, 0, -d/4)$, and if $d \equiv 1 \pmod 4$ take $(1, 1, (1-d)/4)$.
+\end{proof}
+
+The form exhibited in each case is called the \vocab{principal form} of discriminant $d$.
+
+\begin{definition}
+	A real quadratic form $f$ in $n$ variables is \vocab{positive definite} if $f(\underline x) > 0$ for all $\underline x \neq 0$, \vocab{negative definite} if $f(\underline x) < 0$ for all $\underline x \neq 0$, and \vocab{indefinite} if it takes both signs.
+\end{definition}
+
+\begin{lemma}\label{lem:definite}
+	Let $f = (a,b,c)$ be a BQF with $d = \disc(f)$.
+	\begin{enumerate}[label=(\roman*)]
+		\item If $d < 0$ and $a > 0$, then $f$ is positive definite (and $c > 0$).
+		\item If $d < 0$ and $a < 0$, then $f$ is negative definite.
+		\item If $d > 0$, then $f$ is indefinite.
+		\item If $d = 0$, then $f = l(mx + ny)^2$ for some $l, m, n \in \Z$.
+	\end{enumerate}
+\end{lemma}
+\begin{proof}
+	(i), (ii) From $4af(x,y) = (2ax + by)^2 - dy^2$ and $d < 0$, the right-hand side is positive unless $x = y = 0$. So $f$ has the sign of $a$.
+
+	(iii) If $a = c = 0$ then $f(1,1) = b$ and $f(1,-1) = -b$ have opposite signs (and $b \neq 0$ as $d > 0$). Otherwise assume $a \neq 0$; then $4af(1,0) = 4a^2 > 0$ and $4af(-b, 2a) = (-2ab + 2ab)^2 - 4a^2 d = -4a^2d < 0$, so $f(1,0)$ and $f(-b, 2a)$ have opposite signs.
+
+	(iv) If $b^2 = 4ac$, write $a = l m^2$ with $l$ squarefree. Then $b^2 = 4lm^2c$, so $l \mid (b/m)^2 \cdot$ appropriately and one checks $2lm \mid b$; setting $n = b/(2lm)$ gives $f = l(mx + ny)^2$.
+\end{proof}
+
+For the rest of this section we restrict to positive definite forms, so $d < 0$ and $a, c > 0$. Our aim is to pick a canonical representative in each equivalence class.
+
+\subsection{Reduction}
+
+Two particular substitutions do all the work. With $A = \left(\begin{smallmatrix} 1 & 0 \\ \lambda & 1\end{smallmatrix}\right)$, taking $\lambda = \pm1$ gives
+$$
+T_\pm : (a, b, c) \longmapsto (a, b \pm 2a, a \pm b + c),
+$$
+which changes $b$ by $2a$ and leaves $a$ alone. With $A = \left(\begin{smallmatrix} 0 & -1 \\ 1 & 0\end{smallmatrix}\right)$ we get
+$$
+S : (a, b, c) \longmapsto (c, -b, a),
+$$
+which swaps the outer coefficients. Between them we can make $a$ small and $|b|$ small.
+
+\begin{definition}
+	A positive definite BQF $(a,b,c)$ is \vocab{reduced} if either $-a < b \leq a < c$, or $0 \leq b \leq a = c$.
+\end{definition}
+
+The awkward second clause is there purely to break ties on the boundary; morally the condition is $|b| \leq a \leq c$.
+
+\begin{proposition}
+	Every positive definite BQF is equivalent to a reduced form.
+\end{proposition}
+\begin{proof}
+	If $a > c$, apply $S$ to decrease $a$ while leaving $|b|$ unchanged. If $a \leq c$ and $|b| > a$, apply $T_+$ or $T_-$ (whichever decreases $|b|$) to replace $b$ by $b \mp 2a$; this leaves $a$ unchanged and strictly decreases $|b|$. Since $a + |b|$ is a nonnegative integer which strictly decreases at every step, the process terminates.
+
+	We end with a form satisfying $a \leq c$ and $|b| \leq a$. If $a < c$ then either $b > -a$, in which case the form is reduced, or $b = -a$, in which case $T_+$ gives $(a, a, c)$ which is reduced. If $a = c$ then either $0 \leq b$, and the form is reduced, or $-a \leq b < 0$, and $S$ gives $(a, -b, a)$ which is reduced.
+\end{proof}
+
+\begin{lemma}\label{lem:redbound}
+	If $f = (a,b,c)$ is a reduced positive definite BQF of discriminant $d$, then $b \equiv d \pmod 2$ and
+	$$
+	|b| \leq a \leq \sqrt{\frac{|d|}3}.
+	$$
+\end{lemma}
+\begin{proof}
+	Since $d = b^2 - 4ac$ we have $d \equiv b^2 \equiv b \pmod 2$. For the inequality, reducedness gives $|b| \leq a \leq c$, so
+	$$
+	|d| = 4ac - b^2 \geq 4a^2 - a^2 = 3a^2,
+	$$
+	whence $a^2 \leq |d|/3$.
+\end{proof}
+
+In particular there are only finitely many reduced forms of a given discriminant: $a$ is bounded, then $b$ is bounded by $a$ and determined modulo $2$, and then $c = (b^2 - d)/(4a)$ is determined. This is an entirely effective search.
+
+The next result says that reduced forms are canonical, and the key is that we can read off a reduced form from the integers it represents.
+
+\begin{lemma}\label{lem:leastrep}
+	Let $f = (a,b,c)$ be a reduced positive definite BQF. Then the least integers properly represented by $f$ -- that is, values $f(x,y)$ with $(x,y) = 1$ -- are $a$, $c$ and $a - |b| + c$, in that order.
+\end{lemma}
+\begin{proof}
+	Certainly $f(\pm 1, 0) = a$ and $f(0, \pm 1) = c$, and $0 < a \leq c$. Suppose $(x,y) = 1$ with $x, y$ both nonzero, and say $|x| \geq |y| > 0$. Then
+	$$
+	f(x,y) \geq a|x|^2 - |b||x||y| + c|y|^2 \geq (a - |b|)|x|^2 + c|y|^2 \geq a - |b| + c,
+	$$
+	using $|x| \geq |y|$ and $a \geq |b|$. The case $|y| \geq |x| > 0$ is symmetric, using $c \geq a \geq |b|$. Finally $f(1, -\operatorname{sign}(b)) = a - |b| + c$, so the bound is attained.
+\end{proof}
+
+\begin{theorem}\label{thm:uniquereduced}
+	Every positive definite BQF is equivalent to a \emph{unique} reduced form.
+\end{theorem}
+\begin{proof}
+	Suppose $(a,b,c)$ and $(a',b',c')$ are equivalent reduced forms. Equivalent forms properly represent the same integers (a unimodular substitution preserves coprimality of $(x,y)$, since its inverse is also integral), so by \autoref{lem:leastrep} we get $a = a'$ and $c = c'$; then equality of discriminants gives $b = \pm b'$.
+
+	If $b = 0$ or $b = b'$ we are done, so suppose $b > 0$ and $(a,b,c) \sim (a,-b,c)$ with both reduced. Reducedness of $(a,-b,c)$ forces $-a < -b$, so $|b| < a$, and then reducedness of $(a,b,c)$ with $b>0$ and $|b|<a$ forces $a < c$. So $a < c < a - |b| + c$ are three strictly increasing values, and by \autoref{lem:leastrep} each is properly represented in essentially one way: $f(x,y) = a$ only for $(x,y) = (\pm1, 0)$, and $f(x,y) = c$ only for $(x,y) = (0,\pm1)$.
+
+	So if $A \in \SL_2(\Z)$ realises the equivalence, it must send $(\pm 1, 0)$ to $(\pm 1, 0)$ and $(0, \pm 1)$ to $(0, \pm1)$, forcing $A = \pm I$. But $\pm I$ acts trivially on forms, so $(a,b,c) = (a,-b,c)$ and $b = 0$, a contradiction.
+\end{proof}
+
+\begin{definition}
+	For $d < 0$ with $d \equiv 0, 1 \pmod 4$, the \vocab{class number} $h(d)$ is the number of reduced positive definite BQFs of discriminant $d$; equivalently, by \autoref{thm:uniquereduced}, the number of equivalence classes of positive definite BQFs of discriminant $d$.
+\end{definition}
+
+\begin{example}\label{ex:classnumbers}
+	\begin{enumerate}[label=(\roman*)]
+		\item $d = -4$. By \autoref{lem:redbound}, $a \leq \sqrt{4/3} < 2$, so $a = 1$, hence $|b| \leq 1$ and $b \equiv 0 \pmod 2$, so $b = 0$ and $c = 1$. Thus $h(-4) = 1$ and $(1,0,1)$ is the only class: \emph{every} positive definite form of discriminant $-4$ is equivalent to $x^2 + y^2$.
+		\item $d = -24$. Now $a \leq \sqrt 8 < 3$ and $b$ is even. If $a = 1$ then $b = 0$ and $c = 6$. If $a = 2$ then $b \in \{0, \pm2\}$; $b = \pm 2$ gives $c = (4+24)/8 \notin \Z$, so $b = 0$ and $c = 3$. Hence $h(-24) = 2$, with classes $(1,0,6)$ and $(2,0,3)$.
+		\item $d = -23$. Here $a \leq \sqrt{23/3} < 3$ and $b$ is odd. If $a = 1$ then $b = 1$ and $c = 6$. If $a = 2$ then $b = \pm 1$ and $c = (1+23)/8 = 3$, and both $(2,1,3)$ and $(2,-1,3)$ are reduced since $-2 < \pm 1 \leq 2 < 3$. So $h(-23) = 3$.
+	\end{enumerate}
+\end{example}
+
+There is a geometric way to see all this which is worth knowing. To a positive definite $f = (a,b,c)$ of discriminant $d < 0$ associate the root
+$$
+z_f = \frac{-b + i\sqrt{|d|}}{2a}
+$$
+of $az^2 + bz + c$ lying in the upper half plane $\mathbb H$. Then $\re z_f = -b/(2a)$ and $|z_f|^2 = c/a$, so the reducedness conditions $|b| \leq a$ and $a \leq c$ say exactly that
+$$
+|\re z_f| \leq \tfrac12 \quad \text{and} \quad |z_f| \geq 1,
+$$
+which is the celebrated fundamental domain for the action of $\SL_2(\Z)$ on $\mathbb H$. The two operations $T_\pm$ and $S$ correspond to $z \mapsto z \pm 1$ and $z \mapsto -1/z$, and the reduction algorithm is the familiar business of translating into the strip and inverting whenever you fall inside the unit circle. Below is the region, with the three reduced forms of discriminant $-23$ marked.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.9]
+	\fill[blue!7] (-0.5,2.75) -- (-0.5,0.8660) arc[start angle=120, end angle=60, radius=1] -- (0.5,2.75) -- cycle;
+	\draw[thin, gray, dashed] (0,0) circle (1);
+	\draw[thin, gray, dashed] (-0.5,0) -- (-0.5,2.75);
+	\draw[thin, gray, dashed] (0.5,0) -- (0.5,2.75);
+	\draw[<->] (-1.3,0) -- (1.3,0);
+	\draw[->] (0,0) -- (0,2.85);
+	\draw[thick, blue] (-0.5,2.75) -- (-0.5,0.8660);
+	\draw[thick, blue] (-0.5,0.8660) arc[start angle=120, end angle=60, radius=1];
+	\draw[thick, blue] (0.5,0.8660) -- (0.5,2.75);
+	\fill[blue] (-0.5,2.3979) circle (1.3pt);
+	\node[font=\small, left] at (-0.58,2.3979) {$(1,1,6)$};
+	\fill[blue] (-0.25,1.1990) circle (1.3pt);
+	\fill[blue] (0.25,1.1990) circle (1.3pt);
+	\draw[gray, thin] (-0.29,1.1990) -- (-0.58,1.1990);
+	\draw[gray, thin] (0.29,1.1990) -- (0.58,1.1990);
+	\node[font=\small, left] at (-0.6,1.1990) {$(2,1,3)$};
+	\node[font=\small, right] at (0.6,1.1990) {$(2,-1,3)$};
+	\node[font=\small, below] at (-0.5,-0.03) {$-\frac12$};
+	\node[font=\small, below] at (0.5,-0.03) {$\frac12$};
+	\node[font=\small, below right] at (1,-0.03) {$1$};
+\end{tikzpicture}
+\end{center}
+
+\begin{remark}
+	The class number is a delicate object. Heilbronn (1934) showed $h(d) \to \infty$ as $d \to -\infty$, and Mertens showed that on average $\frac1N \sum_{3 \leq -d \leq N} h(d) \sim \frac\pi{18}\sqrt N$. Determining all $d$ with $h(d) = 1$ was a famous problem finally settled by Baker, Heegner and Stark: the fundamental such discriminants are
+	$$
+	-3, -4, -7, -8, -11, -19, -43, -67, -163,
+	$$
+	and there are a handful of non-fundamental ones besides. (A discriminant is \vocab{fundamental} if it is not of the form $k^2 d'$ with $k > 1$ and $d' \equiv 0, 1 \pmod 4$.) For fundamental $d < 0$, Gauss defined a composition law making the classes into a finite abelian group, which turns out to be the ideal class group of $\Q(\sqrt d)$.
+\end{remark}
+
+\subsection{Representations}
+
+We now connect forms back to congruences.
+
+\begin{definition}
+	A BQF $f$ \vocab{properly represents} $n$ if $n = f(x,y)$ for some $x, y$ with $(x,y) = 1$.
+\end{definition}
+
+\begin{lemma}\label{lem:properrep}
+	A BQF $f$ properly represents $n$ if and only if $f \sim (n, b, c)$ for some $b, c \in \Z$.
+\end{lemma}
+\begin{proof}
+	If $f \sim g = (n, b, c)$ then $g(1, 0) = n$ is properly represented by $g$, hence by $f$ (proper representation being preserved by unimodular substitutions).
+
+	Conversely, suppose $f(\alpha, \beta) = n$ with $(\alpha, \beta) = 1$. By Bézout there are $\gamma, \delta$ with $\alpha\delta - \beta\gamma = 1$, so $A = \left(\begin{smallmatrix} \alpha & \gamma \\ \beta & \delta \end{smallmatrix}\right) \in \SL_2(\Z)$. The form $g(x,y) = f(\alpha x + \gamma y, \beta x + \delta y)$ is equivalent to $f$ and has $g(1,0) = f(\alpha,\beta) = n$, so its leading coefficient is $n$.
+\end{proof}
+
+\begin{theorem}\label{thm:reptest}
+	Let $n \in \N$ and $d \equiv 0, 1 \pmod 4$. Then $n$ is properly represented by \emph{some} BQF of discriminant $d$ if and only if $x^2 \equiv d \pmod{4n}$ is soluble.
+\end{theorem}
+\begin{proof}
+	If $n$ is properly represented by $f$ with $\disc f = d$, then by \autoref{lem:properrep} $f \sim (n, b, c)$, and $b^2 - 4nc = d$ gives $b^2 \equiv d \pmod {4n}$.
+
+	Conversely if $b^2 \equiv d \pmod{4n}$ then $b^2 = d + 4nc$ for some $c \in \Z$, and the form $(n, b, c)$ has discriminant $d$ and represents $n$ properly at $(1,0)$.
+\end{proof}
+
+This is exactly what we need. When $h(d) = 1$ there is only one form to worry about, and the theorem becomes a complete criterion.
+
+\begin{proof}[Proof of \autoref{thm:twosquares}, completed]
+	It remains to show that every prime $p \equiv 1 \pmod 4$ is a sum of two squares. By \autoref{cor:minusone}, $\left( \frac{-1}p \right) = 1$, so there is $m$ with $m^2 \equiv -1 \pmod p$; replacing $m$ by $m + p$ if necessary we may take $m$ even, and then $(2m)^2 \equiv -4 \pmod{4p}$. So $x^2 \equiv -4 \pmod{4p}$ is soluble, and by \autoref{thm:reptest} some form of discriminant $-4$ properly represents $p$.
+
+	But $h(-4) = 1$ by \autoref{ex:classnumbers}, so that form is equivalent to $(1,0,1)$, and equivalent forms represent the same integers. Hence $p = x^2 + y^2$ for some $x, y$.
+\end{proof}
+
+Geometrically, asking whether $N$ is a sum of two squares is asking whether the circle of radius $\sqrt N$ passes through a point of the integer lattice. Here is $N = 25$, where it passes through twelve of them, coming from the two essentially different representations $25 = 5^2 + 0^2 = 4^2 + 3^2$.
+
+\begin{center}
+\begin{tikzpicture}[scale=0.46]
+	\foreach \x in {-5,...,5} { \foreach \y in {-5,...,5} { \fill[gray!80] (\x,\y) circle (1.5pt); } }
+	\draw[<->, thin, gray] (-5.9,0) -- (5.9,0);
+	\draw[<->, thin, gray] (0,-5.9) -- (0,5.9);
+	\draw[blue!45, semithick] (0,0) circle (5);
+	\foreach \x/\y in {5/0, -5/0, 0/5, 0/-5, 3/4, 3/-4, -3/4, -3/-4, 4/3, 4/-3, -4/3, -4/-3}
+		{ \fill[white] (\x,\y) circle (4.2pt); \fill[blue] (\x,\y) circle (2.9pt); }
+	\node[font=\small, blue, right] at (4.35,3.35) {$(4,3)$};
+	\node[font=\small, blue, right] at (0.3,5.15) {$(0,5)$};
+\end{tikzpicture}
+\end{center}
+
+The method is not special to $-4$. Let us run it for another discriminant with class number one.
+
+\begin{example}
+	Which integers are properly represented by $f(x,y) = x^2 + xy + 2y^2$? We have $\disc f = 1 - 8 = -7$, and $f$ is positive definite. By \autoref{lem:redbound} a reduced form of discriminant $-7$ has $a \leq \sqrt{7/3} < 2$, so $a = 1$, and $b$ odd with $|b| \leq 1$ gives $b = 1$, $c = 2$. So $h(-7) = 1$ and $f$ is the only class.
+
+	By \autoref{thm:reptest}, $f$ properly represents $n$ if and only if $x^2 \equiv -7 \pmod{4n}$ is soluble. Take $n = p$ an odd prime, $p \neq 7$. Then $x^2 \equiv -7 \pmod{4p}$ is soluble if and only if $-7$ is a square modulo $4$ (always true, as $-7 \equiv 1$) and modulo $p$; and by reciprocity, using $\left( \frac{-1}p \right)\left( \frac 7p \right) = \left( \frac{-7}p \right)$ and $-7 \equiv 1 \pmod 4$,
+	$$
+	\leg{-7}p = \leg p7.
+	$$
+	So $f$ properly represents an odd prime $p \neq 7$ exactly when $p \equiv 1, 2, 4 \pmod 7$, these being the quadratic residues mod $7$. Adding in $f(0,1) = 2$ and $f(1,-2) = 1 - 2 + 8 = 7$, we conclude that $f$ properly represents a prime $p$ if and only if $p \equiv 0, 1, 2, 4 \pmod 7$.
+\end{example}
+
+To go from proper representations to all representations one notes that $f(kx, ky) = k^2f(x,y)$, so the values of $f$ are exactly $k^2 n$ with $n$ properly represented; and to go from primes to general $n$ one uses the following lifting lemma together with the Chinese remainder theorem.
+
+\begin{lemma}\label{lem:lifting}
+	Let $a \in \Z$.
+	\begin{enumerate}[label=(\roman*)]
+		\item If $a \equiv 1 \pmod 8$ then $a$ is a square modulo $2^k$ for every $k \geq 1$.
+		\item If $p > 2$ is prime and $\left( \frac ap \right) = 1$, then $a$ is a square modulo $p^k$ for every $k \geq 1$.
+	\end{enumerate}
+\end{lemma}
+\begin{proof}
+	(ii) Induct on $k$. Given $x^2 \equiv a \pmod{p^k}$, say $x^2 = a + mp^k$, we look for a solution of the shape $x + tp^k$:
+	$$
+	(x + tp^k)^2 = x^2 + 2xtp^k + t^2p^{2k} \equiv a + (m + 2xt)p^k \pmod{p^{k+1}}.
+	$$
+	Since $p \nmid 2x$, we may choose $t$ with $m + 2xt \equiv 0 \pmod p$, and then $a$ is a square modulo $p^{k+1}$.
+
+	(i) The same idea, but $2x$ is now not invertible so one has to work slightly harder. Given $x^2 = a + m2^k$ with $k \geq 3$ and $x$ odd: if $m$ is even then $x^2 \equiv a \pmod{2^{k+1}}$ already. If $m$ is odd, then
+	$$
+	(x + 2^{k-1})^2 = x^2 + 2^kx + 2^{2k - 2} \equiv a + 2^k(m + x) \pmod{2^{k+1}}
+	$$
+	since $2k - 2 \geq k+1$, and $m + x$ is even. The base case $k = 3$ is the hypothesis $a \equiv 1 \pmod 8$.
+\end{proof}
+
+\begin{remark}
+	If $h(d) > 1$ this analysis tells us which $n$ are represented by \emph{some} form of discriminant $d$, but not by which one. Sometimes extra congruence conditions separate the classes -- for $d = -24$ one finds that $x^2 + 6y^2$ represents primes $p \equiv 1, 7 \pmod{24}$ while $2x^2 + 3y^2$ represents $p \equiv 5, 11 \pmod{24}$ -- but in general no such separation exists, and one needs class field theory. The smallest failure is $d = -92$, where $x^2 + 23y^2$ and $3x^2 \pm 2xy + 8y^2$ cannot be told apart by congruences.
+\end{remark}
+
+\begin{remark}
+	For indefinite forms everything changes: the number of representations of a given $n$ is typically infinite. For instance $1 = x^2 - 2y^2$ has the solutions $(1,0)$ and $(3,2)$, and if $(x,y)$ is a solution so is $(x^2 + 2y^2, 2xy)$, giving infinitely many. We will meet this again in \S7 under the name of Pell's equation.
+\end{remark}
+
+Finally, some context. Lagrange (1770) proved that every positive integer is a sum of four squares, and Legendre (1797) that $n$ is a sum of three squares if and only if $n$ is not of the form $4^a(8b+7)$. Waring's problem asks for the least $s = g(k)$ such that every positive integer is a sum of $s$ $k$-th powers; Hilbert (1909) showed $g(k)$ is finite for every $k$, and we know $g(2) = 4$, $g(3) = 9$, $g(4) = 19$, but the asymptotic behaviour of $g$ remains open.
+
+\section{The Distribution of Primes}
+
+The sequence $2, 3, 5, 7, 11, \dots$ is one of the most interesting objects in mathematics, and the obvious questions about it are hard. How fast does it grow? How regularly is it distributed? We know from \S2 that it is infinite, and Euclid's proof gives the miserable bound $\pi(x) \gg \log\log x$; our first goal is to do considerably better.
+
+\begin{definition}
+	The \vocab{prime counting function} is $\pi(x) = |\{p \leq x : p \text{ prime}\}|$.
+\end{definition}
+
+The most convenient way to construct the primes up to $x$ is the sieve of Eratosthenes: list $2, \dots, x$, and repeatedly take the smallest surviving number, declare it prime, and delete all of its proper multiples. Since any composite $n \leq x$ has a prime factor at most $\sqrt x$, we may stop once we pass $\sqrt x$. Here it is up to $60$, where the primes are shown in blue and the numbers struck out are those deleted as multiples of $2, 3, 5$ or $7$.
+
+\begin{center}
+\begin{tikzpicture}
+	\foreach \n in {2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59} {
+		\pgfmathsetmacro{\cx}{mod(\n-1,10)*0.64}
+		\pgfmathsetmacro{\cy}{-floor((\n-1)/10)*0.64}
+		\node[blue, font=\small] at (\cx,\cy) {$\mathbf{\n}$};
+	}
+	\foreach \n in {1,4,6,8,9,10,12,14,15,16,18,20,21,22,24,25,26,27,28,30,32,33,34,35,36,38,39,40,42,44,45,46,48,49,50,51,52,54,55,56,57,58,60} {
+		\pgfmathsetmacro{\cx}{mod(\n-1,10)*0.64}
+		\pgfmathsetmacro{\cy}{-floor((\n-1)/10)*0.64}
+		\node[gray, font=\small] at (\cx,\cy) {$\n$};
+		\draw[gray, thin] (\cx-0.2,\cy-0.16) -- (\cx+0.2,\cy+0.16);
+	}
+\end{tikzpicture}
+\end{center}
+
+\subsection{What is True}
+
+Before working, let us record the theorems we would like to have. The first is the central result of the subject.
+
+\begin{theorem}[Prime Number Theorem]\label{thm:pnt}
+	$\pi(x) \sim \dfrac{x}{\log x}$ as $x \to \infty$.
+\end{theorem}
+
+We will not prove this -- the proof needs complex analysis of the Riemann zeta function, and belongs to a Part III course -- but we will meet the main character, and we will prove the correct order of magnitude.
+
+\begin{remark}
+	Recall the asymptotic notation. For $f, g : \R_{>0} \to \R$ we write $f = O(g)$ as $x \to \infty$ if there are $C > 0$ and $x_0$ with $|f(x)| \leq C|g(x)|$ for all $x \geq x_0$; and $f = o(g)$ if for every $\varepsilon > 0$ there is $x_0$ with $|f(x)| \leq \varepsilon|g(x)|$ for $x \geq x_0$. Finally $f \sim g$ means $f = (1 + o(1))g$.
+\end{remark}
+
+A better approximation to $\pi(x)$ than $x/\log x$ is the logarithmic integral
+$$
+\Li(x) = \int_2^x \frac{\dd t}{\log t},
+$$
+and the strongest known error term is of the following shape.
+
+\begin{theorem}
+	There is a constant $C > 0$ such that
+	$$
+	\pi(x) = \Li(x) + O\!\left(x \exp\left(-C\sqrt{\log x}\right)\right).
+	$$
+\end{theorem}
+
+The Riemann hypothesis is the assertion that the error is in fact $O(\sqrt x \log x)$, which is very much smaller. The following picture shows $\pi(x)$ against $x/\log x$ and against $x/(\log x - 1)$ for $x \leq 1000$; the last of these is a decent hands-on approximation, and gives a sense of just how good $\Li(x)$ is.
+
+\begin{center}
+\begin{tikzpicture}
+	\draw[<->] (0,5.3) -- (0,0) -- (8.5,0);
+	\foreach \v/\l in {1.389/50, 2.778/100, 4.167/150} {
+		\draw[thin] (-0.08,\v) -- (0.08,\v);
+		\node[font=\small, left] at (-0.1,\v) {$\l$};
+	}
+	\foreach \v/\l in {1.6/200, 3.2/400, 4.8/600, 6.4/800, 8.0/1000} {
+		\draw[thin] (\v,-0.08) -- (\v,0.08);
+		\node[font=\small, below] at (\v,-0.1) {$\l$};
+	}
+	\draw[line width=2pt, gray!35] plot coordinates {(0.160,0.278) (0.480,0.539) (0.800,0.770) (1.120,0.987) (1.440,1.192) (1.760,1.391) (2.080,1.584) (2.400,1.772) (2.720,1.956) (3.040,2.137) (3.360,2.315) (3.680,2.490) (4.000,2.663) (4.320,2.835) (4.640,3.004) (4.960,3.172) (5.280,3.338) (5.600,3.503) (5.920,3.666) (6.240,3.829) (6.560,3.990) (6.880,4.150) (7.200,4.309) (7.520,4.467) (7.840,4.624) (8.000,4.702)};
+	\draw[thick, blue] plot coordinates {(0.000,0.000) (0.160,0.222) (0.320,0.333) (0.480,0.472) (0.640,0.611) (0.800,0.694) (0.960,0.833) (1.120,0.944) (1.280,1.028) (1.440,1.139) (1.600,1.278) (1.760,1.306) (1.920,1.444) (2.080,1.528) (2.240,1.639) (2.400,1.722) (2.560,1.833) (2.720,1.889) (2.880,2.000) (3.040,2.083) (3.200,2.167) (3.360,2.250) (3.520,2.361) (3.680,2.444) (3.840,2.556) (4.000,2.639) (4.160,2.694) (4.320,2.750) (4.480,2.833) (4.640,2.944) (4.800,3.028) (4.960,3.167) (5.120,3.194) (5.280,3.333) (5.440,3.417) (5.600,3.472) (5.760,3.556) (5.920,3.639) (6.080,3.722) (6.240,3.806) (6.400,3.861) (6.560,3.917) (6.720,4.056) (6.880,4.139) (7.040,4.194) (7.200,4.278) (7.360,4.361) (7.520,4.417) (7.680,4.500) (7.840,4.583) (8.000,4.667)};
+	\draw[thin, densely dashed] plot coordinates {(0.160,0.185) (0.480,0.407) (0.800,0.603) (1.120,0.787) (1.440,0.963) (1.760,1.133) (2.080,1.299) (2.400,1.461) (2.720,1.620) (3.040,1.777) (3.360,1.931) (3.680,2.084) (4.000,2.235) (4.320,2.384) (4.640,2.532) (4.960,2.679) (5.280,2.824) (5.600,2.968) (5.920,3.111) (6.240,3.254) (6.560,3.395) (6.880,3.535) (7.200,3.675) (7.520,3.814) (7.840,3.952) (8.000,4.021)};
+	\draw[thick, blue] (5.0,2.35) -- (5.55,2.35);
+	\node[font=\small, right] at (5.65,2.35) {$\pi(x)$};
+	\draw[thin, densely dashed] (5.0,1.75) -- (5.55,1.75);
+	\node[font=\small, right] at (5.65,1.75) {$x/\log x$};
+	\draw[line width=2pt, gray!35] (5.0,1.15) -- (5.55,1.15);
+	\node[font=\small, right] at (5.65,1.15) {$x/(\log x - 1)$};
+\end{tikzpicture}
+\end{center}
+
+A different flavour of question concerns primes in arithmetic progressions. In IA we saw that there are infinitely many primes congruent to $3$ modulo $4$; the general statement is much harder.
+
+\begin{theorem}[Dirichlet]\label{thm:dirichlet}
+	Let $a, q$ be coprime positive integers. Then there are infinitely many primes $p \equiv a \pmod q$.
+\end{theorem}
+
+The coprimality is clearly necessary, since $(a,q) > 1$ divides every term of the progression. Quantitatively one expects the primes to be shared out equally among the $\phi(q)$ admissible residues, and this is true in a strong sense.
+
+\begin{theorem}[Siegel--Walfisz]
+	Let $(a, q) = 1$ and let $\pi(x; q, a)$ be the number of primes $p \leq x$ with $p \equiv a \pmod q$. For every $B > 0$ there is $C_B > 0$ such that
+	$$
+	\pi(x; q, a) = \frac{x}{\phi(q)\log x} + O\!\left(x\exp\left(-C_B\sqrt{\log x}\right)\right)
+	$$
+	uniformly for $q \leq (\log x)^B$.
+\end{theorem}
+
+Our own aim, which we will actually achieve, is the following.
+
+\begin{theorem}[Chebyshev]\label{thm:chebyshev}
+	For all $x \geq 4$,
+	$$
+	\frac{\log 2}{2}\cdot\frac{x}{\log x} \leq \pi(x) \leq 6\log 2 \cdot \frac{x}{\log x}.
+	$$
+\end{theorem}
+
+That will take a while, so let us warm up.
+
+\subsection{Elementary Bounds}
+
+\begin{lemma}\label{lem:crudepi}
+	For $x \geq 1$ we have $\pi(x) \geq \dfrac{\log x}{2\log 2}$.
+\end{lemma}
+\begin{proof}
+	Let $p_1, \dots, p_r$ be the primes up to $x$, so $r = \pi(x)$. Every $n \leq x$ can be written as $n = k^2 m$ with $m$ squarefree, so $m = \prod_i p_i^{\alpha_i}$ with each $\alpha_i \in \{0,1\}$ and $k \leq \sqrt x$. There are at most $2^r$ choices for $m$ and at most $\sqrt x$ for $k$, so
+	$$
+	x \leq \sqrt x \cdot 2^r = \sqrt x \cdot 2^{\pi(x)},
+	$$
+	giving $\sqrt x \leq 2^{\pi(x)}$ and hence the claim.
+\end{proof}
+
+This already beats Euclid handsomely: $\log x$ rather than $\log\log x$. It is still far from the truth, but the argument is worth remembering because the `squarefree times a square' decomposition is genuinely useful.
+
+Next we quantify the divergence of $\sum 1/p$. Euler's observation that this series diverges is a much better proof that there are infinitely many primes than Euclid's, because it says something about density.
+
+\begin{theorem}[Mertens]\label{thm:mertens}
+	\begin{enumerate}[label=(\roman*)]
+		\item For $x \geq 2$ we have $\displaystyle\prod_{p \leq x}\left(1 - \frac1p\right)^{-1} \geq \log x$; in particular the product diverges.
+		\item For $x \geq 5$ we have $\displaystyle\sum_{p \leq x}\frac1p \geq \log\log x - \frac12$; in particular $\sum_p 1/p$ diverges.
+	\end{enumerate}
+	Here and below, $p$ ranges over primes.
+\end{theorem}
+\begin{proof}
+	(i) Expanding each factor as a geometric series,
+	$$
+	\prod_{p \leq x}\left(1 - \frac1p\right)^{-1} = \prod_{p \leq x}\left(1 + \frac1p + \frac1{p^2} + \cdots\right) \geq \sum_{n \leq x}\frac1n,
+	$$
+	since every $n \leq x$ has all its prime factors at most $x$, so $1/n$ appears exactly once when the product is expanded. Finally $\sum_{n \leq x}1/n \geq \int_1^{\lfloor x\rfloor + 1}\dd y/y \geq \log x$.
+
+	(ii) Take logarithms in (i) and compare with the sum. Using $-\log(1 - t) = t + t^2/2 + t^3/3 + \cdots$,
+	\begin{align*}
+		\log\left(\prod_{p \leq x}\left(1 - \frac1p\right)^{-1}\right) - \sum_{p\leq x}\frac1p &= \sum_{p \leq x}\left(\frac1{2p^2} + \frac1{3p^3} + \cdots\right) \\
+		&\leq \sum_{p \leq x}\frac1{2p^2}\left(1 + \frac1p + \frac1{p^2} + \cdots\right) \\
+		&= \sum_{p \leq x}\frac{1}{2p^2}\cdot\frac{1}{1 - p^{-1}} = \sum_{p \leq x}\frac1{2p(p-1)} \\
+		&\leq \sum_{2 \leq n \leq x}\frac1{2n(n-1)} = \frac12\sum_{2\leq n \leq x}\left(\frac1{n-1} - \frac1n\right) \leq \frac12.
+	\end{align*}
+	Combining with (i) gives $\sum_{p \leq x}1/p \geq \log\log x - 1/2$.
+\end{proof}
+
+\begin{remark}
+	The truth is sharper: there are constants $c$ and $\gamma$ (the latter being Euler's constant, $\gamma \approx 0.5772$) with
+	$$
+	\sum_{p \leq x}\frac1p = \log\log x + c + O\!\left(\frac1{\log x}\right), \qquad \prod_{p\leq x}\left(1 - \frac1p\right)^{-1} = e^\gamma \log x + O(1).
+	$$
+	For a sanity check, $\sum_{p \leq 100}1/p \approx 1.803$ while $\log\log 100 \approx 1.527$.
+\end{remark}
+
+\subsection{The Riemann Zeta Function}
+
+The expansion in the proof of \autoref{thm:mertens} is worth taking seriously. It is the case $s = 1$ of an identity which holds for all $s$ with $\re s > 1$, and which is the reason analysis has anything to say about primes at all.
+
+\begin{definition}
+	For $s \in \C$ with $\re s > 1$, the \vocab{Riemann zeta function} is
+	$$
+	\zeta(s) = \sum_{n=1}^\infty \frac1{n^s}.
+	$$
+	Conventionally one writes $s = \sigma + it$.
 \end{definition}
 
 \begin{lemma}
-  Let $p$ be an odd prime. Then there are exactly $(p-1)/2$ quadratic residues modulo $p$.
+	The series converges absolutely for $\sigma > 1$, and uniformly on $\{\sigma \geq 1 + \delta\}$ for any $\delta > 0$. In particular $\zeta$ is analytic on $\sigma > 1$.
 \end{lemma}
 \begin{proof}
-  Take $g$ to be a primitive root modulo $p$. Then the set of quadratic residues is exactly $\{g^{2n} \bmod p \mid n \in \Z\}$ which has size $(p-1)/2$.
+	$|n^{-s}| = n^{-\sigma}$, and $\sum n^{-\sigma}$ converges for $\sigma > 1$. Uniform convergence on $\sigma \geq 1+\delta$ follows from the Weierstrass $M$-test with $M_n = n^{-1-\delta}$, and a uniform limit of analytic functions is analytic.
 \end{proof}
 
-\begin{definition}
-Let $p$ be an odd prime and $a \in \mathbb{Z}$. The \emph{Legendre symbol} is defined as
-  $$
-  \left(\frac{a}{p}\right)=\begin{cases}
-    0 & \text{if } p \mid a, \\
-  1 & \text{if } a \text { is a quadratic residue modulo } p, \\
-  -1 & \text{otherwise}.
-   \end{cases}
-  $$
-\end{definition}
-
-\begin{theorem}[Euler's Criterion]
-  Let $p$ be an odd prime, and $a \in \mathbb{Z}$, then
-  $$
-  \left(\frac{a}{p}\right) \equiv a^{\frac{p-1}{2}} \pmod{p}.
-  $$
+\begin{theorem}[Euler Product]\label{thm:eulerproduct}
+	For $\sigma > 1$,
+	$$
+	\zeta(s) = \prod_p \left(1 - \frac1{p^s}\right)^{-1}.
+	$$
 \end{theorem}
 \begin{proof}
-    If $a$ is a quadratic residue, we can write $x^2 \equiv a \pmod{p}$ and then $a^{(p-1)/2}\equiv x^{p-1} \equiv 1\pmod{p}$, as required. 
-    By Lagrange, $a^{(p-1)/2} \equiv 1 \pmod{p}$ has at most $(p-1)/2$ solutions, so if $a$ is not a quadratic residue, we must have $a^{(p-1)/2} \equiv -1 \pmod{p}$. 
+	Fix $s$ with $\sigma > 1$ and let $x \geq 2$. Expanding the finite product,
+	$$
+	\prod_{p \leq x}\left(1 - p^{-s}\right)^{-1} = \prod_{p \leq x}\left(1 + p^{-s} + p^{-2s} + \cdots\right) = \sum_{n \in \mathcal N_x} n^{-s},
+	$$
+	where $\mathcal N_x$ is the set of positive integers all of whose prime factors are at most $x$; the rearrangement is legitimate by absolute convergence, and each $n$ occurs exactly once by unique factorisation. Hence
+	$$
+	\left|\zeta(s) - \prod_{p \leq x}\left(1 - p^{-s}\right)^{-1}\right| = \left|\sum_{n \notin \mathcal N_x}n^{-s}\right| \leq \sum_{n > x}n^{-\sigma} \longrightarrow 0
+	$$
+	as $x \to \infty$, since every $n \notin \mathcal N_x$ has a prime factor exceeding $x$ and so satisfies $n > x$.
 \end{proof}
+
+This identity is the analytic form of unique factorisation, and it is the bridge we need: the left-hand side is a smooth analytic object, the right-hand side knows about primes.
 
 \begin{corollary}
-  Let $p$ be an odd prime and let $a, b \in \mathbb{Z}$, then
-$$
-\left(\frac{a b}{p}\right)=\left(\frac{a}{p}\right)\left(\frac{b}{p}\right).
-$$
+	$\zeta(s) \neq 0$ for $\sigma > 1$.
 \end{corollary}
-\begin{corollary}
-  Let $p$ be an odd prime, then
-  $$
-  \left(\frac{-1}{p}\right)=\begin{cases}
-    1 & \text{if } p \equiv 1 \pmod{4}, \\
-  -1 & \text{if } p \equiv 3 \pmod{4}
-   \end{cases}
-  $$
-\end{corollary}
-
-\begin{definition}
-    The \emph{numerically least residue} $a'$ of $a \pmod n$ to $a' \equiv a$ with $-n/2 < a' \leq n/2$. 
-\end{definition}
-
-\begin{theorem}[Gauss' Lemma]
-Given an odd prime $p$ and $a$ with $(a, p) = 1$, let $a_j$ denote the numerically least residue of $a \cdot j \pmod{p}$. Then $(a/p) = (-1)^\ell$, where $\ell = |\{j \leq (p-1)/2 \mid a_j < 0\}|$.
-\end{theorem}
 \begin{proof}
-    We have $a_j = \pm a_k$ if and only if $j = \pm k$, so $|a_j|$ takes all values $1, \dots, (p-1)/2$. Hence $\prod_{j \leq (p-1)/2} a_j = (-1)^\ell r!$, so $a^{(p-1)/2} \equiv (-1)^\ell \pmod{p}$. The result then follows from Euler's Criterion.
+	For $x \geq 2$ let $P_x = \prod_{p \leq x}(1 - p^{-s})$, which is a finite product of nonzero numbers. Expanding as above,
+	$$
+	\zeta(s)P_x = 1 + \sum_{n \in \mathcal N_x'} n^{-s},
+	$$
+	where $\mathcal N_x'$ consists of those $n > 1$ all of whose prime factors exceed $x$; every such $n$ is $> x$, so
+	$$
+	|\zeta(s)P_x| \geq 1 - \sum_{n > x}n^{-\sigma} \longrightarrow 1
+	$$
+	as $x \to \infty$. So $\zeta(s)P_x \neq 0$ for large $x$, whence $\zeta(s) \neq 0$.
 \end{proof}
-
-\begin{theorem}[Law of Quadratic Reciprocity]
-If $p, q$ are distinct odd primes, $(p/q) = (q/p)$ unless $p \equiv q \equiv 3 \pmod{4}$, in which case $(p/q) = -(q/p)$. More concisely, $(p/q)(q/p) = (-1)^{((p-1)/2)((q-1)/2)}$.
-\end{theorem}
-\begin{proof}
-    By Gauss' lemma, $(p/q) = (-1)^\ell$, where $\ell$ is the number of lattice points $(x, y)$ satisfying $0 < x< q/2$, $-q/2 < px - qy < 0$. For such points $q(y - 1/2) < px$, so $y < p/2 + 1/2$/ We therefore lose nothing in imposing the extra symmetrising condition $0 < y < p/2$. Similarly $(q/p) = (-1)^m$ where $m$ is the number of lattice points in the rectangle $0 < x < q/2$. $0 < y < p/2$, satisfying $-p/2 < qx - py < 0$ or equivalently $0 < px - qy < p/2$. Now it suffices to prove that $((p-1)/2)((q-1)/2) - (\ell + m)$ is even. But $((p-1)/2)((q-1)/2)$ is just the number of lattice points in our rectangle and we have a bijection between such points with $px - qy \leq -q/2$ and those with $px - qy \geq p/2$ by means of transformation $x' = (q+1)/2 - x$, $y' = (p + 1)/2 - y$. (This does \emph{not} fix the line $px - qy = 0$, so we cannot say the same for our original sets.
-\end{proof}
-
-\begin{definition}
-    For $n$ odd, $(m, n) = 1$, we define the \emph{Jacobi symbol} $(m/n)$ by 
-    $$
-    \left(\frac{m}{p_1^{\alpha_1} \cdots p_k^{\alpha_k}}\right)
-    = \left(\frac{m}{p_1}\right)^{\alpha_1} \cdots \left(\frac{m}{p_k}\right)^{\alpha_k}
-    $$
-    in terms of Legendre symbols.
-\end{definition}
 
 \begin{remark}
-    All of our previously stated theorems hold for Jacobi symbols, though Jacobi symbols are not a test for quadratic residuality, only a computational technique. 
+	One can extend $\zeta$ meromorphically to all of $\C$. The recipe uses the gamma function $\Gamma(z) = \int_0^\infty e^{-t}t^{z-1}\dd t$, defined for $\re z > 0$ and continued meromorphically with simple poles at $0, -1, -2, \dots$; setting
+	$$
+	\Xi(s) = \pi^{-s/2}\Gamma(s/2)\zeta(s),
+	$$
+	one shows the functional equation $\Xi(s) = \Xi(1 - s)$, which continues $\Xi$ and hence $\zeta$ everywhere. It turns out that $\zeta$ has a single simple pole, at $s = 1$ with residue $1$, and `trivial' zeros at $s = -2, -4, -6, \dots$ coming from the poles of $\Gamma(s/2)$. Since $\zeta$ does not vanish for $\sigma > 1$, the functional equation confines all other zeros to the \vocab{critical strip} $0 \leq \sigma \leq 1$. Non-vanishing on the line $\sigma = 1$ is already enough to prove the prime number theorem; the Riemann hypothesis asserts that all the nontrivial zeros lie on $\sigma = \frac12$.
 \end{remark}
 
-\section{Quadratic Forms}
+Two more arithmetic functions, both of which have pleasant zeta-flavoured descriptions.
 
-\begin{definition}
-    A \emph{binary quadratic form} is a function $f(x, y) = ax^2 + byx + cy^2$, $a, b, c \in \Z$. This may sometimes be represented more simply as $(a, b, c)$. Note that
-    $$
-    f(x, y) = 
-    \begin{pmatrix}
-        x & y
-    \end{pmatrix}
-    \begin{pmatrix}
-        a & b/2 \\ b/2 & c
-    \end{pmatrix} 
-    \begin{pmatrix}
-        x \\ y
-    \end{pmatrix}.
-    $$
+\begin{definition}[Möbius Function]
+	Define $\mu : \N \to \{-1, 0, 1\}$ by $\mu(1) = 1$ and
+	$$
+	\mu(n) = \begin{cases} (-1)^k & \text{if } n \text{ is a product of } k \text{ distinct primes}, \\ 0 & \text{if } n \text{ is not squarefree}. \end{cases}
+	$$
 \end{definition}
 
-\begin{definition}
-    A \emph{unimodular substitution} is a transformation $X = px + qy$, $Y = rs + sy$ with $ps - qr = 1$. Equivalently, $\begin{pmatrix}
-        X & Y
-    \end{pmatrix}^\intercal = A \begin{pmatrix}
-        x & y
-    \end{pmatrix}^\intercal,$ with $A \in \SL_2(\Z)$.
-\end{definition}
+\begin{lemma}\label{lem:mobius}
+	$\mu$ is multiplicative, and $\displaystyle\sum_{d \mid n}\mu(d) = \begin{cases}1 & n = 1, \\ 0 & n > 1.\end{cases}$
+\end{lemma}
+\begin{proof}
+	Multiplicativity is immediate from the definition. Hence $\nu(n) = \sum_{d\mid n}\mu(d)$ is multiplicative by \autoref{lem:divsum}, and $\nu(p^a) = \mu(1) + \mu(p) = 0$ for $a \geq 1$, while $\nu(1) = 1$.
+\end{proof}
 
-\begin{definition}
-    Two binary quadratic forms $f$ and $f'$ are \emph{equivalent} of they are related by a unimodular substitution. We then write $f \sim f'$.
-\end{definition}
+This innocuous lemma is what makes inclusion--exclusion work in this setting, and it gives the Möbius inversion formula: if $g(n) = \sum_{d \mid n}f(d)$ for all $n$, then $f(n) = \sum_{e \mid n}\mu(e)g(n/e)$.
 
 \begin{definition}
-    $4a f(x, y) = (2ax + by)^2 - dy^2$ where $d = \operatorname{disc}(f) = b^2 - 4ac$ is the \emph{discriminant} of $f$.
+	A \vocab{Dirichlet series} is a series of the form $\sum_{n \geq 1}a_n n^{-s}$ with $a_n \in \C$.
 \end{definition}
 
-\begin{theorem}
-    Equivalent forms have the same discriminant.
-\end{theorem}
-\begin{proof}
-We have
-\begin{align*}
-    \operatorname{disc}(f) &= -4\left| \begin{pmatrix}
-        a & b/2 \\ b/2 & c
-    \end{pmatrix}\right|\\ &= -4 \left|\begin{pmatrix}
-        p & q \\ r & s
-    \end{pmatrix}^{\intercal} \begin{pmatrix}
-        a & b/2 \\ b/2 & c
-    \end{pmatrix} \begin{pmatrix}
-        p & q \\ r & s
-    \end{pmatrix}\right|
-\end{align*}
-as $(ps - qr)^2 = 1$, and this is equal to $\operatorname{disc}(f')$.
-\end{proof}
-
-\begin{definition}
-    A binary quadratic form with $d \neq 0$ is \emph{positive definite} if $f(x, y) \geq 0$ for all $x, y$.
-    It's \emph{negative definite} if $f(x, y) \leq 0$, and \emph{indefinite} otherwise. 
-\end{definition}
-
-\begin{theorem}
-    A positive definite form $(a, b, c)$ is equivalent to some \emph{reduced} form satisfying $-a < b \leq a < c$ or $0 \leq b \leq a = c$.
-\end{theorem}
-\begin{proof}
-    Using unimodular substitution $S: (a, b, c) \mapsto (c, -b, a)$ and $T_{\pm}: (a, b, c) \rightarrow (a, b \pm 2a, a \pm b + c)$, if $a > c$. i.e. $S$ to decrease $a$ while keeping $|b|$ fixed. If $a < c$ and $|b| > a$, then use $T_+$ or $T_-$ to decrease $|b|$ whilst keeping $a$ fixed, noting all the while that $a + |b|$ is strictly decreasing so this process must stop. Finally if $b = -a$, apply $T_+$ to get $+a$ and if $a = c$, apply $S$ to get $b > 0$.
-\end{proof}
-
-\begin{theorem}
-    The smallest integer $\neq 0$ represented by a reduced positive definite form $(a, b, c)$ all coprime are $a, c$ and $a - |b| + c$ in that order.
-\end{theorem}
-\begin{proof}
-    $f(0, 0) = 0$. $f(1, 0) = a$, $f(0, 1)= c$, $0 < a \leq c$ since $f$ is reduced. Now, for $|x| \geq |y| > 0$, $f(x, y) \geq a|x|^2 - |b||x|^2 + c|y|^2 = (a - |b|)|x|^2 + c|y|^2 \geq a - |b\ + c$. Similarly if $|y| \geq |x| > 0$, and we can only achieve equality at $(\pm 1, \pm 1)$ and indeed we do.
-\end{proof}
-
-\begin{theorem}
-    No two reduced forms are equivalent.
-\end{theorem}
-
-\begin{proof}
-    By our result on the smallest represented integer, $f \sim f'$ implies $a = a'$ and $c = c'$. Then by equivalent forms having the same discriminant, $d = d'$ hence $b = \pm b'$. If $b = 0$ or $b = b'$ we are done, so suppose $b > 0$ and $(a, b, c) \sim (a, -b, c)$. Then both reduced implies $a < c$ and $|b| < a$, or $b = -a$ (which cannot happen). Now $f, f'$ both satisfy $f(x, y) = a$ if and only if $(x, y) = (\pm 1, 0)$ and $f(x, y) = c$ if and only if $(x, y) = (0, \pm 1)$. so if they are equivalent under substitution $\begin{pmatrix}
-        p & q \\ r & s
-    \end{pmatrix}$ we must have $\begin{pmatrix}
-        p & q \\ r & s
-    \end{pmatrix}\begin{pmatrix}
-        \pm 1 \\ 0
-    \end{pmatrix} = \begin{pmatrix}
-        \pm 1 \\ 0
-    \end{pmatrix}$
-    implying $p = \pm 1, r = 0$ and $\begin{pmatrix}
-        p & q \\ r & s
-    \end{pmatrix}\begin{pmatrix}
-       0 \\ \pm 1
-    \end{pmatrix} = \begin{pmatrix}
-        0 \\\pm 1
-    \end{pmatrix}$ implying $q = 0$, $s = \pm 1$. $\det \begin{pmatrix}
-        p & q \\ r & s
-    \end{pmatrix} = \pm I$ implies $f = f'$ as required.
-\end{proof}
-
-\begin{theorem}
-    There are finitely many reduced forms with discriminant $d$. Indeed, $|b| \leq a \leq \sqrt{d/2}$.
-\end{theorem}
-\begin{proof}
-    $d = b^2 - 4ac \leq ac - 4ac \leq -3a^2$ which implies our claim. $c = (b^2 - d)/4a$.
-\end{proof}
-
-% \begin{definition}
-%     The \emph{class number} $h(d)$ of $d$ is the number of reduced forms of discriminan
-% \end{definition}
-
-\begin{theorem}
-    Given $n \in \N$, $n$ is properly represented by a form $f$, that is $f(x,y) = n$ for some coprime $x, y$
-if and only if $f$ is equivalent to a form $(n, w, c)$ with first coefficient $n$.
-    \end{theorem} 
-\begin{proof}
-    If $f$ is equivalent to this form $f \sim f'$, $f'(1, 0) = n$ so $f(x, y) = n$ properly represented as coprimality is preserved under $\SL_2(\Z)$. 
-    If $f(x, y) = n$ with $(x, y) = 1$ then there exists $q, s$ such that $xs - qy = 1$. Then
-    $$
-    \begin{pmatrix}
-        x \\ y
-    \end{pmatrix} = \begin{pmatrix}
-        x & q \\ y & s
-    \end{pmatrix} \begin{pmatrix}
-        1 \\ 0
-    \end{pmatrix},
-    $$ 
-    so applying this matrix being in $\SL_2(\Z)$ to $f$, we get $f'$ with $f'(1, 0) = n$.
-\end{proof}
-
-\begin{theorem}
-    Given $n \in \N$, $n$ is properly represented by some form of discriminant $d$ if and only if there is a solution $w$ to $w^2 = d\pmod{4n}$. 
-\end{theorem}
-\begin{proof}
-    By the previous theorem, $w^2 - 4nc = d$. Conversely, $w^2 \equiv d\pmod{4n}$ implies there exists $c$ such that $w^2 = d + 4nc$ implies $(n, w, c)$ has discriminant $d$.
-\end{proof}
-
-% primes of the form x^2 + y^2? s
-
-\section{Prime Numbers}
-
-\begin{definition}
-The \emph{prime counting function} is $\pi(x)$, the number of primes $\leq x$.
-\end{definition}
-
-\begin{definition}
-    The \emph{Möbius function} $\mu(n)$, $n \in \N$ is such that $\mu(n) = 0$ if $n$ is not squarefree, and $\mu(n) = (-1)^r$ if $n$ is a product of $r$ distinct primes. 
-\end{definition}
-
-Observe that $\sum_{d \mid n} \mu(d) = 0$ for $n> 1$.
-
-\begin{theorem}[Legendre's Formula]
-$\pi(x) - \pi(\sqrt{x}) + 1 = \sum_{d \mid P} \mu(d) \lfloor x/d\rfloor$, where $P$ denotes the product $P = p_1 \cdots p_k$ of primes $\leq \sqrt{x}$.
-\end{theorem}
-\begin{proof}
-    The Eratosthenes sieve up to $\sqrt{x}$ applied to $\{1$, $2$, $\dots$, $x\}$ crosses out all multiples of $p_1, \dots, p_k$ leaving behind only primes $p$ with $\sqrt{x} < p \leq x$ and $1$. The result now follows by the Inclusion-Exclusion principle.
-\end{proof}
-
-\begin{theorem}
-    $\sum_{i = 1}^{\infty} 1/p_i$ diverges.
-\end{theorem}
-\begin{proof}
-    Otherwise, there exists $k$ such that the truncated series $\sum_{i > k} 1/p_i < 1/2$. Set $P = p_1 \cdots p_k$ and observe that every number equivalent to $1\pmod{p}$ can be factorised as a product of $j$ of the primes $P_{k+1}, p_{k+2}, \dots$ for some $j$. Hence
-    $$
-    \sum_{n \equiv 1 \bmod{p}} \frac{1}{n} \leq \sum_{j = 1}^{\infty} \left(\sum_{i = k + 1}^{\infty} \frac{1}{p_i}\right)^j \leq \sum_{j = 1}^{\infty} \left(\frac{1}{2}\right)^j = 1,
+If $|a_n| \leq Cn^k$ then the series converges absolutely for $\sigma > k+1$ and uniformly on $\sigma \geq k + 1 + \delta$. Multiplying two Dirichlet series gives a third, whose coefficients are a `Dirichlet convolution':
 $$
-which is a contradiction.
+\left(\sum_m \frac{a_m}{m^s}\right)\left(\sum_n\frac{b_n}{n^s}\right) = \sum_{N \geq 1}\frac{c_N}{N^s}, \qquad c_N = \sum_{d \mid N}a_d b_{N/d}.
+$$
+For instance for $\sigma > 2$,
+$$
+\zeta(s-1)\zeta(s) = \left(\sum_m \frac m{m^s}\right)\left(\sum_n\frac1{n^s}\right) = \sum_{N\geq1}\frac1{N^s}\sum_{d\mid N}d = \sum_{N\geq1}\frac{\sigma(N)}{N^s},
+$$
+and by \autoref{lem:mobius}, $\zeta(s)\sum_n \mu(n)n^{-s} = 1$, i.e.\ $\sum_n\mu(n)n^{-s} = 1/\zeta(s)$.
+
+\begin{definition}[von Mangoldt Function]
+	Define $\Lambda : \N \to \R$ by
+	$$
+	\Lambda(n) = \begin{cases}\log p & \text{if } n = p^k \text{ for some prime } p \text{ and } k \geq 1, \\ 0 & \text{otherwise}.\end{cases}
+	$$
+\end{definition}
+
+\begin{proposition}\label{prop:vonmangoldt}
+	For $\sigma > 1$,
+	$$
+	-\frac{\zeta'(s)}{\zeta(s)} = \sum_{n=1}^\infty \frac{\Lambda(n)}{n^s}.
+	$$
+\end{proposition}
+\begin{proof}
+	Taking logarithms in \autoref{thm:eulerproduct}, valid since $\zeta$ is nonvanishing on $\sigma > 1$,
+	$$
+	\log\zeta(s) = -\sum_p \log\left(1 - p^{-s}\right).
+	$$
+	Differentiating term by term (legitimate by local uniform convergence),
+	$$
+	\frac{\zeta'(s)}{\zeta(s)} = -\sum_p \frac{p^{-s}\log p}{1 - p^{-s}} = -\sum_p (\log p)\sum_{k=1}^\infty p^{-ks} = -\sum_{n=1}^\infty \frac{\Lambda(n)}{n^s},
+	$$
+	since the only $n$ contributing are prime powers $p^k$, each with weight $\log p$.
 \end{proof}
 
+So $\Lambda$ is a weighted indicator function of the prime powers, packaged so as to be visible to $\zeta$. Setting $\psi(x) = \sum_{n \leq x}\Lambda(n)$, one can show that the prime number theorem is equivalent to $\psi(x) \sim x$, and the analytic proof proceeds by writing
+$$
+\psi(x) = \frac1{2\pi i}\int_{c - i\infty}^{c+i\infty}\left(-\frac{\zeta'(s)}{\zeta(s)}\right)\frac{x^s}s\dd s
+$$
+for $c > 1$ and moving the contour left, picking up $x$ from the pole of $-\zeta'/\zeta$ at $s = 1$ and a term $x^\rho/\rho$ from each nontrivial zero $\rho$. One sees very concretely why the location of the zeros controls the error term.
 
-\begin{theorem}
-    $\prod_{p \leq n} p \leq 4^n$.
-\end{theorem}
+\subsection{Counting Primes}
+
+We now come back to earth and prove Chebyshev's bounds. First, the sieve of Eratosthenes made quantitative.
+
+\begin{proposition}[Legendre's Formula]
+	Let $x > 1$ and let $P = \prod_{p \leq \sqrt x}p$. Then
+	$$
+	\pi(x) - \pi(\sqrt x) + 1 = \left|\{1 \leq n \leq x : (n, P) = 1\}\right| = \sum_{d \mid P}\mu(d)\left\lfloor\frac xd\right\rfloor.
+	$$
+\end{proposition}
 \begin{proof}
-The proof is by induction, observing 
-$$
-\prod_{n < p \leq 2n} p \mid \binom{2n}{n} \leq 2^{2n} = 4^n.
-$$
+	For the first equality: an integer $1 \leq n \leq x$ is coprime to $P$ if and only if it has no prime factor at most $\sqrt x$, which happens exactly when $n = 1$ or $n$ is a prime in $(\sqrt x, x]$. There are $1 + \pi(x) - \pi(\sqrt x)$ such $n$.
+
+	For the second, use \autoref{lem:mobius} to detect coprimality:
+	$$
+	\left|\{n \leq x : (n,P) = 1\}\right| = \sum_{n \leq x}\ \sum_{d \mid (n, P)}\mu(d) = \sum_{d \mid P}\mu(d)\left|\{n \leq x : d \mid n\}\right|,
+	$$
+	which is $\sum_{d\mid P}\mu(d)\lfloor x/d\rfloor$.
+\end{proof}
+
+\begin{example}
+	Take $x = 100$, so $P = 2\cdot3\cdot5\cdot7 = 210$. The formula reads
+	$$
+	100 - \left(50 + 33 + 20 + 14\right) + \left(16 + 10 + 7 + 6 + 4 + 2\right) - \left(3 + 2 + 1 + 0\right) + 0 = 22,
+	$$
+	where the bracketed groups come from $d$ with one, two, three and four prime factors. And indeed $\pi(100) - \pi(10) + 1 = 25 - 4 + 1 = 22$.
+\end{example}
+
+This is inclusion--exclusion, and it is exact, but the number of terms is $2^{\pi(\sqrt x)}$, which grows far too fast to be useful. The successful approach instead extracts information from binomial coefficients, and the following simple observations are the engine.
+
+\begin{lemma}\label{lem:binom}
+	Let $n \geq 5$ and $N = \binom{2n}n$.
+	\begin{enumerate}[label=(\roman*)]
+		\item If $2n/3 < p \leq n$ then $p \nmid N$.
+		\item If $p^k \mid N$ for some $k \geq 1$, then $p^k \leq 2n$.
+	\end{enumerate}
+\end{lemma}
+\begin{proof}
+	(i) Write $N = \frac{(2n)(2n-1)\cdots(n+1)}{n(n-1)\cdots1}$. If $2n/3 < p \leq n$ then $2p \leq 2n < 3p$, so exactly one multiple of $p$ (namely $2p$) lies in $(n, 2n]$ and exactly one (namely $p$) in $[1,n]$; and $p^2 > 4n^2/9 > 2n$ for $n \geq 5$, so no higher power intervenes. So numerator and denominator each contain exactly one factor of $p$, which therefore cancels.
+
+	(ii) By Legendre's formula for $v_p$,
+	$$
+	v_p(N) = v_p((2n)!) - 2v_p(n!) = \sum_{i \geq 1}\left(\left\lfloor\frac{2n}{p^i}\right\rfloor - 2\left\lfloor\frac n{p^i}\right\rfloor\right).
+	$$
+	Each summand is $\lfloor 2y \rfloor - 2\lfloor y\rfloor \in \{0, 1\}$, and the summand vanishes once $p^i > 2n$. So if $p^k \mid N$, i.e.\ $v_p(N) \geq k$, then at least $k$ summands are nonzero and hence $p^k \leq 2n$.
+\end{proof}
+
+\begin{proof}[Proof of \autoref{thm:chebyshev}]
+	\emph{Upper bound.} We first show $\pi(2^k) \leq 3 \cdot 2^k/k$ for all $k \geq 1$ by induction. For $1 \leq k \leq 6$ this is clear, since for even $n \geq 4$ we have $\pi(n) \leq n/2$ and so $\pi(2^k) \leq 2^{k-1} \leq 3\cdot2^k/k$ whenever $k \leq 6$.
+
+	For the inductive step, note that every prime $p \in (n, 2n]$ divides $\binom{2n}n$ exactly once (it divides the numerator and not the denominator), so
+	$$
+	2^{2n} > \binom{2n}n \geq \prod_{n < p \leq 2n}p \geq n^{\pi(2n) - \pi(n)},
+	$$
+	giving $\pi(2n) - \pi(n) \leq 2n\log 2/\log n$. Applying this with $n = 2^k$,
+	$$
+	\pi(2^{k+1}) \leq \pi(2^k) + \frac{2^{k+1}\log 2}{\log 2^k} = \pi(2^k) + \frac{2^{k+1}}k \leq \frac{3\cdot2^k}k + \frac{2^{k+1}}k = \frac{5\cdot 2^{k+1}}{2k} \leq \frac{3\cdot2^{k+1}}{k+1},
+	$$
+	the last step because $5/(2k) \leq 3/(k+1)$ for $k \geq 5$. This completes the induction.
+
+	Now given $x \geq 4$, choose $k$ with $2^k < x \leq 2^{k+1}$, so $k \geq 2$. Since $y/\log y$ is increasing for $y \geq e$,
+	$$
+	\pi(x) \leq \pi(2^{k+1}) \leq \frac{6 \cdot 2^k}{k+1} < \frac{6\cdot 2^k}{k} = 6\log 2\cdot\frac{2^k}{\log 2^k} \leq 6\log 2\cdot\frac{x}{\log x}.
+	$$
+
+	\emph{Lower bound.} By \autoref{lem:binom}(ii), $p^{v_p(N)} \leq 2n$ for every prime $p$, where $N = \binom{2n}n$; and only primes $p \leq 2n$ divide $N$. So
+	$$
+	\log N = \sum_{p \leq 2n}v_p(N)\log p \leq \sum_{p \leq 2n}\frac{\log 2n}{\log p}\log p = \pi(2n)\log 2n.
+	$$
+	On the other hand $N$ is the largest of the $2n+1$ binomial coefficients $\binom{2n}j$, and
+	$$
+	2^{2n} = \sum_{j=0}^{2n}\binom{2n}j = 2 + \sum_{j=1}^{2n-1}\binom{2n}j \leq 2 + (2n-1)N \leq 2nN
+	$$
+	for $n \geq 1$. Hence $\log N \geq 2n\log 2 - \log 2n$, and combining,
+	$$
+	\pi(2n) \geq \frac{2n\log 2 - \log 2n}{\log 2n} = \log 2\cdot\frac{2n}{\log 2n} - 1.
+	$$
+	Finally, for $x \geq 4$ pick $n$ with $2n \leq x \leq 2n+2$; then $2n \geq x - 2$ and $\log 2n \leq \log x$, so
+	$$
+	\pi(x) \geq \pi(2n) \geq \log 2\cdot\frac{x-2}{\log x} - 1 \geq \frac{\log 2}2\cdot\frac x{\log x},
+	$$
+	the last inequality being equivalent to $\frac{\log 2}2 x \geq 2\log 2 + \log x$, which holds for $x \geq 11$. For $4 \leq x < 11$ the claimed bound asserts $\pi(x) \geq 1.51$, and $\pi(x) \geq 2$ throughout that range.
+\end{proof}
+
+So $\pi(x)$ is of order $x/\log x$, which is the qualitative content of the prime number theorem. It is worth appreciating that the constants $\log 2/2 \approx 0.347$ and $6\log 2 \approx 4.16$ bracket the truth of $1$, so there is still work to be done -- but the shape is right, and it was got by hand.
+
+\subsection{Bertrand's Postulate}
+
+A pleasant application of the same circle of ideas is the following, conjectured by Bertrand in 1845 and proved by Chebyshev.
+
+\begin{theorem}[Bertrand's Postulate]\label{thm:bertrand}
+	For every integer $n \geq 2$ there is a prime $p$ with $n \leq p < 2n$.
+\end{theorem}
+
+The key input is a bound on the product of all primes up to $x$, which is essentially the statement $\theta(x) = O(x)$ for Chebyshev's $\theta$ function.
+
+\begin{lemma}\label{lem:primeprod}
+	For $x \geq 1$, $\displaystyle P(x) = \prod_{p \leq x}p \leq 4^x$.
+\end{lemma}
+\begin{proof}
+	Since $P$ is a step function it suffices to prove this for integers $x = n$, and we induct. The cases $n = 1, 2, 3$ are clear. If $n$ is even and $n \geq 4$ then $n$ is not prime, so $P(n) = P(n-1) \leq 4^{n-1} < 4^n$. So we may assume $n$ is odd, say $n = 2m+1$ with $m \geq 1$.
+
+	Every prime $p$ with $m + 2 \leq p \leq 2m+1$ divides $\binom{2m+1}m$, since it divides the numerator $(2m+1)!$ once and neither $m!$ nor $(m+1)!$. Hence
+	$$
+	\prod_{m+2 \leq p \leq 2m+1}p \ \Big| \ \binom{2m+1}m, \qquad 2\binom{2m+1}m = \binom{2m+1}m + \binom{2m+1}{m+1} \leq 2^{2m+1},
+	$$
+	so $\binom{2m+1}m \leq 4^m$. Therefore
+	$$
+	P(2m+1) = P(m+1)\prod_{m+2\leq p\leq 2m+1}p \leq 4^{m+1}\cdot 4^m = 4^{2m+1},
+	$$
+	using the inductive hypothesis for $P(m+1)$.
 \end{proof}
 
 \begin{corollary}
-    $\pi(x) \leq x \log 4/\log x$.
+	$\pi(x) \leq \dfrac{x\log 4}{\log x}$ for $x \geq 2$.
+\end{corollary}
+\begin{proof}
+	Every prime in $(\sqrt x, x]$ contributes a factor exceeding $\sqrt x$ to $P(x)$, so
+	$$
+	x^{(\pi(x) - \pi(\sqrt x))/2} \leq P(x) \leq 4^x.
+	$$
+	Taking logarithms and absorbing $\pi(\sqrt x) \leq \sqrt x$ gives the bound.
+\end{proof}
+
+\begin{proof}[Proof of \autoref{thm:bertrand}]
+	Suppose for contradiction that there is no prime in $[n, 2n)$, and set $N = \binom{2n}n$. Any prime $p \mid N$ satisfies $p \leq 2n$; and $p \neq 2n$ unless $n = 1$, while our assumption rules out $n \leq p < 2n$. So $p < n$, and then \autoref{lem:binom}(i) forces $p \leq 2n/3$.
+
+	Split $N = N_1N_2$ where $N_1 = \prod_{v_p(N) = 1}p$ and $N_2 = \prod_{v_p(N) \geq 2}p^{v_p(N)}$. By \autoref{lem:primeprod},
+	$$
+	N_1 \leq \prod_{p \leq 2n/3}p = P(2n/3) \leq 4^{2n/3}.
+	$$
+	For $N_2$: if $v_p(N) \geq 2$ then $p^2 \leq p^{v_p(N)} \leq 2n$ by \autoref{lem:binom}(ii), so $p \leq \sqrt{2n}$, and each such prime contributes at most $2n$. Hence
+	$$
+	N_2 \leq \prod_{p \leq \sqrt{2n}}2n \leq (2n)^{\sqrt{2n}}.
+	$$
+	Also $N = \binom{2n}n \geq 4^n/(2n)$, as in the proof of \autoref{thm:chebyshev}. Combining,
+	$$
+	\frac{4^n}{2n} \leq N \leq 4^{2n/3}(2n)^{\sqrt{2n}},
+	$$
+	and taking logarithms, $\frac{n\log 4}{3} \leq (1 + \sqrt{2n})\log 2n$, i.e.
+	$$
+	\frac{2\log 2}{3}n \leq \left(1 + \sqrt{2n}\right)\log 2n.
+	$$
+	The left side grows linearly and the right like $\sqrt n \log n$, so this fails for all large $n$; a short computation shows it fails for $n \geq 2^9 = 512$.
+
+	For $n < 512$ we exhibit primes directly: the list
+	$$
+	2, 3, 5, 7, 13, 23, 43, 83, 163, 317, 631
+	$$
+	has each term less than twice its predecessor, so for any $n < 512$ some consecutive pair straddles $n$ and provides a prime in $[n, 2n)$.
+\end{proof}
+
+\section{Continued Fractions}
+
+Suppose we want to approximate $\pi$ by a rational number. Decimals give
+$$
+\left|\pi - \frac{314159}{100000}\right| < 3\times 10^{-6},
+$$
+which is respectable. But
+$$
+\left|\pi - \frac{355}{113}\right| < 3\times10^{-7},
+$$
+which is better by an order of magnitude with a denominator nearly a thousand times smaller. Where did $355/113$ come from, and can we do better still? The answer to both questions is continued fractions.
+
+\subsection{Diophantine Approximation}
+
+First, how well \emph{can} we approximate? A denominator $q$ divides the line into intervals of length $1/q$, so the best we can hope for from a fixed $q$ is $|\theta - p/q| \leq 1/(2q)$. The following says that some $q$ does very much better than that.
+
+\begin{theorem}[Dirichlet]\label{thm:dirichletapprox}
+	Let $\theta \in \R$ and $N \in \N$. Then there are $p, q \in \Z$ with $1 \leq q \leq N$ and
+	$$
+	\left|\theta - \frac pq\right| \leq \frac1{qN} \leq \frac1{q^2}.
+	$$
+\end{theorem}
+\begin{proof}
+	Consider the $N+1$ numbers $\{0\}, \{\theta\}, \{2\theta\}, \dots, \{N\theta\}$ where $\{\cdot\}$ denotes fractional part, all lying in $[0,1)$. Partition $[0,1)$ into the $N$ intervals $[j/N, (j+1)/N)$; by pigeonhole two of our numbers lie in the same interval, say $\{k\theta\}$ and $\{l\theta\}$ with $k < l$. Then with $q = l - k \in [1, N]$ we have $|q\theta - p| \leq 1/N$ for a suitable integer $p$, and dividing by $q$ gives the result.
+\end{proof}
+
+\begin{corollary}
+	If $\theta$ is irrational then $|\theta - p/q| < 1/q^2$ has infinitely many solutions $p/q \in \Q$.
+\end{corollary}
+\begin{proof}
+	Given any finite set of rationals $p_i/q_i$, choose $N$ with $1/N < \min_i|\theta - p_i/q_i|$ (possible as $\theta$ is irrational, so the minimum is positive). The $p/q$ produced by \autoref{thm:dirichletapprox} satisfies $|\theta - p/q| \leq 1/(qN) \leq 1/N$, so it is not on our list.
+\end{proof}
+
+\subsection{Complete and Partial Quotients}
+
+The construction is a greedy algorithm: peel off the integer part, invert what remains, and repeat.
+
+\begin{definition}
+	Let $\theta \in \R$. Set $\theta_0 = \theta$ and $a_0 = \lfloor \theta_0 \rfloor$. If $\theta_0 = a_0$ we stop; otherwise set $\theta_1 = 1/(\theta_0 - a_0)$ and $a_1 = \lfloor\theta_1\rfloor$, and continue. We call the $\theta_n$ the \vocab{complete quotients} and the $a_n$ the \vocab{partial quotients} of $\theta$, and write
+	$$
+	\theta = a_0 + \cfrac1{a_1 + \cfrac1{a_2 + \cdots}} = [a_0, a_1, a_2, \dots]
+	$$
+	for the \vocab{continued fraction expansion} of $\theta$.
+\end{definition}
+
+Since $0 < \theta_n - a_n < 1$ whenever the process does not stop, we have $\theta_{n+1} > 1$ and hence $a_n \geq 1$ for all $n \geq 1$; only $a_0$ may be zero or negative. At every stage we have the exact identity
+$$
+\theta = [a_0, a_1, \dots, a_{n-1}, \theta_n],
+$$
+which is the statement that we have not thrown anything away.
+
+\begin{example}
+	Take $\theta = 59/13$. Then
+	$$
+	\frac{59}{13} = 4 + \frac7{13} = 4 + \cfrac1{\cfrac{13}7} = 4 + \cfrac1{1 + \cfrac67} = 4 + \cfrac1{1 + \cfrac1{1 + \cfrac16}},
+	$$
+	so $59/13 = [4, 1, 1, 6]$.
+\end{example}
+
+\begin{proposition}
+	The continued fraction expansion of $\theta$ terminates if and only if $\theta \in \Q$.
+\end{proposition}
+\begin{proof}
+	If the expansion terminates then $\theta$ is built from integers by finitely many additions and divisions, hence rational. Conversely, if $\theta = a/b$ then the algorithm is Euclid's: writing $a = a_0 b + r$ we get $\theta_1 = b/r$, and the numerators $b > r > \cdots$ strictly decrease, so the process stops.
+\end{proof}
+
+\begin{example}
+	Compare the expansion of $59/13$ above with Euclid's algorithm on $(59, 13)$:
+	\begin{align*}
+		59 &= 4\times13 + 7, \\
+		13 &= 1 \times 7 + 6, \\
+		7 &= 1\times 6 + 1, \\
+		6 &= 6\times 1 + 0,
+	\end{align*}
+	whose quotients are $4, 1, 1, 6$ -- exactly the partial quotients.
+\end{example}
+
+\begin{remark}
+	The expansion of a rational is not quite unique: if $a_n \geq 2$ is the last partial quotient then $[a_0, \dots, a_n] = [a_0, \dots, a_n - 1, 1]$. The algorithm above always produces the version with $a_n \geq 2$ (for $n \geq 1$), and we take that as the canonical one.
+\end{remark}
+
+\subsection{Convergents}
+
+Truncating the expansion gives rational approximations, and remarkably they satisfy a simple recursion.
+
+\begin{definition}
+	Given integers $a_0, a_1, a_2, \dots$ with $a_n \geq 1$ for $n \geq 1$, define the \vocab{convergents} $p_n/q_n$ by
+	$$
+	p_{-1} = 1, \quad q_{-1} = 0, \quad p_0 = a_0, \quad q_0 = 1,
+	$$
+	$$
+	p_n = a_np_{n-1} + p_{n-2}, \qquad q_n = a_nq_{n-1} + q_{n-2} \quad (n \geq 1).
+	$$
+\end{definition}
+
+Note $1 = q_0 \leq q_1 < q_2 < q_3 < \cdots$, so the denominators grow at least as fast as the Fibonacci numbers, and in particular $q_n \to \infty$. It is worth recording the recursion in matrix form,
+$$
+\begin{pmatrix} p_n & p_{n-1} \\ q_n & q_{n-1}\end{pmatrix} = \begin{pmatrix} a_0 & 1 \\ 1 & 0\end{pmatrix}\begin{pmatrix} a_1 & 1 \\ 1 & 0\end{pmatrix}\cdots\begin{pmatrix}a_n & 1 \\ 1 & 0\end{pmatrix},
+$$
+which one verifies by induction and which makes the next proposition transparent. (A warning about notation: by `the convergent $p_n/q_n$' we really mean the \emph{pair} $(p_n, q_n)$, not merely the rational number; the distinction matters, as (i) below shows the pair is already in lowest terms.)
+
+\begin{proposition}\label{prop:convergents}
+	Let $(p_n/q_n)$ be the convergents of $[a_0, a_1, \dots]$. Then
+	\begin{enumerate}[label=(\roman*)]
+		\item $p_nq_{n-1} - p_{n-1}q_n = (-1)^{n+1}$; in particular $(p_n, q_n) = 1$;
+		\item $[a_0, \dots, a_n] = p_n/q_n$;
+		\item if $\alpha = [a_0, \dots, a_n, \beta]$ for some real $\beta > 0$, then
+		$$
+		\alpha = \frac{p_n\beta + p_{n-1}}{q_n\beta + q_{n-1}},
+		$$
+		and $\alpha$ lies strictly between $p_n/q_n$ and $p_{n-1}/q_{n-1}$.
+	\end{enumerate}
+\end{proposition}
+\begin{proof}
+	(i) Take determinants in the matrix identity: the left side has determinant $p_nq_{n-1} - p_{n-1}q_n$ and the right has determinant $(-1)^{n+1}$.
+
+	(iii) Induct on $n$. For $n = 0$, $[a_0, \beta] = a_0 + 1/\beta = (a_0\beta + 1)/\beta = (p_0\beta + p_{-1})/(q_0\beta + q_{-1})$. For $n \geq 1$, write $\gamma = a_n + 1/\beta$, so $\alpha = [a_0, \dots, a_{n-1}, \gamma]$ and by induction
+	$$
+	\alpha = \frac{p_{n-1}\gamma + p_{n-2}}{q_{n-1}\gamma+q_{n-2}} = \frac{p_{n-1}(a_n\beta + 1) + \beta p_{n-2}}{q_{n-1}(a_n\beta+1)+\beta q_{n-2}} = \frac{(a_np_{n-1} + p_{n-2})\beta + p_{n-1}}{(a_nq_{n-1}+q_{n-2})\beta+q_{n-1}},
+	$$
+	which is $(p_n\beta + p_{n-1})/(q_n\beta+q_{n-1})$ as claimed.
+	For the last claim, if $x/y < x'/y'$ with $y, y' > 0$ then the \emph{mediant} satisfies $x/y < (x + x')/(y+y') < x'/y'$; applying this with weights gives that $(p_n\beta + p_{n-1})/(q_n\beta+q_{n-1})$ lies strictly between $p_n/q_n$ and $p_{n-1}/q_{n-1}$.
+
+	(ii) Take $\beta = a_n$ in (iii) applied to $n - 1$.
+\end{proof}
+
+\begin{theorem}\label{thm:cfconverge}
+	Let $\theta$ be irrational with continued fraction $[a_0, a_1, \dots]$. Then for every $n \geq 0$,
+	$$
+	\left|\theta - \frac{p_n}{q_n}\right| < \frac1{q_nq_{n+1}} \leq \frac{1}{q_n^2}.
+	$$
+	In particular $p_n/q_n \to \theta$.
+\end{theorem}
+\begin{proof}
+	We have $\theta = [a_0, \dots, a_n, \theta_{n+1}]$ exactly, so by \autoref{prop:convergents}(iii),
+	$$
+	\theta - \frac{p_n}{q_n} = \frac{p_n\theta_{n+1}+p_{n-1}}{q_n\theta_{n+1}+q_{n-1}} - \frac{p_n}{q_n} = \frac{q_np_{n-1} - p_nq_{n-1}}{q_n(q_n\theta_{n+1}+q_{n-1})} = \frac{(-1)^{n}}{q_n(q_n\theta_{n+1}+q_{n-1})}.
+	$$
+	Since $\theta_{n+1} > a_{n+1}$ we get $q_n\theta_{n+1}+q_{n-1} > a_{n+1}q_n + q_{n-1} = q_{n+1}$, and the bound follows. As $q_n \to \infty$, the convergents converge to $\theta$.
+\end{proof}
+
+Notice that the sign of $\theta - p_n/q_n$ alternates. So the convergents straddle $\theta$, the even ones increasing up to it from below and the odd ones decreasing to it from above, giving a nested sequence of intervals each containing $\theta$:
+
+\begin{center}
+\begin{tikzpicture}
+	\draw[<->] (-0.3,0) -- (11.4,0);
+	\foreach \x in {0.5, 3.6, 5.3, 6.9, 8.8, 10.8} { \fill[blue] (\x,0) circle (1.7pt); }
+	\draw[gray, dashed] (6.0,-0.1) -- (6.0,1.95);
+	\fill (6.0,0) circle (1.7pt);
+	\node[font=\small, below] at (0.5,-0.12) {$\frac{p_0}{q_0}$};
+	\node[font=\small, below] at (3.6,-0.12) {$\frac{p_2}{q_2}$};
+	\node[font=\small, below] at (5.3,-0.12) {$\frac{p_4}{q_4}$};
+	\node[font=\small, below] at (6.0,-0.12) {$\theta$};
+	\node[font=\small, below] at (6.9,-0.12) {$\frac{p_5}{q_5}$};
+	\node[font=\small, below] at (8.8,-0.12) {$\frac{p_3}{q_3}$};
+	\node[font=\small, below] at (10.8,-0.12) {$\frac{p_1}{q_1}$};
+	\draw[blue, semithick] (0.5,0.45) -- (10.8,0.45);
+	\draw[blue] (0.5,0.35) -- (0.5,0.55);
+	\draw[blue] (10.8,0.35) -- (10.8,0.55);
+	\draw[blue, semithick] (3.6,1.05) -- (8.8,1.05);
+	\draw[blue] (3.6,0.95) -- (3.6,1.15);
+	\draw[blue] (8.8,0.95) -- (8.8,1.15);
+	\draw[blue, semithick] (5.3,1.65) -- (6.9,1.65);
+	\draw[blue] (5.3,1.55) -- (5.3,1.75);
+	\draw[blue] (6.9,1.55) -- (6.9,1.75);
+\end{tikzpicture}
+\end{center}
+
+(The spacing here is schematic: in reality the intervals shrink far faster than the picture suggests.)
+
+\begin{example}
+	The expansion of $\pi$ begins $\pi = [3, 7, 15, 1, 292, \dots]$, with convergents
+	$$
+	3, \quad \frac{22}7, \quad \frac{333}{106}, \quad \frac{355}{113}, \quad \frac{103993}{33102}, \quad \dots
+	$$
+	So $355/113$ is the fourth convergent, which explains its quality: the next partial quotient is the enormous $292$, and by \autoref{thm:cfconverge} the error is at most $1/(q_3q_4) = 1/(113 \times 33102) \approx 2.7\times10^{-7}$. Large partial quotients are exactly the places where continued fractions do unusually well.
+\end{example}
+
+\subsection{Best Approximation}
+
+The convergents are not merely good approximations; they are the best possible.
+
+\begin{theorem}\label{thm:bestapprox}
+	Let $\theta$ be irrational with convergents $p_n/q_n$.
+	\begin{enumerate}[label=(\roman*)]
+		\item If $1 \leq q < q_{n+1}$ then $|q\theta - p| \geq |q_n\theta - p_n|$ for every $p \in \Z$.
+		\item If $|\theta - p/q| < |\theta - p_n/q_n|$ with $q \geq 1$, then $q > q_n$.
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	(i) Fix $q, p$ with $1 \leq q < q_{n+1}$ and solve
+	$$
+	\begin{cases} p_nu + p_{n+1}v = p, \\ q_nu+q_{n+1}v = q.\end{cases}
+	$$
+	The determinant of the system is $p_nq_{n+1} - p_{n+1}q_n = \pm1$ by \autoref{prop:convergents}(i), so $u, v$ are integers, not both zero. Then
+	$$
+	q\theta - p = u(q_n\theta - p_n) + v(q_{n+1}\theta - p_{n+1}).
+	$$
+	If $v = 0$ then $u \neq 0$ and $|q\theta - p| = |u||q_n\theta-p_n| \geq |q_n\theta - p_n|$, as required. So suppose $v \neq 0$. If $u = 0$ then $q = q_{n+1}v$, forcing $q \geq q_{n+1}$, contrary to hypothesis. So $u \neq 0$ too, and from $q_nu = q - q_{n+1}v$ with $0 < q < q_{n+1}$ we see $u$ and $v$ have opposite signs. But $\theta - p_n/q_n$ and $\theta - p_{n+1}/q_{n+1}$ also have opposite signs, so $u(q_n\theta - p_n)$ and $v(q_{n+1}\theta - p_{n+1})$ have the \emph{same} sign, and there is no cancellation:
+	$$
+	|q\theta - p| = |u||q_n\theta - p_n| + |v||q_{n+1}\theta - p_{n+1}| \geq |q_n\theta - p_n|.
+	$$
+
+	(ii) If $q \leq q_n < q_{n+1}$ then by (i),
+	$$
+	\left|\theta - \frac pq\right| = \frac1q|q\theta - p| \geq \frac1q|q_n\theta - p_n| \geq \frac1{q_n}|q_n\theta - p_n| = \left|\theta - \frac{p_n}{q_n}\right|,
+	$$
+	contradicting the hypothesis.
+\end{proof}
+
+So among all fractions with denominator at most $q_n$, the convergent $p_n/q_n$ is the closest to $\theta$. There is a converse, which is the practical tool: any sufficiently good approximation \emph{must} be a convergent.
+
+\begin{theorem}\label{thm:converse}
+	Let $\theta$ be irrational.
+	\begin{enumerate}[label=(\roman*)]
+		\item At least one of any two consecutive convergents satisfies $|\theta - p/q| < 1/(2q^2)$.
+		\item If $p/q \in \Q$ with $q \geq 1$ satisfies $|\theta - p/q| < 1/(2q^2)$, then $p/q$ is a convergent of $\theta$.
+	\end{enumerate}
+\end{theorem}
+\begin{proof}
+	(i) Suppose $|\theta - p_n/q_n| \geq 1/(2q_n^2)$ and $|\theta - p_{n+1}/q_{n+1}| \geq 1/(2q_{n+1}^2)$. Since $\theta$ lies between the two convergents,
+	$$
+	\frac12\left(\frac1{q_n^2} + \frac1{q_{n+1}^2}\right) \leq \left|\theta - \frac{p_n}{q_n}\right| + \left|\theta - \frac{p_{n+1}}{q_{n+1}}\right| = \left|\frac{p_n}{q_n} - \frac{p_{n+1}}{q_{n+1}}\right| = \frac1{q_nq_{n+1}}.
+	$$
+	This says $(1/q_n - 1/q_{n+1})^2 \leq 0$, so $q_n = q_{n+1}$, which happens only for $n = 0$ with $a_1 = 1$; and one checks directly there.
+
+	(ii) Suppose $p/q$ is not a convergent, and choose $n$ with $q_n \leq q < q_{n+1}$. Then $p/q \neq p_n/q_n$, so $|pq_n - p_nq| \geq 1$ and
+	$$
+	\frac1{qq_n} \leq \left|\frac pq - \frac{p_n}{q_n}\right| \leq \left|\theta - \frac pq\right| + \left|\theta - \frac{p_n}{q_n}\right| = \frac1q|q\theta - p| + \frac1{q_n}|q_n\theta - p_n|.
+	$$
+	By \autoref{thm:bestapprox}(i), $|q_n\theta - p_n| \leq |q\theta - p| < 1/(2q)$, so
+	$$
+	\frac1{qq_n} < \left(\frac1q + \frac1{q_n}\right)\frac{1}{2q} = \frac1{2q^2} + \frac1{2qq_n},
+	$$
+	giving $1/(2qq_n) < 1/(2q^2)$ and hence $q < q_n$, a contradiction.
+\end{proof}
+
+\begin{remark}
+	The constant $1/2$ in (ii) cannot be improved to $1$: by \autoref{thm:dirichletapprox} there are always infinitely many $p/q$ with $|\theta - p/q| < 1/q^2$, and these need not be convergents. In the other direction, Hurwitz showed that $|\theta - p/q| < 1/(\sqrt5 q^2)$ has infinitely many solutions for every irrational $\theta$, and that $\sqrt5$ is optimal -- the golden ratio $[1,1,1,\dots]$ being the worst-approximable number.
+\end{remark}
+
+An application in the opposite direction: some numbers cannot be approximated well at all.
+
+\begin{definition}
+	A number $\alpha \in \C$ is \vocab{algebraic} if $P(\alpha) = 0$ for some nonzero polynomial $P$ with integer coefficients; the least degree of such a $P$ is the \vocab{degree} of $\alpha$. Numbers which are not algebraic are \vocab{transcendental}.
+\end{definition}
+
+\begin{theorem}[Liouville]
+	Let $\alpha \in \R$ be algebraic of degree $n > 1$. Then there is $c = c(\alpha) > 0$ with
+	$$
+	\left|\alpha - \frac pq\right| > \frac c{q^n}
+	$$
+	for all $p/q \in \Q$ with $q \geq 1$.
+\end{theorem}
+\begin{proof}
+	Let $P$ be the minimal polynomial of $\alpha$, of degree $n$. We may assume $|\alpha - p/q| < 1$, else take $c \leq 1$. Since $P$ is irreducible of degree $n > 1$ it has no rational roots, so $P(p/q) \neq 0$; and $q^nP(p/q)$ is a nonzero integer, so $|P(p/q)| \geq 1/q^n$.
+
+	By the mean value theorem, $P(\alpha) - P(p/q) = (\alpha - p/q)P'(\xi)$ for some $\xi$ between $\alpha$ and $p/q$, hence with $|\xi - \alpha| < 1$. Let $C = \sup_{|\xi - \alpha| \leq 1}|P'(\xi)| $, which is finite and nonzero. Since $P(\alpha) = 0$,
+	$$
+	\left|\alpha - \frac pq\right| = \frac{|P(p/q)|}{|P'(\xi)|} \geq \frac{1}{Cq^n},
+	$$
+	so $c = \min(1, 1/(2C))$ works, the case $|\alpha - p/q| \geq 1$ being trivial.
+\end{proof}
+
+\begin{corollary}
+	The number $\alpha = \sum_{k=1}^\infty 10^{-k!}$ is transcendental.
+\end{corollary}
+\begin{proof}
+	Truncating at $k = m$ gives a rational $p_m/q_m$ with $q_m = 10^{m!}$ and
+	$$
+	\left|\alpha - \frac{p_m}{q_m}\right| = \sum_{k > m}10^{-k!} < 2\cdot 10^{-(m+1)!} = \frac{2}{q_m^{m+1}}.
+	$$
+	If $\alpha$ were algebraic of degree $n$ this would contradict Liouville's theorem for $m \geq n$ (and $\alpha \notin \Q$ since its decimal expansion is not eventually periodic).
+\end{proof}
+
+\subsection{Periodic Continued Fractions}
+
+\begin{definition}
+	A continued fraction expansion is \vocab{eventually periodic} if it has the form
+	$$
+	[a_0, \dots, a_{m-1}, \overline{a_m, \dots, a_{m+k-1}}],
+	$$
+	the bar denoting infinite repetition of the block. It is \vocab{purely periodic} if we may take $m = 0$. The \vocab{period} is the least such $k$.
+\end{definition}
+
+\begin{example}
+	Let us expand $\theta = \sqrt6$. Since $2 < \sqrt6 < 3$ we have $a_0 = 2$, and
+	\begin{align*}
+		\theta_1 &= \frac1{\sqrt6 - 2} = \frac{\sqrt6+2}{2} = 2 + \frac{\sqrt6 - 2}2, &&a_1 = 2, \\
+		\theta_2 &= \frac2{\sqrt6-2} = \sqrt6 + 2 = 4 + (\sqrt 6 - 2), &&a_2 = 4, \\
+		\theta_3 &= \frac1{\sqrt6-2} = \theta_1.
+	\end{align*}
+	So the complete quotients repeat with period $2$ and $\sqrt6 = [2, \overline{2, 4}]$.
+\end{example}
+
+\begin{definition}
+	A \vocab{quadratic irrational} is an irrational $\theta \in \R$ satisfying $A\theta^2 + B\theta + C = 0$ for some $A, B, C \in \Z$ not all zero. Its \vocab{conjugate} $\theta'$ is the other root.
+\end{definition}
+
+\begin{theorem}[Lagrange]\label{thm:lagrangecf}
+	The continued fraction expansion of an irrational $\theta$ is eventually periodic if and only if $\theta$ is a quadratic irrational.
+\end{theorem}
+\begin{proof}
+	($\Leftarrow$) Suppose $A\theta^2 + B\theta + C = 0$ and consider the BQF $f = (A, B, C)$, so $f(\theta, 1) = 0$. For each $n \geq 0$ define
+	$$
+	f_n(x,y) = f(p_nx + p_{n-1}y, \ q_nx+q_{n-1}y) = (A_n, B_n, C_n),
+	$$
+	which is a unimodular substitution applied to $f$ (up to sign of the determinant), so $\disc f_n = \disc f$ for all $n$. Since $\theta = (p_n\theta_{n+1}+p_{n-1})/(q_n\theta_{n+1}+q_{n-1})$ by \autoref{prop:convergents}(iii), we get
+	$$
+	f_n(\theta_{n+1}, 1) = (q_n\theta_{n+1}+q_{n-1})^2 f(\theta, 1) = 0,
+	$$
+	so $\theta_{n+1}$ is a root of $A_nx^2 + B_nx + C_n$.
+
+	It remains to show the $f_n$ take only finitely many values. Now $A_n = f_n(1,0) = f(p_n, q_n)$, and writing $g(x) = Ax^2+Bx+C$ so that $f(p,q) = q^2g(p/q)$,
+	$$
+	|A_n| = q_n^2\left|g\!\left(\frac{p_n}{q_n}\right)\right| = q_n^2|A|\left|\frac{p_n}{q_n} - \theta\right|\left|\frac{p_n}{q_n}-\theta'\right| \leq |A|\left|\frac{p_n}{q_n} - \theta'\right|
+	$$
+	using $|\theta - p_n/q_n| \leq 1/q_n^2$. As $p_n/q_n \to \theta$, the right-hand side tends to $|A||\theta - \theta'|$, so the $A_n$ are bounded. Similarly $C_n = f_n(0,1) = f(p_{n-1}, q_{n-1}) = A_{n-1}$ is bounded, and then $B_n^2 = \disc f + 4A_nC_n$ is bounded too. So the $f_n$ take finitely many values, and hence so do the complete quotients $\theta_{n+1}$, each being a root of one of finitely many quadratics. Two must coincide, and once $\theta_i = \theta_j$ the expansion repeats.
+
+	($\Rightarrow$) Suppose first that the expansion is purely periodic, say $\phi = [\overline{a_0, \dots, a_{k-1}}]$, so that $\phi = [a_0, \dots, a_{k-1}, \phi]$. By \autoref{prop:convergents}(iii),
+	$$
+	\phi = \frac{p_{k-1}\phi + p_{k-2}}{q_{k-1}\phi+q_{k-2}}, \qquad \text{i.e.} \qquad q_{k-1}\phi^2 + (q_{k-2} - p_{k-1})\phi - p_{k-2} = 0,
+	$$
+	a quadratic with integer coefficients and $q_{k-1} \neq 0$. In general $\theta = [a_0, \dots, a_{m-1}, \phi]$ for such a $\phi$, so $\theta = (p_{m-1}\phi + p_{m-2})/(q_{m-1}\phi+q_{m-2})$ is a rational function of $\phi$ with integer coefficients, hence also a quadratic irrational.
+\end{proof}
+
+\begin{theorem}[Galois]\label{thm:galois}
+	Let $\theta$ be a quadratic irrational. The continued fraction of $\theta$ is purely periodic if and only if $\theta > 1$ and $-1 < \theta' < 0$.
+\end{theorem}
+
+We shall not prove this, but we will use the following consequence, which is what makes Pell's equation tractable.
+
+\begin{corollary}\label{cor:sqrtd}
+	If $d \in \N$ is not a perfect square, then
+	$$
+	\sqrt d = [a_0, \overline{a_1, \dots, a_n}]
+	$$
+	for some $n$, with $a_0 = \lfloor\sqrt d\rfloor$.
+\end{corollary}
+\begin{proof}
+	Let $a_0 = \lfloor\sqrt d\rfloor$ and $\theta_1 = 1/(\sqrt d - a_0)$. Then $\theta_1 > 1$, and its conjugate is $1/(-\sqrt d - a_0) \in (-1, 0)$ since $\sqrt d + a_0 > 1$. By \autoref{thm:galois}, $\theta_1$ is purely periodic, which is the claim.
+\end{proof}
+
+\begin{remark}
+	In fact the periodic part is always a palindrome followed by $2a_0$, so $\sqrt d = [a_0, \overline{a_1, a_2, \dots, a_2, a_1, 2a_0}]$. For instance $\sqrt6 = [2,\overline{2,4}]$, $\sqrt{17} = [4, \overline 8]$, $\sqrt7 = [2, \overline{1,1,1,4}]$ and $\sqrt{23} = [4, \overline{1,3,1,8}]$.
+\end{remark}
+
+\subsection{Pell's Equation}
+
+\begin{definition}
+	Let $d \in \N$ not be a perfect square. The equation
+	$$
+	x^2 - dy^2 = 1
+	$$
+	is called \vocab{Pell's equation}.
+\end{definition}
+
+This is an indefinite binary quadratic form set equal to $1$, and as we noted in \S5 we should expect infinitely many solutions once there is one. Geometrically we are asking for lattice points on a hyperbola; here is $x^2 - 3y^2 = 1$, whose first few solutions are $(1,0)$, $(2, \pm1)$ and $(7, \pm4)$.
+
+\begin{center}
+\begin{tikzpicture}
+	\foreach \i in {0,...,8} { \foreach \j in {-4,...,4} { \fill[gray!50] (0.75*\i,0.55*\j) circle (1.2pt); } }
+	\draw[<->, thin, gray] (-0.4,0) -- (6.5,0);
+	\draw[<->, thin, gray] (0,-2.65) -- (0,2.65);
+	\draw[thick, blue, samples=80, domain=-4.4:4.4, variable=\y] plot ({0.75*sqrt(1+3*\y*\y)},{0.55*\y});
+	\foreach \x/\y in {0.75/0, 1.5/0.55, 1.5/-0.55, 5.25/2.2, 5.25/-2.2} { \fill[blue] (\x,\y) circle (2.6pt); }
+	\node[font=\small, blue, below left, fill=white, inner sep=1pt] at (0.7,-0.06) {$(1,0)$};
+	\node[font=\small, blue, above left, fill=white, inner sep=1pt] at (1.44,0.6) {$(2,1)$};
+	\node[font=\small, blue, left, fill=white, inner sep=1pt] at (5.1,2.28) {$(7,4)$};
+	\node[font=\small, gray, right] at (6.1,-0.25) {$x$};
+	\node[font=\small, gray, above] at (0.1,2.6) {$y$};
+\end{tikzpicture}
+\end{center}
+
+The first observation is that solutions can only come from continued fractions.
+
+\begin{proposition}\label{prop:pellconv}
+	If $(x,y)$ is a solution of $x^2 - dy^2 = 1$ with $x, y > 0$, then $x/y$ is a convergent of $\sqrt d$.
+\end{proposition}
+\begin{proof}
+	From $(x - y\sqrt d)(x+y\sqrt d) = 1$ we get $x > y\sqrt d$ and
+	$$
+	x - y\sqrt d = \frac1{x+y\sqrt d} < \frac1{2y\sqrt d},
+	$$
+	so $|\sqrt d - x/y| < 1/(2y^2\sqrt d) \leq 1/(2y^2)$. By \autoref{thm:converse}(ii), $x/y$ is a convergent of $\sqrt d$.
+\end{proof}
+
+That there is a solution at all is where periodicity comes in.
+
+\begin{theorem}[Pell]\label{thm:pell}
+	If $d \in \N$ is not a perfect square then $x^2 - dy^2 = 1$ has a solution with $y \neq 0$.
+\end{theorem}
+\begin{proof}
+	By \autoref{cor:sqrtd}, $\sqrt d = [a_0, \overline{a_1, \dots, a_n}]$; replacing $n$ by $2n$ if necessary we may assume $n$ is even. Then $\theta_1 = \theta_{n+1} = [\overline{a_1, \dots, a_n}]$, and $\sqrt d = a_0 + 1/\theta_1$, so $\theta_{n+1} = 1/(\sqrt d - a_0)$. By \autoref{prop:convergents}(iii),
+	$$
+	\sqrt d = \frac{p_n\theta_{n+1}+p_{n-1}}{q_n\theta_{n+1}+q_{n-1}} = \frac{p_n + p_{n-1}(\sqrt d - a_0)}{q_n + q_{n-1}(\sqrt d - a_0)}.
+	$$
+	Clearing denominators,
+	$$
+	q_{n-1}d + (q_n - q_{n-1}a_0)\sqrt d = p_n - a_0p_{n-1} + p_{n-1}\sqrt d.
+	$$
+	Since $\sqrt d$ is irrational we may equate `rational' and `irrational' parts: $p_{n-1} = q_n - a_0q_{n-1}$ and $q_{n-1}d = p_n - a_0p_{n-1}$. Hence
+	$$
+	p_{n-1}^2 - dq_{n-1}^2 = p_{n-1}(q_n - a_0q_{n-1}) - q_{n-1}(p_n - a_0p_{n-1}) = p_{n-1}q_n - p_nq_{n-1},
+	$$
+	which is $(-1)^n = 1$,
+	using \autoref{prop:convergents}(i) and that $n$ is even. So $(p_{n-1}, q_{n-1})$ is a solution.
+\end{proof}
+
+\begin{theorem}\label{thm:pellgroup}
+	Let $(x_1, y_1)$ be the solution of $x^2 - dy^2 = 1$ with $x_1, y_1 > 0$ and $\varepsilon = x_1 + y_1\sqrt d$ minimal. Then every solution with $x, y > 0$ is given by $x_n + y_n\sqrt d = \varepsilon^n$ for some $n \geq 1$.
+\end{theorem}
+\begin{proof}
+	Define the norm $N(a + b\sqrt d) = a^2 - db^2 = (a+b\sqrt d)(a - b\sqrt d)$, which is multiplicative since $\alpha \mapsto \alpha' = a - b\sqrt d$ is a ring homomorphism on $\Z[\sqrt d]$. So $N(\varepsilon) = 1$ implies $N(\varepsilon^n) = 1$, and every $\varepsilon^n$ gives a solution.
+
+	Conversely, suppose $\alpha = a + b\sqrt d$ with $a, b > 0$ and $N(\alpha) = 1$. Then $\alpha \geq \varepsilon > 1$, so there is $k \geq 1$ with $\varepsilon^k \leq \alpha < \varepsilon^{k+1}$. Set $\beta = \alpha\varepsilon^{-k}$, so $N(\beta) = 1$ and $1 \leq \beta < \varepsilon$. Writing $\beta = u + v\sqrt d$, from $\beta\beta' = 1$ and $\beta \geq 1$ we get $0 < \beta' \leq 1$, whence $2u = \beta + \beta' > 0$ and $2v\sqrt d = \beta - \beta' \geq 0$. So $(u,v)$ is a nonnegative solution with $u + v\sqrt d < \varepsilon$, and minimality of $\varepsilon$ forces $v = 0$, i.e.\ $\beta = 1$ and $\alpha = \varepsilon^k$.
+\end{proof}
+
+\begin{example}
+	Take $d = 6$, so $\sqrt6 = [2, \overline{2,4}]$ with period $2$. The convergents are
+	$$
+	\frac21, \quad \frac52, \quad \frac{22}9, \quad \frac{49}{20}, \quad \frac{218}{89}, \quad \frac{485}{198}, \dots
+	$$
+	and evaluating $p^2 - 6q^2$ along them gives $-2, 1, -2, 1, -2, 1, \dots$. So the fundamental solution is $(5, 2)$: indeed $25 - 24 = 1$. The next is
+	$$
+	(5 + 2\sqrt6)^2 = 49 + 20\sqrt6,
+	$$
+	giving $(49, 20)$, and $49^2 - 6\times20^2 = 2401 - 2400 = 1$. These are precisely the convergents at odd index, as \autoref{prop:pellconv} predicts.
+\end{example}
+
+\begin{example}
+	Take $d = 17$, so $\sqrt{17} = [4, \overline 8]$ with period $1$, which is odd. The convergent $p_0/q_0 = 4/1$ gives $16 - 17 = -1$, so $(4,1)$ solves the \emph{negative} Pell equation $x^2 - 17y^2 = -1$. Squaring, $(4+\sqrt{17})^2 = 33 + 8\sqrt{17}$ gives the fundamental solution $(33, 8)$ of $x^2 - 17y^2 = 1$, and indeed $1089 - 1088 = 1$.
+\end{example}
+
+\begin{remark}
+	In general, $x^2 - dy^2 = -1$ is soluble if and only if the period of $\sqrt d$ is odd, and then the solutions of the two equations interlace along the convergents. For $d = 6$ the period is $2$, and correspondingly $x^2 - 6y^2 = -1$ has no solutions -- as one can also see modulo $3$: $x^2 \equiv -1 \pmod 3$ is insoluble.
+\end{remark}
+
+\section{Primality Testing and Factorisation}
+
+Given a large integer $N$, we want to decide whether it is prime, and if not, to find a factor. These are different problems, and it is one of the pleasant discoveries of the last fifty years that the first is much easier than the second. Throughout we assume $N$ is odd, since removing factors of $2$ is free.
+
+\subsection{Fermat Pseudoprimes}
+
+The obvious tool is Fermat's little theorem: if $N$ is prime and $(b, N) = 1$ then $b^{N-1} \equiv 1 \pmod N$. Computing $b^{N-1} \bmod N$ by repeated squaring costs $O(\log N)$ multiplications, so this is a cheap test, and if it fails we have \emph{proved} that $N$ is composite -- without finding a single factor.
+
+\begin{example}
+	Take $N = 15$ and $b = 2$. Then $2^{14} = 16384 = 1092\times 15 + 4$, so $2^{14} \equiv 4 \not\equiv 1 \pmod{15}$ and $15$ is composite.
+\end{example}
+
+Unfortunately the converse fails.
+
+\begin{definition}
+	Let $b \in \N$. An odd composite $N > 1$ is a \vocab{Fermat pseudoprime} to base $b$ if $(b, N) = 1$ and $b^{N-1}\equiv 1 \pmod N$.
+\end{definition}
+
+\begin{example}
+	$N = 91 = 7\times13$ is a Fermat pseudoprime to base $3$: since $3^6 = 729 = 8\times91 + 1$, we have $3^{90} = (3^6)^{15} \equiv 1 \pmod{91}$. It is not one to base $2$: $2^{90} \equiv 64 \pmod{91}$.
+\end{example}
+
+So a single base can fail us. How many bases can fail us at once?
+
+\begin{proposition}\label{prop:halfbases}
+	Let $N > 1$ be odd. If $N$ is not a Fermat pseudoprime to some base $b_0$ coprime to $N$, then it fails to be one for at least half of the bases in $(\Z/N\Z)^\times$.
+\end{proposition}
+\begin{proof}
+	The set $B = \{b \in (\Z/N\Z)^\times : b^{N-1} \equiv 1\}$ is the kernel of the homomorphism $b \mapsto b^{N-1}$, hence a subgroup of $(\Z/N\Z)^\times$. It is proper, since $b_0 \notin B$. So by Lagrange $|B| \leq |(\Z/N\Z)^\times|/2$.
+\end{proof}
+
+So if there is \emph{any} witness, a handful of random guesses will find one with high probability. Sadly there need not be one.
+
+\begin{definition}
+	An odd composite $N > 1$ is a \vocab{Carmichael number} if it is a Fermat pseudoprime to every base $b$ with $(b,N) = 1$.
+\end{definition}
+
+\begin{example}
+	$N = 561 = 3\times11\times17$ is the smallest Carmichael number. Indeed $560 = 2^4\times5\times7$ is divisible by each of $2 = 3-1$, $10 = 11-1$ and $16 = 17-1$, so for $(b, 561) = 1$ we have $b^{560}\equiv1$ modulo each of $3, 11, 17$ and hence modulo $561$.
+\end{example}
+
+\begin{proposition}
+	An odd composite $N$ is a Carmichael number if and only if $N$ is squarefree and $p - 1 \mid N - 1$ for every prime $p \mid N$.
+\end{proposition}
+\begin{proof}
+	($\Leftarrow$) is the computation in the example. For ($\Rightarrow$), suppose $p^2 \mid N$ for some prime $p$. Then $(\Z/N\Z)^\times$ has an element of order $p$ (take a generator of the cyclic factor $(\Z/p^k\Z)^\times$ and raise it appropriately), and $p \nmid N - 1$ since $p \mid N$, so that element is not killed by $N - 1$. Hence $N$ is squarefree. Now for $p \mid N$, take $b$ with $b$ a primitive root mod $p$ and $b \equiv 1$ modulo $N/p$, possible by the Chinese remainder theorem; then $b^{N-1}\equiv1 \pmod p$ forces $(p-1) \mid N - 1$.
+\end{proof}
+
+It was shown by Alford, Granville and Pomerance in 1994 that there are infinitely many Carmichael numbers, so the Fermat test alone cannot be rescued. We need to ask for more.
+
+\subsection{The Solovay--Strassen Test}
+
+The refinement is to use Euler's criterion rather than Fermat's theorem: if $N$ is an odd prime then $b^{(N-1)/2} \equiv \left(\frac bN\right) \pmod N$, and the right-hand side is a Jacobi symbol which we can compute quickly for composite $N$ too.
+
+\begin{definition}
+	An odd composite $N > 1$ is an \vocab{Euler pseudoprime} to base $b$ if $(b, N) = 1$ and
+	$$
+	b^{(N-1)/2} \equiv \leg bN \pmod N,
+	$$
+	the symbol being Jacobi's.
+\end{definition}
+
+Squaring shows that an Euler pseudoprime to base $b$ is also a Fermat pseudoprime to base $b$, so this is a genuinely stronger requirement. Exactly as in \autoref{prop:halfbases}, the set of bases witnessing Euler pseudoprimality is a subgroup, so if it is proper it has index at least $2$. The point is that now it \emph{is} always proper.
+
+\begin{theorem}\label{thm:eulerwitness}
+	Let $N > 1$ be odd and composite. Then there is $b \in (\Z/N\Z)^\times$ such that $N$ is not an Euler pseudoprime to base $b$.
+\end{theorem}
+\begin{proof}
+	Suppose first $N$ is squarefree, say $N = pm$ with $p$ prime, $p \nmid m$ and $m \geq 3$. Choose $u$ with $\left(\frac up\right) = -1$, and by the Chinese remainder theorem choose $b$ with
+	$$
+	b \equiv u \pmod p, \qquad b \equiv 1 \pmod m.
+	$$
+	Then $\left(\frac bN\right) = \left(\frac bp\right)\left(\frac bm\right) = (-1)\cdot 1 = -1$. But $b \equiv 1 \pmod m$ gives $b^{(N-1)/2}\equiv 1 \pmod m$, whereas $-1 \not\equiv 1 \pmod m$ as $m \geq 3$. So $b^{(N-1)/2}\not\equiv\left(\frac bN\right) \pmod N$.
+
+	Now suppose $p^2 \mid N$ for some prime $p$. By the Chinese remainder theorem choose $b$ coprime to $N$ with $b \equiv 1 + p \pmod{p^2}$ and $b \equiv 1$ modulo $N/p^{v_p(N)}$. Then
+	$$
+	b^{N-1} \equiv (1+p)^{N-1}\equiv 1 + (N-1)p \pmod{p^2},
+	$$
+	and $p \nmid N - 1$ since $p \mid N$, so $b^{N-1}\not\equiv1\pmod{p^2}$ and hence $b^{N-1}\not\equiv1\pmod N$. So $b^{(N-1)/2}\not\equiv\pm1$, and in particular it is not the Jacobi symbol.
+\end{proof}
+
+\begin{corollary}
+	If $N$ is odd and composite, then $N$ is an Euler pseudoprime to at most half of the bases in $(\Z/N\Z)^\times$.
 \end{corollary}
 
-\begin{theorem}[Prime Number Theorem]
-$\pi(x) \sim \frac{x}{\log x}$.
-\end{theorem}
+This gives the \vocab{Solovay--Strassen test}. Given odd $N > 1$, pick $1 < b < N$ at random.
+\begin{enumerate}[label=(\arabic*)]
+	\item Compute $(b, N)$ by Euclid's algorithm. If it is not $1$, output \textsc{composite}.
+	\item Compute $b^{(N-1)/2}\bmod N$ by repeated squaring, and $\left( \frac bN\right)$ by reciprocity. If they differ, output \textsc{composite}.
+	\item Otherwise output \textsc{probably prime}.
+\end{enumerate}
+Every step is polynomial time. If $N$ is prime the test never says \textsc{composite}; if $N$ is composite, each run catches it with probability at least $1/2$, so after $k$ independent runs the probability of a composite slipping through is at most $2^{-k}$.
+
+\subsection{The Miller--Rabin Test}
+
+We can squeeze more out of the same idea. If $N$ is an odd prime and $(b, N) = 1$, then $b^{(N-1)/2}\equiv\pm1$. If it happens to be $+1$ and $(N-1)/2$ is still even, we may take a square root again, and so on. Since the only square roots of $1$ modulo a prime are $\pm1$, we get a rigid pattern.
 
 \begin{definition}
-    The \emph{Riemann zeta function} is defined for $s = \sigma + it$ for $\sigma > 1$ by
-        $\zeta(s) = \sum_{n = 1}^\infty n^{-s}$.
+	Let $N > 1$ be odd and write $N - 1 = 2^st$ with $t$ odd and $s \geq 1$. Let $(b, N) = 1$. We say $N$ passes the \vocab{strong test} to base $b$ if either
+	$$
+	b^t \equiv 1 \pmod N \qquad \text{or} \qquad b^{2^rt}\equiv-1\pmod N \text{ for some } 0 \leq r < s.
+	$$
+	An odd composite $N$ passing the strong test to base $b$ is called a \vocab{strong pseudoprime} to base $b$.
 \end{definition}
 
-\begin{theorem}[Euler Product]
-$\zeta(s) = \prod_p (1 - p^{-s})^{-1}$, $\sigma > 1$.
-\end{theorem}
+\begin{proposition}
+	Every odd prime $N$ passes the strong test to every base $b$ with $(b,N) = 1$.
+\end{proposition}
 \begin{proof}
-    For any $N$, $\prod_{p \leq N} (1 - p^{-s})^{-1} = \prod_{p \leq N} (1 + p^{-s}+ p^{-2s} + \cdots) = \sum_m m^{-s}$, where $m$ runes through all integers with no prime factors $> N$. the difference between this and $\sum_{n \leq N} n^{-s}$ is bounded in absolute value by $\sum_{n > N} n^{-\sigma} \rightarrow 0$ as $N \rightarrow \infty$.
+	The sequence $b^t, b^{2t}, b^{4t}, \dots, b^{2^st} = b^{N-1}$ ends at $1$ and each term is the square of the previous one. Let $r$ be least with $b^{2^rt} \equiv 1$. If $r = 0$ we are in the first case. Otherwise $b^{2^{r-1}t}$ is a square root of $1$, hence $\pm1$, and it is not $1$ by minimality, so it is $-1$.
 \end{proof}
 
-\begin{theorem}
-There are infinitely many primes in the arithmetic progression $a$, $a + d$, $\dots$ provided $(a, d) = 1$.   
-\end{theorem}
+\begin{example}
+	Take $N = 65$, so $N - 1 = 64 = 2^6$ and $s = 6$, $t = 1$.
+	\begin{itemize}
+		\item Base $b = 8$: we have $8^1 = 8 \not\equiv1$, but $8^2 = 64 \equiv -1 \pmod{65}$. So $65$ passes the strong test to base $8$, and is a strong pseudoprime to that base.
+		\item Base $b = 2$: the sequence $2^{2^r}$ for $r = 0, \dots, 5$ is $2, 4, 16, 61, 16, 61 \pmod{65}$. None of these is $-1 = 64$, and $2^t = 2^1 \not\equiv 1$. So $65$ fails the strong test to base $2$ and is composite.
+	\end{itemize}
+\end{example}
 
-\section{Diophantine Approximation}
+\begin{example}
+	The Carmichael number $N = 561$ has $560 = 2^4\times35$, so $s = 4$, $t = 35$. To base $2$ we find $2^{35}\equiv263$, then squaring, $166$, $67$, $1 \pmod{561}$. Since $2^{35}\not\equiv1$ and none of $263, 166, 67$ is $-1 = 560$, the number $561$ fails the strong test to base $2$. So the strong test detects a Carmichael number that Fermat's test cannot.
+\end{example}
 
-\begin{theorem}[Dirichlet]
-Given $\theta \in \R$, $N \in \N$, there exists integers $p, q$ with $q \leq N$ such that $|\theta - p/q| \leq 1/q^N \leq 1/q^2$.
-\end{theorem}
+\begin{remark}
+	One can show that a strong pseudoprime to base $b$ is an Euler pseudoprime to base $b$, and hence a Fermat pseudoprime; so the strong test is the sharpest of the three. Rabin proved the quantitative statement we want: an odd composite $N$ is a strong pseudoprime to at most a quarter of the bases in $(\Z/N\Z)^\times$.
+\end{remark}
+
+The \vocab{Miller--Rabin test} is then as follows.
+
+\begin{center}
+\begin{tikzpicture}[font=\small, every node/.style={align=center}]
+	\node[draw, rounded corners, inner sep=5pt, text width=4.1cm] (A) at (0,0) {odd $N > 1$; pick $1 < b < N$ at random};
+	\node[draw, rounded corners, inner sep=5pt, text width=4.1cm] (B) at (0,-1.55) {is $(b, N) = 1$?};
+	\node[draw, rounded corners, inner sep=5pt, text width=4.1cm] (C) at (0,-3.25) {write $N - 1 = 2^st$ with $t$ odd; is $b^t \equiv 1 \pmod N$?};
+	\node[draw, rounded corners, inner sep=5pt, text width=4.1cm] (D) at (0,-5.25) {is $b^{2^rt}\equiv-1\pmod N$ for some $0 \leq r < s$?};
+	\node[draw, rounded corners, inner sep=5pt, text width=3.3cm] (X) at (5.7,-1.55) {$N$ is \textsc{composite}};
+	\node[draw, rounded corners, inner sep=5pt, text width=3.3cm] (Y) at (5.7,-3.25) {$N$ is\\ \textsc{probably prime}};
+	\node[draw, rounded corners, inner sep=5pt, text width=3.3cm] (Z) at (5.7,-5.25) {$N$ is\\ \textsc{probably prime}};
+	\node[draw, rounded corners, inner sep=5pt, text width=3.3cm] (W) at (0,-6.9) {$N$ is \textsc{composite}};
+	\draw[->] (A) -- (B);
+	\draw[->] (B) -- node[right, font=\scriptsize] {yes} (C);
+	\draw[->] (C) -- node[right, font=\scriptsize] {no} (D);
+	\draw[->] (D) -- node[right, font=\scriptsize] {no} (W);
+	\draw[->] (B) -- node[above, font=\scriptsize] {no} (X);
+	\draw[->] (C) -- node[above, font=\scriptsize] {yes} (Y);
+	\draw[->] (D) -- node[above, font=\scriptsize] {yes} (Z);
+\end{tikzpicture}
+\end{center}
+
+Repeating $k$ times, a composite $N$ survives with probability at most $4^{-k}$.
+
+\begin{remark}
+	\begin{enumerate}[label=(\roman*)]
+		\item On the generalised Riemann hypothesis, a composite $N$ fails the strong test to some base $b < 2(\log N)^2$. Since the strong test is polynomial time, this would give a \emph{deterministic} polynomial-time primality test.
+		\item Unconditionally, Agrawal, Kayal and Saxena found a deterministic polynomial-time primality test in 2002. In practice Miller--Rabin remains the algorithm of choice, being far faster.
+	\end{enumerate}
+\end{remark}
+
+\subsection{Fermat Factorisation}
+
+Now suppose we know $N$ is composite and want a factor. If $N = ab$ with $a > b$ both odd, then setting
+$$
+r = \frac{a+b}2, \qquad s = \frac{a - b}2
+$$
+we get $N = r^2 - s^2$ with $r > \sqrt N$. So we may try $r = \lfloor\sqrt N\rfloor + 1, \lfloor\sqrt N\rfloor+2, \dots$ and test whether $r^2 - N$ is a perfect square. This is \vocab{Fermat factorisation}, and it is fast exactly when $N$ has two factors of similar size.
+
+\begin{example}
+	Let $N = 200819$. We have $\lfloor\sqrt N\rfloor = 448$, so we try $r = 449$, giving $449^2 - N = 201601 - 200819 = 782$, which is not a square; and then $r = 450$, giving
+	$$
+	450^2 - N = 202500 - 200819 = 1681 = 41^2.
+	$$
+	Hence $N = 450^2 - 41^2 = (450+41)(450-41) = 491\times409$.
+\end{example}
+
+The number of steps is about $(a - b)/2$, so this is hopeless when the factors are far apart. But the underlying idea generalises beautifully.
+
+\begin{proposition}\label{prop:congsquares}
+	Suppose $x^2 \equiv y^2 \pmod N$ with $x \not\equiv \pm y \pmod N$. Then $(N, x-y)$ and $(N, x+y)$ are nontrivial factors of $N$.
+\end{proposition}
 \begin{proof}
-    Two of $\theta$, $2\theta$, $\dots$, $N\theta$ must differ by $\leq 1/N$ modulo 1. Their difference $q \theta$ differs from some $p$ by $\leq 1/N$.
+	We have $N \mid (x+y)(x-y)$, so $(N, x+y) \neq 1$ or $(N, x - y) \neq 1$; in fact if $(N, x-y) = 1$ then $N \mid x+y$, contradicting $x \not\equiv -y$. Similarly $(N, x+y) \neq 1$. And $N \nmid x \pm y$ by hypothesis, so neither gcd is $N$.
 \end{proof}
 
-\begin{definition}
-    Given $\theta \in \R$, define $a_0 = \lfloor \theta \rfloor$, $\theta_1 = \frac{1}{\theta - a_0}$, $a_1 = \lfloor \theta_1 \rfloor$, $\theta_2 = \frac{1}{\theta_1 - a_1}$, etc. terminating if some $\theta_i$ is an integer. Then
-    $$
-    \theta = a_0 + \frac{1}{a_1 + \frac{1}{a_2 +\cdots}}
-    $$
-    is the \emph{continued fraction} representation of $\theta$. The integers $a_i$ are called \emph{partial quotients} of $\theta$, and we write $\theta = [a_0, a_1, \dots]$. $p_n/q_n = [a_0, a_1, \dots, a_n]$ are called \emph{convergents}.
-\end{definition}
+So we want congruent squares. Finding them directly is no easier than Fermat factorisation; the trick is to build them out of many small pieces.
 
-\begin{theorem}
-    (i) The $p_n, q_n$ satisfy the recurrence relations
-    \begin{align*}
-        p_n &= a_n p_{n-1} + p_{n-2}, \\
-        q_n &= a_n q_{n - 1} + q_{n-2},
-    \end{align*}
-    with $p_0 = a_0$ and $q_0 = 1$, $p_1 = a_0 a_1 + 1$ and $q_1 = a_1$. 
-    (ii) $|p_{n-1}/q_{n-1} - p_n/q_n| = \frac{1}{q_{n - 1}q_n}$. (iii) $\theta$ lies in $[p_{n-1}/q_{n-1}, p_n/q_n]$ and thus $|\theta - p_n/q_n| \leq 1/q_n^2$.
-\end{theorem}
+\subsection{The Factor Base Method}
+
+\begin{lemma}\label{lem:factorbase}
+	Let $p_1, \dots, p_r$ be distinct primes and let $c_1, \dots, c_k$ be nonzero integers all of whose prime factors lie in $\{p_1, \dots, p_r\}$. If $k > r+1$ then there is a nonempty $I \subseteq \{1, \dots, k\}$ with $\prod_{i \in I}c_i$ a perfect square.
+\end{lemma}
 \begin{proof}
-    (i) We check this is true for $n = 2$.
-    Then supposing it is true for $n = m - 1 \geq 2$, we observe $p_j/q_j = a_0 + q_j'/p_j'$, where $p_j'/q_j' = [a_1, a_2, \dots, a_j]$. Then $p_j = a_0 p_j' + q_j'$ and $q_j = p_j'$ expanded implies our result. (ii) $p_n q_{n +1} - p_{n+1}q_n = (-1)^{n + 1}$ follows from (i) by induction.
-    (iii) Observe $\theta = [a_0, a_1, \dots, a_n, \theta_{n + 1}]$ and $0 < 1/\theta_{n + 1} \leq 1/a_{n + 1}$ so $\theta$ lies in the interval $[p_n/q_n$, $p_{n +1}/q_{n+1}]$ and this with the other results gives the stated bound.
-\end{proof}
-
-\begin{theorem}
-    The continued fractions process terminates if $\theta$ is rational.
-\end{theorem}
-\begin{proof}
-    If $\theta = a/b$ then $1/q_n^2 \geq |\theta - p_n/q_n| \geq 1/q_n b$ for $p_n/q_n \neq a/b$, so $q_n$ may never exceed $b$. The partial quotients $a_0, a_1, \dots$ are in fact the $q_i$ of Euclid's algorithm on $(a, b)$.
-\end{proof}
-
-\begin{theorem}
-$\theta = \frac{p_n \theta_{n + 1} + p_{n - 1}}{q_n \theta_{n + 1} + q_{n - 1}}$ from $\theta = [a_0$, $\dots$, $a_n$, $\theta_{n + 1}]$. The $p_n/q_n$ give successively better approximations of $\theta$ as $n$ increases.  
-\end{theorem}
-\begin{proof}
-  Multiplying up $|q_n \theta - p_n|$, we find that it equals $(q_n \theta_{n + 1}+q_{n - 1})^{-1}$ and the denominator of the latter exceeds $q_n + q_{n - 1} = (a_n + 1)q_{n - 1} + q_{n - 2} > q_{n - 1} \theta_n + q_{n - 2}$.
-\end{proof}
-
-\begin{theorem}
-  If $0 < q< q_{n + 1}$, $|q \theta - p| \geq |q_n \theta - p_n|$.
-\end{theorem}
-\begin{proof}
-  Define $u$, $v$ by $p = u p_n + v p_{n + 1}$, $q = u q_n + v q_{n + 1}$. Solving by multiplying the former by $q_{n + 1}$ and the latter by $p_{n + 1}$ and $q_n$, $p_n$ respectively observe that $u, v$ are integers. $|q \theta -  p| = |u(q_n \theta - p_n) + v(q_{n + 1} \theta - p_{n + 1})| \geq |q_n \theta - p_n|$ as $u \neq 0$ and $\operatorname{sgn}(v) \neq \operatorname{sgn}(u)$.
-\end{proof}
-
-\begin{theorem}
-  If rational $p/q$ satisfies $|\theta - p/q| < \frac{1}{2q^2}$, then it is convergent to $\theta$.
-\end{theorem}
-\begin{proof}
-  Suppose $q_n < q< q_{n + 1}$. Then $|p/q - p_n/q_n| \leq |\theta - p/q| + |\theta - p_n /q_n| \leq 2 |q \theta - p|/q_n < 1/q q_n$, which is a contradiction.
-\end{proof}
-
-\begin{definition}
-  The equation $x^2 - dy^2 = 1$, where $d$ is a positive integer which is not a square is known as \emph{Pell's equation}.
-\end{definition}
-
-\begin{theorem}
-  If $(x, y)$ is a solution to the Pell equation $x^2 - dy^2 = 1$, then $x/y$ must be a convergent to $\sqrt{d}$.
-\end{theorem}
-\begin{proof}
-  $(x - y \sqrt{d})(x + y \sqrt{d}) = 1$ implies $x - y \sqrt{d} = \frac{1}{x + y \sqrt{d}}$. Certainly $x > y \sqrt{d}$, whence $x - y \sqrt{d} < \frac{1}{2y \sqrt{d}}$ and thus $|\sqrt{d} - x/y| < \frac{1}{2y^2}$. The previous theorem hen gives us our result.
-\end{proof}
-
-\begin{theorem}
-  If $(x, y)$ is the solution of $x^2 - dy^2 = 1$ with $x + y \sqrt{d}$ minimal, then every solution is given by $(x_n, y_n)$, where $x_n + y_n \sqrt{d} = (x + y \sqrt{d})^n$ for some $n$.
-\end{theorem}
-\begin{proof}
-  Denoting $x + y \sqrt{d} \in \R$ by $\varepsilon > 1$, suppose to the contrary we have a solution $(a, b)$ with $\varepsilon^k < a + b \sqrt{d} < \varepsilon^{k + 1}$. Define $N(a + b\sqrt{d}) = a^2 - db^2$ and observe that $N(\alpha \beta) = N(\alpha)N(\beta)$, $N(\varepsilon) = 1 = N(\varepsilon^{-k}(a + b \sqrt{d}))$, where $\varepsilon^{-1} = x - y \sqrt{d}$, which gives us a contradiction.
-\end{proof}
-
-\begin{definition}
-  $\alpha \in \R$ or $\C$ is \emph{algebraic} if it is the root of a polynomial with integer coefficients. If $P(\alpha) = 0$ with $P$ irreducible and $\deg P = n$ then $\alpha$is said to have \emph{degree} $n$. Non-algebraic numbers are called \emph{trancendental}.
-\end{definition}
-
-\begin{theorem}[Liouville's Theorem]
-If $\alpha \in \R$ is algebraic of degree $n > 1$, there exists $c$ depending on $\alpha$ such that $|\alpha - p/q| > c/q^n$ for all $p/q \in \Q$.
-\end{theorem}
-\begin{proof}
-  Observe $P(\alpha) - P(p/q) = (\alpha - p/q)p'(\xi)$ for some $\xi$ between $\alpha$ and $p/q$. Choose $P$ to be the minimal polynomial of $\alpha$, so $P(\alpha) = 0$ and $P$ irreducible implies $0 \neq |P(p/q)| \geq 1/q^n$. WLOG $|\alpha - p/q| < p$ and choose $C$ so that $|P'(\xi)| < C$ for $|\xi - \alpha| < 1$. Then $|\alpha - p/q| \geq c/q^n$ with $c = 1/C$.
-\end{proof}
-
-\section{Primality Testing}
-
-\begin{definition}
-    If $n$ is an odd composite number and $(b, n) = 1$, then $n$ is a \emph{Fermat pseudoprime} to the base $b$ if $b^{n - 1} \equiv 1 \pmod{n}$. If it is a pseudoprime to every $b$, then it is a \emph{Carmichael number}.
-\end{definition}
-
-\begin{theorem}
-  Let $N >1$. If $N$ is not a Fermat pseudoprime to some base $b_0$, then it is not a Fermat pseudoprime to base $b$ for at least half of $b$ coprime to $N$.
-\end{theorem}
-\begin{proof}
-The set $B$ of integers $1 \leq b < N$ such that $(b, N) = 1$ where $N$ is a Fermat pseudoprime to base $b$ is clearly a subgroup of $(\mathbb{Z} / N Z)^{\times}$. It's proper as $b_0 \in(\mathbb{Z} / N Z)^{\times}$is not in $B$. Consequently $|B| \leq\left|(\mathbb{Z} / N Z)^{\times}\right| / 2$ which concludes the proof.
+	For $J \subseteq \{1, \dots, k\}$ write $c_J = \prod_{i \in J}c_i = (-1)^{\alpha_{J,0}}p_1^{\alpha_{J,1}}\cdots p_r^{\alpha_{J,r}}m_J^2$ with each $\alpha_{J,i} \in \{0,1\}$; that is, record the exponent parities together with the sign. This gives a vector $\underline\alpha_J \in \F_2^{r+1}$, and there are only $2^{r+1}$ possibilities but $2^k > 2^{r+1}$ subsets. So there are $J \neq K$ with $\underline\alpha_J = \underline\alpha_K$, and then $c_Jc_K$ is a square. Taking $I = (J\setminus K)\cup(K\setminus J)$, the elements of $J \cap K$ contribute a square to $c_Jc_K$, so $c_I$ is a square too, and $I \neq \emptyset$ as $J \neq K$.
 \end{proof}
 
 \begin{definition}
-Let $b \in \mathbb{N}$. An odd composite integer $N>1$ is said to be an Euler pseudoprime to base $b$ if $b^{(N-1) / 2} \equiv\left(\frac{b}{N}\right) \mod{N}$.
+	A \vocab{factor base} is a set $B = \{-1, p_1, \dots, p_r\}$ with the $p_i$ distinct primes. A \vocab{$B$-number} for $N$ is a positive integer $x$ such that the representative $\langle x^2\rangle$ of $x^2$ modulo $N$ in $(-N/2, N/2]$ has all its prime factors in $B$.
 \end{definition}
 
-\begin{theorem}
- Let $N >1$. If $N$ is not an Euler pseudoprime to some base $b_0$, then it is not a Euler pseudoprime to base $b$ for at least half of $b$ coprime to $N$. 
-\end{theorem}
+The algorithm is now clear. Choose a factor base $B$, generate more than $|B|$ many $B$-numbers $x_1, x_2, \dots$, use \autoref{lem:factorbase} to find $I$ with $\prod_{i \in I}\langle x_i^2\rangle = y^2$ a square, and set $x = \prod_{i \in I}x_i$. Then $x^2 \equiv y^2 \pmod N$, and if we are lucky enough that $x \not\equiv\pm y$, \autoref{prop:congsquares} hands us a factor. Otherwise, generate more $B$-numbers and try again.
+
+The obvious way to find $B$-numbers is to take $x_i = \lceil\sqrt{kN}\rceil$ for small $k \geq 1$, since then $\langle x_i^2\rangle$ is small in absolute value and so more likely to be smooth.
+
+\begin{example}
+	Let $N = 1829$ and take the factor base $B = \{-1, 2, 3, 5, 7, 11, 13, 19\}$. Now $\lfloor\sqrt{1829k}\rfloor$ equals $42, 60, 74, 85$ for $k = 1,2,3,4$, so we try values of $x$ near these:
+	$$
+	\begin{array}{c|ccccccc}
+		x & 42 & 43 & 60 & 61 & 74 & 75 & 85 \\ \hline
+		\langle x^2\rangle & -65 & 20 & -58 & 63 & -11 & 138 & -91 \\
+		\text{factorisation} & -5\cdot13 & 2^2\cdot 5 & -2\cdot29 & 3^2\cdot7 & -11 & 2\cdot3\cdot23 & -7\cdot13 \\
+		B\text{-number?} & \text{yes} & \text{yes} & \text{no} & \text{yes} & \text{yes} & \text{no} & \text{yes}
+	\end{array}
+	$$
+	Taking $I$ to correspond to $x \in \{42, 43, 61, 85\}$,
+	$$
+	(-5\cdot13)(2^2\cdot5)(3^2\cdot7)(-7\cdot13) = (2\cdot3\cdot5\cdot7\cdot13)^2 = 2730^2,
+	$$
+	while $42\cdot43\cdot61\cdot85 = 9364110 \equiv 1459 \pmod{1829}$ and $2730 \equiv 901\pmod{1829}$. So
+	$$
+	1459^2 \equiv 901^2 \equiv 1554 \pmod{1829},
+	$$
+	and $1459 \not\equiv\pm901$. Hence $(1829, 1459 - 901) = (1829, 558) = 31$ and $(1829, 1459+901) = (1829, 2360) = 59$, giving $1829 = 31\times59$.
+\end{example}
+
+\begin{remark}
+	Why should the method work? Heuristically, if $N = \prod_{i=1}^tp_i^{e_i}$ with $t \geq 2$ distinct primes, then $x^2 \equiv 1\pmod N$ has $2^t$ solutions by the Chinese remainder theorem, of which only $\pm1$ are useless. So a `random' pair $(x,y)$ with $x^2\equiv y^2$ succeeds with probability $1 - 2^{1-t} \geq 1/2$. The case $t = 1$, where $N$ is a prime power, is easy to detect separately.
+
+	\autoref{lem:factorbase} guarantees the subset $I$ exists but the naive search for it is exponential; in practice one finds it by linear algebra over $\F_2$, which is polynomial.
+\end{remark}
+
+\subsection{The Continued Fraction Method}
+
+Continued fractions supply an excellent source of $B$-numbers, because convergents to $\sqrt N$ have squares that are unusually close to multiples of $N$.
+
+\begin{lemma}
+	Let $p_n/q_n$ be a convergent of $\sqrt N$. Then $|p_n^2 - Nq_n^2| \leq 2\sqrt N$.
+\end{lemma}
 \begin{proof}
-  Same as the corresponding theorem for Fermat pseudoprimes.
+	Using \autoref{thm:cfconverge},
+	$$
+	|p_n^2 - Nq_n^2| = q_n^2\left|\sqrt N - \frac{p_n}{q_n}\right|\left|\sqrt N + \frac{p_n}{q_n}\right| \leq \frac{q_n}{q_{n+1}}\left(2\sqrt N + \frac1{q_nq_{n+1}}\right) \leq 2\sqrt N,
+	$$
+	since $q_n \leq q_{n+1}$ and the correction term is tiny.
 \end{proof}
 
-% \begin{theorem}
-%     If $n$ is Carmichael, then it is squarefree and for every $p \mid n$, $p-1\mid n-1$.
-% \end{theorem}
+So $\langle p_n^2\rangle = p_n^2 - Nq_n^2$ exactly (it already lies in $(-N/2, N/2]$ for $N > 16$), which makes $p_n$ an excellent $B$-number candidate. Better still, the recursion $p_n = a_np_{n-1}+p_{n-2}$ may be run modulo $N$ throughout, since only $p_n \bmod N$ is needed.
+
+\begin{example}
+	Let $N = 12403$. Then $\sqrt N = [111, 2, 1, 2, 2, 7, 1, \dots]$, and computing the convergents modulo $N$:
+	$$
+	\begin{array}{c|ccccccc}
+		n & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\ \hline
+		p_n \bmod N & 111 & 223 & 334 & 891 & 2116 & 3300 & 5416 \\
+		\langle p_n^2\rangle & -82 & 117 & -71 & 89 & -27 & 166 & -39 \\
+		\text{factorisation} & -2\cdot41 & 3^2\cdot13 & -71 & 89 & -3^3 & 2\cdot83 & -3\cdot13
+	\end{array}
+	$$
+	The factor base $B = \{-1, 3, 13\}$ picks out $p_1 = 223$, $p_4 = 2116$ and $p_6 = 5416$, and
+	$$
+	(3^2\cdot13)(-3^3)(-3\cdot13) = 3^6\cdot13^2 = (27\cdot13)^2 = 351^2.
+	$$
+	Meanwhile $223\times2116\times5416 \equiv 11341 \pmod{12403}$, so $11341^2 \equiv 351^2 \pmod{12403}$, and
+	$$
+	(12403, 11341 - 351) = (12403, 10990) = 157, \qquad (12403, 11341+351) = 79.
+	$$
+	Indeed $12403 = 79\times157$.
+\end{example}
+
+\begin{remark}
+	A far-reaching refinement of these ideas is the \vocab{number field sieve}, which is the best general-purpose factorisation algorithm known. It runs in time
+	$$
+	O\!\left(\exp\left(c(\log N)^{1/3}(\log\log N)^{2/3}\right)\right),
+	$$
+	which is subexponential but not polynomial. The current record is a $250$-digit number, which took thousands of core-years.
+\end{remark}
+
+\subsection{Pollard's $p - 1$ Method}
+
+Sometimes we can go faster by looking for factors of a particular shape. Suppose $N = pN_0$ with $(p, N_0) = 1$ and suppose that $p - 1$ happens to be a product of small primes. For any $a$ coprime to $N$ we have $a^{p-1}\equiv 1 \pmod p$, so $p \mid (a^{p-1}-1, N)$; and unless we are unlucky, $N_0 \nmid a^{p-1}-1$, so the gcd is a nontrivial factor.
+
+We do not know $p$, so we cannot form $a^{p-1}$. But we do not need to: any multiple $k$ of $p - 1$ will do, since then $a^k \equiv 1 \pmod p$ as well. And if $p - 1$ is a product of prime powers at most $m$, then
+$$
+k = \lcm(1, 2, \dots, m)
+$$
+is such a multiple.
+
+The algorithm is therefore: choose a bound $m$, set $k = \lcm(1,\dots,m)$, choose a small $a \geq 2$, check $(a, N) = 1$ (if not we have already won), compute $a^k \bmod N$ by repeated squaring, and evaluate $(a^k - 1, N)$. If this is nontrivial we are done; otherwise increase $m$ and try again.
+
+\begin{example}
+	Let $N = 540143$ and take $m = 8$, so $k = \lcm(1,\dots,8) = 840$. With $a = 2$,
+	$$
+	2^{840} \equiv 53047 \pmod{540143},
+	$$
+	and $(53047 - 1, 540143) = 421$. Indeed $540143 = 421\times1283$, and the method worked because
+	$$
+	421 - 1 = 420 = 2^2\times3\times5\times7
+	$$
+	is a product of small prime powers, all at most $8$. Note that the other factor is no help here: $1283 - 1 = 2\times641$, and $641$ is far larger than $m$.
+\end{example}
+
+\begin{remark}
+	The running time is $O(m(\log m)(\log^2N))$, so the method is efficient precisely when some prime factor $p$ of $N$ has $p - 1$ smooth. This is why cryptographic applications insist on `safe' primes, for which $(p-1)/2$ is also prime.
+
+	For factors of general shape but moderate size (say $N \approx 2^{1000}$ with a factor $p \approx 2^{100}$), the method of choice is Lenstra's elliptic curve method, which replaces $(\Z/p\Z)^\times$ by the group of points of an elliptic curve mod $p$ and thereby gets to vary the group order. And if one is allowed a quantum computer, Shor's algorithm factors in polynomial time -- which is, for now, the only known route to the conjecture with which we began.
+\end{remark}
 
 \end{document}
