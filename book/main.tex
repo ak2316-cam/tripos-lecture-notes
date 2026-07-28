@@ -2,11 +2,25 @@
 
 \usepackage[fancytheorems,fancyproofs,noindent]{adam}
 
+% `physics' overwrites five macros adam.sty defines; stash them before it loads.
+\makeatletter
+\let\adam@norm\norm \let\adam@dd\dd \let\adam@tr\tr \let\adam@var\var
+\makeatother
+
 % union of packages required by the individual courses
 \usepackage{tikz,tikz-cd,mathtools,bbm,cancel,booktabs,bm,physics,soul,quiver}
 \usepackage{multirow,mathdots,yhmath,wasysym,tabularx,subcaption,siunitx}
 \usepackage{gensymb,extarrows,array}
 \input{global-tikzlibs.tex}
+
+% Four of the courses load `physics'; the rest are written against the
+% plain amsmath/adam.sty meanings of the names it takes over, and several of
+% its replacements (\abs, \norm, \dd, \tr, \var, \div) take a mandatory
+% argument where the original took none, so they do not merely look different
+% -- they fail to parse. Keep both sets of meanings and let each chapter pick:
+% \physicsmacros is emitted by build.py into the preamble of the courses that
+% asked for the package, scoped to that chapter's group.
+\input{physics-compat.tex}
 
 \input{global-theorems.tex}   % theorem envs declared by individual courses
 
@@ -16,11 +30,21 @@
 \begin{document}
 % course bodies are pre-extracted by build.py with their title block removed
 
+% adam.sty's running head is built for a single dated article: it prints the
+% author and \date on the left and \title on the right, which here would read
+% "Adam Kelly ()" against an empty title on every page. Name the chapter
+% instead.
+\ihead{\footnotesize\textbf{Adam Kelly}}
+\ohead{\footnotesize\textbf{\leftmark}}
+\automark[section]{chapter}
+
 \let\booktoc\tableofcontents
 
 
 \frontmatter
 \input{parts/titlepage.tex}
+\input{parts/preface.tex}
+\input{parts/howto.tex}
 \booktoc
 
 \mainmatter

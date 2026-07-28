@@ -1,0 +1,63 @@
+% Two meanings for every control sequence the `physics' package takes over.
+%
+% physics.sty stashes the previous meaning of most of what it overwrites
+% (\divisionsymbol, \real, \sine, \logarithm, ...), so restoring the pre-physics
+% state is mostly a matter of \let-ing the names back.  The exceptions are the
+% adam.sty macros, which physics does not know about and so does not save --
+% main.tex saves those under \adam@... before loading the package.
+%
+% \coursemacros  : the meanings a course that does not load physics expects.
+% \physicsmacros : the meanings a course that does load physics expects.
+%
+% \coursemacros is applied once here, so the book default matches the majority
+% of courses; build.py emits \physicsmacros at the head of the preamble extract
+% of each course whose source loads the package, where the surrounding
+% \begingroup/\endgroup keeps it confined to that chapter.
+
+\makeatletter
+
+% physics' own versions, under private names
+% adam.sty's \abs is a \DeclarePairedDelimiter, i.e. a front end plus an
+% internal \abs<space> that physics overwrites too, so it cannot be restored by
+% \let alone.  Declare a private copy instead; that leaves physics' pair intact.
+\DeclarePairedDelimiter\adam@abs{\lvert}{\rvert}
+
+\let\phys@abs\abs   \let\phys@norm\norm \let\phys@dd\dd
+\let\phys@tr\tr     \let\phys@var\var   \let\phys@div\div
+\let\phys@Re\Re     \let\phys@Im\Im
+\let\phys@sin\sin   \let\phys@cos\cos   \let\phys@tan\tan
+\let\phys@csc\csc   \let\phys@sec\sec   \let\phys@cot\cot
+\let\phys@arcsin\arcsin \let\phys@arccos\arccos \let\phys@arctan\arctan
+\let\phys@sinh\sinh \let\phys@cosh\cosh \let\phys@tanh\tanh
+\let\phys@coth\coth
+\let\phys@exp\exp   \let\phys@log\log   \let\phys@ln\ln
+\let\phys@det\det   \let\phys@Pr\Pr
+
+\newcommand{\physicsmacros}{%
+  \let\abs\phys@abs   \let\norm\phys@norm \let\dd\phys@dd
+  \let\tr\phys@tr     \let\var\phys@var   \let\div\phys@div
+  \let\Re\phys@Re     \let\Im\phys@Im
+  \let\sin\phys@sin   \let\cos\phys@cos   \let\tan\phys@tan
+  \let\csc\phys@csc   \let\sec\phys@sec   \let\cot\phys@cot
+  \let\arcsin\phys@arcsin \let\arccos\phys@arccos \let\arctan\phys@arctan
+  \let\sinh\phys@sinh \let\cosh\phys@cosh \let\tanh\phys@tanh
+  \let\coth\phys@coth
+  \let\exp\phys@exp   \let\log\phys@log   \let\ln\phys@ln
+  \let\det\phys@det   \let\Pr\phys@Pr}
+
+\newcommand{\coursemacros}{%
+  \let\abs\adam@abs   \let\norm\adam@norm \let\dd\adam@dd
+  \let\tr\adam@tr     \let\var\adam@var
+  \let\div\divisionsymbol
+  \let\Re\real        \let\Im\imaginary
+  \let\sin\sine       \let\cos\cosine    \let\tan\tangent
+  \let\csc\cosecant   \let\sec\secant    \let\cot\cotangent
+  \let\arcsin\arcsine \let\arccos\arccosine \let\arctan\arctangent
+  \let\sinh\hypsine   \let\cosh\hypcosine \let\tanh\hyptangent
+  \let\coth\hypcotangent
+  \let\exp\exponential \let\log\logarithm \let\ln\naturallogarithm
+  \let\det\determinant \let\Pr\Probability}
+
+\makeatother
+
+\coursemacros

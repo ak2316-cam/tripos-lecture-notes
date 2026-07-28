@@ -54,10 +54,13 @@ for d in ('preambles', 'bodies'):
     os.makedirs(d, exist_ok=True)
     for f in glob.glob(d + '/*.tex'): os.remove(f)
 
+USES_PHYSICS = re.compile(r'\\usepackage(\[[^\]]*\])?\{[^}]*\bphysics\b[^}]*\}')
+
 for t in sorted(glob.glob('../part-*/*/*.tex')):
     course = os.path.basename(os.path.dirname(t))
     part = os.path.basename(os.path.dirname(os.path.dirname(t)))
-    body = strip_setup(preamble_of(t))
+    raw_preamble = preamble_of(t)
+    body = strip_setup(raw_preamble)
 
     # theorem environments declare counters -> must be global
     for m in re.findall(r'\\(?:declaretheorem|newtheorem)\b[^\n]*', body):
@@ -76,6 +79,11 @@ for t in sorted(glob.glob('../part-*/*/*.tex')):
     # let a course redefine a name another course also defines (scoped per chapter)
     names = sorted(set(re.findall(r'\\(?:newcommand|providecommand|def)\s*\{?\\([a-zA-Z@]+)', body)))
     header = ''.join('\\expandafter\\let\\csname %s\\endcsname\\undefined\n' % n for n in names)
+    # the book loads `physics' for everyone, but it overwrites \abs, \norm,
+    # \dd, \tr, \var, \div and the trig operators; only a course that asked for
+    # the package wants those meanings (see physics-compat.tex)
+    if USES_PHYSICS.search(raw_preamble):
+        header = '\\physicsmacros\n' + header
     open('preambles/%s-%s.tex' % (part, course), 'w').write(header + body.strip() + '\n')
     open('bodies/%s-%s.tex' % (part, course), 'w').write(body_of(t))
 

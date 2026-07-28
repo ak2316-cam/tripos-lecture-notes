@@ -12,4 +12,14 @@ block and table of contents removed. Each chapter then re-applies its own
 preamble inside a group, so course-local macros stay local and two courses may
 define the same name differently.
 
+`main.tex` loads the union of the packages the courses ask for, and one of them
+-- `physics` -- takes over names the other courses use with their ordinary
+meanings (`\abs`, `\norm`, `\dd`, `\tr`, `\var`, `\div`, the trig operators).
+`physics-compat.tex` keeps both sets of meanings; `build.py` marks the preamble
+of each course that asked for the package with `\physicsmacros`, so the choice
+is made per chapter.
+
+Labels must be unique across the whole book, so a label two courses both want
+is prefixed with a short course tag (`nf-thm:minkowski`) in the course source.
+
 Regenerate after editing any course.
