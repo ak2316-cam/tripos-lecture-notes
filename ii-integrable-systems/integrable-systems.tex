@@ -1846,9 +1846,10 @@ We have obtained a closed-form solution to a nonlinear PDE, involving nothing wo
 	\frac{\partial}{\partial x}\log(1+w) = \frac{-2\chi_1w}{1+w}, \qquad \frac{\partial^2}{\partial x^2}\log(1+w) = \frac{4\chi_1^2w}{(1+w)^2}.
 	$$
 	Hence
-	$$
-	u = -\frac{8\chi_1^2w}{(1+w)^2} = -\frac{8\chi_1^2}{\left(w^{1/2} + w^{-1/2}\right)^2} = -\frac{8\chi_1^2}{4\cosh^2(\chi_1\xi)} = -2\chi_1^2\sech^2\left(\chi_1(x - 4\chi_1^2t - \delta)\right),
-	$$
+	\begin{align*}
+		u = -\frac{8\chi_1^2w}{(1+w)^2} &= -\frac{8\chi_1^2}{\left(w^{1/2} + w^{-1/2}\right)^2} = -\frac{8\chi_1^2}{4\cosh^2(\chi_1\xi)}\\
+		&= -2\chi_1^2\sech^2\left(\chi_1(x - 4\chi_1^2t - \delta)\right),
+	\end{align*}
 	which is precisely the one-soliton solution of Section 2.3. So a single bound state means a single soliton, with $\chi_1$ determining both its height and its speed, and $c_1(0)$ determining only where it is.
 \end{example}
 
@@ -2759,5 +2760,604 @@ by pure algebra. Iterating produces the whole soliton hierarchy of sine--Gordon:
 	$$
 	relating potentials $u_j = w_{j,x}$. Its Bianchi permutability formula reproduces exactly the $N$-soliton solutions we obtained from the GLM equation.
 \end{remark}
+
+\section{Symmetry Methods}
+
+We finish with a topic which is both older and more general than everything else in this course: the systematic use of symmetry to solve differential equations. This is Lie's programme, and it was the original reason Sophus Lie invented what we now call Lie groups.
+
+Since differential equations are continuous objects, the symmetries we care about come in continuous families, and to handle these we need groups equipped with a smooth structure.
+
+At this point a reader of applied inclination may be tempted to skip anything with the word `group' in it. It is worth resisting the temptation, and here is a cautionary tale (whose historical accuracy I will not vouch for). In the 1960s Gell-Mann was trying to make sense of the bewildering zoo of apparently fundamental particles. He plotted them according to two quantum numbers, isospin and hypercharge, and obtained the following picture:
+\begin{center}
+	\begin{tikzpicture}[scale=0.8]
+		\draw[->] (-3,0) -- (3,0);
+		\draw[->] (0,-2.4) -- (0,2.4);
+		\draw[color=lightgray] (2,0) -- (1,1.732) -- (-1,1.732) -- (-2,0) -- (-1,-1.732) -- (1,-1.732) -- cycle;
+		\foreach \p in {(2,0), (1,1.732), (1,-1.732), (-2,0), (-1,1.732), (-1,-1.732), (-0.3,0), (0.3,0)}
+			\fill[color=blue] \p circle (2.8pt);
+	\end{tikzpicture}
+\end{center}
+Clearly there is a pattern, but it is not at all clear where it comes from or how to extend it. The story goes that a pure mathematician wandered into the physics department, saw the diagram, and asked `so you're interested in the eight-dimensional adjoint representation of $\lie{su}(3)$ too?'. He was not. But the weight diagram of that representation looks exactly like the picture, and once the correspondence between representations of $\lie{su}(3)$ and quantum numbers was understood, the whole subject fell into place.
+
+\subsection{Lie Groups and Lie Algebras}
+
+We begin by recalling, from IA Groups, what a group is.
+
+\begin{definition}[Group]
+	A \vocab{group} is a set $G$ with a binary operation $(g_1,g_2)\mapsto g_1g_2$ which is associative, has an identity $e$, and in which every element has an inverse.
+\end{definition}
+
+\begin{definition}[Group action]
+	A group $G$ \vocab{acts} on a set $X$ if there is a map $G\times X\to X$, $(g,x)\mapsto g(x)$, with
+	$$
+	g(h(x)) = (gh)(x), \qquad e(x) = x
+	$$
+	for all $g,h\in G$ and $x\in X$.
+\end{definition}
+
+We now want groups whose elements depend smoothly on parameters. The honest definition involves manifolds; we adopt a working version which is really the definition of a \emph{local} Lie group, and which is all we shall need.
+
+\begin{definition}[Lie group]
+	An \vocab{$m$-dimensional Lie group} is a group whose elements depend continuously on $m$ real parameters, in such a way that the maps $(g_1,g_2)\mapsto g_1g_2$ and $g\mapsto g^{-1}$ are smooth functions of those parameters.
+\end{definition}
+
+In practice it is enough to check that $(g_1,g_2)\mapsto g_1g_2^{-1}$ is smooth. We write elements as $g(\vv t)$ with $\vv t\in\R^m$, normalised so that $g(\vv 0) = e$.
+
+\begin{example}
+	Every element of $G = \SO(2)$ can be written as
+	$$
+	g(t) = \begin{pmatrix}\cos t & -\sin t\\ \sin t & \cos t\end{pmatrix}, \qquad t\in\R.
+	$$
+	Since $g(t)^{-1} = g(-t)$, we have $g(t_1)g(t_2)^{-1} = g(t_1 - t_2)$, so in terms of parameters the map is $(t_1,t_2)\mapsto t_1 - t_2$, which is smooth. So $\SO(2)$ is a one-dimensional Lie group.
+\end{example}
+
+\begin{example}[The Heisenberg group]
+	Consider the matrices
+	$$
+	g(\vv t) = \begin{pmatrix}1 & t_1 & t_3\\ 0 & 1 & t_2\\ 0&0&1\end{pmatrix}, \qquad \vv t\in\R^3.
+	$$
+	Multiplying,
+	$$
+	g(\vv a)g(\vv b) = \begin{pmatrix}1 & a_1+b_1 & a_3+b_3+a_1b_2\\ 0 & 1 & a_2+b_2\\ 0&0&1\end{pmatrix},
+	$$
+	so this is closed under multiplication, and
+	$$
+	g(\vv b)^{-1} = \begin{pmatrix}1 & -b_1 & b_1b_2-b_3\\ 0&1&-b_2\\ 0&0&1\end{pmatrix}.
+	$$
+	Combining,
+	$$
+	(\vv a, \vv b)\mapsto \left(a_1 - b_1,\ a_2-b_2,\ a_3 - b_3 + b_1b_2 - a_1b_2\right),
+	$$
+	which is a polynomial, hence smooth. So the \vocab{Heisenberg group} is a three-dimensional Lie group.
+\end{example}
+
+Lie groups are still complicated. As with flows in Section 1.1, the trick is to look at the infinitesimal picture instead, which is linear and therefore easy. We do this informally, and only for matrix groups, so that we may freely add and differentiate group elements.
+
+Let $A(\varepsilon)$ be a smooth curve in $G$ with $A(0) = I$, and set $a = A'(0)$, so that
+$$
+A(\varepsilon) = I + \varepsilon a + o(\varepsilon).
+$$
+Define $\lie g$ to be the set of all such `leading order terms' $a$. We claim $\lie g$ is a vector space, and more.
+
+If $B(\varepsilon) = I + \varepsilon b + o(\varepsilon)$ is another such curve, then $\varepsilon\mapsto A(\varepsilon)B(\varepsilon)$ is a curve in $G$ with
+$$
+A(\varepsilon)B(\varepsilon) = \left(I+\varepsilon a + o(\varepsilon)\right)\left(I + \varepsilon b + o(\varepsilon)\right) = I + \varepsilon(a+b) + o(\varepsilon),
+$$
+so $a + b\in\lie g$. And $\varepsilon\mapsto A(\lambda\varepsilon)$ gives $\lambda a\in\lie g$ for any $\lambda\in\R$. So $\lie g$ is a vector space, which is already interesting: out of a group, with its awkward non-commutative multiplication, we have extracted a vector space.
+
+But there is more. Note first that $A(\varepsilon)^{-1} = I - \varepsilon a + o(\varepsilon)$, since if $A(\varepsilon)^{-1} = I + \varepsilon\tilde a + o(\varepsilon)$ then
+$$
+I = A(\varepsilon)A(\varepsilon)^{-1} = I + \varepsilon(a+\tilde a) + o(\varepsilon),
+$$
+forcing $\tilde a = -a$. Now consider the curve
+$$
+C(\varepsilon) = A(\sqrt\varepsilon)B(\sqrt\varepsilon)A(\sqrt\varepsilon)^{-1}B(\sqrt\varepsilon)^{-1}.
+$$
+Expanding and keeping track of the second-order terms (which is a slightly fiddly exercise), the first-order terms cancel and one finds
+$$
+C(\varepsilon) = I + \varepsilon(ab - ba) + o(\varepsilon).
+$$
+So $\lie g$ is closed under the commutator. The moral is that although the product of two elements infinitesimally close to the identity need not be infinitesimally close in the same sense, the group-theoretic commutator always is.
+
+\begin{definition}[Lie algebra]
+	A \vocab{Lie algebra} is a vector space $\lie g$ equipped with a bilinear, antisymmetric bracket $[\cdot,\cdot] : \lie g\times\lie g\to\lie g$ satisfying the \vocab{Jacobi identity}
+	$$
+	[a,[b,c]] + [b,[c,a]] + [c,[a,b]] = 0.
+	$$
+\end{definition}
+
+\begin{example}
+	$\lie g = \R^3$ with $[\vv a, \vv b] = \vv a\wedge\vv b$ is a Lie algebra.
+\end{example}
+
+\begin{example}
+	Let $M$ be a phase space and $\lie g$ the space of smooth functions $M\to\R$. Then
+	$$
+	[f,g] = \{f,g\}
+	$$
+	is a Lie algebra, by the properties of the Poisson bracket in Section 1.2. So Section 1 was secretly about Lie algebras all along.
+\end{example}
+
+\begin{example}
+	Let $G = \SO(n) = \{A\in\Mat_n(\R) : AA^T = I, \det A = 1\}$, and let $A(\varepsilon)$ be a curve with $A(0)=I$. Then
+	$$
+	I = A(\varepsilon)A(\varepsilon)^T = \left(I + \varepsilon a + o(\varepsilon)\right)\left(I + \varepsilon a^T+o(\varepsilon)\right) = I + \varepsilon(a+a^T) + o(\varepsilon),
+	$$
+	so $a$ must be antisymmetric. The determinant condition gives
+	$$
+	1 = \det\left(I + \varepsilon a + o(\varepsilon)\right) = 1 + \varepsilon\tr a + o(\varepsilon),
+	$$
+	so $\tr a = 0$, which antisymmetry already guarantees. Conversely every antisymmetric $a$ arises, from the curve $A(t) = \exp(at)$. So
+	$$
+	\lie{so}(n) = \left\{a\in\Mat_n(\R) : a + a^T = 0\right\},
+	$$
+	and one checks directly that it is closed under the commutator:
+	$$
+	[a,b]^T = (ab-ba)^T = b^Ta^T - a^Tb^T = ba - ab = -[a,b].
+	$$
+\end{example}
+
+The convention is that a group written in capitals has a Lie algebra written with the same letters in lower-case fraktur: $\SO(n)$ has $\lie{so}(n)$, $\SL(n)$ has $\lie{sl}(n)$, and so on. Choosing a basis $\{a_i\}$ of a finite-dimensional $\lie g$, the bracket is determined by the \vocab{structure constants} $c_{ij}^k$ in
+$$
+[a_i,a_j] = \sum_kc_{ij}^ka_k.
+$$
+
+\subsection{One-Parameter Groups of Transformations}
+
+Ultimately we want groups acting on the space in which our differential equation lives, giving new coordinates $\tilde{\vv x} = g(\vv x)$. Happily, the action of a whole Lie group can be reduced to the study of one-parameter families, which we already understand from Section 1.1.
+
+\begin{definition}[One-parameter group of transformations]
+	A smooth family of maps $g^\varepsilon : \R^n\to\R^n$ is a \vocab{one-parameter group of transformations} (1.p.g.t.) if
+	$$
+	g^0 = \id, \qquad g^{\varepsilon_1}g^{\varepsilon_2} = g^{\varepsilon_1+\varepsilon_2}.
+	$$
+	It is \vocab{generated by} the vector field
+	$$
+	\vv V(\vv x) = \left.\frac{\dd}{\dd\varepsilon}\left(g^\varepsilon\vv x\right)\right|_{\varepsilon=0},
+	$$
+	so that $g^\varepsilon\vv x = \vv x + \varepsilon\vv V(\vv x) + o(\varepsilon)$. Conversely every vector field generates a 1.p.g.t.\ by solving
+	$$
+	\frac{\dd\tilde{\vv x}}{\dd\varepsilon} = \vv V(\tilde{\vv x}), \qquad \tilde{\vv x}(0) = \vv x.
+	$$
+\end{definition}
+
+This is exactly the flow-map picture of Section 1.1, with $\varepsilon$ in place of $t$. Differential geometers write vector fields in a way that looks odd at first but is extremely convenient.
+
+\begin{notation}
+	A vector field $\vv V = (V_1,\dots,V_n)^T$ is identified with the differential operator
+	$$
+	V = V_1\frac{\partial}{\partial x_1} + \cdots + V_n\frac{\partial}{\partial x_n},
+	$$
+	and we think of the $\partial/\partial x_i$ as a basis. We will freely confuse the two.
+\end{notation}
+
+\begin{example}
+	The vector field $\vv V = (x^2+y, yx)$ is written $V = (x^2+y)\partial_x + yx\partial_y$.
+\end{example}
+
+The reason for the notation is that the commutator becomes literally the commutator of operators. Indeed, computing $(VW - WV)f$ for a test function $f$,
+\begin{align*}
+	(VW-WV)(f) &= V_j\frac{\partial}{\partial x_j}\left(W_i\frac{\partial f}{\partial x_i}\right) - W_j\frac{\partial}{\partial x_j}\left(V_i\frac{\partial f}{\partial x_i}\right)\\
+	&= \left(V_j\frac{\partial W_i}{\partial x_j} - W_j\frac{\partial V_i}{\partial x_j}\right)\frac{\partial f}{\partial x_i} + \left(V_jW_i - W_jV_i\right)\frac{\partial^2f}{\partial x_i\partial x_j},
+\end{align*}
+and the second-derivative terms cancel by symmetry, leaving exactly the commutator of vector fields from Section 1.1. So in this notation
+$$
+[V,W] = VW - WV.
+$$
+
+Let us see some examples of the correspondence between vector fields and transformations.
+
+\begin{example}
+	Let $V = x\partial_x + \partial_y$. The 1.p.g.t.\ it generates solves
+	$$
+	\frac{\dd\tilde x}{\dd\varepsilon} = \tilde x, \qquad \frac{\dd\tilde y}{\dd\varepsilon} = 1, \qquad (\tilde x(0),\tilde y(0)) = (x,y),
+	$$
+	so
+	$$
+	g^\varepsilon(x,y) = \left(xe^\varepsilon,\ y+\varepsilon\right).
+	$$
+\end{example}
+
+\begin{example}
+	The natural action of $\SO(2)$ on $\R^2$ is
+	$$
+	g^\varepsilon(x,y) = \left(x\cos\varepsilon - y\sin\varepsilon,\ x\sin\varepsilon + y\cos\varepsilon\right),
+	$$
+	which satisfies $g^0 = \id$ and $g^{\varepsilon_1}g^{\varepsilon_2} = g^{\varepsilon_1+\varepsilon_2}$. Its generator is
+	$$
+	V = \left.\frac{\dd\tilde x}{\dd\varepsilon}\right|_{0}\partial_x + \left.\frac{\dd\tilde y}{\dd\varepsilon}\right|_0\partial_y = -y\partial_x + x\partial_y,
+	$$
+	which we can draw:
+	\begin{center}
+		\begin{tikzpicture}[scale=0.85]
+			\draw[->] (-2.9,0) -- (2.9,0);
+			\draw[->] (0,-2.9) -- (0,2.9);
+			\foreach \t in {0,30,...,330} {
+				\begin{scope}[rotate=\t]
+					\draw[-latex, color=blue] (2.4,0) -- +(0,0.48);
+					\draw[-latex, color=blue] (1.8,0) -- +(0,0.36);
+					\draw[-latex, color=blue] (1.2,0) -- +(0,0.24);
+					\draw[-latex, color=blue] (0.6,0) -- +(0,0.12);
+				\end{scope}
+			}
+		\end{tikzpicture}
+	\end{center}
+	The arrows are tangent to circles about the origin, and grow with the radius, as they should for a rotation.
+\end{example}
+
+\begin{example}
+	$V = \alpha\partial_x$ generates $g^\varepsilon x = x+\alpha\varepsilon$, a translation at constant speed; while $V = \beta x\partial_x$ generates $g^\varepsilon x = e^{\beta\varepsilon}x$, an exponential dilation.
+\end{example}
+
+The relevance of all this to Lie groups is the following. If a Lie group $G$ acts on $\R^n$, it typically contains many one-parameter subgroups, and any $g(\vv t)\in G$ sufficiently close to the identity can be written as a product
+$$
+g(\vv t) = g_{i_1}^{\varepsilon_1}g_{i_2}^{\varepsilon_2}\cdots g_{i_N}^{\varepsilon_N}
+$$
+of elements of such subgroups. So to understand the action of $G$ it suffices to understand its one-parameter subgroups, and to understand those it suffices to understand the vector fields generating them -- that is, the Lie algebra. Once more, the infinitesimal picture is enough.
+
+\subsection{Symmetries of Differential Equations}
+
+We write a general differential equation as
+$$
+\Delta\left[\vv x, u, u_{\vv x}, u_{\vv x\vv x}, \dots\right] = 0,
+$$
+where $\Delta$ may be vector-valued (so that we can handle systems), and a solution is a function $u = u(\vv x)$ satisfying it.
+
+\begin{definition}[Lie point symmetry]
+	Let $g^\varepsilon$ be a 1.p.g.t.\ generated by a vector field $V$, acting on both the independent and dependent variables:
+	$$
+	\left(\tilde{\vv x}, \tilde u\right) = g^\varepsilon(\vv x, u).
+	$$
+	We call $g^\varepsilon$ a \vocab{Lie point symmetry} of $\Delta$ if
+	$$
+	\Delta\left[\vv x, u, u_{\vv x},\dots\right] = 0 \quad\Longrightarrow\quad \Delta\left[\tilde{\vv x},\tilde u, \tilde u_{\tilde{\vv x}},\dots\right] = 0,
+	$$
+	that is, if it takes solutions to solutions. We say the symmetry is \emph{generated by} $V$.
+\end{definition}
+
+Note that we are allowed to mix up the domain and the codomain -- the new independent variable may depend on $u$, and vice versa. This freedom is what makes the theory powerful.
+
+\begin{example}
+	Consider KdV, $\Delta = u_t + u_{xxx} - 6uu_x$. Translation in time,
+	$$
+	g^\varepsilon(x,t,u) = (x, t+\varepsilon, u),
+	$$
+	is a Lie point symmetry generated by $V = \partial_t$. Indeed, by the chain rule
+	$$
+	\frac{\partial\tilde u}{\partial\tilde t} = \frac{\partial t}{\partial\tilde t}\frac{\partial u}{\partial t} + \frac{\partial x}{\partial\tilde t}\frac{\partial u}{\partial x} = \frac{\partial u}{\partial t},
+	$$
+	and similarly $\tilde u_{\tilde x} = u_x$ and $\tilde u_{\tilde x\tilde x\tilde x} = u_{xxx}$, so $\Delta[\tilde x,\tilde t,\tilde u] = \Delta[x,t,u]$.
+\end{example}
+
+Symmetries obviously give us new solutions from old ones. Much more importantly, they let us \emph{solve} equations.
+
+\begin{example}[Reduction of a first-order ODE]
+	Consider the homogeneous ODE
+	$$
+	\frac{\dd u}{\dd x} = F\left(\frac{u}{x}\right).
+	$$
+	Both sides only see the combination $u/x$, so we should expect
+	$$
+	g^\varepsilon(x,u) = \left(e^\varepsilon x,\ e^\varepsilon u\right)
+	$$
+	to be a symmetry, generated by
+	$$
+	V = x\frac{\partial}{\partial x} + u\frac{\partial}{\partial u}.
+	$$
+	Now the trick: find coordinates $(s,t)$ in which
+	$$
+	V(s) = 0, \qquad V(t) = 1,
+	$$
+	so that in the new coordinates $V = \partial_t$. Since the equation is invariant under the flow of $V$, and the flow is now just translation in $t$, we expect the variable $t$ not to appear explicitly.
+
+	Such coordinates are easy to find here:
+	$$
+	s = \frac{u}{x}, \qquad t = \log|x|,
+	$$
+	for which $V(s) = x\cdot(-u/x^2) + u\cdot(1/x) = 0$ and $V(t) = x\cdot(1/x) = 1$. Inverting, $x = e^t$ and $u = se^t$. Then
+	$$
+	\dd u = e^t\dd s + se^t\dd t, \qquad \dd x = e^t\dd t,
+	$$
+	so
+	$$
+	\frac{\dd u}{\dd x} = \frac{\dd s}{\dd t} + s.
+	$$
+	The equation therefore becomes
+	$$
+	\frac{\dd s}{\dd t} = F(s) - s, \qquad\text{i.e.}\qquad \frac{\dd t}{\dd s} = \frac{1}{F(s)-s},
+	$$
+	which -- as promised -- contains no $t$. So we can integrate it up:
+	$$
+	t = C + \int^s\frac{\dd s'}{F(s')-s'},
+	$$
+	and returning to the original variables,
+	$$
+	\log|x| = C + \int^{u/x}\frac{\dd s}{F(s)-s}.
+	$$
+	Knowing a single Lie point symmetry has reduced the ODE to a quadrature.
+\end{example}
+
+The same works in general. For an $n$th order ODE
+$$
+\Delta\left[x,u,u',\dots,u^{(n)}\right] = 0
+$$
+admitting a Lie point symmetry generated by
+$$
+V = \xi(x,u)\frac{\partial}{\partial x} + \eta(x,u)\frac{\partial}{\partial u},
+$$
+we introduce invariant coordinates $s = s(x,u)$, $t = t(x,u)$ with $V = \partial_t$. The equation becomes
+$$
+\Delta\left[s, t', \dots, t^{(n)}\right] = 0
+$$
+with no explicit $t$, and setting $r = t'$ reduces the order by one:
+$$
+\Delta\left[s,r,r',\dots,r^{(n-1)}\right] = 0.
+$$
+Now rinse and repeat, if we have more symmetries.
+
+\subsection{Jets and Prolongations}
+
+This is all very well, but so far we have found our symmetries by inspection. We need a systematic method.
+
+Start with the trivial case, a `zeroth order equation' $\Delta[x,u] = 0$. Then $g^\varepsilon$ is a symmetry if $\Delta = 0$ implies $\Delta\circ g^\varepsilon = 0$. Provided $\Delta$ is of \vocab{maximal rank} -- meaning the matrix $\partial\Delta_j/\partial y_i$ has maximal rank, where $y_i$ ranges over all the coordinates -- one can show (example sheet) that this is equivalent to the infinitesimal condition
+$$
+\Delta = 0 \quad\Longrightarrow\quad V(\Delta) = 0,
+$$
+where $V$ acts as a differential operator. The maximal rank hypothesis rules out degenerate cases like $\Delta = x^2$, which vanishes only where its derivative does. The implication is only required to hold \emph{on} the solution set, a restriction we call an \vocab{on-shell} condition.
+
+This is a wonderful reduction, because the condition $V(\Delta) = 0$ is purely \emph{algebraic} in the coefficients of $V$. The problem is that a genuine differential equation involves $u_x$, $u_{xx}$ and so on, and $V$ only knows what to do to $x$ and $u$. The remedy is to extend its action to the derivatives, which is called \emph{prolongation}.
+
+\begin{example}
+	Take $g^\varepsilon : (x,u)\mapsto(e^\varepsilon x, e^{-\varepsilon}u)$, generated by $V = x\partial_x - u\partial_u$. Then by the chain rule
+	$$
+	\frac{\dd\tilde u}{\dd\tilde x} = \frac{\dd\tilde u/\dd x}{\dd\tilde x/\dd x} = \frac{e^{-\varepsilon}u_x}{e^\varepsilon} = e^{-2\varepsilon}u_x,
+	$$
+	so the induced transformation on the triple $(x,u,u_x)$ is
+	$$
+	\left(\tilde x,\tilde u,\tilde u_{\tilde x}\right) = \left(e^\varepsilon x,\ e^{-\varepsilon}u,\ e^{-2\varepsilon}u_x\right),
+	$$
+	which is again a 1.p.g.t., now on a three-dimensional space, generated by
+	$$
+	\pr^{(1)}V = x\frac{\partial}{\partial x} - u\frac{\partial}{\partial u} - 2u_x\frac{\partial}{\partial u_x}.
+	$$
+	Repeating for the second derivative gives $\tilde u_{\tilde x\tilde x} = e^{-3\varepsilon}u_{xx}$ and
+	$$
+	\pr^{(2)}V = x\frac{\partial}{\partial x} - u\frac{\partial}{\partial u} - 2u_x\frac{\partial}{\partial u_x} - 3u_{xx}\frac{\partial}{\partial u_{xx}}.
+	$$
+\end{example}
+
+The space with coordinates $(x,u,u_x)$ is called the \vocab{first jet space}, and $(x,u,u_x,\dots,u^{(n)})$ the \vocab{$n$th jet space}. Any function $u = u(x)$ determines a curve in it. The operator $\pr^{(n)}V$ above is the \vocab{$n$th prolongation} of $V$.
+
+If it feels strange to treat $u_x$ as an independent coordinate, one may relabel it $p_1$, and $u^{(n)}$ as $p_n$; nothing changes. An $n$th order ODE is then an algebraic equation on the $n$th jet space, and we are back to the situation we could handle:
+$$
+g^\varepsilon\text{ is a Lie point symmetry} \iff \pr^{(n)}V(\Delta) = 0\ \text{ whenever }\Delta = 0.
+$$
+The catch, of course, is that we must restrict attention to points of the jet space which come from actual functions, and to transformations which are prolongations of transformations of the base space.
+
+So we need a formula for the prolongation of an arbitrary vector field. Note how much easier this is at the level of the Lie \emph{algebra}: prolonging the group action would be a horrible mess, whereas prolonging the vector field is a one-line recursion.
+
+Write
+$$
+g^\varepsilon(x,u) = \left(x + \varepsilon\xi(x,u),\ u + \varepsilon\eta(x,u)\right) + o(\varepsilon),
+$$
+and seek the prolongation in the form
+$$
+\pr^{(n)}V = V + \sum_{k=1}^n\eta_k\frac{\partial}{\partial u^{(k)}},
+$$
+so that $\tilde u^{(k)} = u^{(k)} + \varepsilon\eta_k + o(\varepsilon)$. To find $\eta_1$ we use the \vocab{contact condition}
+$$
+\dd\tilde u = \tilde u_{\tilde x}\dd\tilde x,
+$$
+which is nothing but the statement that $\tilde u_{\tilde x}$ really is the derivative of $\tilde u$ with respect to $\tilde x$. Substituting the expansions,
+$$
+\dd u + \varepsilon\dd\eta = \tilde u_{\tilde x}\left(\dd x + \varepsilon\dd\xi\right) + o(\varepsilon).
+$$
+We express everything in terms of $\dd x$. Since $\dd u = u_x\dd x$ and
+$$
+\dd\eta = \frac{\partial\eta}{\partial x}\dd x + \frac{\partial\eta}{\partial u}\dd u = \left(\frac{\partial\eta}{\partial x} + u_x\frac{\partial\eta}{\partial u}\right)\dd x = \left(\D_x\eta\right)\dd x,
+$$
+with $\D_x$ the total derivative of Section 4.1, and similarly $\dd\xi = (\D_x\xi)\dd x$, we get
+$$
+\left(u_x + \varepsilon\D_x\eta\right)\dd x = \tilde u_{\tilde x}\left(1 + \varepsilon\D_x\xi\right)\dd x + o(\varepsilon).
+$$
+Hence
+$$
+\tilde u_{\tilde x} = \frac{u_x + \varepsilon\D_x\eta}{1+\varepsilon\D_x\xi} + o(\varepsilon) = u_x + \varepsilon\left(\D_x\eta - u_x\D_x\xi\right) + o(\varepsilon),
+$$
+so
+$$
+\eta_1 = \D_x\eta - u_x\D_x\xi.
+$$
+Exactly the same argument applied to the contact condition $\dd\tilde u^{(k)} = \tilde u^{(k+1)}\dd\tilde x$ gives the recursion in general.
+
+\begin{proposition}[Prolongation formula]
+	Let
+	$$
+	V = \xi(x,u)\frac{\partial}{\partial x} + \eta(x,u)\frac{\partial}{\partial u}.
+	$$
+	Then
+	$$
+	\pr^{(n)}V = V + \sum_{k=1}^n\eta_k\frac{\partial}{\partial u^{(k)}},
+	$$
+	where
+	$$
+	\eta_0 = \eta, \qquad \eta_{k+1} = \D_x\eta_k - u^{(k+1)}\D_x\xi.
+	$$
+\end{proposition}
+
+\begin{example}
+	For $g^\varepsilon : (x,u)\mapsto(e^\varepsilon x, e^{-\varepsilon}u)$ we have $\xi = x$ and $\eta = -u$, so
+	$$
+	\eta_1 = \D_x(-u) - u_x\D_x(x) = -u_x - u_x = -2u_x,
+	$$
+	in agreement with the direct computation above.
+\end{example}
+
+\begin{example}[Checking a symmetry]
+	Let us verify by this method that $V = x\partial_x + u\partial_u$ is a symmetry of $\Delta = u_x - F(u/x)$. Here $\xi = x$, $\eta = u$, so
+	$$
+	\eta_1 = \D_x(u) - u_x\D_x(x) = u_x - u_x = 0,
+	$$
+	and $\pr^{(1)}V = x\partial_x + u\partial_u$. Applying it,
+	$$
+	\pr^{(1)}V(\Delta) = x\cdot\left(\frac{u}{x^2}F'\!\left(\frac ux\right)\right) + u\cdot\left(-\frac1xF'\!\left(\frac ux\right)\right) + 0 = \frac uxF' - \frac uxF' = 0,
+	$$
+	identically, so it is a symmetry -- and not merely on shell.
+\end{example}
+
+In general, imposing $\pr^{(n)}V(\Delta) = 0$ on shell produces an over-determined linear system of PDEs for the two unknown functions $\xi(x,u)$ and $\eta(x,u)$, the \vocab{determining equations}. These are usually easy to solve, and their solution space is exactly the Lie algebra of symmetries. An analogous formula for PDEs, with several independent variables, appears on the last example sheet.
+
+\subsection{Group-Invariant Solutions and ODE Reductions}
+
+Symmetries do more than generate new solutions: they let us look for solutions which are themselves invariant.
+
+Suppose a PDE admits a Lie point symmetry generated by $V$. A solution is \vocab{group-invariant} if it is unchanged by the symmetry. To find such solutions we introduce coordinates invariant under $V$, and look for solutions depending only on those. Since the number of invariant coordinates is one fewer than the number of variables, this reduces the PDE to an equation in one fewer variable -- typically an ODE.
+
+\begin{example}[Travelling waves]
+	The most familiar case. Any translation-invariant equation admits $V = \partial_x + c\,\partial_t$, whose invariants are $z = x - ct$ and $u$. Looking for solutions $u = f(z)$ is exactly the travelling-wave ansatz we used for KdV, sine--Gordon and NLS. So all our soliton computations were symmetry reductions.
+\end{example}
+
+\begin{example}[Sine--Gordon]
+	Take sine--Gordon in light-cone coordinates, $u_{xt} = \sin u$. This admits the scaling symmetry
+	$$
+	g^\varepsilon(x,t,u) = \left(e^\varepsilon x, e^{-\varepsilon}t, u\right), \qquad V = x\partial_x - t\partial_t.
+	$$
+	An invariant coordinate is $z = xt$, since $V(z) = xt - tx = 0$; and $u$ itself is invariant. So we look for
+	$$
+	u(x,t) = F(z), \qquad z = xt.
+	$$
+	Then $u_x = tF'(z)$ and $u_{xt} = F'(z) + xtF''(z) = F' + zF''$, so the PDE becomes the ODE
+	$$
+	zF'' + F' = \sin F.
+	$$
+	This does not look like anything standard, but substituting $w = e^{iF}$ transforms it. Writing $F = -i\log w$, we have $F' = -iw'/w$ and $F'' = -i(w''/w - (w')^2/w^2)$, while $\sin F = (w - w^{-1})/2i$. Substituting and simplifying gives
+	$$
+	\frac{\dd^2w}{\dd z^2} = \frac{1}{w}\left(\frac{\dd w}{\dd z}\right)^2 - \frac1z\frac{\dd w}{\dd z} + \frac{1}{z}\left(\frac{w^2}{2} - \frac12\right),
+	$$
+	which is the third Painlev\'e equation with $\alpha = \frac12$, $\beta = -\frac12$, $\gamma = \delta = 0$.
+\end{example}
+
+\begin{example}[KdV]
+	The KdV equation admits a rather less obvious Lie point symmetry,
+	$$
+	g^\varepsilon(x,t,u) = \left(x + \varepsilon t + \tfrac12\varepsilon^2,\ t+\varepsilon,\ u - \tfrac16\varepsilon\right),
+	$$
+	generated by
+	$$
+	V = t\frac{\partial}{\partial x} + \frac{\partial}{\partial t} - \frac16\frac{\partial}{\partial u}.
+	$$
+	(It is a combination of a Galilean boost and a time translation.) Invariant coordinates are
+	$$
+	z = x - \tfrac12t^2, \qquad w = u + \tfrac16 t,
+	$$
+	since $V(z) = t - t = 0$ and $V(w) = -\frac16+\frac16 = 0$. So we seek a solution
+	$$
+	u(x,t) = -\tfrac16t + w(z).
+	$$
+	Then
+	$$
+	u_t = -\tfrac16 - tw'(z), \qquad u_x = w'(z), \qquad u_{xxx} = w'''(z),
+	$$
+	and substituting into KdV,
+	$$
+	0 = u_t + u_{xxx} - 6uu_x = -\tfrac16 - tw' + w''' - 6\left(-\tfrac16t + w\right)w' = -\tfrac16 + w''' - 6ww'.
+	$$
+	The $t$'s have cancelled, as they had to: our coordinates were built to be invariant, so nothing non-invariant can survive. Integrating once,
+	$$
+	w'' - 3w^2 = \tfrac16z + \text{const},
+	$$
+	and after rescaling $w$ and $z$ and translating $z$ to absorb the constant, this is the first Painlev\'e equation
+	$$
+	\frac{\dd^2W}{\dd Z^2} = 6W^2 + Z.
+	$$
+\end{example}
+
+Both reductions have landed us on a Painlev\'e equation, and this is not a coincidence.
+
+\subsection{The Painlev\'e Test}
+
+Suppose someone hands us a PDE and asks whether it is integrable. We have no definition of integrability to appeal to, but we do have a \emph{necessary condition} which can be checked.
+
+\begin{definition}[Singularity]
+	A \vocab{singularity} of a complex-valued function $w = w(z)$ is a point at which it fails to be analytic.
+\end{definition}
+
+For a \emph{linear} ODE
+$$
+\frac{\dd^2w}{\dd z^2} + p(z)\frac{\dd w}{\dd z} + q(z)w = 0,
+$$
+a theorem of complex analysis says that any singularity of a solution must already be a singularity of $p$ or $q$. In particular the \emph{locations} of the singularities do not depend on the initial conditions.
+
+For nonlinear equations this fails spectacularly. Consider
+$$
+\frac{\dd w}{\dd z} + w^2 = 0,
+$$
+whose solution is
+$$
+w(z) = \frac{1}{z - z_0},
+$$
+with $z_0$ determined by the initial data. The singularity has moved: we call it a \vocab{movable} singularity.
+
+Movable singularities are unavoidable in nonlinear problems, but their \emph{type} turns out to be a very sensitive indicator.
+
+\begin{definition}[Painlev\'e property]
+	An ODE of the form
+	$$
+	\frac{\dd^nw}{\dd z^n} = F\left(\frac{\dd^{n-1}w}{\dd z^{n-1}},\dots,w,z\right)
+	$$
+	has the \vocab{Painlev\'e property} if all of its movable singularities are at worst poles.
+\end{definition}
+
+\begin{example}
+	The equation $w' + w^2 = 0$ has solution $w = (z-z_0)^{-1}$, whose movable singularity is a simple pole. So it has the Painlev\'e property.
+\end{example}
+
+\begin{example}
+	The equation $w' + w^3 = 0$ has solution
+	$$
+	w(z) = \frac{1}{\sqrt{2(z-z_0)}},
+	$$
+	whose movable singularity is a branch point, not a pole. So it does not have the Painlev\'e property.
+\end{example}
+
+Painlev\'e set out to classify all equations of the form
+$$
+\frac{\dd^2w}{\dd z^2} = F\left(\frac{\dd w}{\dd z}, w, z\right),
+$$
+with $F$ rational, possessing this property. He found fifty of them, up to simple changes of coordinates. Of these, forty-four can be solved in terms of functions already known -- elementary functions, elliptic functions, Bessel functions and the like. The remaining six define genuinely new functions, the \vocab{Painlev\'e transcendents}. The first two are
+\begin{align*}
+	\text{(PI)}&& \frac{\dd^2w}{\dd z^2} &= 6w^2 + z,\\
+	\text{(PII)}&& \frac{\dd^2w}{\dd z^2} &= 2w^3 + zw + \alpha,
+\end{align*}
+and the remaining four (PIII)--(PVI) are increasingly baroque rational expressions; PIII is the one that appeared in the sine--Gordon reduction above,
+$$
+\frac{\dd^2w}{\dd z^2} = \frac1w\left(\frac{\dd w}{\dd z}\right)^2 + \frac1z\left(-\frac{\dd w}{\dd z} + \alpha w^2 + \beta\right) + \gamma w^3 + \frac\delta w.
+$$
+
+\begin{remark}
+	Painlev\'e was also twice prime minister of France, for nine weeks in 1917 and seven months in 1925. It is not recorded whether this affected his classification.
+\end{remark}
+
+The connection with our subject is the following.
+
+\begin{conjecture}[Ablowitz--Ramani--Segur, 1980]
+	Every ODE reduction of an integrable PDE has the Painlev\'e property.
+\end{conjecture}
+
+This remains a conjecture, since (as we have said) integrability has no agreed definition; but it has been proved in every setting where a precise definition has been pinned down, and it is overwhelmingly supported by examples. Two of those examples are the reductions we performed in the previous subsection, both of which landed on Painlev\'e equations.
+
+This gives us a practical test.
+
+\begin{center}
+	\emph{The Painlev\'e test.}
+\end{center}
+\begin{enumerate}[label=(\arabic*)]
+	\item Find all Lie point symmetries of the PDE, using the prolongation formula.
+	\item Compute the corresponding ODE reductions.
+	\item Test each reduction for the Painlev\'e property.
+\end{enumerate}
+If any reduction fails, the equation is not integrable. If all of them pass, we have learned nothing definitive -- but we have found strong evidence, and in practice a good reason to start hunting for a Lax pair.
+
+That is a fitting place to stop. We began with ODEs, where integrability is completely understood: enough commuting conserved quantities, and the motion is uniform winding on a torus. We end with PDEs, where the corresponding picture is only visible in outline. The KdV equation has its infinitely many conserved quantities, its action--angle variables in the guise of scattering data, and its solitons; but what integrability \emph{is}, in general, remains a question with no satisfactory answer. That there should be so much beautiful and useful mathematics hanging on an undefined term is perhaps the most remarkable feature of the whole subject.
 
 \end{document}
