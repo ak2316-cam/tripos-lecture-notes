@@ -8,7 +8,6 @@ Notes are organised by part, one directory per course:
 part-ia/  part-ib/  part-ii/  part-iii/   lecture notes, one folder per course
 handouts/                                 standalone handouts and talks
 styles/                                   shared LaTeX style files
-unfinished/                               drafts not yet ready (not published)
 ```
 
 ## Compiling
