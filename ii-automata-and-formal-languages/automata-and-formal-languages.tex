@@ -765,7 +765,7 @@ We have already proved closure under union (Theorem~\ref{thm:closureunionconcat}
 \end{proposition}
 
 \begin{proof}
-	Let $L = \lang(D)$ with $D = (\Sigma, Q, \delta, q_0, F)$. We may assume that $\delta(q,a) \neq q_0$ for all $q, a$: if not, add a new start state $q_0'$ with $\delta(q_0', a) = \delta(q_0,a)$ and make $q_0$ an ordinary state, accepting or not according to whether some word takes $q_0'$ back to it and lands in $F$ -- more simply, take a disjoint copy $q_0'$ of $q_0$ as the new start state, put $\delta(q_0',a) = \delta(q_0,a)$, and let $q_0$ inherit its accepting status from whether $q_0 \in F$, which is to say it is not accepting. Then no transition enters $q_0'$, and the language is unchanged since $\hat\delta(q_0', w) = \hat\delta(q_0, w)$ for $w \neq \eps$.
+	Let $L = \lang(D)$ with $D = (\Sigma, Q, \delta, q_0, F)$. We may assume that no transition enters the start state, that is, that $\delta(q,a) \neq q_0$ for all $q$ and $a$. Indeed, if this fails, adjoin a fresh state $q_0'$, put $\delta(q_0',a) = \delta(q_0,a)$ for every letter $a$, and take $q_0'$ as the new start state, demoting $q_0$ to an ordinary state (which is not accepting, since $q_0 \notin F$). No transition enters $q_0'$, and $\hat\delta(q_0',w) = \hat\delta(q_0,w)$ for every nonempty $w$, so the language is unchanged. We rename $q_0'$ back to $q_0$.
 
 	Now set $D' = (\Sigma, Q, \delta, q_0, Q \setminus (F \cup \{q_0\}))$. For a nonempty word $w$ we have $\hat\delta(q_0,w) \neq q_0$, so $\hat\delta(q_0,w) \in Q \setminus (F \cup \{q_0\})$ if and only if $\hat\delta(q_0,w) \notin F$. Hence $\lang(D') = \WW^+ \setminus L$.
 
@@ -937,7 +937,7 @@ Two checks are needed. First, being accepting is a class property: if $q \sim q'
 	$$\hat\delta(q_0, w) \in F \iff w \text{ contains a } 0 \iff \hat\delta(q_2, w) \in F,$$
 	so $q_0 \sim q_2$ and the automaton is not irreducible. Quotienting merges them, and we obtain the two-state machine
 	\begin{center}
-	\begin{tikzpicture}
+	\begin{tikzpicture}[sta/.append style={minimum size=11mm}]
 		\node[sta] (a) at (0,0) {$[q_0]$};
 		\node[acc] (b) at (3,0) {$[q_1]$};
 		\initarr{a}{(-1.1,0)}
@@ -1730,7 +1730,7 @@ It is worth writing out one of these in full, to see that the formalism really d
 		\draw[tra] (q1) -- node[tlab, left] {not $b$} (qH);
 		\draw[tra] (qa) -- node[tlab, above right] {push $a$} (q2);
 		\draw[tra] (qb) -- node[tlab, below right] {push $b$} (q2);
-		\draw[tra] (q2) to[out=60,in=0, looseness=1.3] node[tlab, right] {pop} (0.5,0.55) to[out=180,in=90] (qS);
+		\draw[tra] (q2) to[out=60,in=0, looseness=1.3] node[tlab, above, pos=0.55] {pop} (0.5,0.85) to[out=180,in=90] (qS);
 	\end{tikzpicture}
 	\end{center}
 	Let us trace it with register $1$ containing $ab$ and register $2$ empty. In $q_S$, the top letter is $b$, not $a$, so we move to $q_1$; there the top letter is $b$, so we move to $q_b$ and push $b$ onto register $2$; in $q_2$ we pop, leaving register $1$ holding $a$, and return to $q_S$. Now the top letter is $a$, so we go to $q_a$, push $a$ onto register $2$ (which now holds $ba$), and pop, leaving register $1$ empty. Back at $q_S$: the top letter is not $a$ (the register is empty), so we go to $q_1$; it is not $b$ either, so we halt. Register $2$ holds $ba$, the reverse of $ab$, as claimed.
