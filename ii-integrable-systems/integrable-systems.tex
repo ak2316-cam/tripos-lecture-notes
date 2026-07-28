@@ -1,0 +1,748 @@
+\documentclass[a4paper]{scrartcl}
+
+\usepackage[
+	fancytheorems, 
+	fancyproofs, 
+	noindent
+]{adam}
+
+\usepackage{tikz}
+\usepackage{bm}
+
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\cosech}{cosech}
+\newcommand{\D}{\mathrm{D}}
+\newcommand{\pr}{\operatorname{pr}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\lie}[1]{\mathfrak{#1}}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\newcommand{\id}{\operatorname{id}}
+
+\title{Integrable Systems}
+\author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
+\date{\today}
+
+\allowdisplaybreaks
+
+\begin{document}
+
+\maketitle
+
+Most differential equations cannot be solved. This is not a statement about our own cleverness -- it is a statement about differential equations, the overwhelming majority of which have solutions that admit no description more economical than the equation itself. Every so often, though, we stumble across an equation that can be `integrated up': one whose solutions can be written down in closed form, or reduced to quadratures, or generated from nothing by an algebraic recipe. Such equations are called \emph{integrable}, and they are the subject of this course.
+
+There is a curious tension here. On the one hand, integrable systems ought to be vanishingly rare, in the same way that a randomly chosen polynomial is unlikely to factorise nicely. On the other hand, integrable equations turn up all over physics -- the harmonic oscillator, the Kepler problem, the spinning top, waves in shallow water, light in an optical fibre. Nature seems unreasonably fond of them. The explanation, when we find it, is always the same: integrability is a symptom of hidden structure. An integrable system has more conserved quantities than it has any right to have, and those conserved quantities conspire to fill up phase space with tori on which the motion is nothing more than uniform rotation.
+
+The plan of the course is to take this idea and push it as far as it will go. We begin with ordinary differential equations, where the story is essentially complete: the Arnold--Liouville theorem tells us precisely what it means for a Hamiltonian system to be integrable, and how to integrate it. We then move to partial differential equations, which we can think of as infinite-dimensional dynamical systems. Here the theory is much wilder and much more beautiful. We will meet the Korteweg--de Vries equation and its \emph{solitons} -- solitary waves that collide and emerge unscathed, behaving far more like particles than like waves -- and we will spend the heart of the course developing the \emph{inverse scattering transform}, an extraordinary machine which solves a nonlinear PDE by turning it into a linear scattering problem, letting the scattering data evolve trivially, and then reconstructing the answer.
+
+This article constitutes my notes for the `Integrable Systems' course, held in Michaelmas 2021 at Cambridge. These notes are \emph{not a transcription of the lectures}, and differ significantly in quite a few areas. Still, all lectured material should be covered\footnote{We will lean fairly heavily on IB Variational Principles (Hamilton's equations, the Legendre transform, Noether's theorem) and on IB Methods (Fourier transforms, Green's functions, Sturm--Liouville theory). A passing acquaintance with IB Quantum Mechanics -- specifically reflection and transmission coefficients for a one-dimensional potential -- will make Section 3 feel much more familiar.}.
+
+\tableofcontents
+
+\section{Integrability of Ordinary Differential Equations}
+
+We begin with ordinary differential equations. The eventual goal of this section is the Arnold--Liouville theorem, which says that a Hamiltonian system possessing enough conserved quantities can be solved completely, and moreover tells us how. Before we get there we need to set up some machinery: flows, Poisson brackets, and canonical transformations.
+
+\subsection{Vector Fields and Flow Maps}
+
+An $m$-dimensional first-order ODE is specified by a \vocab{vector field} $\vv V : \R^m \to \R^m$ together with an initial condition $\vv x_0 \in \R^m$. We look for a curve $\vv x(t) \in \R^m$, defined for $t$ in some interval containing $0$, satisfying
+$$
+\dot{\vv x} = \vv V(\vv x), \qquad \vv x(0) = \vv x_0.
+$$
+Restricting to first-order equations costs us nothing: an $n$th order ODE in one variable becomes a first-order system in $n$ variables in the usual way, by treating the derivatives as new coordinates.
+
+Throughout this course we will be cavalier about regularity, and assume that all our vector fields are as nice as we need them to be.
+
+\begin{fact}
+	For a sufficiently nice vector field $\vv V$ and any initial condition $\vv x_0$, the problem $\dot{\vv x} = \vv V(\vv x)$, $\vv x(0) = \vv x_0$ has a unique solution, and that solution depends smoothly on both $t$ and $\vv x_0$.
+\end{fact}
+
+Because the solution is unique, it is legitimate to package all of the solutions together into a single object.
+
+\begin{definition}[Flow map]
+	The \vocab{flow map} of a vector field $\vv V$ is the family of maps $g^t : \R^m \to \R^m$ defined by
+	$$
+	\vv x(t) = g^t \vv x_0,
+	$$
+	where $\vv x(t)$ solves $\dot{\vv x} = \vv V(\vv x)$ with $\vv x(0) = \vv x_0$.
+\end{definition}
+
+The flow map is smooth, and satisfies exactly the properties one would hope for.
+
+\begin{proposition}
+	The flow map obeys
+	\begin{enumerate}[label=(\roman*)]
+		\item $g^0 = \id$;
+		\item $g^{t+s} = g^t g^s$;
+		\item $(g^t)^{-1} = g^{-t}$.
+	\end{enumerate}
+\end{proposition}
+\begin{proof}
+	The first is immediate from the definition, and the third follows from the first two on setting $s = -t$. For the second, fix $\vv x_0$ and $s$, and regard both $t \mapsto g^{t+s}\vv x_0$ and $t \mapsto g^t(g^s \vv x_0)$ as functions of $t$. Both solve
+	$$
+	\dot{\vv x} = \vv V(\vv x), \qquad \vv x(0) = g^s \vv x_0,
+	$$
+	and so by uniqueness of solutions they coincide.
+\end{proof}
+
+In the language of IA Groups, this says that $t \mapsto g^t$ is a homomorphism from $(\R, +)$ into the group of diffeomorphisms of $\R^m$. We say that $\vv V$ is the \vocab{infinitesimal generator} of the flow, which is justified by Taylor expanding:
+$$
+g^\varepsilon \vv x_0 = \vv x(0) + \varepsilon \dot{\vv x}(0) + o(\varepsilon) = \vv x_0 + \varepsilon \vv V(\vv x_0) + o(\varepsilon).
+$$
+So to first order in $\varepsilon$, flowing for time $\varepsilon$ is just moving along $\vv V$.
+
+Suppose now that we have two vector fields $\vv V_1, \vv V_2$ generating flows $g_1^t$ and $g_2^s$. A natural question is whether the flows \emph{commute}, that is, whether
+$$
+g_1^t g_2^s \vv x_0 = g_2^s g_1^t \vv x_0
+$$
+for all $\vv x_0, s, t$. Asked directly this is a hopeless question, since it requires us to solve both ODEs. But there is an infinitesimal criterion, and infinitesimal criteria are always easier.
+
+\begin{definition}[Commutator]
+	Given vector fields $\vv V_1, \vv V_2 : \R^m \to \R^m$, their \vocab{commutator} is the vector field
+	$$
+	[\vv V_1, \vv V_2] = \left(\vv V_1 \cdot \frac{\partial}{\partial \vv x}\right) \vv V_2 - \left(\vv V_2 \cdot \frac{\partial}{\partial \vv x}\right)\vv V_1,
+	$$
+	where $\frac{\partial}{\partial \vv x} = (\partial_{x_1}, \dots, \partial_{x_m})^T$. Componentwise,
+	$$
+	[\vv V_1, \vv V_2]_i = \sum_{j=1}^m \left((\vv V_1)_j \frac{\partial (\vv V_2)_i}{\partial x_j} - (\vv V_2)_j \frac{\partial (\vv V_1)_i}{\partial x_j}\right).
+	$$
+\end{definition}
+
+\begin{proposition}
+	Let $\vv V_1, \vv V_2$ be vector fields generating flows $g_1^t, g_2^s$. Then
+	$$
+	[\vv V_1, \vv V_2] = 0 \iff g_1^t g_2^s = g_2^s g_1^t \text{ for all } s,t.
+	$$
+\end{proposition}
+
+We will not prove this (it is a standard exercise, and appears on the first example sheet), but the idea is worth recording: expanding $g_1^{-t}g_2^{-s}g_1^t g_2^s \vv x_0$ to second order in the small parameters, everything cancels except a term $st\,[\vv V_1, \vv V_2](\vv x_0)$. The commutator measures precisely the failure of the two flows to commute, and it does so at the level of the vector fields, where we can compute.
+
+\subsection{Hamiltonian Systems}
+
+We now specialise to a very particular class of ODEs. In IB Variational Principles we met Hamilton's equations, obtained from a Lagrangian by a Legendre transform; here we take them as our starting point.
+
+The setting is a \vocab{phase space} $M = \R^{2n}$, with coordinates
+$$
+(\vv q, \vv p) = (q_1, \dots, q_n, p_1, \dots, p_n),
+$$
+which we think of as generalised positions and generalised momenta. We will usually write
+$$
+\vv x = (\vv q, \vv p)^T \in M.
+$$
+The crucial point is that $M$ is not just $\R^{2n}$: the coordinates come \emph{paired up}, with $q_i$ married to $p_i$. This pairing is the extra structure that distinguishes a phase space from a bare vector space, and we encode it in the $2n \times 2n$ antisymmetric matrix
+$$
+J = \begin{pmatrix} 0 & I_n \\ -I_n & 0\end{pmatrix},
+$$
+called the \vocab{symplectic form}. Note that $J^T = -J$ and $J^2 = -I_{2n}$.
+
+Almost everything in this section can be phrased in terms of $J$ alone. The first example is the Poisson bracket.
+
+\begin{definition}[Poisson bracket]
+	For smooth $f, g : M \to \R$, the \vocab{Poisson bracket} is
+	$$
+	\{f, g\} = \frac{\partial f}{\partial \vv x} \cdot J \frac{\partial g}{\partial \vv x} = \frac{\partial f}{\partial \vv q}\cdot \frac{\partial g}{\partial \vv p} - \frac{\partial f}{\partial \vv p} \cdot \frac{\partial g}{\partial \vv q}.
+	$$
+\end{definition}
+
+The two expressions agree by direct computation with the block form of $J$. The Poisson bracket has a list of properties, most of which are obvious and one of which is not.
+
+\begin{proposition}
+	The Poisson bracket satisfies, for all smooth $f, g, h : M \to \R$:
+	\begin{enumerate}[label=(\roman*)]
+		\item it is bilinear;
+		\item it is antisymmetric, $\{f,g\} = -\{g,f\}$;
+		\item it obeys the Leibniz rule $\{f, gh\} = \{f,g\}h + \{f,h\}g$;
+		\item it obeys the Jacobi identity
+		$$
+		\{f, \{g,h\}\} + \{g, \{h,f\}\} + \{h, \{f,g\}\} = 0;
+		$$
+		\item on the coordinate functions,
+		$$
+		\{q_i, q_j\} = \{p_i, p_j\} = 0, \qquad \{q_i, p_j\} = \delta_{ij}.
+		$$
+	\end{enumerate}
+\end{proposition}
+\begin{proof}
+	All of these are immediate from the definition except the Jacobi identity, which one proves by writing out all twenty-four terms and watching them cancel. The only structural remark worth making is that each of the three double brackets contains second derivatives of exactly one of $f,g,h$, and these second-derivative terms cancel in pairs because $J$ is antisymmetric and second partial derivatives commute.
+\end{proof}
+
+The last of these is called the \vocab{canonical commutation relation}, and it is the algebraic shadow of the pairing between $q_i$ and $p_i$.
+
+\begin{definition}[Hamilton's equations]
+	Given a function $H : M \to \R$, called the \vocab{Hamiltonian}, \vocab{Hamilton's equations} are
+	\begin{equation*}
+	\dot{\vv q} = \frac{\partial H}{\partial \vv p}, \qquad \dot{\vv p} = -\frac{\partial H}{\partial \vv q}. \tag{$*$}
+	\end{equation*}
+\end{definition}
+
+In terms of $J$ these collapse into the single equation
+$$
+\dot{\vv x} = J\frac{\partial H}{\partial \vv x}.
+$$
+This is worth pausing over. To specify a general ODE on $\R^{2n}$ we must supply a vector field, which is $2n$ functions. To specify a Hamiltonian system we need only supply the \emph{single} function $H$. The symplectic structure does the rest of the work. This is our first hint that Hamiltonian systems are special.
+
+\begin{definition}[Hamiltonian vector field]
+	Given $f : M \to \R$, the associated \vocab{Hamiltonian vector field} is
+	$$
+	\vv V_f = J \frac{\partial f}{\partial \vv x}.
+	$$
+\end{definition}
+
+Thus Hamilton's equations say precisely that the motion is the flow of $\vv V_H$.
+
+Now suppose we are watching a particle move according to $(*)$, and we are interested in some observable $f : M \to \R$ -- its energy, its angular momentum, its distance from the origin. How does $f$ change along the motion? The chain rule gives
+$$
+\frac{\dd f}{\dd t} = \frac{\dd}{\dd t}f(\vv x(t)) = \frac{\partial f}{\partial \vv x}\cdot \dot{\vv x} = \frac{\partial f}{\partial \vv x}\cdot J\frac{\partial H}{\partial \vv x} = \{f, H\}.
+$$
+We record this, because it is the single most useful formula in the subject.
+
+\begin{proposition}
+	If $\vv x(t)$ evolves according to Hamilton's equations with Hamiltonian $H$, then for any smooth $f : M \to \R$,
+	$$
+	\frac{\dd f}{\dd t} = \{f, H\}.
+	$$
+\end{proposition}
+
+In other words -- $f$ is conserved if and only if it Poisson commutes with $H$. This is genuinely powerful. Without it, deciding whether some quantity is conserved means solving the equations of motion and staring at the answer, or else differentiating and hoping that things cancel. With it, we simply compute a bracket. And immediately we get one conserved quantity for free:
+$$
+\frac{\dd H}{\dd t} = \{H, H\} = 0
+$$
+by antisymmetry. Energy is conserved.
+
+\begin{example}[Particle in a potential]
+	Consider a particle of unit mass with Cartesian position $\vv q = (q_1,q_2,q_3)$ moving in a potential $U(\vv q)$. Newton's second law reads
+	$$
+	\ddot{\vv q} = -\frac{\partial U}{\partial \vv q}.
+	$$
+	Introducing $\vv p = \dot{\vv q}$, we have
+	$$
+	\dot{\vv x} = \begin{pmatrix}\dot{\vv q}\\ \dot{\vv p}\end{pmatrix} = \begin{pmatrix} \vv p \\ -\partial U/\partial \vv q\end{pmatrix} = J\frac{\partial H}{\partial \vv x}, \qquad H = \tfrac{1}{2}|\vv p|^2 + U(\vv q),
+	$$
+	since $\partial H/\partial \vv p = \vv p$ and $\partial H/\partial\vv q = \partial U/\partial \vv q$. So Newtonian mechanics in a potential is a Hamiltonian system, and the Hamiltonian is the total energy.
+\end{example}
+
+\begin{example}[Angular momentum in the two-body problem]
+	Fix the Sun at the origin and let a planet have Cartesian coordinates $\vv q$. The equation of motion is
+	$$
+	\ddot{\vv q} = -\frac{\vv q}{|\vv q|^3},
+	$$
+	which by the previous example is Hamiltonian with $\vv p = \dot{\vv q}$ and
+	$$
+	H = \tfrac{1}{2}|\vv p|^2 - \frac{1}{|\vv q|}.
+	$$
+	The angular momentum is $\vv L = \vv q \wedge \vv p$, or in components $L_i = \varepsilon_{ijk}q_j p_k$. Let us check that it is conserved, using summation convention throughout:
+	\begin{align*}
+		\{L_i, H\} &= \frac{\partial L_i}{\partial q_\ell}\frac{\partial H}{\partial p_\ell} - \frac{\partial L_i}{\partial p_\ell}\frac{\partial H}{\partial q_\ell}\\
+		&= \varepsilon_{ijk}\delta_{j\ell}p_k \cdot p_\ell - \varepsilon_{ijk}q_j\delta_{k\ell}\cdot \frac{q_\ell}{|\vv q|^3}\\
+		&= \varepsilon_{ijk}\left(p_j p_k - \frac{q_j q_k}{|\vv q|^3}\right)\\
+		&= 0,
+	\end{align*}
+	since in each term we are contracting the antisymmetric $\varepsilon_{ijk}$ against something symmetric in $j \leftrightarrow k$. So all three components of $\vv L$ are conserved, as is $H$: this system has rather a lot of conserved quantities, which is exactly why the Kepler problem can be solved.
+\end{example}
+
+There is one more piece of structure worth recording. We now have two ways of combining functions to produce vector fields: we can take the Poisson bracket $\{f,g\}$ and then form its Hamiltonian vector field, or we can form $\vv V_f$ and $\vv V_g$ and take their commutator. These agree up to sign.
+
+\begin{proposition}
+	For smooth $f,g : M \to \R$ we have $[\vv V_f, \vv V_g] = -\vv V_{\{f,g\}}$.
+\end{proposition}
+
+The proof is a computation using the Jacobi identity, and is left to the first example sheet. The content of the statement is that $f \mapsto \vv V_f$ is (up to a sign) a homomorphism of Lie algebras, from functions-under-Poisson-bracket to vector-fields-under-commutator. We will use it in the proof of the Arnold--Liouville theorem, where it will tell us that flows generated by commuting conserved quantities themselves commute.
+
+\subsection{First Integrals and Liouville Integrability}
+
+\begin{definition}[First integral]
+	Let $(M, H)$ be a Hamiltonian system. A function $f : M \to \R$ is a \vocab{first integral} if
+	$$
+	\{f, H\} = 0,
+	$$
+	equivalently, if $f$ is constant along every trajectory.
+\end{definition}
+
+The terminology is historical. When we solve a differential equation by successive integrations, each integration produces a constant; the constant produced by the first integration was called the first integral. For our purposes, a first integral is simply a constant of the motion.
+
+Our goal for the rest of this section is the following. If a Hamiltonian system has \emph{enough} first integrals, then there is a change of coordinates in which the equations of motion become trivial, and we can integrate them up by inspection. To make `enough' precise we need two conditions.
+
+\begin{definition}[Involution]
+	Two first integrals $F, G$ are \vocab{in involution} if $\{F, G\} = 0$. We also say that they \vocab{Poisson commute}.
+\end{definition}
+
+\begin{definition}[Independence]
+	Functions $f_1, \dots, f_n : M \to \R$ are \vocab{independent} if at each point $\vv x \in M$ the gradients $\frac{\partial f_i}{\partial \vv x}$, $i = 1,\dots, n$, are linearly independent vectors in $\R^{2n}$.
+\end{definition}
+
+\begin{definition}[Liouville integrable]
+	A $2n$-dimensional Hamiltonian system $(M, H)$ is \vocab{integrable} (in the Liouville sense) if there exist $n$ first integrals $f_1, \dots, f_n$ which are independent and in involution, that is $\{f_i, f_j\} = 0$ for all $i,j$.
+\end{definition}
+
+By convention we always take $f_1 = H$, which is legitimate since $\{H, H\} = 0$.
+
+The independence requirement is what stops the definition being vacuous. Without it we could always cheat, taking $f_1 = H$, $f_2 = H^2$, $f_3 = e^H$, and so on: these all Poisson commute with everything in sight, but they carry no information beyond $H$ itself. Independence says that each new first integral genuinely cuts down the available motion.
+
+The involutivity requirement is subtler and less obviously natural, but it is exactly what makes the proof of the Arnold--Liouville theorem work. It is worth noting that a system can have many first integrals without being integrable in this sense, if the integrals refuse to Poisson commute.
+
+\begin{example}
+	Every two-dimensional Hamiltonian system ($n = 1$) is integrable: we need one first integral, and $H$ itself will do. This is a restatement of the familiar fact that a single particle moving in one dimension in a potential can always be solved by energy conservation and a quadrature.
+\end{example}
+
+\begin{example}
+	Consider the two-body problem above. We have $H$, and the three components of $\vv L$. However
+	$$
+	\{L_1, L_2\} = L_3 \neq 0,
+	$$
+	so the $L_i$ are not in involution with each other, and we cannot simply take all four. But $H$, $L_3$ and $|\vv L|^2$ \emph{are} pairwise in involution and independent, and the system is six-dimensional, so $n = 3$ and the Kepler problem is integrable.
+\end{example}
+
+\subsection{Canonical Transformations}
+
+We want to find coordinates in which an integrable system becomes trivial. But we cannot use arbitrary coordinates: the whole structure above depended on the pairing of $q_i$ with $p_i$, and a general change of variables will destroy it. So we must decide which coordinate changes are allowed. There are several equivalent ways to do this; we take the most pragmatic, and simply demand that Hamilton's equations keep their form.
+
+\begin{definition}[Canonical transformation]
+	A coordinate change $(\vv q, \vv p)\mapsto (\vv Q(\vv q, \vv p), \vv P(\vv q, \vv p))$ is \vocab{canonical} if it preserves the form of Hamilton's equations: that is, if
+	$$
+	\dot{\vv q} = \frac{\partial H}{\partial \vv p}, \quad \dot{\vv p} = -\frac{\partial H}{\partial \vv q}
+	\qquad\Longleftrightarrow\qquad
+	\dot{\vv Q} = \frac{\partial \tilde H}{\partial \vv P}, \quad \dot{\vv P} = -\frac{\partial \tilde H}{\partial \vv Q},
+	$$
+	where $\tilde H(\vv Q, \vv P) = H(\vv q, \vv p)$.
+\end{definition}
+
+Writing $\vv x = (\vv q, \vv p)$ and $\vv y = (\vv Q, \vv P)$, this says
+$$
+\dot{\vv x} = J\frac{\partial H}{\partial \vv x} \iff \dot{\vv y} = J \frac{\partial \tilde H}{\partial \vv y}.
+$$
+
+\begin{example}
+	Swapping $\vv q$ and $\vv p$ is \emph{not} canonical: it introduces a sign error, turning $\dot{\vv Q} = \partial \tilde H/\partial \vv P$ into $\dot{\vv Q} = -\partial \tilde H/\partial \vv P$. The map $(\vv q, \vv p)\mapsto (\vv p, -\vv q)$, on the other hand, is canonical.
+\end{example}
+
+Let us do the linear case honestly, since it tells us what the general answer must look like.
+
+\begin{example}[Linear canonical transformations]
+	Consider $\vv x \mapsto \vv y = A\vv x$ for a constant matrix $A$. We claim this is canonical if and only if $AJA^T = J$, in which case $A$ is called \vocab{symplectic}.
+
+	Indeed, by linearity $\dot{\vv y} = A \dot{\vv x} = AJ\frac{\partial H}{\partial \vv x}$. Setting $\tilde H(\vv y) = H(\vv x)$ and using the chain rule,
+	$$
+	\frac{\partial H}{\partial x_i} = \frac{\partial y_j}{\partial x_i}\frac{\partial \tilde H}{\partial y_j} = A_{ji}\frac{\partial \tilde H}{\partial y_j} = \left[A^T\frac{\partial \tilde H}{\partial \vv y}\right]_i.
+	$$
+	Substituting back,
+	$$
+	\dot{\vv y} = AJA^T\frac{\partial \tilde H}{\partial \vv y},
+	$$
+	which is Hamilton's equation for $\tilde H$ precisely when $AJA^T = J$.
+\end{example}
+
+Since a differentiable map is locally linear, and Hamilton's equations are a local condition, the general statement is the obvious one.
+
+\begin{proposition}
+	A smooth map $\vv x \mapsto \vv y(\vv x)$ is canonical if and only if its Jacobian $D\vv y$ is symplectic at every point:
+	$$
+	D\vv y\, J\, (D\vv y)^T = J.
+	$$
+\end{proposition}
+
+This is a clean criterion, but it is a criterion for \emph{checking} that a transformation is canonical, not for \emph{producing} one. For that we use generating functions.
+
+\subsubsection{Generating Functions}
+
+There are four standard flavours of generating function, differing in which pair of old and new variables one takes as independent. We will need only one of them.
+
+Let $S : \R^{2n}\to\R$ be a function which we write as $S(\vv q, \vv P)$ -- old positions and new momenta -- and define a transformation implicitly by
+$$
+\vv p = \frac{\partial S}{\partial \vv q}, \qquad \vv Q = \frac{\partial S}{\partial \vv P}.
+$$
+These equations are to be read as follows. The first is $n$ equations relating $\vv p, \vv q, \vv P$; we solve them for $\vv P$ in terms of $(\vv q, \vv p)$. The second then delivers $\vv Q$ in terms of $(\vv q, \vv P)$, hence in terms of $(\vv q, \vv p)$. Checking that the result is always canonical is another careful application of the chain rule, which we omit.
+
+In practice we usually already have a candidate for $\vv P$ in mind -- typically some collection of first integrals -- and we hunt for an $S$ making the first equation hold. The second equation then \emph{tells} us what the conjugate variable $\vv Q$ has to be. This is exactly how the Arnold--Liouville theorem will proceed.
+
+\begin{example}
+	Take $S(\vv q, \vv P) = \vv q\cdot \vv P$. Then
+	$$
+	\vv p = \frac{\partial S}{\partial \vv q} = \vv P, \qquad \vv Q = \frac{\partial S}{\partial \vv P} = \vv q,
+	$$
+	so $S$ generates the identity transformation.
+\end{example}
+
+\begin{example}
+	In two dimensions, take $S(q, P) = qP + q^2$. Then
+	$$
+	p = \frac{\partial S}{\partial q} = P + 2q, \qquad Q = \frac{\partial S}{\partial P} = q,
+	$$
+	so the transformation is $(Q,P) = (q, p-2q)$, or in matrix form
+	$$
+	\begin{pmatrix}Q\\P\end{pmatrix} = \begin{pmatrix}1 & 0\\ -2 & 1\end{pmatrix}\begin{pmatrix}q\\p\end{pmatrix} = A \begin{pmatrix}q\\p\end{pmatrix}.
+	$$
+	We can verify directly that this is canonical:
+	$$
+	AJA^T = \begin{pmatrix}1&0\\-2&1\end{pmatrix}\begin{pmatrix}0&1\\-1&0\end{pmatrix}\begin{pmatrix}1&-2\\0&1\end{pmatrix} = \begin{pmatrix}0&1\\-1&0\end{pmatrix} = J,
+	$$
+	as promised.
+\end{example}
+
+\subsection{The Arnold--Liouville Theorem}
+
+We can now state the central result about integrable ODEs. Informally it says: if a Hamiltonian system is integrable, then there is a canonical transformation $(\vv q, \vv p)\mapsto(\bm\phi, \vv I)$ after which the new Hamiltonian depends only on $\vv I$. If we can achieve this then Hamilton's equations become
+$$
+\dot{\vv I} = -\frac{\partial \tilde H}{\partial \bm\phi} = 0, \qquad \dot{\bm\phi} = \frac{\partial \tilde H}{\partial \vv I},
+$$
+so $\vv I(t) = \vv I_0$ is constant, and since the right-hand side of the second equation depends on $\vv I$ alone, $\dot{\bm\phi}$ is constant too. Hence
+$$
+\bm\phi(t) = \bm\phi_0 + \bm\Omega t, \qquad \bm\Omega = \frac{\partial \tilde H}{\partial \vv I}(\vv I_0),
+$$
+and we have solved the system completely. All the difficulty has been pushed into finding the transformation.
+
+Before proving anything, let us see what the transformation looks like in the simplest possible example, where we can produce it by divine inspiration and then reverse-engineer where it came from.
+
+\begin{example}[Harmonic oscillator, first pass]
+	Take the harmonic oscillator on $M = \R^2$, with
+	$$
+	H(q,p) = \tfrac{1}{2}p^2 + \tfrac{1}{2}\omega^2 q^2.
+	$$
+	This is a two-dimensional system, so it is automatically integrable, with the single first integral $f_1 = H$. The level sets of $H$ are ellipses:
+	\begin{center}
+		\begin{tikzpicture}
+			\draw[->] (-3, 0) -- (3, 0) node[right] {$q$};
+			\draw[->] (0, -2) -- (0, 2) node[above] {$p$};
+			\foreach \s in {0.4, 0.7, 1.0} {
+				\draw[thick, color=blue] (0,0) ellipse (\s*2.2 and \s*1.5);
+			}
+			\draw[->, color=red, thick] (2.2,0.02) arc (0:-38:2.2 and 1.5);
+			\fill (0,0) circle (1.5pt);
+		\end{tikzpicture}
+	\end{center}
+	Each of these is homeomorphic to a circle $S^1$, and this is not an accident -- it is the first half of the Arnold--Liouville theorem in miniature.
+
+	Now introduce new coordinates $(\phi, I)$ by
+	$$
+	q = \sqrt{\frac{2I}{\omega}}\sin\phi, \qquad p = \sqrt{2I\omega}\cos\phi.
+	$$
+	One can check by computing the Jacobian that this is canonical. In these coordinates,
+	$$
+	\tilde H(\phi, I) = \tfrac{1}{2}\cdot 2I\omega\cos^2\phi + \tfrac{1}{2}\omega^2\cdot\frac{2I}{\omega}\sin^2\phi = \omega I.
+	$$
+	There is no $\phi$! So Hamilton's equations read
+	$$
+	\dot\phi = \frac{\partial \tilde H}{\partial I} = \omega, \qquad \dot I = -\frac{\partial \tilde H}{\partial\phi} = 0,
+	$$
+	giving $\phi(t) = \phi_0 + \omega t$ and $I(t) = I_0$. The oscillator goes round its ellipse at constant angular rate $\omega$, which is of course the right answer.
+
+	Where could that transformation have come from? Here is a clue. Let us compute, for no obvious reason, the area enclosed by a level set of $H$, divided by $2\pi$:
+	\begin{align*}
+		\frac{1}{2\pi}\oint p \dd q &= \frac{1}{2\pi}\int_0^{2\pi} p(\phi, I)\left(\frac{\partial q}{\partial\phi}\dd\phi + \frac{\partial q}{\partial I}\dd I\right)\\
+		&= \frac{1}{2\pi}\int_0^{2\pi}p(\phi,I)\frac{\partial q}{\partial \phi}\dd\phi\\
+		&= \frac{1}{2\pi}\int_0^{2\pi}\sqrt{2I\omega}\cos\phi\cdot\sqrt{\frac{2I}{\omega}}\cos\phi \dd\phi\\
+		&= \frac{2I}{2\pi}\int_0^{2\pi}\cos^2\phi \dd\phi = I,
+	\end{align*}
+	using $\dd I = 0$ along a level set. So the new momentum $I$ is nothing but the enclosed area over $2\pi$ -- a quantity we could have computed knowing nothing whatsoever about the transformation.
+\end{example}
+
+There are two lessons here, and they are exactly the two halves of the theorem: the motion takes place on a circle, and the right momentum coordinate is $\frac{1}{2\pi}\oint p\dd q$.
+
+\begin{theorem}[Arnold--Liouville]
+	Let $(M, H)$ be an integrable $2n$-dimensional Hamiltonian system with independent, involutive first integrals $f_1, \dots, f_n$, where $f_1 = H$. For $\vv c \in \R^n$ set
+	$$
+	M_{\vv c} = \{(\vv q, \vv p)\in M : f_i(\vv q, \vv p) = c_i, \ i = 1,\dots, n\}.
+	$$
+	Then:
+	\begin{enumerate}[label=(\roman*)]
+		\item $M_{\vv c}$ is a smooth $n$-dimensional surface in $M$, invariant under the flow. If $M_{\vv c}$ is compact and connected, it is diffeomorphic to the $n$-torus
+		$$
+		T^n = \underbrace{S^1\times\cdots\times S^1}_{n}.
+		$$
+		\item If $M_{\vv c}$ is compact and connected, then locally there is a canonical transformation $(\vv q, \vv p)\mapsto (\bm\phi, \vv I)$ to \vocab{action--angle coordinates}, in which the $\phi_k$ are angular coordinates on $M_{\vv c}$, the actions $I_k$ are first integrals, and $\tilde H$ is independent of $\bm\phi$. Consequently
+		$$
+		\dot{\vv I} = 0, \qquad \dot{\bm\phi} = \frac{\partial \tilde H}{\partial \vv I} = \text{constant}.
+		$$
+	\end{enumerate}
+\end{theorem}
+
+The first part is pure differential geometry, and the second is where the work is. We give the argument in outline; readers who have not met the preimage theorem or the orbit--stabiliser theorem in this setting may take the geometric steps on faith.
+
+\begin{proof}[Proof sketch]
+	\emph{Part (i).} That $M_{\vv c}$ is a smooth $n$-dimensional surface is the preimage theorem (a consequence of the inverse function theorem from IB Analysis and Topology) applied to $\vv f = (f_1,\dots,f_n) : M \to \R^n$. What makes it apply is precisely the independence of the $f_i$, which says that $\vv c$ is a regular value.
+
+	Next we show that $M_{\vv c}$ is a torus when compact and connected. Consider the Hamiltonian vector fields
+	$$
+	\vv V_{f_i} = J\frac{\partial f_i}{\partial \vv x}.
+	$$
+	We claim each is tangent to $M_{\vv c}$. It suffices to show that the derivative of each $f_j$ along $\vv V_{f_i}$ vanishes, and indeed
+	$$
+	\left(\vv V_{f_i}\cdot\frac{\partial}{\partial \vv x}\right)f_j = \frac{\partial f_j}{\partial \vv x}\cdot J\frac{\partial f_i}{\partial \vv x} = \{f_j, f_i\} = 0
+	$$
+	by involutivity. So the flows $g_i^{t}$ generated by the $\vv V_{f_i}$ map $M_{\vv c}$ into itself. Moreover these flows commute, since
+	$$
+	[\vv V_{f_i}, \vv V_{f_j}] = -\vv V_{\{f_i, f_j\}} = -\vv V_0 = 0.
+	$$
+	So writing $\vv t = (t_1,\dots,t_n)\in\R^n$ and
+	$$
+	g^{\vv t} = g_1^{t_1}g_2^{t_2}\cdots g_n^{t_n},
+	$$
+	commutativity gives $g^{\vv t_1 + \vv t_2} = g^{\vv t_1}g^{\vv t_2}$, so we have an action of the group $(\R^n, +)$ on $M_{\vv c}$.
+
+	Fix $\vv x \in M_{\vv c}$ and let
+	$$
+	\stab(\vv x) = \{\vv t\in\R^n : g^{\vv t}\vv x = \vv x\}.
+	$$
+	By the orbit--stabiliser theorem, $\vv t \mapsto g^{\vv t}\vv x$ descends to a bijection $\R^n/\stab(\vv x)\to \orb(\vv x)$, and one checks that the orbit of $\vv x$ is the connected component of $\vv x$ in $M_{\vv c}$ -- so if $M_{\vv c}$ is connected, the orbit is everything. Now $\stab(\vv x)$ is a subgroup of $\R^n$, and (provided the flows are non-degenerate) it is discrete, hence isomorphic to $\Z^k$ for some $0 \le k \le n$. Therefore
+	$$
+	M_{\vv c}\cong \R^n/\Z^k \cong T^k\times\R^{n-k}.
+	$$
+	If $M_{\vv c}$ is compact there can be no $\R$ factors, so $k = n$ and $M_{\vv c}\cong T^n$.
+
+	\emph{Part (ii).} We construct the action--angle coordinates. For clarity of presentation we take $n = 2$; the general case is identical except that we need a higher-dimensional version of Green's theorem, which we do not have to hand.
+
+	It is trivially easy to find \emph{some} coordinates $(\vv Q, \vv P)$ with $\vv P$ constant along the flow and $\vv Q$ angular: just set $\vv P = \vv c$ and use the diffeomorphism $M_{\vv c}\cong T^n$ to get angles. The problem is that such a transformation will almost never be canonical. So we must be cleverer about the choice of $\vv P$.
+
+	On the torus $T^n$ there are $n$ topologically distinct `basic' loops $\Gamma_1,\dots,\Gamma_n$ -- under the identification $M_{\vv c}\cong S^1\times\cdots\times S^1$, the loop $\Gamma_j$ runs once around the $j$th factor and is constant on the others. For $n=2$ these are the two obvious circles:
+	\begin{center}
+		\begin{tikzpicture}
+			\draw (0,0) ellipse (2 and 1.12);
+			\draw[color=red, thick] (0,0) ellipse (1.6 and 0.78);
+			\draw[color=blue, thick] (0, -0.71) ellipse (0.1 and 0.41);
+			\draw[rounded corners=28pt] (-1.1,.1)--(0,-.6)--(1.1,.1);
+			\draw[rounded corners=24pt] (-.9,0)--(0,.6)--(.9,0);
+			\node[color=red, above] at (0, 0.78) {$\Gamma_1$};
+			\node[color=blue, below] at (0, -1.18) {$\Gamma_2$};
+		\end{tikzpicture}
+	\end{center}
+	We now define the \vocab{actions}
+	$$
+	I_j = \frac{1}{2\pi}\oint_{\Gamma_j}\vv p\cdot\dd\vv q,
+	$$
+	generalising the formula we found for the harmonic oscillator. The first thing to check is that this is well defined, since $\Gamma_j$ is really a whole homotopy class of loops rather than a single one. So suppose $\Gamma_2$ and $\Gamma_2'$ are two such loops, bounding between them an annular region $A$ on the torus.
+
+	On $M_{\vv c}$ the equations $f_i(\vv q, \vv p) = c_i$ hold identically, and we assume we may invert them locally to write $\vv p = \vv p(\vv q, \vv c)$; the condition for this is $\det(\partial f_i/\partial p_j)\neq 0$. Differentiating the identity $f_i(\vv q, \vv p(\vv q, \vv c)) = c_i$ with respect to $q_k$ gives
+	$$
+	\frac{\partial f_i}{\partial q_k} + \frac{\partial f_i}{\partial p_\ell}\frac{\partial p_\ell}{\partial q_k} = 0
+	$$
+	on $M_{\vv c}$. Now use involutivity: on $M_{\vv c}$,
+	\begin{align*}
+		0 &= \{f_i, f_j\}\\
+		&= \frac{\partial f_i}{\partial q_k}\frac{\partial f_j}{\partial p_k} - \frac{\partial f_i}{\partial p_k}\frac{\partial f_j}{\partial q_k}\\
+		&= \left(-\frac{\partial f_i}{\partial p_\ell}\frac{\partial p_\ell}{\partial q_k}\right)\frac{\partial f_j}{\partial p_k} - \frac{\partial f_i}{\partial p_k}\left(-\frac{\partial f_j}{\partial p_\ell}\frac{\partial p_\ell}{\partial q_k}\right)\\
+		&= \frac{\partial f_i}{\partial p_k}\left(\frac{\partial p_\ell}{\partial q_k} - \frac{\partial p_k}{\partial q_\ell}\right)\frac{\partial f_j}{\partial p_\ell},
+	\end{align*}
+	where in the last line we relabelled dummy indices in the first term. Since the matrices $\partial f_i/\partial p_k$ are invertible, the matrix in the middle must vanish:
+	$$
+	\frac{\partial p_\ell}{\partial q_k} = \frac{\partial p_k}{\partial q_\ell}.
+	$$
+	For $n = 2$ the only content of this is $\partial p_1/\partial q_2 = \partial p_2/\partial q_1$. But then by Green's theorem
+	$$
+	\left(\oint_{\Gamma_2} - \oint_{\Gamma_2'}\right)\vv p\cdot\dd\vv q = \oint_{\partial A}\vv p\cdot\dd\vv q = \iint_A\left(\frac{\partial p_2}{\partial q_1} - \frac{\partial p_1}{\partial q_2}\right)\dd q_1 \dd q_2 = 0.
+	$$
+	So $I_j$ depends only on the homotopy class of $\Gamma_j$, and hence $\vv I = \vv I(\vv c)$ is a function of $\vv c$ alone. These are our new momenta. We assume $\vv I(\vv c)$ is invertible, so that we may also write $\vv c = \vv c(\vv I)$.
+
+	It remains to produce the conjugate angles, and for this we use a generating function. Pick a base point $\vv x_0 \in M_{\vv c}$ and set
+	$$
+	S(\vv q, \vv I) = \int_{\vv x_0}^{\vv x}\vv p(\vv q', \vv c(\vv I))\cdot\dd\vv q',
+	$$
+	where $\vv x = (\vv q, \vv p(\vv q, \vv c(\vv I)))$ and the integral is along any path in $M_{\vv c}$. Is this well defined? If we deform the path slightly, sweeping out a region $B$, then $S$ changes by $\oint_{\partial B}\vv p\cdot\dd\vv q$, which vanishes by exactly the Green's theorem computation above. But we are on a torus, and there are paths that cannot be deformed into one another: a path may wind around one of the cycles $\Gamma_j$ on its way. Adding such a loop changes $S$ by $\oint_{\Gamma_j}\vv p\cdot\dd\vv q = 2\pi I_j$. So the total ambiguity is
+	$$
+	S(\vv q, \vv I)\mapsto S(\vv q, \vv I) + 2\pi m_j I_j, \qquad m_j\in\Z,
+	$$
+	and nothing worse. Differentiating with respect to $\vv I$, we conclude that
+	$$
+	\bm\phi = \frac{\partial S}{\partial \vv I}
+	$$
+	is well defined \emph{modulo $2\pi$}. These are the angles, and the ambiguity is exactly the ambiguity one expects of an angular coordinate.
+
+	Finally we should check that $S$ really is a generating function in the sense of the previous subsection, i.e.\ that $\partial S/\partial \vv q = \vv p$. Writing $S = \int_{\vv x_0}^{\vv x}\vv F\cdot\dd\vv x'$ with $\vv F = (\vv p, \vv 0)$, the fundamental theorem of calculus gives $\partial S/\partial\vv x = \vv F$, and in particular $\partial S/\partial \vv q = \vv p$ as required.
+
+	So $S$ generates a canonical transformation $(\vv q, \vv p)\mapsto(\bm\phi, \vv I)$. Since $\vv I = \vv I(\vv c) = \vv I(\vv f(\vv x))$ is a function of the first integrals alone, we have $\dot{\vv I} = 0$; and since $\dot{\vv I} = -\partial\tilde H/\partial\bm\phi$, the new Hamiltonian is independent of $\bm\phi$. Integrating up,
+	$$
+	\bm\phi(t) = \bm\phi_0 + \bm\Omega t, \qquad \vv I(t) = \vv I_0, \qquad \bm\Omega = \frac{\partial \tilde H}{\partial \vv I}(\vv I_0). \qedhere
+	$$
+\end{proof}
+
+The picture that emerges is a very appealing one. Phase space is foliated by invariant tori $M_{\vv c}$, one for each value of the conserved quantities, and on each torus the motion is uniform straight-line motion in the angle variables -- a winding line, going round the $j$th cycle at frequency $\Omega_j$. Drawing the torus in the usual way as a square with opposite edges identified, the trajectory is simply a straight line of slope $\Omega_2/\Omega_1$:
+\begin{center}
+\begin{tikzpicture}
+\draw[thick] (0,0) rectangle (3.30,3.30);
+\draw[color=blue,thick] plot coordinates {(0.00,0.00) (0.01,0.00) (0.01,0.01) (0.02,0.01) (0.02,0.01) (0.03,0.02) (0.03,0.02) (0.04,0.02) (0.04,0.03) (0.05,0.03) (0.05,0.03) (0.06,0.04) (0.07,0.04) (0.07,0.04) (0.08,0.05) (0.08,0.05) (0.09,0.05) (0.09,0.06) (0.10,0.06) (0.10,0.06) (0.11,0.07) (0.11,0.07) (0.12,0.07) (0.13,0.08) (0.13,0.08) (0.14,0.08) (0.14,0.09) (0.15,0.09) (0.15,0.09) (0.16,0.10) (0.16,0.10) (0.17,0.10) (0.17,0.11) (0.18,0.11) (0.19,0.11) (0.19,0.12) (0.20,0.12) (0.20,0.12) (0.21,0.13) (0.21,0.13) (0.22,0.13) (0.22,0.14) (0.23,0.14) (0.23,0.14) (0.24,0.15) (0.25,0.15) (0.25,0.15) (0.26,0.16) (0.26,0.16) (0.27,0.16) (0.27,0.17) (0.28,0.17) (0.28,0.17) (0.29,0.18) (0.29,0.18) (0.30,0.19) (0.30,0.19) (0.31,0.19) (0.32,0.20) (0.32,0.20) (0.33,0.20) (0.33,0.21) (0.34,0.21) (0.34,0.21) (0.35,0.22) (0.35,0.22) (0.36,0.22) (0.36,0.23) (0.37,0.23) (0.38,0.23) (0.38,0.24) (0.39,0.24) (0.39,0.24) (0.40,0.25) (0.40,0.25) (0.41,0.25) (0.41,0.26) (0.42,0.26) (0.42,0.26) (0.43,0.27) (0.44,0.27) (0.44,0.27) (0.45,0.28) (0.45,0.28) (0.46,0.28) (0.46,0.29) (0.47,0.29) (0.47,0.29) (0.48,0.30) (0.48,0.30) (0.49,0.30) (0.50,0.31) (0.50,0.31) (0.51,0.31) (0.51,0.32) (0.52,0.32) (0.52,0.32) (0.53,0.33) (0.53,0.33) (0.54,0.33) (0.54,0.34) (0.55,0.34) (0.56,0.34) (0.56,0.35) (0.57,0.35) (0.57,0.35) (0.58,0.36) (0.58,0.36) (0.59,0.36) (0.59,0.37) (0.60,0.37) (0.60,0.37) (0.61,0.38) (0.62,0.38) (0.62,0.38) (0.63,0.39) (0.63,0.39) (0.64,0.39) (0.64,0.40) (0.65,0.40) (0.65,0.40) (0.66,0.41) (0.66,0.41) (0.67,0.41) (0.68,0.42) (0.68,0.42) (0.69,0.42) (0.69,0.43) (0.70,0.43) (0.70,0.43) (0.71,0.44) (0.71,0.44) (0.72,0.44) (0.72,0.45) (0.73,0.45) (0.74,0.45) (0.74,0.46) (0.75,0.46) (0.75,0.46) (0.76,0.47) (0.76,0.47) (0.77,0.47) (0.77,0.48) (0.78,0.48) (0.78,0.48) (0.79,0.49) (0.79,0.49) (0.80,0.49) (0.81,0.50) (0.81,0.50) (0.82,0.50) (0.82,0.51) (0.83,0.51) (0.83,0.51) (0.84,0.52) (0.84,0.52) (0.85,0.52) (0.85,0.53) (0.86,0.53) (0.87,0.54) (0.87,0.54) (0.88,0.54) (0.88,0.55) (0.89,0.55) (0.89,0.55) (0.90,0.56) (0.90,0.56) (0.91,0.56) (0.91,0.57) (0.92,0.57) (0.93,0.57) (0.93,0.58) (0.94,0.58) (0.94,0.58) (0.95,0.59) (0.95,0.59) (0.96,0.59) (0.96,0.60) (0.97,0.60) (0.97,0.60) (0.98,0.61) (0.99,0.61) (0.99,0.61) (1.00,0.62) (1.00,0.62) (1.01,0.62) (1.01,0.63) (1.02,0.63) (1.02,0.63) (1.03,0.64) (1.03,0.64) (1.04,0.64) (1.05,0.65) (1.05,0.65) (1.06,0.65) (1.06,0.66) (1.07,0.66) (1.07,0.66) (1.08,0.67) (1.08,0.67) (1.09,0.67) (1.09,0.68) (1.10,0.68) (1.11,0.68) (1.11,0.69) (1.12,0.69) (1.12,0.69) (1.13,0.70) (1.13,0.70) (1.14,0.70) (1.14,0.71) (1.15,0.71) (1.15,0.71) (1.16,0.72) (1.17,0.72) (1.17,0.72) (1.18,0.73) (1.18,0.73) (1.19,0.73) (1.19,0.74) (1.20,0.74) (1.20,0.74) (1.21,0.75) (1.21,0.75) (1.22,0.75) (1.23,0.76) (1.23,0.76) (1.24,0.76) (1.24,0.77) (1.25,0.77) (1.25,0.77) (1.26,0.78) (1.26,0.78) (1.27,0.78) (1.27,0.79) (1.28,0.79) (1.29,0.79) (1.29,0.80) (1.30,0.80) (1.30,0.80) (1.31,0.81) (1.31,0.81) (1.32,0.81) (1.32,0.82) (1.33,0.82) (1.33,0.82) (1.34,0.83) (1.34,0.83) (1.35,0.83) (1.36,0.84) (1.36,0.84) (1.37,0.84) (1.37,0.85) (1.38,0.85) (1.38,0.85) (1.39,0.86) (1.39,0.86) (1.40,0.86) (1.40,0.87) (1.41,0.87) (1.42,0.87) (1.42,0.88) (1.43,0.88) (1.43,0.89) (1.44,0.89) (1.44,0.89) (1.45,0.90) (1.45,0.90) (1.46,0.90) (1.46,0.91) (1.47,0.91) (1.48,0.91) (1.48,0.92) (1.49,0.92) (1.49,0.92) (1.50,0.93) (1.50,0.93) (1.51,0.93) (1.51,0.94) (1.52,0.94) (1.52,0.94) (1.53,0.95) (1.54,0.95) (1.54,0.95) (1.55,0.96) (1.55,0.96) (1.56,0.96) (1.56,0.97) (1.57,0.97) (1.57,0.97) (1.58,0.98) (1.58,0.98) (1.59,0.98) (1.60,0.99) (1.60,0.99) (1.61,0.99) (1.61,1.00) (1.62,1.00) (1.62,1.00) (1.63,1.01) (1.63,1.01) (1.64,1.01) (1.64,1.02) (1.65,1.02) (1.66,1.02) (1.66,1.03) (1.67,1.03) (1.67,1.03) (1.68,1.04) (1.68,1.04) (1.69,1.04) (1.69,1.05) (1.70,1.05) (1.70,1.05) (1.71,1.06) (1.72,1.06) (1.72,1.06) (1.73,1.07) (1.73,1.07) (1.74,1.07) (1.74,1.08) (1.75,1.08) (1.75,1.08) (1.76,1.09) (1.76,1.09) (1.77,1.09) (1.78,1.10) (1.78,1.10) (1.79,1.10) (1.79,1.11) (1.80,1.11) (1.80,1.11) (1.81,1.12) (1.81,1.12) (1.82,1.12) (1.82,1.13) (1.83,1.13) (1.83,1.13) (1.84,1.14) (1.85,1.14) (1.85,1.14) (1.86,1.15) (1.86,1.15) (1.87,1.15) (1.87,1.16) (1.88,1.16) (1.88,1.16) (1.89,1.17) (1.89,1.17) (1.90,1.17) (1.91,1.18) (1.91,1.18) (1.92,1.18) (1.92,1.19) (1.93,1.19) (1.93,1.19) (1.94,1.20) (1.94,1.20) (1.95,1.20) (1.95,1.21) (1.96,1.21) (1.97,1.21) (1.97,1.22) (1.98,1.22) (1.98,1.22) (1.99,1.23) (1.99,1.23) (2.00,1.24) (2.00,1.24) (2.01,1.24) (2.01,1.25) (2.02,1.25) (2.03,1.25) (2.03,1.26) (2.04,1.26) (2.04,1.26) (2.05,1.27) (2.05,1.27) (2.06,1.27) (2.06,1.28) (2.07,1.28) (2.07,1.28) (2.08,1.29) (2.09,1.29) (2.09,1.29) (2.10,1.30) (2.10,1.30) (2.11,1.30) (2.11,1.31) (2.12,1.31) (2.12,1.31) (2.13,1.32) (2.13,1.32) (2.14,1.32) (2.15,1.33) (2.15,1.33) (2.16,1.33) (2.16,1.34) (2.17,1.34) (2.17,1.34) (2.18,1.35) (2.18,1.35) (2.19,1.35) (2.19,1.36) (2.20,1.36) (2.21,1.36) (2.21,1.37) (2.22,1.37) (2.22,1.37) (2.23,1.38) (2.23,1.38) (2.24,1.38) (2.24,1.39) (2.25,1.39) (2.25,1.39) (2.26,1.40) (2.27,1.40) (2.27,1.40) (2.28,1.41) (2.28,1.41) (2.29,1.41) (2.29,1.42) (2.30,1.42) (2.30,1.42) (2.31,1.43) (2.31,1.43) (2.32,1.43) (2.33,1.44) (2.33,1.44) (2.34,1.44) (2.34,1.45) (2.35,1.45) (2.35,1.45) (2.36,1.46) (2.36,1.46) (2.37,1.46) (2.37,1.47) (2.38,1.47) (2.38,1.47) (2.39,1.48) (2.40,1.48) (2.40,1.48) (2.41,1.49) (2.41,1.49) (2.42,1.49) (2.42,1.50) (2.43,1.50) (2.43,1.50) (2.44,1.51) (2.44,1.51) (2.45,1.51) (2.46,1.52) (2.46,1.52) (2.47,1.52) (2.47,1.53) (2.48,1.53) (2.48,1.53) (2.49,1.54) (2.49,1.54) (2.50,1.54) (2.50,1.55) (2.51,1.55) (2.52,1.55) (2.52,1.56) (2.53,1.56) (2.53,1.56) (2.54,1.57) (2.54,1.57) (2.55,1.57) (2.55,1.58) (2.56,1.58) (2.56,1.59) (2.57,1.59) (2.58,1.59) (2.58,1.60) (2.59,1.60) (2.59,1.60) (2.60,1.61) (2.60,1.61) (2.61,1.61) (2.61,1.62) (2.62,1.62) (2.62,1.62) (2.63,1.63) (2.64,1.63) (2.64,1.63) (2.65,1.64) (2.65,1.64) (2.66,1.64) (2.66,1.65) (2.67,1.65) (2.67,1.65) (2.68,1.66) (2.68,1.66) (2.69,1.66) (2.70,1.67) (2.70,1.67) (2.71,1.67) (2.71,1.68) (2.72,1.68) (2.72,1.68) (2.73,1.69) (2.73,1.69) (2.74,1.69) (2.74,1.70) (2.75,1.70) (2.76,1.70) (2.76,1.71) (2.77,1.71) (2.77,1.71) (2.78,1.72) (2.78,1.72) (2.79,1.72) (2.79,1.73) (2.80,1.73) (2.80,1.73) (2.81,1.74) (2.82,1.74) (2.82,1.74) (2.83,1.75) (2.83,1.75) (2.84,1.75) (2.84,1.76) (2.85,1.76) (2.85,1.76) (2.86,1.77) (2.86,1.77) (2.87,1.77) (2.87,1.78) (2.88,1.78) (2.89,1.78) (2.89,1.79) (2.90,1.79) (2.90,1.79) (2.91,1.80) (2.91,1.80) (2.92,1.80) (2.92,1.81) (2.93,1.81) (2.93,1.81) (2.94,1.82) (2.95,1.82) (2.95,1.82) (2.96,1.83) (2.96,1.83) (2.97,1.83) (2.97,1.84) (2.98,1.84) (2.98,1.84) (2.99,1.85) (2.99,1.85) (3.00,1.85) (3.01,1.86) (3.01,1.86) (3.02,1.86) (3.02,1.87) (3.03,1.87) (3.03,1.87) (3.04,1.88) (3.04,1.88) (3.05,1.88) (3.05,1.89) (3.06,1.89) (3.07,1.89) (3.07,1.90) (3.08,1.90) (3.08,1.90) (3.09,1.91) (3.09,1.91) (3.10,1.91) (3.10,1.92) (3.11,1.92) (3.11,1.92) (3.12,1.93) (3.13,1.93) (3.13,1.94) (3.14,1.94) (3.14,1.94) (3.15,1.95) (3.15,1.95) (3.16,1.95) (3.16,1.96) (3.17,1.96) (3.17,1.96) (3.18,1.97) (3.19,1.97) (3.19,1.97) (3.20,1.98) (3.20,1.98) (3.21,1.98) (3.21,1.99) (3.22,1.99) (3.22,1.99) (3.23,2.00) (3.23,2.00) (3.24,2.00) (3.25,2.01) (3.25,2.01) (3.26,2.01) (3.26,2.02) (3.27,2.02) (3.27,2.02) (3.28,2.03) (3.28,2.03) (3.29,2.03) (3.29,2.04) (3.30,2.04)};
+\draw[color=blue,thick] plot coordinates {(0.01,2.04) (0.01,2.05) (0.02,2.05) (0.02,2.05) (0.03,2.06) (0.03,2.06) (0.04,2.06) (0.04,2.07) (0.05,2.07) (0.05,2.07) (0.06,2.08) (0.07,2.08) (0.07,2.08) (0.08,2.09) (0.08,2.09) (0.09,2.09) (0.09,2.10) (0.10,2.10) (0.10,2.10) (0.11,2.11) (0.11,2.11) (0.12,2.11) (0.12,2.12) (0.13,2.12) (0.14,2.12) (0.14,2.13) (0.15,2.13) (0.15,2.13) (0.16,2.14) (0.16,2.14) (0.17,2.14) (0.17,2.15) (0.18,2.15) (0.18,2.15) (0.19,2.16) (0.20,2.16) (0.20,2.16) (0.21,2.17) (0.21,2.17) (0.22,2.17) (0.22,2.18) (0.23,2.18) (0.23,2.18) (0.24,2.19) (0.24,2.19) (0.25,2.19) (0.26,2.20) (0.26,2.20) (0.27,2.20) (0.27,2.21) (0.28,2.21) (0.28,2.21) (0.29,2.22) (0.29,2.22) (0.30,2.22) (0.30,2.23) (0.31,2.23) (0.32,2.23) (0.32,2.24) (0.33,2.24) (0.33,2.24) (0.34,2.25) (0.34,2.25) (0.35,2.25) (0.35,2.26) (0.36,2.26) (0.36,2.26) (0.37,2.27) (0.38,2.27) (0.38,2.27) (0.39,2.28) (0.39,2.28) (0.40,2.29) (0.40,2.29) (0.41,2.29) (0.41,2.30) (0.42,2.30) (0.42,2.30) (0.43,2.31) (0.44,2.31) (0.44,2.31) (0.45,2.32) (0.45,2.32) (0.46,2.32) (0.46,2.33) (0.47,2.33) (0.47,2.33) (0.48,2.34) (0.48,2.34) (0.49,2.34) (0.50,2.35) (0.50,2.35) (0.51,2.35) (0.51,2.36) (0.52,2.36) (0.52,2.36) (0.53,2.37) (0.53,2.37) (0.54,2.37) (0.54,2.38) (0.55,2.38) (0.56,2.38) (0.56,2.39) (0.57,2.39) (0.57,2.39) (0.58,2.40) (0.58,2.40) (0.59,2.40) (0.59,2.41) (0.60,2.41) (0.60,2.41) (0.61,2.42) (0.61,2.42) (0.62,2.42) (0.63,2.43) (0.63,2.43) (0.64,2.43) (0.64,2.44) (0.65,2.44) (0.65,2.44) (0.66,2.45) (0.66,2.45) (0.67,2.45) (0.67,2.46) (0.68,2.46) (0.69,2.46) (0.69,2.47) (0.70,2.47) (0.70,2.47) (0.71,2.48) (0.71,2.48) (0.72,2.48) (0.72,2.49) (0.73,2.49) (0.73,2.49) (0.74,2.50) (0.75,2.50) (0.75,2.50) (0.76,2.51) (0.76,2.51) (0.77,2.51) (0.77,2.52) (0.78,2.52) (0.78,2.52) (0.79,2.53) (0.79,2.53) (0.80,2.53) (0.81,2.54) (0.81,2.54) (0.82,2.54) (0.82,2.55) (0.83,2.55) (0.83,2.55) (0.84,2.56) (0.84,2.56) (0.85,2.56) (0.85,2.57) (0.86,2.57) (0.87,2.57) (0.87,2.58) (0.88,2.58) (0.88,2.58) (0.89,2.59) (0.89,2.59) (0.90,2.59) (0.90,2.60) (0.91,2.60) (0.91,2.60) (0.92,2.61) (0.93,2.61) (0.93,2.61) (0.94,2.62) (0.94,2.62) (0.95,2.62) (0.95,2.63) (0.96,2.63) (0.96,2.64) (0.97,2.64) (0.97,2.64) (0.98,2.65) (0.99,2.65) (0.99,2.65) (1.00,2.66) (1.00,2.66) (1.01,2.66) (1.01,2.67) (1.02,2.67) (1.02,2.67) (1.03,2.68) (1.03,2.68) (1.04,2.68) (1.05,2.69) (1.05,2.69) (1.06,2.69) (1.06,2.70) (1.07,2.70) (1.07,2.70) (1.08,2.71) (1.08,2.71) (1.09,2.71) (1.09,2.72) (1.10,2.72) (1.11,2.72) (1.11,2.73) (1.12,2.73) (1.12,2.73) (1.13,2.74) (1.13,2.74) (1.14,2.74) (1.14,2.75) (1.15,2.75) (1.15,2.75) (1.16,2.76) (1.16,2.76) (1.17,2.76) (1.18,2.77) (1.18,2.77) (1.19,2.77) (1.19,2.78) (1.20,2.78) (1.20,2.78) (1.21,2.79) (1.21,2.79) (1.22,2.79) (1.22,2.80) (1.23,2.80) (1.24,2.80) (1.24,2.81) (1.25,2.81) (1.25,2.81) (1.26,2.82) (1.26,2.82) (1.27,2.82) (1.27,2.83) (1.28,2.83) (1.28,2.83) (1.29,2.84) (1.30,2.84) (1.30,2.84) (1.31,2.85) (1.31,2.85) (1.32,2.85) (1.32,2.86) (1.33,2.86) (1.33,2.86) (1.34,2.87) (1.34,2.87) (1.35,2.87) (1.36,2.88) (1.36,2.88) (1.37,2.88) (1.37,2.89) (1.38,2.89) (1.38,2.89) (1.39,2.90) (1.39,2.90) (1.40,2.90) (1.40,2.91) (1.41,2.91) (1.42,2.91) (1.42,2.92) (1.43,2.92) (1.43,2.92) (1.44,2.93) (1.44,2.93) (1.45,2.93) (1.45,2.94) (1.46,2.94) (1.46,2.94) (1.47,2.95) (1.48,2.95) (1.48,2.95) (1.49,2.96) (1.49,2.96) (1.50,2.96) (1.50,2.97) (1.51,2.97) (1.51,2.97) (1.52,2.98) (1.52,2.98) (1.53,2.98) (1.54,2.99) (1.54,2.99) (1.55,3.00) (1.55,3.00) (1.56,3.00) (1.56,3.01) (1.57,3.01) (1.57,3.01) (1.58,3.02) (1.58,3.02) (1.59,3.02) (1.60,3.03) (1.60,3.03) (1.61,3.03) (1.61,3.04) (1.62,3.04) (1.62,3.04) (1.63,3.05) (1.63,3.05) (1.64,3.05) (1.64,3.06) (1.65,3.06) (1.65,3.06) (1.66,3.07) (1.67,3.07) (1.67,3.07) (1.68,3.08) (1.68,3.08) (1.69,3.08) (1.69,3.09) (1.70,3.09) (1.70,3.09) (1.71,3.10) (1.71,3.10) (1.72,3.10) (1.73,3.11) (1.73,3.11) (1.74,3.11) (1.74,3.12) (1.75,3.12) (1.75,3.12) (1.76,3.13) (1.76,3.13) (1.77,3.13) (1.77,3.14) (1.78,3.14) (1.79,3.14) (1.79,3.15) (1.80,3.15) (1.80,3.15) (1.81,3.16) (1.81,3.16) (1.82,3.16) (1.82,3.17) (1.83,3.17) (1.83,3.17) (1.84,3.18) (1.85,3.18) (1.85,3.18) (1.86,3.19) (1.86,3.19) (1.87,3.19) (1.87,3.20) (1.88,3.20) (1.88,3.20) (1.89,3.21) (1.89,3.21) (1.90,3.21) (1.91,3.22) (1.91,3.22) (1.92,3.22) (1.92,3.23) (1.93,3.23) (1.93,3.23) (1.94,3.24) (1.94,3.24) (1.95,3.24) (1.95,3.25) (1.96,3.25) (1.97,3.25) (1.97,3.26) (1.98,3.26) (1.98,3.26) (1.99,3.27) (1.99,3.27) (2.00,3.27) (2.00,3.28) (2.01,3.28) (2.01,3.28) (2.02,3.29) (2.03,3.29) (2.03,3.29) (2.04,3.30)};
+\draw[color=blue,thick] plot coordinates {(2.04,0.00) (2.05,0.00) (2.05,0.01) (2.06,0.01) (2.06,0.01) (2.07,0.02) (2.07,0.02) (2.08,0.02) (2.09,0.03) (2.09,0.03) (2.10,0.03) (2.10,0.04) (2.11,0.04) (2.11,0.05) (2.12,0.05) (2.12,0.05) (2.13,0.06) (2.13,0.06) (2.14,0.06) (2.14,0.07) (2.15,0.07) (2.16,0.07) (2.16,0.08) (2.17,0.08) (2.17,0.08) (2.18,0.09) (2.18,0.09) (2.19,0.09) (2.19,0.10) (2.20,0.10) (2.20,0.10) (2.21,0.11) (2.22,0.11) (2.22,0.11) (2.23,0.12) (2.23,0.12) (2.24,0.12) (2.24,0.13) (2.25,0.13) (2.25,0.13) (2.26,0.14) (2.26,0.14) (2.27,0.14) (2.28,0.15) (2.28,0.15) (2.29,0.15) (2.29,0.16) (2.30,0.16) (2.30,0.16) (2.31,0.17) (2.31,0.17) (2.32,0.17) (2.32,0.18) (2.33,0.18) (2.34,0.18) (2.34,0.19) (2.35,0.19) (2.35,0.19) (2.36,0.20) (2.36,0.20) (2.37,0.20) (2.37,0.21) (2.38,0.21) (2.38,0.21) (2.39,0.22) (2.40,0.22) (2.40,0.22) (2.41,0.23) (2.41,0.23) (2.42,0.23) (2.42,0.24) (2.43,0.24) (2.43,0.24) (2.44,0.25) (2.44,0.25) (2.45,0.25) (2.46,0.26) (2.46,0.26) (2.47,0.26) (2.47,0.27) (2.48,0.27) (2.48,0.27) (2.49,0.28) (2.49,0.28) (2.50,0.28) (2.50,0.29) (2.51,0.29) (2.52,0.29) (2.52,0.30) (2.53,0.30) (2.53,0.30) (2.54,0.31) (2.54,0.31) (2.55,0.31) (2.55,0.32) (2.56,0.32) (2.56,0.32) (2.57,0.33) (2.58,0.33) (2.58,0.33) (2.59,0.34) (2.59,0.34) (2.60,0.34) (2.60,0.35) (2.61,0.35) (2.61,0.35) (2.62,0.36) (2.62,0.36) (2.63,0.36) (2.64,0.37) (2.64,0.37) (2.65,0.37) (2.65,0.38) (2.66,0.38) (2.66,0.38) (2.67,0.39) (2.67,0.39) (2.68,0.40) (2.68,0.40) (2.69,0.40) (2.69,0.41) (2.70,0.41) (2.71,0.41) (2.71,0.42) (2.72,0.42) (2.72,0.42) (2.73,0.43) (2.73,0.43) (2.74,0.43) (2.74,0.44) (2.75,0.44) (2.75,0.44) (2.76,0.45) (2.77,0.45) (2.77,0.45) (2.78,0.46) (2.78,0.46) (2.79,0.46) (2.79,0.47) (2.80,0.47) (2.80,0.47) (2.81,0.48) (2.81,0.48) (2.82,0.48) (2.83,0.49) (2.83,0.49) (2.84,0.49) (2.84,0.50) (2.85,0.50) (2.85,0.50) (2.86,0.51) (2.86,0.51) (2.87,0.51) (2.87,0.52) (2.88,0.52) (2.89,0.52) (2.89,0.53) (2.90,0.53) (2.90,0.53) (2.91,0.54) (2.91,0.54) (2.92,0.54) (2.92,0.55) (2.93,0.55) (2.93,0.55) (2.94,0.56) (2.95,0.56) (2.95,0.56) (2.96,0.57) (2.96,0.57) (2.97,0.57) (2.97,0.58) (2.98,0.58) (2.98,0.58) (2.99,0.59) (2.99,0.59) (3.00,0.59) (3.01,0.60) (3.01,0.60) (3.02,0.60) (3.02,0.61) (3.03,0.61) (3.03,0.61) (3.04,0.62) (3.04,0.62) (3.05,0.62) (3.05,0.63) (3.06,0.63) (3.07,0.63) (3.07,0.64) (3.08,0.64) (3.08,0.64) (3.09,0.65) (3.09,0.65) (3.10,0.65) (3.10,0.66) (3.11,0.66) (3.11,0.66) (3.12,0.67) (3.13,0.67) (3.13,0.67) (3.14,0.68) (3.14,0.68) (3.15,0.68) (3.15,0.69) (3.16,0.69) (3.16,0.69) (3.17,0.70) (3.17,0.70) (3.18,0.70) (3.18,0.71) (3.19,0.71) (3.20,0.71) (3.20,0.72) (3.21,0.72) (3.21,0.72) (3.22,0.73) (3.22,0.73) (3.23,0.73) (3.23,0.74) (3.24,0.74) (3.24,0.75) (3.25,0.75) (3.26,0.75) (3.26,0.76) (3.27,0.76) (3.27,0.76) (3.28,0.77) (3.28,0.77) (3.29,0.77) (3.29,0.78) (3.30,0.78)};
+\draw[color=blue,thick] plot coordinates {(0.00,0.78) (0.01,0.79) (0.02,0.79) (0.02,0.79) (0.03,0.80) (0.03,0.80) (0.04,0.80) (0.04,0.81) (0.05,0.81) (0.05,0.81) (0.06,0.82) (0.06,0.82) (0.07,0.82) (0.08,0.83) (0.08,0.83) (0.09,0.83) (0.09,0.84) (0.10,0.84) (0.10,0.84) (0.11,0.85) (0.11,0.85) (0.12,0.85) (0.12,0.86) (0.13,0.86) (0.14,0.86) (0.14,0.87) (0.15,0.87) (0.15,0.87) (0.16,0.88) (0.16,0.88) (0.17,0.88) (0.17,0.89) (0.18,0.89) (0.18,0.89) (0.19,0.90) (0.20,0.90) (0.20,0.90) (0.21,0.91) (0.21,0.91) (0.22,0.91) (0.22,0.92) (0.23,0.92) (0.23,0.92) (0.24,0.93) (0.24,0.93) (0.25,0.93) (0.26,0.94) (0.26,0.94) (0.27,0.94) (0.27,0.95) (0.28,0.95) (0.28,0.95) (0.29,0.96) (0.29,0.96) (0.30,0.96) (0.30,0.97) (0.31,0.97) (0.32,0.97) (0.32,0.98) (0.33,0.98) (0.33,0.98) (0.34,0.99) (0.34,0.99) (0.35,0.99) (0.35,1.00) (0.36,1.00) (0.36,1.00) (0.37,1.01) (0.38,1.01) (0.38,1.01) (0.39,1.02) (0.39,1.02) (0.40,1.02) (0.40,1.03) (0.41,1.03) (0.41,1.03) (0.42,1.04) (0.42,1.04) (0.43,1.04) (0.43,1.05) (0.44,1.05) (0.45,1.05) (0.45,1.06) (0.46,1.06) (0.46,1.06) (0.47,1.07) (0.47,1.07) (0.48,1.07) (0.48,1.08) (0.49,1.08) (0.49,1.08) (0.50,1.09) (0.51,1.09) (0.51,1.10) (0.52,1.10) (0.52,1.10) (0.53,1.11) (0.53,1.11) (0.54,1.11) (0.54,1.12) (0.55,1.12) (0.55,1.12) (0.56,1.13) (0.57,1.13) (0.57,1.13) (0.58,1.14) (0.58,1.14) (0.59,1.14) (0.59,1.15) (0.60,1.15) (0.60,1.15) (0.61,1.16) (0.61,1.16) (0.62,1.16) (0.63,1.17) (0.63,1.17) (0.64,1.17) (0.64,1.18) (0.65,1.18) (0.65,1.18) (0.66,1.19) (0.66,1.19) (0.67,1.19) (0.67,1.20) (0.68,1.20) (0.69,1.20) (0.69,1.21) (0.70,1.21) (0.70,1.21) (0.71,1.22) (0.71,1.22) (0.72,1.22) (0.72,1.23) (0.73,1.23) (0.73,1.23) (0.74,1.24) (0.75,1.24) (0.75,1.24) (0.76,1.25) (0.76,1.25) (0.77,1.25) (0.77,1.26) (0.78,1.26) (0.78,1.26) (0.79,1.27) (0.79,1.27) (0.80,1.27) (0.81,1.28) (0.81,1.28) (0.82,1.28) (0.82,1.29) (0.83,1.29) (0.83,1.29) (0.84,1.30) (0.84,1.30) (0.85,1.30) (0.85,1.31) (0.86,1.31) (0.87,1.31) (0.87,1.32) (0.88,1.32) (0.88,1.32) (0.89,1.33) (0.89,1.33) (0.90,1.33) (0.90,1.34) (0.91,1.34) (0.91,1.34) (0.92,1.35) (0.92,1.35) (0.93,1.35) (0.94,1.36) (0.94,1.36) (0.95,1.36) (0.95,1.37) (0.96,1.37) (0.96,1.37) (0.97,1.38) (0.97,1.38) (0.98,1.38) (0.98,1.39) (0.99,1.39) (1.00,1.39) (1.00,1.40) (1.01,1.40) (1.01,1.40) (1.02,1.41) (1.02,1.41) (1.03,1.41) (1.03,1.42) (1.04,1.42) (1.04,1.42) (1.05,1.43) (1.06,1.43) (1.06,1.43) (1.07,1.44) (1.07,1.44) (1.08,1.45) (1.08,1.45) (1.09,1.45) (1.09,1.46) (1.10,1.46) (1.10,1.46) (1.11,1.47) (1.12,1.47) (1.12,1.47) (1.13,1.48) (1.13,1.48) (1.14,1.48) (1.14,1.49) (1.15,1.49) (1.15,1.49) (1.16,1.50) (1.16,1.50) (1.17,1.50) (1.18,1.51) (1.18,1.51) (1.19,1.51) (1.19,1.52) (1.20,1.52) (1.20,1.52) (1.21,1.53) (1.21,1.53) (1.22,1.53) (1.22,1.54) (1.23,1.54) (1.24,1.54) (1.24,1.55) (1.25,1.55) (1.25,1.55) (1.26,1.56) (1.26,1.56) (1.27,1.56) (1.27,1.57) (1.28,1.57) (1.28,1.57) (1.29,1.58) (1.30,1.58) (1.30,1.58) (1.31,1.59) (1.31,1.59) (1.32,1.59) (1.32,1.60) (1.33,1.60) (1.33,1.60) (1.34,1.61) (1.34,1.61) (1.35,1.61) (1.36,1.62) (1.36,1.62) (1.37,1.62) (1.37,1.63) (1.38,1.63) (1.38,1.63) (1.39,1.64) (1.39,1.64) (1.40,1.64) (1.40,1.65) (1.41,1.65) (1.42,1.65) (1.42,1.66) (1.43,1.66) (1.43,1.66) (1.44,1.67) (1.44,1.67) (1.45,1.67) (1.45,1.68) (1.46,1.68) (1.46,1.68) (1.47,1.69) (1.47,1.69) (1.48,1.69) (1.49,1.70) (1.49,1.70) (1.50,1.70) (1.50,1.71) (1.51,1.71) (1.51,1.71) (1.52,1.72) (1.52,1.72) (1.53,1.72) (1.53,1.73) (1.54,1.73) (1.55,1.73) (1.55,1.74) (1.56,1.74) (1.56,1.74) (1.57,1.75) (1.57,1.75) (1.58,1.75) (1.58,1.76) (1.59,1.76) (1.59,1.76) (1.60,1.77) (1.61,1.77) (1.61,1.77) (1.62,1.78) (1.62,1.78) (1.63,1.78) (1.63,1.79) (1.64,1.79) (1.64,1.80) (1.65,1.80) (1.65,1.80) (1.66,1.81) (1.67,1.81) (1.67,1.81) (1.68,1.82) (1.68,1.82) (1.69,1.82) (1.69,1.83) (1.70,1.83) (1.70,1.83) (1.71,1.84) (1.71,1.84) (1.72,1.84) (1.73,1.85) (1.73,1.85) (1.74,1.85) (1.74,1.86) (1.75,1.86) (1.75,1.86) (1.76,1.87) (1.76,1.87) (1.77,1.87) (1.77,1.88) (1.78,1.88) (1.79,1.88) (1.79,1.89) (1.80,1.89) (1.80,1.89) (1.81,1.90) (1.81,1.90) (1.82,1.90) (1.82,1.91) (1.83,1.91) (1.83,1.91) (1.84,1.92) (1.85,1.92) (1.85,1.92) (1.86,1.93) (1.86,1.93) (1.87,1.93) (1.87,1.94) (1.88,1.94) (1.88,1.94) (1.89,1.95) (1.89,1.95) (1.90,1.95) (1.91,1.96) (1.91,1.96) (1.92,1.96) (1.92,1.97) (1.93,1.97) (1.93,1.97) (1.94,1.98) (1.94,1.98) (1.95,1.98) (1.95,1.99) (1.96,1.99) (1.96,1.99) (1.97,2.00) (1.98,2.00) (1.98,2.00) (1.99,2.01) (1.99,2.01) (2.00,2.01) (2.00,2.02) (2.01,2.02) (2.01,2.02) (2.02,2.03) (2.02,2.03) (2.03,2.03) (2.04,2.04) (2.04,2.04) (2.05,2.04) (2.05,2.05) (2.06,2.05) (2.06,2.05) (2.07,2.06) (2.07,2.06) (2.08,2.06) (2.08,2.07) (2.09,2.07) (2.10,2.07) (2.10,2.08) (2.11,2.08) (2.11,2.08) (2.12,2.09) (2.12,2.09) (2.13,2.09) (2.13,2.10) (2.14,2.10) (2.14,2.10) (2.15,2.11) (2.16,2.11) (2.16,2.11) (2.17,2.12) (2.17,2.12) (2.18,2.12) (2.18,2.13) (2.19,2.13) (2.19,2.13) (2.20,2.14) (2.20,2.14) (2.21,2.14) (2.22,2.15) (2.22,2.15) (2.23,2.16) (2.23,2.16) (2.24,2.16) (2.24,2.17) (2.25,2.17) (2.25,2.17) (2.26,2.18) (2.26,2.18) (2.27,2.18) (2.28,2.19) (2.28,2.19) (2.29,2.19) (2.29,2.20) (2.30,2.20) (2.30,2.20) (2.31,2.21) (2.31,2.21) (2.32,2.21) (2.32,2.22) (2.33,2.22) (2.34,2.22) (2.34,2.23) (2.35,2.23) (2.35,2.23) (2.36,2.24) (2.36,2.24) (2.37,2.24) (2.37,2.25) (2.38,2.25) (2.38,2.25) (2.39,2.26) (2.40,2.26) (2.40,2.26) (2.41,2.27) (2.41,2.27) (2.42,2.27) (2.42,2.28) (2.43,2.28) (2.43,2.28) (2.44,2.29) (2.44,2.29) (2.45,2.29) (2.46,2.30) (2.46,2.30) (2.47,2.30) (2.47,2.31) (2.48,2.31) (2.48,2.31) (2.49,2.32) (2.49,2.32) (2.50,2.32) (2.50,2.33) (2.51,2.33) (2.51,2.33) (2.52,2.34) (2.53,2.34) (2.53,2.34) (2.54,2.35) (2.54,2.35) (2.55,2.35) (2.55,2.36) (2.56,2.36) (2.56,2.36) (2.57,2.37) (2.57,2.37) (2.58,2.37) (2.59,2.38) (2.59,2.38) (2.60,2.38) (2.60,2.39) (2.61,2.39) (2.61,2.39) (2.62,2.40) (2.62,2.40) (2.63,2.40) (2.63,2.41) (2.64,2.41) (2.65,2.41) (2.65,2.42) (2.66,2.42) (2.66,2.42) (2.67,2.43) (2.67,2.43) (2.68,2.43) (2.68,2.44) (2.69,2.44) (2.69,2.44) (2.70,2.45) (2.71,2.45) (2.71,2.45) (2.72,2.46) (2.72,2.46) (2.73,2.46) (2.73,2.47) (2.74,2.47) (2.74,2.47) (2.75,2.48) (2.75,2.48) (2.76,2.48) (2.77,2.49) (2.77,2.49) (2.78,2.49) (2.78,2.50) (2.79,2.50) (2.79,2.51) (2.80,2.51) (2.80,2.51) (2.81,2.52) (2.81,2.52) (2.82,2.52) (2.83,2.53) (2.83,2.53) (2.84,2.53) (2.84,2.54) (2.85,2.54) (2.85,2.54) (2.86,2.55) (2.86,2.55) (2.87,2.55) (2.87,2.56) (2.88,2.56) (2.89,2.56) (2.89,2.57) (2.90,2.57) (2.90,2.57) (2.91,2.58) (2.91,2.58) (2.92,2.58) (2.92,2.59) (2.93,2.59) (2.93,2.59) (2.94,2.60) (2.95,2.60) (2.95,2.60) (2.96,2.61) (2.96,2.61) (2.97,2.61) (2.97,2.62) (2.98,2.62) (2.98,2.62) (2.99,2.63) (2.99,2.63) (3.00,2.63) (3.00,2.64) (3.01,2.64) (3.02,2.64) (3.02,2.65) (3.03,2.65) (3.03,2.65) (3.04,2.66) (3.04,2.66) (3.05,2.66) (3.05,2.67) (3.06,2.67) (3.06,2.67) (3.07,2.68) (3.08,2.68) (3.08,2.68) (3.09,2.69) (3.09,2.69) (3.10,2.69) (3.10,2.70) (3.11,2.70) (3.11,2.70) (3.12,2.71) (3.12,2.71) (3.13,2.71) (3.14,2.72) (3.14,2.72) (3.15,2.72) (3.15,2.73) (3.16,2.73) (3.16,2.73) (3.17,2.74) (3.17,2.74) (3.18,2.74) (3.18,2.75) (3.19,2.75) (3.20,2.75) (3.20,2.76) (3.21,2.76) (3.21,2.76) (3.22,2.77) (3.22,2.77) (3.23,2.77) (3.23,2.78) (3.24,2.78) (3.24,2.78) (3.25,2.79) (3.26,2.79) (3.26,2.79) (3.27,2.80) (3.27,2.80) (3.28,2.80) (3.28,2.81) (3.29,2.81) (3.29,2.81) (3.30,2.82)};
+\draw[color=blue,thick] plot coordinates {(0.00,2.82) (0.01,2.82) (0.02,2.83) (0.02,2.83) (0.03,2.83) (0.03,2.84) (0.04,2.84) (0.04,2.84) (0.05,2.85) (0.05,2.85) (0.06,2.86) (0.06,2.86) (0.07,2.86) (0.08,2.87) (0.08,2.87) (0.09,2.87) (0.09,2.88) (0.10,2.88) (0.10,2.88) (0.11,2.89) (0.11,2.89) (0.12,2.89) (0.12,2.90) (0.13,2.90) (0.14,2.90) (0.14,2.91) (0.15,2.91) (0.15,2.91) (0.16,2.92) (0.16,2.92) (0.17,2.92) (0.17,2.93) (0.18,2.93) (0.18,2.93) (0.19,2.94) (0.20,2.94) (0.20,2.94) (0.21,2.95) (0.21,2.95) (0.22,2.95) (0.22,2.96) (0.23,2.96) (0.23,2.96) (0.24,2.97) (0.24,2.97) (0.25,2.97) (0.25,2.98) (0.26,2.98) (0.27,2.98) (0.27,2.99) (0.28,2.99) (0.28,2.99) (0.29,3.00) (0.29,3.00) (0.30,3.00) (0.30,3.01) (0.31,3.01) (0.31,3.01) (0.32,3.02) (0.33,3.02) (0.33,3.02) (0.34,3.03) (0.34,3.03) (0.35,3.03) (0.35,3.04) (0.36,3.04) (0.36,3.04) (0.37,3.05) (0.37,3.05) (0.38,3.05) (0.39,3.06) (0.39,3.06) (0.40,3.06) (0.40,3.07) (0.41,3.07) (0.41,3.07) (0.42,3.08) (0.42,3.08) (0.43,3.08) (0.43,3.09) (0.44,3.09) (0.45,3.09) (0.45,3.10) (0.46,3.10) (0.46,3.10) (0.47,3.11) (0.47,3.11) (0.48,3.11) (0.48,3.12) (0.49,3.12) (0.49,3.12) (0.50,3.13) (0.51,3.13) (0.51,3.13) (0.52,3.14) (0.52,3.14) (0.53,3.14) (0.53,3.15) (0.54,3.15) (0.54,3.15) (0.55,3.16) (0.55,3.16) (0.56,3.16) (0.57,3.17) (0.57,3.17) (0.58,3.17) (0.58,3.18) (0.59,3.18) (0.59,3.18) (0.60,3.19) (0.60,3.19) (0.61,3.19) (0.61,3.20) (0.62,3.20) (0.63,3.21) (0.63,3.21) (0.64,3.21) (0.64,3.22) (0.65,3.22) (0.65,3.22) (0.66,3.23) (0.66,3.23) (0.67,3.23) (0.67,3.24) (0.68,3.24) (0.69,3.24) (0.69,3.25) (0.70,3.25) (0.70,3.25) (0.71,3.26) (0.71,3.26) (0.72,3.26) (0.72,3.27) (0.73,3.27) (0.73,3.27) (0.74,3.28) (0.74,3.28) (0.75,3.28) (0.76,3.29) (0.76,3.29) (0.77,3.29) (0.77,3.30) (0.78,3.30)};
+\draw[color=blue,thick] plot coordinates {(0.78,0.00) (0.79,0.01) (0.79,0.01) (0.80,0.01) (0.80,0.02) (0.81,0.02) (0.82,0.02) (0.82,0.03) (0.83,0.03) (0.83,0.03) (0.84,0.04) (0.84,0.04) (0.85,0.04) (0.85,0.05) (0.86,0.05) (0.86,0.05) (0.87,0.06) (0.88,0.06) (0.88,0.06) (0.89,0.07) (0.89,0.07) (0.90,0.07) (0.90,0.08) (0.91,0.08) (0.91,0.08) (0.92,0.09) (0.92,0.09) (0.93,0.09) (0.94,0.10) (0.94,0.10) (0.95,0.10) (0.95,0.11) (0.96,0.11) (0.96,0.11) (0.97,0.12) (0.97,0.12) (0.98,0.12) (0.98,0.13) (0.99,0.13) (1.00,0.13) (1.00,0.14) (1.01,0.14) (1.01,0.14) (1.02,0.15) (1.02,0.15) (1.03,0.15) (1.03,0.16) (1.04,0.16) (1.04,0.16) (1.05,0.17) (1.06,0.17) (1.06,0.17) (1.07,0.18) (1.07,0.18) (1.08,0.18) (1.08,0.19) (1.09,0.19) (1.09,0.19) (1.10,0.20) (1.10,0.20) (1.11,0.20) (1.12,0.21) (1.12,0.21) (1.13,0.21) (1.13,0.22) (1.14,0.22) (1.14,0.22) (1.15,0.23) (1.15,0.23) (1.16,0.23) (1.16,0.24) (1.17,0.24) (1.18,0.24) (1.18,0.25) (1.19,0.25) (1.19,0.26) (1.20,0.26) (1.20,0.26) (1.21,0.27) (1.21,0.27) (1.22,0.27) (1.22,0.28) (1.23,0.28) (1.24,0.28) (1.24,0.29) (1.25,0.29) (1.25,0.29) (1.26,0.30) (1.26,0.30) (1.27,0.30) (1.27,0.31) (1.28,0.31) (1.28,0.31) (1.29,0.32) (1.29,0.32) (1.30,0.32) (1.31,0.33) (1.31,0.33) (1.32,0.33) (1.32,0.34) (1.33,0.34) (1.33,0.34) (1.34,0.35) (1.34,0.35) (1.35,0.35) (1.35,0.36) (1.36,0.36) (1.37,0.36) (1.37,0.37) (1.38,0.37) (1.38,0.37) (1.39,0.38) (1.39,0.38) (1.40,0.38) (1.40,0.39) (1.41,0.39) (1.41,0.39) (1.42,0.40) (1.43,0.40) (1.43,0.40) (1.44,0.41) (1.44,0.41) (1.45,0.41) (1.45,0.42) (1.46,0.42) (1.46,0.42) (1.47,0.43) (1.47,0.43) (1.48,0.43) (1.49,0.44) (1.49,0.44) (1.50,0.44) (1.50,0.45) (1.51,0.45) (1.51,0.45) (1.52,0.46) (1.52,0.46) (1.53,0.46) (1.53,0.47) (1.54,0.47) (1.55,0.47) (1.55,0.48) (1.56,0.48) (1.56,0.48) (1.57,0.49) (1.57,0.49) (1.58,0.49) (1.58,0.50) (1.59,0.50) (1.59,0.50) (1.60,0.51) (1.61,0.51) (1.61,0.51) (1.62,0.52) (1.62,0.52) (1.63,0.52) (1.63,0.53) (1.64,0.53) (1.64,0.53) (1.65,0.54) (1.65,0.54) (1.66,0.54) (1.67,0.55) (1.67,0.55) (1.68,0.55) (1.68,0.56) (1.69,0.56) (1.69,0.56) (1.70,0.57) (1.70,0.57) (1.71,0.57) (1.71,0.58) (1.72,0.58) (1.73,0.58) (1.73,0.59) (1.74,0.59) (1.74,0.59) (1.75,0.60) (1.75,0.60) (1.76,0.61) (1.76,0.61) (1.77,0.61) (1.77,0.62) (1.78,0.62) (1.78,0.62) (1.79,0.63) (1.80,0.63) (1.80,0.63) (1.81,0.64) (1.81,0.64) (1.82,0.64) (1.82,0.65) (1.83,0.65) (1.83,0.65) (1.84,0.66) (1.84,0.66) (1.85,0.66) (1.86,0.67) (1.86,0.67) (1.87,0.67) (1.87,0.68) (1.88,0.68) (1.88,0.68) (1.89,0.69) (1.89,0.69) (1.90,0.69) (1.90,0.70) (1.91,0.70) (1.92,0.70) (1.92,0.71) (1.93,0.71) (1.93,0.71) (1.94,0.72) (1.94,0.72) (1.95,0.72) (1.95,0.73) (1.96,0.73) (1.96,0.73) (1.97,0.74) (1.98,0.74) (1.98,0.74) (1.99,0.75) (1.99,0.75) (2.00,0.75) (2.00,0.76) (2.01,0.76) (2.01,0.76) (2.02,0.77) (2.02,0.77) (2.03,0.77) (2.04,0.78) (2.04,0.78) (2.05,0.78) (2.05,0.79) (2.06,0.79) (2.06,0.79) (2.07,0.80) (2.07,0.80) (2.08,0.80) (2.08,0.81) (2.09,0.81) (2.10,0.81) (2.10,0.82) (2.11,0.82) (2.11,0.82) (2.12,0.83) (2.12,0.83) (2.13,0.83) (2.13,0.84) (2.14,0.84) (2.14,0.84) (2.15,0.85) (2.16,0.85) (2.16,0.85) (2.17,0.86) (2.17,0.86) (2.18,0.86) (2.18,0.87) (2.19,0.87) (2.19,0.87) (2.20,0.88) (2.20,0.88) (2.21,0.88) (2.22,0.89) (2.22,0.89) (2.23,0.89) (2.23,0.90) (2.24,0.90) (2.24,0.90) (2.25,0.91) (2.25,0.91) (2.26,0.91) (2.26,0.92) (2.27,0.92) (2.28,0.92) (2.28,0.93) (2.29,0.93) (2.29,0.93) (2.30,0.94) (2.30,0.94) (2.31,0.94) (2.31,0.95) (2.32,0.95) (2.32,0.96) (2.33,0.96) (2.33,0.96) (2.34,0.97) (2.35,0.97) (2.35,0.97) (2.36,0.98) (2.36,0.98) (2.37,0.98) (2.37,0.99) (2.38,0.99) (2.38,0.99) (2.39,1.00) (2.39,1.00) (2.40,1.00) (2.41,1.01) (2.41,1.01) (2.42,1.01) (2.42,1.02) (2.43,1.02) (2.43,1.02) (2.44,1.03) (2.44,1.03) (2.45,1.03) (2.45,1.04) (2.46,1.04) (2.47,1.04) (2.47,1.05) (2.48,1.05) (2.48,1.05) (2.49,1.06) (2.49,1.06) (2.50,1.06) (2.50,1.07) (2.51,1.07) (2.51,1.07) (2.52,1.08) (2.53,1.08) (2.53,1.08) (2.54,1.09) (2.54,1.09) (2.55,1.09) (2.55,1.10) (2.56,1.10) (2.56,1.10) (2.57,1.11) (2.57,1.11) (2.58,1.11) (2.59,1.12) (2.59,1.12) (2.60,1.12) (2.60,1.13) (2.61,1.13) (2.61,1.13) (2.62,1.14) (2.62,1.14) (2.63,1.14) (2.63,1.15) (2.64,1.15) (2.65,1.15) (2.65,1.16) (2.66,1.16) (2.66,1.16) (2.67,1.17) (2.67,1.17) (2.68,1.17) (2.68,1.18) (2.69,1.18) (2.69,1.18) (2.70,1.19) (2.71,1.19) (2.71,1.19) (2.72,1.20) (2.72,1.20) (2.73,1.20) (2.73,1.21) (2.74,1.21) (2.74,1.21) (2.75,1.22) (2.75,1.22) (2.76,1.22) (2.77,1.23) (2.77,1.23) (2.78,1.23) (2.78,1.24) (2.79,1.24) (2.79,1.24) (2.80,1.25) (2.80,1.25) (2.81,1.25) (2.81,1.26) (2.82,1.26) (2.82,1.26) (2.83,1.27) (2.84,1.27) (2.84,1.27) (2.85,1.28) (2.85,1.28) (2.86,1.28) (2.86,1.29) (2.87,1.29) (2.87,1.29) (2.88,1.30) (2.88,1.30) (2.89,1.31) (2.90,1.31) (2.90,1.31) (2.91,1.32) (2.91,1.32) (2.92,1.32) (2.92,1.33) (2.93,1.33) (2.93,1.33) (2.94,1.34) (2.94,1.34) (2.95,1.34) (2.96,1.35) (2.96,1.35) (2.97,1.35) (2.97,1.36) (2.98,1.36) (2.98,1.36) (2.99,1.37) (2.99,1.37) (3.00,1.37) (3.00,1.38) (3.01,1.38) (3.02,1.38) (3.02,1.39) (3.03,1.39) (3.03,1.39) (3.04,1.40) (3.04,1.40) (3.05,1.40) (3.05,1.41) (3.06,1.41) (3.06,1.41) (3.07,1.42) (3.08,1.42) (3.08,1.42) (3.09,1.43) (3.09,1.43) (3.10,1.43) (3.10,1.44) (3.11,1.44) (3.11,1.44) (3.12,1.45) (3.12,1.45) (3.13,1.45) (3.14,1.46) (3.14,1.46) (3.15,1.46) (3.15,1.47) (3.16,1.47) (3.16,1.47) (3.17,1.48) (3.17,1.48) (3.18,1.48) (3.18,1.49) (3.19,1.49) (3.20,1.49) (3.20,1.50) (3.21,1.50) (3.21,1.50) (3.22,1.51) (3.22,1.51) (3.23,1.51) (3.23,1.52) (3.24,1.52) (3.24,1.52) (3.25,1.53) (3.26,1.53) (3.26,1.53) (3.27,1.54) (3.27,1.54) (3.28,1.54) (3.28,1.55) (3.29,1.55) (3.29,1.55) (3.30,1.56)};
+\draw[color=blue,thick] plot coordinates {(0.00,1.56) (0.01,1.56) (0.02,1.57) (0.02,1.57) (0.03,1.57) (0.03,1.58) (0.04,1.58) (0.04,1.58) (0.05,1.59) (0.05,1.59) (0.06,1.59) (0.06,1.60) (0.07,1.60) (0.07,1.60) (0.08,1.61) (0.09,1.61) (0.09,1.61) (0.10,1.62) (0.10,1.62) (0.11,1.62) (0.11,1.63) (0.12,1.63) (0.12,1.63) (0.13,1.64) (0.13,1.64) (0.14,1.64) (0.15,1.65) (0.15,1.65) (0.16,1.65) (0.16,1.66) (0.17,1.66) (0.17,1.67) (0.18,1.67) (0.18,1.67) (0.19,1.68) (0.19,1.68) (0.20,1.68) (0.21,1.69) (0.21,1.69) (0.22,1.69) (0.22,1.70) (0.23,1.70) (0.23,1.70) (0.24,1.71) (0.24,1.71) (0.25,1.71) (0.25,1.72) (0.26,1.72) (0.27,1.72) (0.27,1.73) (0.28,1.73) (0.28,1.73) (0.29,1.74) (0.29,1.74) (0.30,1.74) (0.30,1.75) (0.31,1.75) (0.31,1.75) (0.32,1.76) (0.33,1.76) (0.33,1.76) (0.34,1.77) (0.34,1.77) (0.35,1.77) (0.35,1.78) (0.36,1.78) (0.36,1.78) (0.37,1.79) (0.37,1.79) (0.38,1.79) (0.39,1.80) (0.39,1.80) (0.40,1.80) (0.40,1.81) (0.41,1.81) (0.41,1.81) (0.42,1.82) (0.42,1.82) (0.43,1.82) (0.43,1.83) (0.44,1.83) (0.45,1.83) (0.45,1.84) (0.46,1.84) (0.46,1.84) (0.47,1.85) (0.47,1.85) (0.48,1.85) (0.48,1.86) (0.49,1.86) (0.49,1.86) (0.50,1.87) (0.51,1.87) (0.51,1.87) (0.52,1.88) (0.52,1.88) (0.53,1.88) (0.53,1.89) (0.54,1.89) (0.54,1.89) (0.55,1.90) (0.55,1.90) (0.56,1.90) (0.56,1.91) (0.57,1.91) (0.58,1.91) (0.58,1.92) (0.59,1.92) (0.59,1.92) (0.60,1.93) (0.60,1.93) (0.61,1.93) (0.61,1.94) (0.62,1.94) (0.62,1.94) (0.63,1.95) (0.64,1.95) (0.64,1.95) (0.65,1.96) (0.65,1.96) (0.66,1.96) (0.66,1.97) (0.67,1.97) (0.67,1.97) (0.68,1.98) (0.68,1.98) (0.69,1.98) (0.70,1.99) (0.70,1.99) (0.71,1.99) (0.71,2.00) (0.72,2.00) (0.72,2.00) (0.73,2.01) (0.73,2.01) (0.74,2.02) (0.74,2.02) (0.75,2.02) (0.76,2.03) (0.76,2.03) (0.77,2.03) (0.77,2.04) (0.78,2.04) (0.78,2.04) (0.79,2.05) (0.79,2.05) (0.80,2.05) (0.80,2.06) (0.81,2.06) (0.82,2.06) (0.82,2.07) (0.83,2.07) (0.83,2.07) (0.84,2.08) (0.84,2.08) (0.85,2.08) (0.85,2.09) (0.86,2.09) (0.86,2.09) (0.87,2.10) (0.88,2.10) (0.88,2.10) (0.89,2.11) (0.89,2.11) (0.90,2.11) (0.90,2.12) (0.91,2.12) (0.91,2.12) (0.92,2.13) (0.92,2.13) (0.93,2.13) (0.94,2.14) (0.94,2.14) (0.95,2.14) (0.95,2.15) (0.96,2.15) (0.96,2.15) (0.97,2.16) (0.97,2.16) (0.98,2.16) (0.98,2.17) (0.99,2.17) (1.00,2.17) (1.00,2.18) (1.01,2.18) (1.01,2.18) (1.02,2.19) (1.02,2.19) (1.03,2.19) (1.03,2.20) (1.04,2.20) (1.04,2.20) (1.05,2.21) (1.06,2.21) (1.06,2.21) (1.07,2.22) (1.07,2.22) (1.08,2.22) (1.08,2.23) (1.09,2.23) (1.09,2.23) (1.10,2.24) (1.10,2.24) (1.11,2.24) (1.11,2.25) (1.12,2.25) (1.13,2.25) (1.13,2.26) (1.14,2.26) (1.14,2.26) (1.15,2.27) (1.15,2.27) (1.16,2.27) (1.16,2.28) (1.17,2.28) (1.17,2.28) (1.18,2.29) (1.19,2.29) (1.19,2.29) (1.20,2.30) (1.20,2.30) (1.21,2.30) (1.21,2.31) (1.22,2.31) (1.22,2.31) (1.23,2.32) (1.23,2.32) (1.24,2.32) (1.25,2.33) (1.25,2.33) (1.26,2.33) (1.26,2.34) (1.27,2.34) (1.27,2.34) (1.28,2.35) (1.28,2.35) (1.29,2.35) (1.29,2.36) (1.30,2.36) (1.31,2.37) (1.31,2.37) (1.32,2.37) (1.32,2.38) (1.33,2.38) (1.33,2.38) (1.34,2.39) (1.34,2.39) (1.35,2.39) (1.35,2.40) (1.36,2.40) (1.37,2.40) (1.37,2.41) (1.38,2.41) (1.38,2.41) (1.39,2.42) (1.39,2.42) (1.40,2.42) (1.40,2.43) (1.41,2.43) (1.41,2.43) (1.42,2.44) (1.43,2.44) (1.43,2.44) (1.44,2.45) (1.44,2.45) (1.45,2.45) (1.45,2.46) (1.46,2.46) (1.46,2.46) (1.47,2.47) (1.47,2.47) (1.48,2.47) (1.49,2.48) (1.49,2.48) (1.50,2.48) (1.50,2.49) (1.51,2.49) (1.51,2.49) (1.52,2.50) (1.52,2.50) (1.53,2.50) (1.53,2.51) (1.54,2.51) (1.55,2.51) (1.55,2.52) (1.56,2.52) (1.56,2.52) (1.57,2.53) (1.57,2.53) (1.58,2.53) (1.58,2.54) (1.59,2.54) (1.59,2.54) (1.60,2.55) (1.60,2.55) (1.61,2.55) (1.62,2.56) (1.62,2.56) (1.63,2.56) (1.63,2.57) (1.64,2.57) (1.64,2.57) (1.65,2.58) (1.65,2.58) (1.66,2.58) (1.66,2.59) (1.67,2.59) (1.68,2.59) (1.68,2.60) (1.69,2.60) (1.69,2.60) (1.70,2.61) (1.70,2.61) (1.71,2.61) (1.71,2.62) (1.72,2.62) (1.72,2.62) (1.73,2.63) (1.74,2.63) (1.74,2.63) (1.75,2.64) (1.75,2.64) (1.76,2.64) (1.76,2.65) (1.77,2.65) (1.77,2.65) (1.78,2.66) (1.78,2.66) (1.79,2.66) (1.80,2.67) (1.80,2.67) (1.81,2.67) (1.81,2.68) (1.82,2.68) (1.82,2.68) (1.83,2.69) (1.83,2.69) (1.84,2.69) (1.84,2.70) (1.85,2.70) (1.86,2.70) (1.86,2.71) (1.87,2.71) (1.87,2.72) (1.88,2.72) (1.88,2.72) (1.89,2.73) (1.89,2.73) (1.90,2.73) (1.90,2.74) (1.91,2.74) (1.92,2.74) (1.92,2.75) (1.93,2.75) (1.93,2.75) (1.94,2.76) (1.94,2.76) (1.95,2.76) (1.95,2.77) (1.96,2.77) (1.96,2.77) (1.97,2.78) (1.98,2.78) (1.98,2.78) (1.99,2.79) (1.99,2.79) (2.00,2.79) (2.00,2.80) (2.01,2.80) (2.01,2.80) (2.02,2.81) (2.02,2.81) (2.03,2.81) (2.04,2.82) (2.04,2.82) (2.05,2.82) (2.05,2.83) (2.06,2.83) (2.06,2.83) (2.07,2.84) (2.07,2.84) (2.08,2.84) (2.08,2.85) (2.09,2.85) (2.10,2.85) (2.10,2.86) (2.11,2.86) (2.11,2.86) (2.12,2.87) (2.12,2.87) (2.13,2.87) (2.13,2.88) (2.14,2.88) (2.14,2.88) (2.15,2.89) (2.15,2.89) (2.16,2.89) (2.17,2.90) (2.17,2.90) (2.18,2.90) (2.18,2.91) (2.19,2.91) (2.19,2.91) (2.20,2.92) (2.20,2.92) (2.21,2.92) (2.21,2.93) (2.22,2.93) (2.23,2.93) (2.23,2.94) (2.24,2.94) (2.24,2.94) (2.25,2.95) (2.25,2.95) (2.26,2.95) (2.26,2.96) (2.27,2.96) (2.27,2.96) (2.28,2.97) (2.29,2.97) (2.29,2.97) (2.30,2.98) (2.30,2.98) (2.31,2.98) (2.31,2.99) (2.32,2.99) (2.32,2.99) (2.33,3.00) (2.33,3.00) (2.34,3.00) (2.35,3.01) (2.35,3.01) (2.36,3.01) (2.36,3.02) (2.37,3.02) (2.37,3.02) (2.38,3.03) (2.38,3.03) (2.39,3.03) (2.39,3.04) (2.40,3.04) (2.41,3.04) (2.41,3.05) (2.42,3.05) (2.42,3.05) (2.43,3.06) (2.43,3.06) (2.44,3.07) (2.44,3.07) (2.45,3.07) (2.45,3.08) (2.46,3.08) (2.47,3.08) (2.47,3.09) (2.48,3.09) (2.48,3.09) (2.49,3.10) (2.49,3.10) (2.50,3.10) (2.50,3.11) (2.51,3.11) (2.51,3.11) (2.52,3.12) (2.53,3.12) (2.53,3.12) (2.54,3.13) (2.54,3.13) (2.55,3.13) (2.55,3.14) (2.56,3.14) (2.56,3.14) (2.57,3.15) (2.57,3.15) (2.58,3.15) (2.59,3.16) (2.59,3.16) (2.60,3.16) (2.60,3.17) (2.61,3.17) (2.61,3.17) (2.62,3.18) (2.62,3.18) (2.63,3.18) (2.63,3.19) (2.64,3.19) (2.64,3.19) (2.65,3.20) (2.66,3.20) (2.66,3.20) (2.67,3.21) (2.67,3.21) (2.68,3.21) (2.68,3.22) (2.69,3.22) (2.69,3.22) (2.70,3.23) (2.70,3.23) (2.71,3.23) (2.72,3.24) (2.72,3.24) (2.73,3.24) (2.73,3.25) (2.74,3.25) (2.74,3.25) (2.75,3.26) (2.75,3.26) (2.76,3.26) (2.76,3.27) (2.77,3.27) (2.78,3.27) (2.78,3.28) (2.79,3.28) (2.79,3.28) (2.80,3.29) (2.80,3.29) (2.81,3.29) (2.81,3.30)};
+\draw[color=blue,thick] plot coordinates {(2.82,0.00) (2.82,0.00) (2.83,0.01) (2.84,0.01) (2.84,0.01) (2.85,0.02) (2.85,0.02) (2.86,0.02) (2.86,0.03) (2.87,0.03) (2.87,0.03) (2.88,0.04) (2.88,0.04) (2.89,0.04) (2.90,0.05) (2.90,0.05) (2.91,0.05) (2.91,0.06) (2.92,0.06) (2.92,0.06) (2.93,0.07) (2.93,0.07) (2.94,0.07) (2.94,0.08) (2.95,0.08) (2.96,0.08) (2.96,0.09) (2.97,0.09) (2.97,0.09) (2.98,0.10) (2.98,0.10) (2.99,0.10) (2.99,0.11) (3.00,0.11) (3.00,0.12) (3.01,0.12) (3.02,0.12) (3.02,0.13) (3.03,0.13) (3.03,0.13) (3.04,0.14) (3.04,0.14) (3.05,0.14) (3.05,0.15) (3.06,0.15) (3.06,0.15) (3.07,0.16) (3.08,0.16) (3.08,0.16) (3.09,0.17) (3.09,0.17) (3.10,0.17) (3.10,0.18) (3.11,0.18) (3.11,0.18) (3.12,0.19) (3.12,0.19) (3.13,0.19) (3.13,0.20) (3.14,0.20) (3.15,0.20) (3.15,0.21) (3.16,0.21) (3.16,0.21) (3.17,0.22) (3.17,0.22) (3.18,0.22) (3.18,0.23) (3.19,0.23) (3.19,0.23) (3.20,0.24) (3.21,0.24) (3.21,0.24) (3.22,0.25) (3.22,0.25) (3.23,0.25) (3.23,0.26) (3.24,0.26) (3.24,0.26) (3.25,0.27) (3.25,0.27) (3.26,0.27) (3.27,0.28) (3.27,0.28) (3.28,0.28) (3.28,0.29) (3.29,0.29) (3.29,0.29) (3.30,0.30)};
+\draw[color=blue,thick] plot coordinates {(0.00,0.30) (0.01,0.30) (0.01,0.31) (0.02,0.31) (0.03,0.31) (0.03,0.32) (0.04,0.32) (0.04,0.32) (0.05,0.33) (0.05,0.33) (0.06,0.33) (0.06,0.34) (0.07,0.34) (0.07,0.34) (0.08,0.35) (0.09,0.35) (0.09,0.35) (0.10,0.36) (0.10,0.36) (0.11,0.36) (0.11,0.37) (0.12,0.37) (0.12,0.37) (0.13,0.38) (0.13,0.38) (0.14,0.38) (0.15,0.39) (0.15,0.39) (0.16,0.39) (0.16,0.40) (0.17,0.40) (0.17,0.40) (0.18,0.41) (0.18,0.41) (0.19,0.41) (0.19,0.42) (0.20,0.42) (0.21,0.42) (0.21,0.43) (0.22,0.43) (0.22,0.43) (0.23,0.44) (0.23,0.44) (0.24,0.44) (0.24,0.45) (0.25,0.45) (0.25,0.45) (0.26,0.46) (0.27,0.46) (0.27,0.47) (0.28,0.47) (0.28,0.47) (0.29,0.48) (0.29,0.48) (0.30,0.48) (0.30,0.49) (0.31,0.49) (0.31,0.49) (0.32,0.50) (0.33,0.50) (0.33,0.50) (0.34,0.51) (0.34,0.51) (0.35,0.51) (0.35,0.52) (0.36,0.52) (0.36,0.52) (0.37,0.53) (0.37,0.53) (0.38,0.53) (0.38,0.54) (0.39,0.54) (0.40,0.54) (0.40,0.55) (0.41,0.55) (0.41,0.55) (0.42,0.56) (0.42,0.56) (0.43,0.56) (0.43,0.57) (0.44,0.57) (0.44,0.57) (0.45,0.58) (0.46,0.58) (0.46,0.58) (0.47,0.59) (0.47,0.59) (0.48,0.59) (0.48,0.60) (0.49,0.60) (0.49,0.60) (0.50,0.61) (0.50,0.61) (0.51,0.61) (0.52,0.62) (0.52,0.62) (0.53,0.62) (0.53,0.63) (0.54,0.63) (0.54,0.63) (0.55,0.64) (0.55,0.64) (0.56,0.64) (0.56,0.65) (0.57,0.65) (0.58,0.65) (0.58,0.66) (0.59,0.66) (0.59,0.66) (0.60,0.67) (0.60,0.67) (0.61,0.67) (0.61,0.68) (0.62,0.68) (0.62,0.68) (0.63,0.69) (0.64,0.69) (0.64,0.69) (0.65,0.70) (0.65,0.70) (0.66,0.70) (0.66,0.71) (0.67,0.71) (0.67,0.71) (0.68,0.72) (0.68,0.72) (0.69,0.72) (0.70,0.73) (0.70,0.73) (0.71,0.73) (0.71,0.74) (0.72,0.74) (0.72,0.74) (0.73,0.75) (0.73,0.75) (0.74,0.75) (0.74,0.76) (0.75,0.76) (0.76,0.76) (0.76,0.77) (0.77,0.77) (0.77,0.77) (0.78,0.78) (0.78,0.78) (0.79,0.78) (0.79,0.79) (0.80,0.79) (0.80,0.79) (0.81,0.80) (0.82,0.80) (0.82,0.80) (0.83,0.81) (0.83,0.81) (0.84,0.82) (0.84,0.82) (0.85,0.82) (0.85,0.83) (0.86,0.83) (0.86,0.83) (0.87,0.84) (0.87,0.84) (0.88,0.84) (0.89,0.85) (0.89,0.85) (0.90,0.85) (0.90,0.86) (0.91,0.86) (0.91,0.86) (0.92,0.87) (0.92,0.87) (0.93,0.87) (0.93,0.88) (0.94,0.88) (0.95,0.88) (0.95,0.89) (0.96,0.89) (0.96,0.89) (0.97,0.90) (0.97,0.90) (0.98,0.90) (0.98,0.91) (0.99,0.91) (0.99,0.91) (1.00,0.92) (1.01,0.92) (1.01,0.92) (1.02,0.93) (1.02,0.93) (1.03,0.93) (1.03,0.94) (1.04,0.94) (1.04,0.94) (1.05,0.95) (1.05,0.95) (1.06,0.95) (1.07,0.96) (1.07,0.96) (1.08,0.96) (1.08,0.97) (1.09,0.97) (1.09,0.97) (1.10,0.98) (1.10,0.98) (1.11,0.98) (1.11,0.99) (1.12,0.99) (1.13,0.99) (1.13,1.00) (1.14,1.00) (1.14,1.00) (1.15,1.01) (1.15,1.01) (1.16,1.01) (1.16,1.02) (1.17,1.02) (1.17,1.02) (1.18,1.03) (1.19,1.03) (1.19,1.03) (1.20,1.04) (1.20,1.04) (1.21,1.04) (1.21,1.05) (1.22,1.05) (1.22,1.05) (1.23,1.06) (1.23,1.06) (1.24,1.06) (1.25,1.07) (1.25,1.07) (1.26,1.07) (1.26,1.08) (1.27,1.08) (1.27,1.08) (1.28,1.09) (1.28,1.09) (1.29,1.09) (1.29,1.10) (1.30,1.10) (1.31,1.10) (1.31,1.11) (1.32,1.11) (1.32,1.11) (1.33,1.12) (1.33,1.12) (1.34,1.12) (1.34,1.13) (1.35,1.13) (1.35,1.13) (1.36,1.14) (1.37,1.14) (1.37,1.14) (1.38,1.15) (1.38,1.15) (1.39,1.15) (1.39,1.16) (1.40,1.16) (1.40,1.16) (1.41,1.17) (1.41,1.17) (1.42,1.18) (1.42,1.18) (1.43,1.18) (1.44,1.19) (1.44,1.19) (1.45,1.19) (1.45,1.20) (1.46,1.20) (1.46,1.20) (1.47,1.21) (1.47,1.21) (1.48,1.21) (1.48,1.22) (1.49,1.22) (1.50,1.22) (1.50,1.23) (1.51,1.23) (1.51,1.23) (1.52,1.24) (1.52,1.24) (1.53,1.24) (1.53,1.25) (1.54,1.25) (1.54,1.25) (1.55,1.26) (1.56,1.26) (1.56,1.26) (1.57,1.27) (1.57,1.27) (1.58,1.27) (1.58,1.28) (1.59,1.28) (1.59,1.28) (1.60,1.29) (1.60,1.29) (1.61,1.29) (1.62,1.30) (1.62,1.30) (1.63,1.30) (1.63,1.31) (1.64,1.31) (1.64,1.31) (1.65,1.32) (1.65,1.32) (1.66,1.32) (1.66,1.33) (1.67,1.33) (1.68,1.33) (1.68,1.34) (1.69,1.34) (1.69,1.34) (1.70,1.35) (1.70,1.35) (1.71,1.35) (1.71,1.36) (1.72,1.36) (1.72,1.36) (1.73,1.37) (1.74,1.37) (1.74,1.37) (1.75,1.38) (1.75,1.38) (1.76,1.38) (1.76,1.39) (1.77,1.39) (1.77,1.39) (1.78,1.40) (1.78,1.40) (1.79,1.40) (1.80,1.41) (1.80,1.41) (1.81,1.41) (1.81,1.42) (1.82,1.42) (1.82,1.42) (1.83,1.43) (1.83,1.43) (1.84,1.43) (1.84,1.44) (1.85,1.44) (1.86,1.44) (1.86,1.45) (1.87,1.45) (1.87,1.45) (1.88,1.46) (1.88,1.46) (1.89,1.46) (1.89,1.47) (1.90,1.47) (1.90,1.47) (1.91,1.48) (1.91,1.48) (1.92,1.48) (1.93,1.49) (1.93,1.49) (1.94,1.49) (1.94,1.50) (1.95,1.50) (1.95,1.50) (1.96,1.51) (1.96,1.51) (1.97,1.51) (1.97,1.52) (1.98,1.52) (1.99,1.53) (1.99,1.53) (2.00,1.53) (2.00,1.54) (2.01,1.54) (2.01,1.54) (2.02,1.55) (2.02,1.55) (2.03,1.55) (2.03,1.56) (2.04,1.56) (2.05,1.56) (2.05,1.57) (2.06,1.57) (2.06,1.57) (2.07,1.58) (2.07,1.58) (2.08,1.58) (2.08,1.59) (2.09,1.59) (2.09,1.59) (2.10,1.60) (2.11,1.60) (2.11,1.60) (2.12,1.61) (2.12,1.61) (2.13,1.61) (2.13,1.62) (2.14,1.62) (2.14,1.62) (2.15,1.63) (2.15,1.63) (2.16,1.63) (2.17,1.64) (2.17,1.64) (2.18,1.64) (2.18,1.65) (2.19,1.65) (2.19,1.65) (2.20,1.66) (2.20,1.66) (2.21,1.66) (2.21,1.67) (2.22,1.67) (2.23,1.67) (2.23,1.68) (2.24,1.68) (2.24,1.68) (2.25,1.69) (2.25,1.69) (2.26,1.69) (2.26,1.70) (2.27,1.70) (2.27,1.70) (2.28,1.71) (2.29,1.71) (2.29,1.71) (2.30,1.72) (2.30,1.72) (2.31,1.72) (2.31,1.73) (2.32,1.73) (2.32,1.73) (2.33,1.74) (2.33,1.74) (2.34,1.74) (2.35,1.75) (2.35,1.75) (2.36,1.75) (2.36,1.76) (2.37,1.76) (2.37,1.76) (2.38,1.77) (2.38,1.77) (2.39,1.77) (2.39,1.78) (2.40,1.78) (2.41,1.78) (2.41,1.79) (2.42,1.79) (2.42,1.79) (2.43,1.80) (2.43,1.80) (2.44,1.80) (2.44,1.81) (2.45,1.81) (2.45,1.81) (2.46,1.82) (2.46,1.82) (2.47,1.82) (2.48,1.83) (2.48,1.83) (2.49,1.83) (2.49,1.84) (2.50,1.84) (2.50,1.84) (2.51,1.85) (2.51,1.85) (2.52,1.85) (2.52,1.86) (2.53,1.86) (2.54,1.86) (2.54,1.87) (2.55,1.87) (2.55,1.88) (2.56,1.88) (2.56,1.88) (2.57,1.89) (2.57,1.89) (2.58,1.89) (2.58,1.90) (2.59,1.90) (2.60,1.90) (2.60,1.91) (2.61,1.91) (2.61,1.91) (2.62,1.92) (2.62,1.92) (2.63,1.92) (2.63,1.93) (2.64,1.93) (2.64,1.93) (2.65,1.94) (2.66,1.94) (2.66,1.94) (2.67,1.95) (2.67,1.95) (2.68,1.95) (2.68,1.96) (2.69,1.96) (2.69,1.96) (2.70,1.97) (2.70,1.97) (2.71,1.97) (2.72,1.98) (2.72,1.98) (2.73,1.98) (2.73,1.99) (2.74,1.99) (2.74,1.99) (2.75,2.00) (2.75,2.00) (2.76,2.00) (2.76,2.01) (2.77,2.01) (2.78,2.01) (2.78,2.02) (2.79,2.02) (2.79,2.02) (2.80,2.03) (2.80,2.03) (2.81,2.03) (2.81,2.04) (2.82,2.04) (2.82,2.04) (2.83,2.05) (2.84,2.05) (2.84,2.05) (2.85,2.06) (2.85,2.06) (2.86,2.06) (2.86,2.07) (2.87,2.07) (2.87,2.07) (2.88,2.08) (2.88,2.08) (2.89,2.08) (2.90,2.09) (2.90,2.09) (2.91,2.09) (2.91,2.10) (2.92,2.10) (2.92,2.10) (2.93,2.11) (2.93,2.11) (2.94,2.11) (2.94,2.12) (2.95,2.12) (2.95,2.12) (2.96,2.13) (2.97,2.13) (2.97,2.13) (2.98,2.14) (2.98,2.14) (2.99,2.14) (2.99,2.15) (3.00,2.15) (3.00,2.15) (3.01,2.16) (3.01,2.16) (3.02,2.16) (3.03,2.17) (3.03,2.17) (3.04,2.17) (3.04,2.18) (3.05,2.18) (3.05,2.18) (3.06,2.19) (3.06,2.19) (3.07,2.19) (3.07,2.20) (3.08,2.20) (3.09,2.20) (3.09,2.21) (3.10,2.21) (3.10,2.21) (3.11,2.22) (3.11,2.22) (3.12,2.23) (3.12,2.23) (3.13,2.23) (3.13,2.24) (3.14,2.24) (3.15,2.24) (3.15,2.25) (3.16,2.25) (3.16,2.25) (3.17,2.26) (3.17,2.26) (3.18,2.26) (3.18,2.27) (3.19,2.27) (3.19,2.27) (3.20,2.28) (3.21,2.28) (3.21,2.28) (3.22,2.29) (3.22,2.29) (3.23,2.29) (3.23,2.30) (3.24,2.30) (3.24,2.30) (3.25,2.31) (3.25,2.31) (3.26,2.31) (3.27,2.32) (3.27,2.32) (3.28,2.32) (3.28,2.33) (3.29,2.33) (3.29,2.33) (3.30,2.34)};
+\draw[color=blue,thick] plot coordinates {(0.00,2.34) (0.01,2.34) (0.01,2.35) (0.02,2.35) (0.03,2.35) (0.03,2.36) (0.04,2.36) (0.04,2.36) (0.05,2.37) (0.05,2.37) (0.06,2.37) (0.06,2.38) (0.07,2.38) (0.07,2.38) (0.08,2.39) (0.09,2.39) (0.09,2.39) (0.10,2.40) (0.10,2.40) (0.11,2.40) (0.11,2.41) (0.12,2.41) (0.12,2.41) (0.13,2.42) (0.13,2.42) (0.14,2.42) (0.15,2.43) (0.15,2.43) (0.16,2.43) (0.16,2.44) (0.17,2.44) (0.17,2.44) (0.18,2.45) (0.18,2.45) (0.19,2.45) (0.19,2.46) (0.20,2.46) (0.20,2.46) (0.21,2.47) (0.22,2.47) (0.22,2.47) (0.23,2.48) (0.23,2.48) (0.24,2.48) (0.24,2.49) (0.25,2.49) (0.25,2.49) (0.26,2.50) (0.26,2.50) (0.27,2.50) (0.28,2.51) (0.28,2.51) (0.29,2.51) (0.29,2.52) (0.30,2.52) (0.30,2.52) (0.31,2.53) (0.31,2.53) (0.32,2.53) (0.32,2.54) (0.33,2.54) (0.34,2.54) (0.34,2.55) (0.35,2.55) (0.35,2.55) (0.36,2.56) (0.36,2.56) (0.37,2.56) (0.37,2.57) (0.38,2.57) (0.38,2.58) (0.39,2.58) (0.40,2.58) (0.40,2.59) (0.41,2.59) (0.41,2.59) (0.42,2.60) (0.42,2.60) (0.43,2.60) (0.43,2.61) (0.44,2.61) (0.44,2.61) (0.45,2.62) (0.46,2.62) (0.46,2.62) (0.47,2.63) (0.47,2.63) (0.48,2.63) (0.48,2.64) (0.49,2.64) (0.49,2.64) (0.50,2.65) (0.50,2.65) (0.51,2.65) (0.52,2.66) (0.52,2.66) (0.53,2.66) (0.53,2.67) (0.54,2.67) (0.54,2.67) (0.55,2.68) (0.55,2.68) (0.56,2.68) (0.56,2.69) (0.57,2.69) (0.58,2.69) (0.58,2.70) (0.59,2.70) (0.59,2.70) (0.60,2.71) (0.60,2.71) (0.61,2.71) (0.61,2.72) (0.62,2.72) (0.62,2.72) (0.63,2.73) (0.64,2.73) (0.64,2.73) (0.65,2.74) (0.65,2.74) (0.66,2.74) (0.66,2.75) (0.67,2.75) (0.67,2.75) (0.68,2.76) (0.68,2.76) (0.69,2.76) (0.69,2.77) (0.70,2.77) (0.71,2.77) (0.71,2.78) (0.72,2.78) (0.72,2.78) (0.73,2.79) (0.73,2.79) (0.74,2.79) (0.74,2.80) (0.75,2.80) (0.75,2.80) (0.76,2.81) (0.77,2.81) (0.77,2.81) (0.78,2.82) (0.78,2.82) (0.79,2.82) (0.79,2.83) (0.80,2.83) (0.80,2.83) (0.81,2.84) (0.81,2.84) (0.82,2.84) (0.83,2.85) (0.83,2.85) (0.84,2.85) (0.84,2.86) (0.85,2.86) (0.85,2.86) (0.86,2.87) (0.86,2.87) (0.87,2.87) (0.87,2.88) (0.88,2.88) (0.89,2.88) (0.89,2.89) (0.90,2.89) (0.90,2.89) (0.91,2.90) (0.91,2.90) (0.92,2.90) (0.92,2.91) (0.93,2.91) (0.93,2.91) (0.94,2.92) (0.95,2.92) (0.95,2.93) (0.96,2.93) (0.96,2.93) (0.97,2.94) (0.97,2.94) (0.98,2.94) (0.98,2.95) (0.99,2.95) (0.99,2.95) (1.00,2.96) (1.01,2.96) (1.01,2.96) (1.02,2.97) (1.02,2.97) (1.03,2.97) (1.03,2.98) (1.04,2.98) (1.04,2.98) (1.05,2.99) (1.05,2.99) (1.06,2.99) (1.07,3.00) (1.07,3.00) (1.08,3.00) (1.08,3.01) (1.09,3.01) (1.09,3.01) (1.10,3.02) (1.10,3.02) (1.11,3.02) (1.11,3.03) (1.12,3.03) (1.13,3.03) (1.13,3.04) (1.14,3.04) (1.14,3.04) (1.15,3.05) (1.15,3.05) (1.16,3.05) (1.16,3.06) (1.17,3.06) (1.17,3.06) (1.18,3.07) (1.19,3.07) (1.19,3.07) (1.20,3.08) (1.20,3.08) (1.21,3.08) (1.21,3.09) (1.22,3.09) (1.22,3.09) (1.23,3.10) (1.23,3.10) (1.24,3.10) (1.24,3.11) (1.25,3.11) (1.26,3.11) (1.26,3.12) (1.27,3.12) (1.27,3.12) (1.28,3.13) (1.28,3.13) (1.29,3.13) (1.29,3.14) (1.30,3.14) (1.30,3.14) (1.31,3.15) (1.32,3.15) (1.32,3.15) (1.33,3.16) (1.33,3.16) (1.34,3.16) (1.34,3.17) (1.35,3.17) (1.35,3.17) (1.36,3.18) (1.36,3.18) (1.37,3.18) (1.38,3.19) (1.38,3.19) (1.39,3.19) (1.39,3.20) (1.40,3.20) (1.40,3.20) (1.41,3.21) (1.41,3.21) (1.42,3.21) (1.42,3.22) (1.43,3.22) (1.44,3.22) (1.44,3.23) (1.45,3.23) (1.45,3.23) (1.46,3.24) (1.46,3.24) (1.47,3.24) (1.47,3.25) (1.48,3.25) (1.48,3.25) (1.49,3.26) (1.50,3.26) (1.50,3.26) (1.51,3.27) (1.51,3.27) (1.52,3.28) (1.52,3.28) (1.53,3.28) (1.53,3.29) (1.54,3.29) (1.54,3.29) (1.55,3.30) (1.56,3.30)};
+\draw[color=blue,thick] plot coordinates {(1.56,0.00) (1.57,0.01) (1.57,0.01) (1.58,0.01) (1.58,0.02) (1.59,0.02) (1.59,0.02) (1.60,0.03) (1.60,0.03) (1.61,0.03) (1.62,0.04) (1.62,0.04) (1.63,0.04) (1.63,0.05) (1.64,0.05) (1.64,0.05) (1.65,0.06) (1.65,0.06) (1.66,0.06) (1.66,0.07) (1.67,0.07) (1.68,0.07) (1.68,0.08) (1.69,0.08) (1.69,0.08) (1.70,0.09) (1.70,0.09) (1.71,0.09) (1.71,0.10) (1.72,0.10) (1.72,0.10) (1.73,0.11) (1.73,0.11) (1.74,0.11) (1.75,0.12) (1.75,0.12) (1.76,0.12) (1.76,0.13) (1.77,0.13) (1.77,0.13) (1.78,0.14) (1.78,0.14) (1.79,0.14) (1.79,0.15) (1.80,0.15) (1.81,0.15) (1.81,0.16) (1.82,0.16) (1.82,0.16) (1.83,0.17) (1.83,0.17) (1.84,0.17) (1.84,0.18) (1.85,0.18) (1.85,0.18) (1.86,0.19) (1.87,0.19) (1.87,0.19) (1.88,0.20) (1.88,0.20) (1.89,0.20) (1.89,0.21) (1.90,0.21) (1.90,0.21) (1.91,0.22) (1.91,0.22) (1.92,0.22) (1.93,0.23) (1.93,0.23) (1.94,0.23) (1.94,0.24) (1.95,0.24) (1.95,0.24) (1.96,0.25) (1.96,0.25) (1.97,0.25) (1.97,0.26) (1.98,0.26)};
+\draw[-latex] (1.48,-0.02) -- (1.91,-0.02);
+\draw[-latex] (1.48,3.30) -- (1.91,3.30);
+\draw[-latex] (-0.02,1.48) -- (-0.02,1.91);
+\draw[-latex] (3.30,1.48) -- (3.30,1.91);
+\node[below] at (1.65,-0.15) {$\phi_1$};
+\node[left] at (-0.2,1.65) {$\phi_2$};
+\node[below left] at (0,0) {\scriptsize$0$};
+\node[below right] at (3.30,0) {\scriptsize$2\pi$};
+\node[above left] at (0,3.30) {\scriptsize$2\pi$};
+\end{tikzpicture}
+\end{center}
+
+If the frequencies $\Omega_1,\dots,\Omega_n$ are rationally related the trajectory closes up and the motion is periodic; if they are rationally independent the trajectory winds around forever, densely filling the torus, and the motion is called \vocab{quasi-periodic}.
+
+\subsection{Action--Angle Variables}
+
+The proof above is constructive, and gives us a recipe. To integrate up an integrable Hamiltonian system:
+\begin{enumerate}[label=(\arabic*)]
+	\item Identify the $n$ cycles $\Gamma_1,\dots,\Gamma_n$ on the invariant torus $M_{\vv c}$, and solve $f_i(\vv q, \vv p) = c_i$ for $\vv p = \vv p(\vv q, \vv c)$.
+	\item Compute the actions
+	$$
+	I_j = \frac{1}{2\pi}\oint_{\Gamma_j}\vv p\cdot\dd\vv q,
+	$$
+	and invert to obtain $\vv c = \vv c(\vv I)$.
+	\item Form the generating function
+	$$
+	S(\vv q, \vv I) = \int^{\vv x}\vv p(\vv q', \vv c(\vv I))\cdot\dd\vv q'
+	$$
+	and read off the angles $\bm\phi = \partial S/\partial \vv I$.
+	\item Write $\tilde H = \tilde H(\vv I)$ and read off the frequencies $\bm\Omega = \partial\tilde H/\partial\vv I$.
+\end{enumerate}
+In practice step (4) is often all one wants: the frequencies of an integrable system can be extracted without ever computing the angles, since $\tilde H(\vv I)$ is determined by step (2) alone.
+
+Let us run the recipe on the harmonic oscillator, and see the transformation appear without any divine intervention.
+
+\begin{example}[Harmonic oscillator, second pass]
+	With $H = \frac{1}{2}p^2 + \frac{1}{2}\omega^2q^2$ we have
+	$$
+	M_c = \left\{(q,p) : \tfrac{1}{2}p^2 + \tfrac{1}{2}\omega^2q^2 = c\right\},
+	$$
+	an ellipse, which is indeed diffeomorphic to $T^1 = S^1$ as the theorem promises. There is only one cycle, the ellipse itself. Solving for $p$,
+	$$
+	p = p(q,c) = \pm\sqrt{2c - \omega^2q^2}.
+	$$
+	The action is the enclosed area over $2\pi$. The ellipse $\frac{1}{2}p^2 + \frac{1}{2}\omega^2 q^2 = c$ has semi-axes $\sqrt{2c}/\omega$ and $\sqrt{2c}$, so its area is $\pi\cdot\frac{\sqrt{2c}}{\omega}\cdot\sqrt{2c} = 2\pi c/\omega$ and
+	$$
+	I = \frac{1}{2\pi}\oint p\dd q = \frac{c}{\omega}.
+	$$
+	Inverting, $c = c(I) = \omega I$, so immediately
+	$$
+	\tilde H = c = \omega I, \qquad \Omega = \frac{\dd\tilde H}{\dd I} = \omega.
+	$$
+	The frequency is $\omega$, independent of amplitude -- the defining feature of the harmonic oscillator.
+
+	For the angle, take the base point to be $q = 0$ with $p > 0$. Then
+	$$
+	S(q, I) = \int_0^q\sqrt{2\omega I - \omega^2 q'^2}\dd q',
+	$$
+	and differentiating under the integral sign,
+	$$
+	\phi = \frac{\partial S}{\partial I} = \int_0^q\frac{\omega \dd q'}{\sqrt{2\omega I - \omega^2 q'^2}} = \int_0^q \frac{\dd q'}{\sqrt{2I/\omega - q'^2}} = \sin^{-1}\left(\sqrt{\frac{\omega}{2I}}\,q\right).
+	$$
+	Sure enough, this is well defined only up to multiples of $2\pi$. Inverting,
+	$$
+	q = \sqrt{\frac{2I}{\omega}}\sin\phi, \qquad p = \frac{\partial S}{\partial q} = \sqrt{2\omega I - \omega^2q^2} = \sqrt{2I\omega}\cos\phi,
+	$$
+	which is exactly the transformation we pulled out of thin air earlier.
+\end{example}
+
+The next example is the one to remember, because it is the simplest system in which the frequency actually depends on the action.
+
+\begin{example}[The simple pendulum]
+	A pendulum of unit mass and unit length in unit gravity has Hamiltonian
+	$$
+	H(q, p) = \tfrac{1}{2}p^2 - \cos q,
+	$$
+	where $q$ is the angle from the downward vertical. The phase portrait is the following, with the equilibria marked: centres at $q = 0, \pm 2\pi,\dots$ (the pendulum hanging down) and saddles at $q = \pm\pi$ (the pendulum balanced upright).
+	\begin{center}
+	\begin{tikzpicture}
+	\draw[<->] (-3.85,0) -- (3.85,0) node[right] {$q$};
+	\draw[<->] (0,-1.85) -- (0,1.85) node[above] {$p$};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-0.36,0.11) (-0.33,0.19) (-0.29,0.24) (-0.26,0.28) (-0.23,0.31) (-0.20,0.33) (-0.16,0.35) (-0.13,0.36) (-0.10,0.37) (-0.07,0.38) (-0.03,0.39) (0.00,0.39) (0.03,0.39) (0.07,0.38) (0.10,0.37) (0.13,0.36) (0.16,0.35) (0.20,0.33) (0.23,0.31) (0.26,0.28) (0.29,0.24) (0.33,0.19) (0.36,0.11)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-0.36,-0.11) (-0.33,-0.19) (-0.29,-0.24) (-0.26,-0.28) (-0.23,-0.31) (-0.20,-0.33) (-0.16,-0.35) (-0.13,-0.36) (-0.10,-0.37) (-0.07,-0.38) (-0.03,-0.39) (0.00,-0.39) (0.03,-0.39) (0.07,-0.38) (0.10,-0.37) (0.13,-0.36) (0.16,-0.35) (0.20,-0.33) (0.23,-0.31) (0.26,-0.28) (0.29,-0.24) (0.33,-0.19) (0.36,-0.11)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,0.39) (-3.23,0.39) (-3.20,0.38) (-3.17,0.37) (-3.14,0.36) (-3.10,0.35) (-3.07,0.33) (-3.04,0.31) (-3.01,0.28) (-2.97,0.24) (-2.94,0.19) (-2.91,0.11)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,-0.39) (-3.23,-0.39) (-3.20,-0.38) (-3.17,-0.37) (-3.14,-0.36) (-3.10,-0.35) (-3.07,-0.33) (-3.04,-0.31) (-3.01,-0.28) (-2.97,-0.24) (-2.94,-0.19) (-2.91,-0.11)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(2.91,0.11) (2.94,0.19) (2.97,0.24) (3.01,0.28) (3.04,0.31) (3.07,0.33) (3.10,0.35) (3.14,0.36) (3.17,0.37) (3.20,0.38) (3.23,0.39) (3.27,0.39)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(2.91,-0.11) (2.94,-0.19) (2.97,-0.24) (3.01,-0.28) (3.04,-0.31) (3.07,-0.33) (3.10,-0.35) (3.14,-0.36) (3.17,-0.37) (3.20,-0.38) (3.23,-0.39) (3.27,-0.39)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-0.65,0.07) (-0.62,0.20) (-0.59,0.28) (-0.56,0.33) (-0.52,0.38) (-0.49,0.42) (-0.46,0.45) (-0.42,0.48) (-0.39,0.51) (-0.36,0.53) (-0.33,0.55) (-0.29,0.57) (-0.26,0.59) (-0.23,0.60) (-0.20,0.62) (-0.16,0.63) (-0.13,0.64) (-0.10,0.64) (-0.07,0.65) (-0.03,0.65) (0.00,0.65) (0.03,0.65) (0.07,0.65) (0.10,0.64) (0.13,0.64) (0.16,0.63) (0.20,0.62) (0.23,0.60) (0.26,0.59) (0.29,0.57) (0.33,0.55) (0.36,0.53) (0.39,0.51) (0.42,0.48) (0.46,0.45) (0.49,0.42) (0.52,0.38) (0.56,0.33) (0.59,0.28) (0.62,0.20) (0.65,0.07)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-0.65,-0.07) (-0.62,-0.20) (-0.59,-0.28) (-0.56,-0.33) (-0.52,-0.38) (-0.49,-0.42) (-0.46,-0.45) (-0.42,-0.48) (-0.39,-0.51) (-0.36,-0.53) (-0.33,-0.55) (-0.29,-0.57) (-0.26,-0.59) (-0.23,-0.60) (-0.20,-0.62) (-0.16,-0.63) (-0.13,-0.64) (-0.10,-0.64) (-0.07,-0.65) (-0.03,-0.65) (0.00,-0.65) (0.03,-0.65) (0.07,-0.65) (0.10,-0.64) (0.13,-0.64) (0.16,-0.63) (0.20,-0.62) (0.23,-0.60) (0.26,-0.59) (0.29,-0.57) (0.33,-0.55) (0.36,-0.53) (0.39,-0.51) (0.42,-0.48) (0.46,-0.45) (0.49,-0.42) (0.52,-0.38) (0.56,-0.33) (0.59,-0.28) (0.62,-0.20) (0.65,-0.07)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,0.65) (-3.23,0.65) (-3.20,0.65) (-3.17,0.64) (-3.14,0.64) (-3.10,0.63) (-3.07,0.62) (-3.04,0.60) (-3.01,0.59) (-2.97,0.57) (-2.94,0.55) (-2.91,0.53) (-2.88,0.51) (-2.84,0.48) (-2.81,0.45) (-2.78,0.42) (-2.74,0.38) (-2.71,0.33) (-2.68,0.28) (-2.65,0.20) (-2.61,0.07)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,-0.65) (-3.23,-0.65) (-3.20,-0.65) (-3.17,-0.64) (-3.14,-0.64) (-3.10,-0.63) (-3.07,-0.62) (-3.04,-0.60) (-3.01,-0.59) (-2.97,-0.57) (-2.94,-0.55) (-2.91,-0.53) (-2.88,-0.51) (-2.84,-0.48) (-2.81,-0.45) (-2.78,-0.42) (-2.74,-0.38) (-2.71,-0.33) (-2.68,-0.28) (-2.65,-0.20) (-2.61,-0.07)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(2.61,0.07) (2.65,0.20) (2.68,0.28) (2.71,0.33) (2.74,0.38) (2.78,0.42) (2.81,0.45) (2.84,0.48) (2.88,0.51) (2.91,0.53) (2.94,0.55) (2.97,0.57) (3.01,0.59) (3.04,0.60) (3.07,0.62) (3.10,0.63) (3.14,0.64) (3.17,0.64) (3.20,0.65) (3.23,0.65) (3.27,0.65)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(2.61,-0.07) (2.65,-0.20) (2.68,-0.28) (2.71,-0.33) (2.74,-0.38) (2.78,-0.42) (2.81,-0.45) (2.84,-0.48) (2.88,-0.51) (2.91,-0.53) (2.94,-0.55) (2.97,-0.57) (3.01,-0.59) (3.04,-0.60) (3.07,-0.62) (3.10,-0.63) (3.14,-0.64) (3.17,-0.64) (3.20,-0.65) (3.23,-0.65) (3.27,-0.65)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-0.95,0.18) (-0.91,0.26) (-0.88,0.33) (-0.85,0.38) (-0.82,0.43) (-0.78,0.47) (-0.75,0.51) (-0.72,0.54) (-0.69,0.58) (-0.65,0.61) (-0.62,0.64) (-0.59,0.66) (-0.56,0.69) (-0.52,0.71) (-0.49,0.73) (-0.46,0.75) (-0.42,0.77) (-0.39,0.79) (-0.36,0.80) (-0.33,0.82) (-0.29,0.83) (-0.26,0.84) (-0.23,0.85) (-0.20,0.86) (-0.16,0.87) (-0.13,0.88) (-0.10,0.88) (-0.07,0.88) (-0.03,0.89) (0.00,0.89) (0.03,0.89) (0.07,0.88) (0.10,0.88) (0.13,0.88) (0.16,0.87) (0.20,0.86) (0.23,0.85) (0.26,0.84) (0.29,0.83) (0.33,0.82) (0.36,0.80) (0.39,0.79) (0.42,0.77) (0.46,0.75) (0.49,0.73) (0.52,0.71) (0.56,0.69) (0.59,0.66) (0.62,0.64) (0.65,0.61) (0.69,0.58) (0.72,0.54) (0.75,0.51) (0.78,0.47) (0.82,0.43) (0.85,0.38) (0.88,0.33) (0.91,0.26) (0.95,0.18)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-0.95,-0.18) (-0.91,-0.26) (-0.88,-0.33) (-0.85,-0.38) (-0.82,-0.43) (-0.78,-0.47) (-0.75,-0.51) (-0.72,-0.54) (-0.69,-0.58) (-0.65,-0.61) (-0.62,-0.64) (-0.59,-0.66) (-0.56,-0.69) (-0.52,-0.71) (-0.49,-0.73) (-0.46,-0.75) (-0.42,-0.77) (-0.39,-0.79) (-0.36,-0.80) (-0.33,-0.82) (-0.29,-0.83) (-0.26,-0.84) (-0.23,-0.85) (-0.20,-0.86) (-0.16,-0.87) (-0.13,-0.88) (-0.10,-0.88) (-0.07,-0.88) (-0.03,-0.89) (0.00,-0.89) (0.03,-0.89) (0.07,-0.88) (0.10,-0.88) (0.13,-0.88) (0.16,-0.87) (0.20,-0.86) (0.23,-0.85) (0.26,-0.84) (0.29,-0.83) (0.33,-0.82) (0.36,-0.80) (0.39,-0.79) (0.42,-0.77) (0.46,-0.75) (0.49,-0.73) (0.52,-0.71) (0.56,-0.69) (0.59,-0.66) (0.62,-0.64) (0.65,-0.61) (0.69,-0.58) (0.72,-0.54) (0.75,-0.51) (0.78,-0.47) (0.82,-0.43) (0.85,-0.38) (0.88,-0.33) (0.91,-0.26) (0.95,-0.18)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,0.89) (-3.23,0.89) (-3.20,0.88) (-3.17,0.88) (-3.14,0.88) (-3.10,0.87) (-3.07,0.86) (-3.04,0.85) (-3.01,0.84) (-2.97,0.83) (-2.94,0.82) (-2.91,0.80) (-2.88,0.79) (-2.84,0.77) (-2.81,0.75) (-2.78,0.73) (-2.74,0.71) (-2.71,0.69) (-2.68,0.66) (-2.65,0.64) (-2.61,0.61) (-2.58,0.58) (-2.55,0.54) (-2.52,0.51) (-2.48,0.47) (-2.45,0.43) (-2.42,0.38) (-2.39,0.33) (-2.35,0.26) (-2.32,0.18)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,-0.89) (-3.23,-0.89) (-3.20,-0.88) (-3.17,-0.88) (-3.14,-0.88) (-3.10,-0.87) (-3.07,-0.86) (-3.04,-0.85) (-3.01,-0.84) (-2.97,-0.83) (-2.94,-0.82) (-2.91,-0.80) (-2.88,-0.79) (-2.84,-0.77) (-2.81,-0.75) (-2.78,-0.73) (-2.74,-0.71) (-2.71,-0.69) (-2.68,-0.66) (-2.65,-0.64) (-2.61,-0.61) (-2.58,-0.58) (-2.55,-0.54) (-2.52,-0.51) (-2.48,-0.47) (-2.45,-0.43) (-2.42,-0.38) (-2.39,-0.33) (-2.35,-0.26) (-2.32,-0.18)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(2.32,0.18) (2.35,0.26) (2.39,0.33) (2.42,0.38) (2.45,0.43) (2.48,0.47) (2.52,0.51) (2.55,0.54) (2.58,0.58) (2.61,0.61) (2.65,0.64) (2.68,0.66) (2.71,0.69) (2.74,0.71) (2.78,0.73) (2.81,0.75) (2.84,0.77) (2.88,0.79) (2.91,0.80) (2.94,0.82) (2.97,0.83) (3.01,0.84) (3.04,0.85) (3.07,0.86) (3.10,0.87) (3.14,0.88) (3.17,0.88) (3.20,0.88) (3.23,0.89) (3.27,0.89)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(2.32,-0.18) (2.35,-0.26) (2.39,-0.33) (2.42,-0.38) (2.45,-0.43) (2.48,-0.47) (2.52,-0.51) (2.55,-0.54) (2.58,-0.58) (2.61,-0.61) (2.65,-0.64) (2.68,-0.66) (2.71,-0.69) (2.74,-0.71) (2.78,-0.73) (2.81,-0.75) (2.84,-0.77) (2.88,-0.79) (2.91,-0.80) (2.94,-0.82) (2.97,-0.83) (3.01,-0.84) (3.04,-0.85) (3.07,-0.86) (3.10,-0.87) (3.14,-0.88) (3.17,-0.88) (3.20,-0.88) (3.23,-0.89) (3.27,-0.89)};
+	\draw[very thick,color=red] plot[smooth] coordinates {(-3.27,1.10) (-3.23,1.10) (-3.19,1.10) (-3.14,1.09) (-3.10,1.09) (-3.06,1.08) (-3.02,1.07) (-2.98,1.06) (-2.94,1.05) (-2.90,1.03) (-2.86,1.02) (-2.82,1.00) (-2.78,0.98) (-2.74,0.96) (-2.70,0.94) (-2.65,0.91) (-2.61,0.89) (-2.57,0.86) (-2.53,0.84) (-2.49,0.81) (-2.45,0.78) (-2.41,0.75) (-2.37,0.71) (-2.33,0.68) (-2.29,0.65) (-2.25,0.61) (-2.21,0.57) (-2.16,0.54) (-2.12,0.50) (-2.08,0.46) (-2.04,0.42) (-2.00,0.38) (-1.96,0.34) (-1.92,0.30) (-1.88,0.26) (-1.84,0.21) (-1.80,0.17) (-1.76,0.13) (-1.72,0.09) (-1.67,0.04) (-1.63,0.00) (-1.59,0.04) (-1.55,0.09) (-1.51,0.13) (-1.47,0.17) (-1.43,0.21) (-1.39,0.26) (-1.35,0.30) (-1.31,0.34) (-1.27,0.38) (-1.23,0.42) (-1.18,0.46) (-1.14,0.50) (-1.10,0.54) (-1.06,0.57) (-1.02,0.61) (-0.98,0.65) (-0.94,0.68) (-0.90,0.71) (-0.86,0.75) (-0.82,0.78) (-0.78,0.81) (-0.74,0.84) (-0.69,0.86) (-0.65,0.89) (-0.61,0.91) (-0.57,0.94) (-0.53,0.96) (-0.49,0.98) (-0.45,1.00) (-0.41,1.02) (-0.37,1.03) (-0.33,1.05) (-0.29,1.06) (-0.25,1.07) (-0.20,1.08) (-0.16,1.09) (-0.12,1.09) (-0.08,1.10) (-0.04,1.10) (0.00,1.10) (0.04,1.10) (0.08,1.10) (0.12,1.09) (0.16,1.09) (0.20,1.08) (0.25,1.07) (0.29,1.06) (0.33,1.05) (0.37,1.03) (0.41,1.02) (0.45,1.00) (0.49,0.98) (0.53,0.96) (0.57,0.94) (0.61,0.91) (0.65,0.89) (0.69,0.86) (0.74,0.84) (0.78,0.81) (0.82,0.78) (0.86,0.75) (0.90,0.71) (0.94,0.68) (0.98,0.65) (1.02,0.61) (1.06,0.57) (1.10,0.54) (1.14,0.50) (1.18,0.46) (1.23,0.42) (1.27,0.38) (1.31,0.34) (1.35,0.30) (1.39,0.26) (1.43,0.21) (1.47,0.17) (1.51,0.13) (1.55,0.09) (1.59,0.04) (1.63,0.00) (1.67,0.04) (1.72,0.09) (1.76,0.13) (1.80,0.17) (1.84,0.21) (1.88,0.26) (1.92,0.30) (1.96,0.34) (2.00,0.38) (2.04,0.42) (2.08,0.46) (2.12,0.50) (2.16,0.54) (2.21,0.57) (2.25,0.61) (2.29,0.65) (2.33,0.68) (2.37,0.71) (2.41,0.75) (2.45,0.78) (2.49,0.81) (2.53,0.84) (2.57,0.86) (2.61,0.89) (2.65,0.91) (2.70,0.94) (2.74,0.96) (2.78,0.98) (2.82,1.00) (2.86,1.02) (2.90,1.03) (2.94,1.05) (2.98,1.06) (3.02,1.07) (3.06,1.08) (3.10,1.09) (3.14,1.09) (3.19,1.10) (3.23,1.10) (3.27,1.10)};
+	\draw[very thick,color=red] plot[smooth] coordinates {(-3.27,-1.10) (-3.23,-1.10) (-3.19,-1.10) (-3.14,-1.09) (-3.10,-1.09) (-3.06,-1.08) (-3.02,-1.07) (-2.98,-1.06) (-2.94,-1.05) (-2.90,-1.03) (-2.86,-1.02) (-2.82,-1.00) (-2.78,-0.98) (-2.74,-0.96) (-2.70,-0.94) (-2.65,-0.91) (-2.61,-0.89) (-2.57,-0.86) (-2.53,-0.84) (-2.49,-0.81) (-2.45,-0.78) (-2.41,-0.75) (-2.37,-0.71) (-2.33,-0.68) (-2.29,-0.65) (-2.25,-0.61) (-2.21,-0.57) (-2.16,-0.54) (-2.12,-0.50) (-2.08,-0.46) (-2.04,-0.42) (-2.00,-0.38) (-1.96,-0.34) (-1.92,-0.30) (-1.88,-0.26) (-1.84,-0.21) (-1.80,-0.17) (-1.76,-0.13) (-1.72,-0.09) (-1.67,-0.04) (-1.63,-0.00) (-1.59,-0.04) (-1.55,-0.09) (-1.51,-0.13) (-1.47,-0.17) (-1.43,-0.21) (-1.39,-0.26) (-1.35,-0.30) (-1.31,-0.34) (-1.27,-0.38) (-1.23,-0.42) (-1.18,-0.46) (-1.14,-0.50) (-1.10,-0.54) (-1.06,-0.57) (-1.02,-0.61) (-0.98,-0.65) (-0.94,-0.68) (-0.90,-0.71) (-0.86,-0.75) (-0.82,-0.78) (-0.78,-0.81) (-0.74,-0.84) (-0.69,-0.86) (-0.65,-0.89) (-0.61,-0.91) (-0.57,-0.94) (-0.53,-0.96) (-0.49,-0.98) (-0.45,-1.00) (-0.41,-1.02) (-0.37,-1.03) (-0.33,-1.05) (-0.29,-1.06) (-0.25,-1.07) (-0.20,-1.08) (-0.16,-1.09) (-0.12,-1.09) (-0.08,-1.10) (-0.04,-1.10) (0.00,-1.10) (0.04,-1.10) (0.08,-1.10) (0.12,-1.09) (0.16,-1.09) (0.20,-1.08) (0.25,-1.07) (0.29,-1.06) (0.33,-1.05) (0.37,-1.03) (0.41,-1.02) (0.45,-1.00) (0.49,-0.98) (0.53,-0.96) (0.57,-0.94) (0.61,-0.91) (0.65,-0.89) (0.69,-0.86) (0.74,-0.84) (0.78,-0.81) (0.82,-0.78) (0.86,-0.75) (0.90,-0.71) (0.94,-0.68) (0.98,-0.65) (1.02,-0.61) (1.06,-0.57) (1.10,-0.54) (1.14,-0.50) (1.18,-0.46) (1.23,-0.42) (1.27,-0.38) (1.31,-0.34) (1.35,-0.30) (1.39,-0.26) (1.43,-0.21) (1.47,-0.17) (1.51,-0.13) (1.55,-0.09) (1.59,-0.04) (1.63,-0.00) (1.67,-0.04) (1.72,-0.09) (1.76,-0.13) (1.80,-0.17) (1.84,-0.21) (1.88,-0.26) (1.92,-0.30) (1.96,-0.34) (2.00,-0.38) (2.04,-0.42) (2.08,-0.46) (2.12,-0.50) (2.16,-0.54) (2.21,-0.57) (2.25,-0.61) (2.29,-0.65) (2.33,-0.68) (2.37,-0.71) (2.41,-0.75) (2.45,-0.78) (2.49,-0.81) (2.53,-0.84) (2.57,-0.86) (2.61,-0.89) (2.65,-0.91) (2.70,-0.94) (2.74,-0.96) (2.78,-0.98) (2.82,-1.00) (2.86,-1.02) (2.90,-1.03) (2.94,-1.05) (2.98,-1.06) (3.02,-1.07) (3.06,-1.08) (3.10,-1.09) (3.14,-1.09) (3.19,-1.10) (3.23,-1.10) (3.27,-1.10)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,1.22) (-3.23,1.22) (-3.19,1.21) (-3.14,1.21) (-3.10,1.21) (-3.06,1.20) (-3.02,1.19) (-2.98,1.18) (-2.94,1.17) (-2.90,1.16) (-2.86,1.14) (-2.82,1.13) (-2.78,1.11) (-2.74,1.09) (-2.70,1.07) (-2.65,1.05) (-2.61,1.03) (-2.57,1.01) (-2.53,0.99) (-2.49,0.96) (-2.45,0.94) (-2.41,0.91) (-2.37,0.88) (-2.33,0.86) (-2.29,0.83) (-2.25,0.80) (-2.21,0.78) (-2.16,0.75) (-2.12,0.72) (-2.08,0.70) (-2.04,0.67) (-2.00,0.65) (-1.96,0.62) (-1.92,0.60) (-1.88,0.58) (-1.84,0.56) (-1.80,0.55) (-1.76,0.54) (-1.72,0.53) (-1.67,0.52) (-1.63,0.52) (-1.59,0.52) (-1.55,0.53) (-1.51,0.54) (-1.47,0.55) (-1.43,0.56) (-1.39,0.58) (-1.35,0.60) (-1.31,0.62) (-1.27,0.65) (-1.23,0.67) (-1.18,0.70) (-1.14,0.72) (-1.10,0.75) (-1.06,0.78) (-1.02,0.80) (-0.98,0.83) (-0.94,0.86) (-0.90,0.88) (-0.86,0.91) (-0.82,0.94) (-0.78,0.96) (-0.74,0.99) (-0.69,1.01) (-0.65,1.03) (-0.61,1.05) (-0.57,1.07) (-0.53,1.09) (-0.49,1.11) (-0.45,1.13) (-0.41,1.14) (-0.37,1.16) (-0.33,1.17) (-0.29,1.18) (-0.25,1.19) (-0.20,1.20) (-0.16,1.21) (-0.12,1.21) (-0.08,1.21) (-0.04,1.22) (0.00,1.22) (0.04,1.22) (0.08,1.21) (0.12,1.21) (0.16,1.21) (0.20,1.20) (0.25,1.19) (0.29,1.18) (0.33,1.17) (0.37,1.16) (0.41,1.14) (0.45,1.13) (0.49,1.11) (0.53,1.09) (0.57,1.07) (0.61,1.05) (0.65,1.03) (0.69,1.01) (0.74,0.99) (0.78,0.96) (0.82,0.94) (0.86,0.91) (0.90,0.88) (0.94,0.86) (0.98,0.83) (1.02,0.80) (1.06,0.78) (1.10,0.75) (1.14,0.72) (1.18,0.70) (1.23,0.67) (1.27,0.65) (1.31,0.62) (1.35,0.60) (1.39,0.58) (1.43,0.56) (1.47,0.55) (1.51,0.54) (1.55,0.53) (1.59,0.52) (1.63,0.52) (1.67,0.52) (1.72,0.53) (1.76,0.54) (1.80,0.55) (1.84,0.56) (1.88,0.58) (1.92,0.60) (1.96,0.62) (2.00,0.65) (2.04,0.67) (2.08,0.70) (2.12,0.72) (2.16,0.75) (2.21,0.78) (2.25,0.80) (2.29,0.83) (2.33,0.86) (2.37,0.88) (2.41,0.91) (2.45,0.94) (2.49,0.96) (2.53,0.99) (2.57,1.01) (2.61,1.03) (2.65,1.05) (2.70,1.07) (2.74,1.09) (2.78,1.11) (2.82,1.13) (2.86,1.14) (2.90,1.16) (2.94,1.17) (2.98,1.18) (3.02,1.19) (3.06,1.20) (3.10,1.21) (3.14,1.21) (3.19,1.21) (3.23,1.22) (3.27,1.22)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,-1.22) (-3.23,-1.22) (-3.19,-1.21) (-3.14,-1.21) (-3.10,-1.21) (-3.06,-1.20) (-3.02,-1.19) (-2.98,-1.18) (-2.94,-1.17) (-2.90,-1.16) (-2.86,-1.14) (-2.82,-1.13) (-2.78,-1.11) (-2.74,-1.09) (-2.70,-1.07) (-2.65,-1.05) (-2.61,-1.03) (-2.57,-1.01) (-2.53,-0.99) (-2.49,-0.96) (-2.45,-0.94) (-2.41,-0.91) (-2.37,-0.88) (-2.33,-0.86) (-2.29,-0.83) (-2.25,-0.80) (-2.21,-0.78) (-2.16,-0.75) (-2.12,-0.72) (-2.08,-0.70) (-2.04,-0.67) (-2.00,-0.65) (-1.96,-0.62) (-1.92,-0.60) (-1.88,-0.58) (-1.84,-0.56) (-1.80,-0.55) (-1.76,-0.54) (-1.72,-0.53) (-1.67,-0.52) (-1.63,-0.52) (-1.59,-0.52) (-1.55,-0.53) (-1.51,-0.54) (-1.47,-0.55) (-1.43,-0.56) (-1.39,-0.58) (-1.35,-0.60) (-1.31,-0.62) (-1.27,-0.65) (-1.23,-0.67) (-1.18,-0.70) (-1.14,-0.72) (-1.10,-0.75) (-1.06,-0.78) (-1.02,-0.80) (-0.98,-0.83) (-0.94,-0.86) (-0.90,-0.88) (-0.86,-0.91) (-0.82,-0.94) (-0.78,-0.96) (-0.74,-0.99) (-0.69,-1.01) (-0.65,-1.03) (-0.61,-1.05) (-0.57,-1.07) (-0.53,-1.09) (-0.49,-1.11) (-0.45,-1.13) (-0.41,-1.14) (-0.37,-1.16) (-0.33,-1.17) (-0.29,-1.18) (-0.25,-1.19) (-0.20,-1.20) (-0.16,-1.21) (-0.12,-1.21) (-0.08,-1.21) (-0.04,-1.22) (0.00,-1.22) (0.04,-1.22) (0.08,-1.21) (0.12,-1.21) (0.16,-1.21) (0.20,-1.20) (0.25,-1.19) (0.29,-1.18) (0.33,-1.17) (0.37,-1.16) (0.41,-1.14) (0.45,-1.13) (0.49,-1.11) (0.53,-1.09) (0.57,-1.07) (0.61,-1.05) (0.65,-1.03) (0.69,-1.01) (0.74,-0.99) (0.78,-0.96) (0.82,-0.94) (0.86,-0.91) (0.90,-0.88) (0.94,-0.86) (0.98,-0.83) (1.02,-0.80) (1.06,-0.78) (1.10,-0.75) (1.14,-0.72) (1.18,-0.70) (1.23,-0.67) (1.27,-0.65) (1.31,-0.62) (1.35,-0.60) (1.39,-0.58) (1.43,-0.56) (1.47,-0.55) (1.51,-0.54) (1.55,-0.53) (1.59,-0.52) (1.63,-0.52) (1.67,-0.52) (1.72,-0.53) (1.76,-0.54) (1.80,-0.55) (1.84,-0.56) (1.88,-0.58) (1.92,-0.60) (1.96,-0.62) (2.00,-0.65) (2.04,-0.67) (2.08,-0.70) (2.12,-0.72) (2.16,-0.75) (2.21,-0.78) (2.25,-0.80) (2.29,-0.83) (2.33,-0.86) (2.37,-0.88) (2.41,-0.91) (2.45,-0.94) (2.49,-0.96) (2.53,-0.99) (2.57,-1.01) (2.61,-1.03) (2.65,-1.05) (2.70,-1.07) (2.74,-1.09) (2.78,-1.11) (2.82,-1.13) (2.86,-1.14) (2.90,-1.16) (2.94,-1.17) (2.98,-1.18) (3.02,-1.19) (3.06,-1.20) (3.10,-1.21) (3.14,-1.21) (3.19,-1.21) (3.23,-1.22) (3.27,-1.22)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,1.41) (-3.23,1.41) (-3.19,1.41) (-3.14,1.41) (-3.10,1.40) (-3.06,1.40) (-3.02,1.39) (-2.98,1.38) (-2.94,1.37) (-2.90,1.36) (-2.86,1.35) (-2.82,1.34) (-2.78,1.32) (-2.74,1.31) (-2.70,1.29) (-2.65,1.27) (-2.61,1.26) (-2.57,1.24) (-2.53,1.22) (-2.49,1.20) (-2.45,1.18) (-2.41,1.16) (-2.37,1.14) (-2.33,1.12) (-2.29,1.10) (-2.25,1.08) (-2.21,1.06) (-2.16,1.04) (-2.12,1.02) (-2.08,1.00) (-2.04,0.98) (-2.00,0.97) (-1.96,0.95) (-1.92,0.94) (-1.88,0.92) (-1.84,0.91) (-1.80,0.90) (-1.76,0.90) (-1.72,0.89) (-1.67,0.89) (-1.63,0.89) (-1.59,0.89) (-1.55,0.89) (-1.51,0.90) (-1.47,0.90) (-1.43,0.91) (-1.39,0.92) (-1.35,0.94) (-1.31,0.95) (-1.27,0.97) (-1.23,0.98) (-1.18,1.00) (-1.14,1.02) (-1.10,1.04) (-1.06,1.06) (-1.02,1.08) (-0.98,1.10) (-0.94,1.12) (-0.90,1.14) (-0.86,1.16) (-0.82,1.18) (-0.78,1.20) (-0.74,1.22) (-0.69,1.24) (-0.65,1.26) (-0.61,1.27) (-0.57,1.29) (-0.53,1.31) (-0.49,1.32) (-0.45,1.34) (-0.41,1.35) (-0.37,1.36) (-0.33,1.37) (-0.29,1.38) (-0.25,1.39) (-0.20,1.40) (-0.16,1.40) (-0.12,1.41) (-0.08,1.41) (-0.04,1.41) (0.00,1.41) (0.04,1.41) (0.08,1.41) (0.12,1.41) (0.16,1.40) (0.20,1.40) (0.25,1.39) (0.29,1.38) (0.33,1.37) (0.37,1.36) (0.41,1.35) (0.45,1.34) (0.49,1.32) (0.53,1.31) (0.57,1.29) (0.61,1.27) (0.65,1.26) (0.69,1.24) (0.74,1.22) (0.78,1.20) (0.82,1.18) (0.86,1.16) (0.90,1.14) (0.94,1.12) (0.98,1.10) (1.02,1.08) (1.06,1.06) (1.10,1.04) (1.14,1.02) (1.18,1.00) (1.23,0.98) (1.27,0.97) (1.31,0.95) (1.35,0.94) (1.39,0.92) (1.43,0.91) (1.47,0.90) (1.51,0.90) (1.55,0.89) (1.59,0.89) (1.63,0.89) (1.67,0.89) (1.72,0.89) (1.76,0.90) (1.80,0.90) (1.84,0.91) (1.88,0.92) (1.92,0.94) (1.96,0.95) (2.00,0.97) (2.04,0.98) (2.08,1.00) (2.12,1.02) (2.16,1.04) (2.21,1.06) (2.25,1.08) (2.29,1.10) (2.33,1.12) (2.37,1.14) (2.41,1.16) (2.45,1.18) (2.49,1.20) (2.53,1.22) (2.57,1.24) (2.61,1.26) (2.65,1.27) (2.70,1.29) (2.74,1.31) (2.78,1.32) (2.82,1.34) (2.86,1.35) (2.90,1.36) (2.94,1.37) (2.98,1.38) (3.02,1.39) (3.06,1.40) (3.10,1.40) (3.14,1.41) (3.19,1.41) (3.23,1.41) (3.27,1.41)};
+	\draw[thick,color=blue] plot[smooth] coordinates {(-3.27,-1.41) (-3.23,-1.41) (-3.19,-1.41) (-3.14,-1.41) (-3.10,-1.40) (-3.06,-1.40) (-3.02,-1.39) (-2.98,-1.38) (-2.94,-1.37) (-2.90,-1.36) (-2.86,-1.35) (-2.82,-1.34) (-2.78,-1.32) (-2.74,-1.31) (-2.70,-1.29) (-2.65,-1.27) (-2.61,-1.26) (-2.57,-1.24) (-2.53,-1.22) (-2.49,-1.20) (-2.45,-1.18) (-2.41,-1.16) (-2.37,-1.14) (-2.33,-1.12) (-2.29,-1.10) (-2.25,-1.08) (-2.21,-1.06) (-2.16,-1.04) (-2.12,-1.02) (-2.08,-1.00) (-2.04,-0.98) (-2.00,-0.97) (-1.96,-0.95) (-1.92,-0.94) (-1.88,-0.92) (-1.84,-0.91) (-1.80,-0.90) (-1.76,-0.90) (-1.72,-0.89) (-1.67,-0.89) (-1.63,-0.89) (-1.59,-0.89) (-1.55,-0.89) (-1.51,-0.90) (-1.47,-0.90) (-1.43,-0.91) (-1.39,-0.92) (-1.35,-0.94) (-1.31,-0.95) (-1.27,-0.97) (-1.23,-0.98) (-1.18,-1.00) (-1.14,-1.02) (-1.10,-1.04) (-1.06,-1.06) (-1.02,-1.08) (-0.98,-1.10) (-0.94,-1.12) (-0.90,-1.14) (-0.86,-1.16) (-0.82,-1.18) (-0.78,-1.20) (-0.74,-1.22) (-0.69,-1.24) (-0.65,-1.26) (-0.61,-1.27) (-0.57,-1.29) (-0.53,-1.31) (-0.49,-1.32) (-0.45,-1.34) (-0.41,-1.35) (-0.37,-1.36) (-0.33,-1.37) (-0.29,-1.38) (-0.25,-1.39) (-0.20,-1.40) (-0.16,-1.40) (-0.12,-1.41) (-0.08,-1.41) (-0.04,-1.41) (0.00,-1.41) (0.04,-1.41) (0.08,-1.41) (0.12,-1.41) (0.16,-1.40) (0.20,-1.40) (0.25,-1.39) (0.29,-1.38) (0.33,-1.37) (0.37,-1.36) (0.41,-1.35) (0.45,-1.34) (0.49,-1.32) (0.53,-1.31) (0.57,-1.29) (0.61,-1.27) (0.65,-1.26) (0.69,-1.24) (0.74,-1.22) (0.78,-1.20) (0.82,-1.18) (0.86,-1.16) (0.90,-1.14) (0.94,-1.12) (0.98,-1.10) (1.02,-1.08) (1.06,-1.06) (1.10,-1.04) (1.14,-1.02) (1.18,-1.00) (1.23,-0.98) (1.27,-0.97) (1.31,-0.95) (1.35,-0.94) (1.39,-0.92) (1.43,-0.91) (1.47,-0.90) (1.51,-0.90) (1.55,-0.89) (1.59,-0.89) (1.63,-0.89) (1.67,-0.89) (1.72,-0.89) (1.76,-0.90) (1.80,-0.90) (1.84,-0.91) (1.88,-0.92) (1.92,-0.94) (1.96,-0.95) (2.00,-0.97) (2.04,-0.98) (2.08,-1.00) (2.12,-1.02) (2.16,-1.04) (2.21,-1.06) (2.25,-1.08) (2.29,-1.10) (2.33,-1.12) (2.37,-1.14) (2.41,-1.16) (2.45,-1.18) (2.49,-1.20) (2.53,-1.22) (2.57,-1.24) (2.61,-1.26) (2.65,-1.27) (2.70,-1.29) (2.74,-1.31) (2.78,-1.32) (2.82,-1.34) (2.86,-1.35) (2.90,-1.36) (2.94,-1.37) (2.98,-1.38) (3.02,-1.39) (3.06,-1.40) (3.10,-1.40) (3.14,-1.41) (3.19,-1.41) (3.23,-1.41) (3.27,-1.41)};
+	\fill (0.00,0) circle (1.7pt);
+	\fill (3.27,0) circle (1.7pt);
+	\fill (-3.27,0) circle (1.7pt);
+	\fill (1.63,0) circle (1.7pt);
+	\fill (-1.63,0) circle (1.7pt);
+	\end{tikzpicture}
+	\end{center}
+	There are three qualitatively different kinds of motion, separated by the thick red curve.
+	\begin{enumerate}[label=(\roman*)]
+		\item For $-1 < E < 1$ the level set $\{H = E\}$ is a closed curve encircling the origin. This is \vocab{libration}: the pendulum swings back and forth about the bottom, with $q$ bounded by the turning points $\pm q_0$ where $\cos q_0 = -E$.
+		\item For $E > 1$ the level set consists of two curves, one with $p > 0$ throughout and one with $p<0$. This is \vocab{rotation}: the pendulum has enough energy to go over the top, and $q$ increases (or decreases) without bound.
+		\item At $E = 1$ we have the \vocab{separatrix}, $p = \pm 2\cos(q/2)$, on which the pendulum takes infinite time to creep up to the inverted position $q = \pi$.
+	\end{enumerate}
+	Note that the phase space here is really a cylinder rather than a plane, since $q$ and $q + 2\pi$ describe the same configuration; on the cylinder the libration curves are circles, and so are the rotation curves, but the two families of circles are not homotopic to one another.
+
+	Consider the librating region. Solving for $p$,
+	$$
+	p = \pm\sqrt{2(E + \cos q)},
+	$$
+	and the action is
+	$$
+	I(E) = \frac{1}{2\pi}\oint p \dd q = \frac{1}{\pi}\int_{-q_0}^{q_0}\sqrt{2(E+\cos q)}\dd q,
+	$$
+	where $q_0 = \cos^{-1}(-E)$ and the factor of two from the upper and lower halves of the curve has been absorbed. Using $\cos q = 1 - 2\sin^2(q/2)$ and writing $k^2 = (1+E)/2 \in (0,1)$, this becomes
+	$$
+	I(E) = \frac{4}{\pi}\int_0^{q_0}\sqrt{k^2 - \sin^2(q/2)}\dd q = \frac{8}{\pi}\left[\mathcal E(k) - (1-k^2)\mathcal K(k)\right],
+	$$
+	where $\mathcal K$ and $\mathcal E$ are the complete elliptic integrals of the first and second kind. This is not an elementary function, and that is the point: the pendulum is integrable, but its action--angle variables involve elliptic functions. The frequency is
+	$$
+	\Omega(I) = \frac{\dd E}{\dd I} = \left(\frac{\dd I}{\dd E}\right)^{-1} = \frac{\pi}{2\mathcal K(k)},
+	$$
+	using $\dd I/\dd E = \frac{2}{\pi}\mathcal{K}(k)$, which follows from differentiating the integral for $I$ under the integral sign.
+
+	It is worth sanity-checking the two limits. As $E\to -1^+$ we have $k \to 0$, and $\mathcal K(0) = \pi/2$, so $\Omega\to 1$: small oscillations have unit frequency, in agreement with linearising $\ddot q = -\sin q \approx -q$. As $E\to 1^-$ we have $k\to 1$ and $\mathcal K(k)\to\infty$, so $\Omega\to 0$: the period diverges as we approach the separatrix, which is the statement that the pendulum takes forever to reach the top. The pendulum is thus the standard example of an integrable system whose frequency depends on its amplitude.
+\end{example}
+
+Our final example has two degrees of freedom, so that we get an honest two-torus and two genuinely different cycles.
+
+\begin{example}[A particle in a central potential]
+	Consider a particle of unit mass moving in a plane under a central potential $U(r)$. Using polar coordinates $(r, \theta)$, the Hamiltonian is
+	$$
+	H = \frac{1}{2}\left(p_r^2 + \frac{p_\theta^2}{r^2}\right) + U(r),
+	$$
+	with the canonical pairs $(r, p_r)$ and $(\theta, p_\theta)$. This is a four-dimensional phase space, so we need two first integrals in involution, and we have them: $f_1 = H$ and $f_2 = p_\theta$, the angular momentum. They are in involution because $H$ does not depend on $\theta$:
+	$$
+	\{p_\theta, H\} = -\frac{\partial H}{\partial \theta} = 0.
+	$$
+	So the system is integrable. Fix $\vv c = (E, L)$. The invariant surface $M_{\vv c}$ is described by
+	$$
+	p_\theta = L, \qquad p_r = \pm\sqrt{2(E - U(r)) - \frac{L^2}{r^2}},
+	$$
+	and provided the effective potential $U_{\text{eff}}(r) = U(r) + L^2/2r^2$ has a well, so that $r$ oscillates between turning points $r_-$ and $r_+$, this really is a torus: $\theta$ runs around a circle, and $(r, p_r)$ traces a closed curve in its own plane.
+
+	The two cycles are then evident. Taking $\Gamma_1$ to be the loop on which $\theta$ increases by $2\pi$ at fixed $r$, and $\Gamma_2$ the loop on which $(r, p_r)$ traverses its closed curve at fixed $\theta$, we get
+	$$
+	I_1 = \frac{1}{2\pi}\oint_{\Gamma_1}p_\theta\dd\theta = L, \qquad
+	I_2 = \frac{1}{2\pi}\oint_{\Gamma_2}p_r\dd r = \frac{1}{\pi}\int_{r_-}^{r_+}\sqrt{2(E-U(r)) - \frac{L^2}{r^2}}\dd r.
+	$$
+	The first action is just the angular momentum, as one would hope. The second is the \vocab{radial action}, and computing it gives $E$ as a function of $(I_1, I_2)$ and hence both frequencies at once.
+
+	For the Kepler potential $U(r) = -1/r$ this integral can be done by contour methods, with the answer
+	$$
+	I_2 = -I_1 + \frac{1}{\sqrt{-2E}}, \qquad \text{i.e.} \qquad \tilde H = E = -\frac{1}{2(I_1+I_2)^2}.
+	$$
+	The remarkable thing here is that $\tilde H$ depends on $I_1$ and $I_2$ only through the combination $I_1 + I_2$, so that
+	$$
+	\Omega_1 = \frac{\partial\tilde H}{\partial I_1} = \frac{\partial\tilde H}{\partial I_2} = \Omega_2 = \frac{1}{(I_1+I_2)^3}.
+	$$
+	The two frequencies are equal, so the winding line on the torus closes up after one circuit: Kepler orbits are closed curves, which is the statement that planetary orbits are ellipses that do not precess. This \vocab{degeneracy} is special to the $1/r$ potential (and to the harmonic oscillator), and its breaking by relativistic corrections is what produces the precession of the perihelion of Mercury.
+\end{example}
+
+This is a good point to pause and take stock. We have a complete and satisfying theory: a Hamiltonian system with enough commuting conserved quantities lives on invariant tori, and on those tori the motion is trivial. For the rest of the course we ask whether anything like this survives when we pass to partial differential equations. The answer, remarkably, is yes -- but almost every ingredient will have to be reinvented.
+
+\end{document}
