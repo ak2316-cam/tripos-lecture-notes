@@ -19,6 +19,7 @@
 \newcommand{\vaL}{\operatorname{val}}
 \newcommand{\Deck}{\operatorname{Deck}}
 \newcommand{\res}{\operatorname{res}}
+\newcommand{\Div}{\operatorname{div}}
 
 \title{Riemann Surfaces}
 \author{Adam Kelly (\texttt{ak2316@cam.ac.uk})}
@@ -352,23 +353,30 @@ therefore \emph{not} path-independent, and the complete analytic function $\log$
 genuinely bigger than any one of its elements.
 
 \begin{center}
-\begin{tikzpicture}[scale=1.15]
-	\draw[thin,->] (-1.8,0) -- (1.8,0);
-	\draw[thin,->] (0,-1.8) -- (0,1.8);
-	\foreach \st/\en/\lab/\pos in {-42/42/{U_0}/25, 48/132/{U_1}/115, 138/222/{U_2}/205, 228/312/{U_3}/295} {
-		\draw[thin, color=blue] (\st:1.55) arc (\st:\en:1.55);
-		\node[color=blue] at (\pos:1.32) {\small $\lab$};
-	}
-	\foreach \a in {45,135,225,315} { \draw[thin, dashed, color=blue] (0,0) -- (\a:1.78); }
+\begin{tikzpicture}[scale=1.1]
+	\draw[thin,->] (-2.1,0) -- (2.1,0);
+	\draw[thin,->] (0,-2.1) -- (0,2.1);
 	\fill (0,0) circle (0.045);
-	\draw[->, thin, color=red] (20:0.5) arc (20:340:0.5);
-	\node[color=red] at (-15:0.78) {\small $\gamma$};
+	% each U_n is a half-plane, an arc of angle pi; they are drawn at four
+	% different radii purely so that they can be told apart
+	\foreach \r/\st/\lab/\la in {1.85/-90/{U_0}/18, 1.62/0/{U_1}/100,
+		1.39/90/{U_2}/190, 1.16/180/{U_3}/288} {
+		\pgfmathsetmacro\en{\st+180}
+		\draw[thick, color=blue] (\st:\r) arc (\st:\en:\r);
+		\fill[color=blue] (\st:\r) circle (0.05);
+		\fill[color=blue] (\en:\r) circle (0.05);
+		\node[color=blue] at (\la:{\r+0.24}) {\small $\lab$};
+	}
+	\draw[->, thin, color=red] (25:0.55) arc (25:345:0.55);
+	\node[color=red] at (-12:0.85) {\small $\gamma$};
 \end{tikzpicture}
 \end{center}
 
-The four half-planes $U_0, \dots, U_3$ cover $\Cs$, and each overlaps the next in a
-quadrant. Continuing $f_0$ around the loop $\gamma$ takes us through $F_1, F_2, F_3$ and
-back to $U_0$, but with $f_4 = f_0 + 2\pi i$.
+Each $U_n$ is a half-plane, drawn here as a semicircular arc; the four arcs are given
+different radii only so that they can be told apart, and the sector boundaries are the
+two coordinate axes. Together the $U_0, \dots, U_3$ cover $\Cs$, and each overlaps the
+next in a quadrant. Continuing $f_0$ around the loop $\gamma$ takes us through
+$F_1, F_2, F_3$ and back to $U_0$, but with $f_4 = f_0 + 2\pi i$.
 
 \subsection{Complex Roots}
 
@@ -533,33 +541,34 @@ endlessly up and down over the punctured plane, with no floor ever meeting anoth
 its immediate neighbours.
 
 \begin{center}
-\begin{tikzpicture}[scale=0.9]
-	% base punctured plane
-	\draw[thin] (0,-2.9) ellipse (2.0 and 0.35);
-	\fill (0,-2.9) circle (0.05);
-	\node at (2.45,-2.9) {\small $\Cs$};
-	% axis through the puncture
-	\draw[thin, dashed] (0,-2.9) -- (0,2.6);
-	% helicoid: three turns, drawn as white-filled strips in order of increasing angle
-	% so that the near part of the ramp correctly overdraws whatever lies behind it
-	\foreach \t in {0,15,...,1065} {
-		\pgfmathsetmacro\tb{\t+15}
-		\pgfmathsetmacro\ya{0.30*sin(\t) + \t*0.003889 - 1.95}
-		\pgfmathsetmacro\yb{0.30*sin(\tb) + \tb*0.003889 - 1.95}
-		\pgfmathsetmacro\yc{0.08*sin(\tb) + \tb*0.003889 - 1.95}
-		\pgfmathsetmacro\yd{0.08*sin(\t) + \t*0.003889 - 1.95}
-		\pgfmathtruncatemacro\sp{mod(\t,45)}
-		\fill[white] ({1.7*cos(\t)},\ya) -- ({1.7*cos(\tb)},\yb) --
+\begin{tikzpicture}[scale=0.92]
+	% the punctured plane, lying underneath
+	\draw[thin] (0,-3.0) ellipse (1.9 and 0.42);
+	\fill (0,-3.0) circle (0.05);
+	\node at (2.35,-3.0) {\small $\Cs$};
+	% the axis over the puncture
+	\draw[thin, dashed] (0,-3.0) -- (0,0.95);
+	% Three turns of the helicoid, built strip by strip. The strips are drawn in
+	% order of increasing angle, which is exactly back-to-front here, so the white
+	% fill of each strip hides the part of the ramp lying behind it.
+	\foreach \t in {0,9,...,1071} {
+		\pgfmathsetmacro\tb{\t+9}
+		\pgfmathsetmacro\ya{0.62*sin(\t) + 0.00236*\t - 1.95}
+		\pgfmathsetmacro\yb{0.62*sin(\tb) + 0.00236*\tb - 1.95}
+		\pgfmathsetmacro\yc{0.19*sin(\tb) + 0.00236*\tb - 1.95}
+		\pgfmathsetmacro\yd{0.19*sin(\t) + 0.00236*\t - 1.95}
+		\pgfmathtruncatemacro\sp{mod(\t+45,90)}
+		\fill[white] ({1.45*cos(\t)},\ya) -- ({1.45*cos(\tb)},\yb) --
 			({0.45*cos(\tb)},\yc) -- ({0.45*cos(\t)},\yd) -- cycle;
 		\ifnum\sp=0
-			\draw[color=blue!35, thin] ({1.7*cos(\t)},\ya) -- ({0.45*cos(\t)},\yd);
+			\draw[color=blue!35, thin] ({1.45*cos(\t)},\ya) -- ({0.45*cos(\t)},\yd);
 		\fi
-		\draw[color=blue, thick] ({1.7*cos(\t)},\ya) -- ({1.7*cos(\tb)},\yb);
-		\draw[color=blue!70, thin] ({0.45*cos(\t)},\yd) -- ({0.45*cos(\tb)},\yc);
+		\draw[color=blue, thick] ({1.45*cos(\t)},\ya) -- ({1.45*cos(\tb)},\yb);
+		\draw[color=blue!55, thin] ({0.45*cos(\t)},\yd) -- ({0.45*cos(\tb)},\yc);
 	}
-	\draw[->, thin] (2.3,-0.3) -- (2.3,-2.3);
-	\node at (2.55,-1.3) {\small $\pi$};
-	\node[color=blue] at (-2.3,2.1) {\small $R$};
+	\draw[->, thin] (2.15,-1.15) -- (2.15,-2.55);
+	\node at (2.42,-1.85) {\small $\pi$};
+	\node[color=blue] at (-1.85,0.7) {\small $R$};
 \end{tikzpicture}
 \end{center}
 
@@ -618,32 +627,32 @@ and, exactly as before, $R_k$ is path-connected and Hausdorff. Here is the pictu
 $k = 2$: a two-sheeted spiral, closing after two turns.
 
 \begin{center}
-\begin{tikzpicture}[scale=0.9]
-	\draw[thin] (0,-2.5) ellipse (1.95 and 0.34);
-	\fill (0,-2.5) circle (0.05);
-	\node at (2.4,-2.5) {\small $\Cs$};
-	\draw[thin, dashed] (0,-2.5) -- (0,1.9);
-	\foreach \t in {0,15,...,705} {
-		\pgfmathsetmacro\tb{\t+15}
-		\pgfmathsetmacro\ya{0.29*sin(\t) + \t*0.003889 - 1.45}
-		\pgfmathsetmacro\yb{0.29*sin(\tb) + \tb*0.003889 - 1.45}
-		\pgfmathsetmacro\yc{0.08*sin(\tb) + \tb*0.003889 - 1.45}
-		\pgfmathsetmacro\yd{0.08*sin(\t) + \t*0.003889 - 1.45}
-		\pgfmathtruncatemacro\sp{mod(\t,45)}
-		\fill[white] ({1.63*cos(\t)},\ya) -- ({1.63*cos(\tb)},\yb) --
+\begin{tikzpicture}[scale=0.92]
+	\draw[thin] (0,-2.6) ellipse (1.9 and 0.42);
+	\fill (0,-2.6) circle (0.05);
+	\node at (2.35,-2.6) {\small $\Cs$};
+	\draw[thin, dashed] (0,-2.6) -- (0,0.5);
+	\foreach \t in {0,9,...,711} {
+		\pgfmathsetmacro\tb{\t+9}
+		\pgfmathsetmacro\ya{0.62*sin(\t) + 0.00236*\t - 1.60}
+		\pgfmathsetmacro\yb{0.62*sin(\tb) + 0.00236*\tb - 1.60}
+		\pgfmathsetmacro\yc{0.19*sin(\tb) + 0.00236*\tb - 1.60}
+		\pgfmathsetmacro\yd{0.19*sin(\t) + 0.00236*\t - 1.60}
+		\pgfmathtruncatemacro\sp{mod(\t+45,90)}
+		\fill[white] ({1.45*cos(\t)},\ya) -- ({1.45*cos(\tb)},\yb) --
 			({0.45*cos(\tb)},\yc) -- ({0.45*cos(\t)},\yd) -- cycle;
 		\ifnum\sp=0
-			\draw[color=blue!35, thin] ({1.63*cos(\t)},\ya) -- ({0.45*cos(\t)},\yd);
+			\draw[color=blue!35, thin] ({1.45*cos(\t)},\ya) -- ({0.45*cos(\t)},\yd);
 		\fi
-		\draw[color=blue, thick] ({1.63*cos(\t)},\ya) -- ({1.63*cos(\tb)},\yb);
-		\draw[color=blue!70, thin] ({0.45*cos(\t)},\yd) -- ({0.45*cos(\tb)},\yc);
+		\draw[color=blue, thick] ({1.45*cos(\t)},\ya) -- ({1.45*cos(\tb)},\yb);
+		\draw[color=blue!55, thin] ({0.45*cos(\t)},\yd) -- ({0.45*cos(\tb)},\yc);
 	}
-	% the bottom and top edges of the ramp are identified
-	\draw[thin, color=blue, dashed] (1.63,-1.45) .. controls (2.9,-0.9) and (2.9,0.9) .. (1.63,1.35);
-	\node[color=blue] at (3.5,-0.05) {\small glued};
-	\draw[->, thin] (-2.15,-0.6) -- (-2.15,-1.95);
-	\node at (-2.42,-1.28) {\small $\pi$};
-	\node[color=blue] at (-2.15,1.6) {\small $R_2$};
+	% the bottom and top edges of the ramp are identified with one another
+	\draw[thin, color=blue, dashed] (1.45,-1.60) .. controls (2.75,-1.25) and (2.75,-0.25) .. (1.45,0.10);
+	\node[color=blue] at (3.15,-0.75) {\small glued};
+	\draw[->, thin] (-2.05,-0.95) -- (-2.05,-2.15);
+	\node at (-2.32,-1.55) {\small $\pi$};
+	\node[color=blue] at (-1.85,0.3) {\small $R_2$};
 \end{tikzpicture}
 \end{center}
 
@@ -697,7 +706,7 @@ hypotheses are used where.
 	\node at (1.32,1.7) {\small $\tilde U_1$};
 	\node at (1.32,2.45) {\small $\tilde U_2$};
 	\node at (1.32,3.2) {\small $\tilde U_3$};
-	\node at (1.32,3.7) {\small $\vdots$};
+	\node at (0.1,3.68) {\small $\vdots$};
 	\node at (3.15,2.45) {$\tilde X$};
 	\draw[thin] (-2.6,1.45) -- (-2.6,3.55);
 	\draw[thin] (2.6,1.45) -- (2.6,3.55);
@@ -911,11 +920,18 @@ $S^2 \to \Cinf$.
 	% the plane x_3 = 0, in the projection (x,y,z) |-> (x, 0.3y + z)
 	\draw[thin] (-2.2,-0.66) -- (2.2,-0.66) -- (2.2,0.66) -- (-2.2,0.66) -- cycle;
 	\node at (-1.95,0.5) {\small $\C$};
-	% sphere (filled so the plane does not show through it)
+	% sphere (filled so the far half of the plane does not show through it)
 	\fill[white] (0,0) circle (1);
 	\draw[thin] (0,0) circle (1);
-	% equator: back half dashed, front half solid
+	% equator, back half: hidden behind the sphere, so dashed
 	\draw[thin, dashed] (1,0) arc (0:180:1 and 0.3);
+	% the plane is opaque, so it hides the southern hemisphere: paint over
+	% everything lying below the near half of the equator, then restore the
+	% near edge of the plane
+	\fill[white] (-2.2,-1.15) -- (2.2,-1.15) -- (2.2,0) -- (1,0)
+		arc (0:-180:1 and 0.3) -- (-2.2,0) -- cycle;
+	\draw[thin] (-2.2,0) -- (-2.2,-0.66) -- (2.2,-0.66) -- (2.2,0);
+	% equator, near half: the rim where the sphere meets the plane
 	\draw[thin] (-1,0) arc (180:360:1 and 0.3);
 	% north pole
 	\fill (0,1) circle (0.04);
@@ -1115,6 +1131,13 @@ So far our only compact example is $\Cinf$. Here is a family of others.
 \begin{center}
 \begin{tikzpicture}[scale=0.85]
 	\clip (-3.3,-1.75) rectangle (4.0,2.5);
+	% the two families of lattice lines, so that the pattern reads as a lattice
+	\foreach \n in {-2,-1,0,1,2} {
+		\draw[thin, color=gray!45] ({-5*1.35 + \n*0.55}, {\n*1.1}) -- ({5*1.35 + \n*0.55}, {\n*1.1});
+	}
+	\foreach \m in {-4,-3,...,4} {
+		\draw[thin, color=gray!45] ({\m*1.35 - 3*0.55}, {-3*1.1}) -- ({\m*1.35 + 3*0.55}, {3*1.1});
+	}
 	\foreach \m in {-4,-3,...,4} {
 		\foreach \n in {-2,-1,0,1,2} {
 			\fill ({\m*1.35 + \n*0.55}, {\n*1.1}) circle (0.06);
@@ -3331,6 +3354,390 @@ Proposition \ref{prop:rational}, which says $\mathcal{M}(\Cinf) = \C(z)$. In bot
 the meromorphic functions on a compact Riemann surface form a field of transcendence
 degree $1$ over $\C$ -- this is true in general, and is the beginning of the dictionary
 between compact Riemann surfaces and algebraic curves.
+
+\section{Differentials on Compact Surfaces}\label{sec:differentials}
+
+Corollary \ref{cor:noholofnsoncompact} told us that a compact Riemann surface carries no
+non-constant holomorphic function, and we responded by enlarging the target to $\Cinf$.
+There is a second, and in the long run more important, response: keep the target $\C$ but
+change the \emph{kind} of object we are looking at. The observation is that although
+$f(z)$ is not a well-defined thing to write down on a surface -- it depends on the chart
+-- the expression $f(z)\dd z$ very nearly is, because the chain rule supplies exactly the
+factor needed to make the two chart-dependencies cancel. Objects of the form $f(z)\dd z$
+are called differentials, and unlike functions they exist in abundance on compact
+surfaces. Better still, they know the genus.
+
+\subsection{Meromorphic Differentials}
+
+\begin{definition}[Meromorphic Differential]
+	Let $R$ be a Riemann surface. A \vocab{meromorphic differential} (or
+	\vocab{meromorphic $1$-form}) $\omega$ on $R$ is an assignment to each chart
+	$(\phi, U)$ of the conformal structure of a meromorphic function $f_\phi$ on
+	$\phi(U)$, subject to the compatibility condition
+	$$
+	f_\psi(w) = f_\phi\left(\tau(w)\right)\cdot\tau'(w), \qquad
+	\tau = \phi\circ\psi^{-1},
+	$$
+	for all charts $(\phi,U), (\psi,V)$ and all $w \in \psi(U\cap V)$. We write
+	$\omega = f_\phi \dd z$ for the local expression of $\omega$ in the chart $\phi$, and
+	call $\omega$ \vocab{holomorphic} if every $f_\phi$ is holomorphic.
+\end{definition}
+
+The compatibility rule is nothing but the chain rule made into a definition: if
+$z = \tau(w)$ then $\dd z = \tau'(w)\dd w$, so
+$$
+f_\phi(z)\dd z = f_\phi(\tau(w))\,\tau'(w)\dd w = f_\psi(w)\dd w,
+$$
+and the two local expressions really do describe the same object. As with charts and
+atlases, it suffices to prescribe the $f_\phi$ on the charts of some atlas: the
+compatibility condition then propagates the definition to the whole conformal structure.
+
+\begin{example}[The Sphere]\label{ex:dzonsphere}
+	On $\C$, take $f_{\id} = 1$; the resulting differential is written $\dd z$. Now regard
+	it on $\Cinf$. In the chart $w = 1/z$ at infinity we have $\tau(w) = 1/w$ and
+	$\tau'(w) = -1/w^2$, so
+	$$
+	\dd z = -\frac{1}{w^2}\dd w.
+	$$
+	So $\dd z$ extends to a meromorphic differential on the whole sphere, holomorphic
+	except for a double pole at $\infty$. Notice that it has no zeros at all -- something
+	no meromorphic \emph{function} on $\Cinf$ can manage while having only one pole.
+\end{example}
+
+\begin{example}[The Torus]\label{ex:dzontorus}
+	On $T = \C/\Lambda$ the charts of Proposition \ref{prop:torusstructure} are local
+	inverses of $\pi$, and the transition functions are the translations
+	$w \mapsto w + \lambda$, whose derivatives are all $1$. So the constant assignment
+	$f_\phi = 1$ is compatible, and defines a differential on $T$, again written $\dd z$.
+	It is holomorphic and has no zeros whatsoever.
+\end{example}
+
+\begin{example}[The Differential of a Function]
+	Let $f$ be meromorphic on $R$. Define $\dd f$ by taking, in the chart $(\phi,U)$, the
+	meromorphic function $(f\circ\phi^{-1})'$. Compatibility is the chain rule:
+	$$
+	(f\circ\psi^{-1})'(w) = \left(f\circ\phi^{-1}\circ\tau\right)'(w)
+	= (f\circ\phi^{-1})'(\tau(w))\cdot\tau'(w).
+	$$
+	So every meromorphic function has a differential, and $\dd f = 0$ if and only if $f$ is
+	constant.
+\end{example}
+
+\begin{lemma}\label{lem:diffmodule}
+	If $\omega$ is a meromorphic differential and $h$ a meromorphic function then $h\omega$
+	(defined chartwise by $hf_\phi\circ\phi^{-1}$) is a meromorphic differential.
+	Conversely, if $\omega \not\equiv 0$ and $\omega'$ is any meromorphic differential,
+	then $\omega' = h\omega$ for a unique meromorphic function $h$ on $R$.
+\end{lemma}
+
+\begin{proof}
+	The first statement is immediate, since multiplying both sides of the compatibility
+	rule by $h$ preserves it. For the second, define $h$ in the chart $\phi$ to be
+	$f'_\phi/f_\phi$, where $f_\phi, f'_\phi$ are the local expressions of $\omega,
+	\omega'$. This is meromorphic (the denominator is not identically zero, by the identity
+	theorem applied on the connected surface $R$), and the transition factors $\tau'$
+	cancel in the quotient, so the local definitions agree on overlaps and glue to a
+	meromorphic function on $R$. Uniqueness is clear.
+\end{proof}
+
+So the meromorphic differentials form a one-dimensional vector space over the field of
+meromorphic functions -- there are exactly as many differentials as there are functions,
+once you have found one. What makes them worth introducing is that the \emph{zeros and
+poles} of a differential are counted differently from those of a function.
+
+\begin{definition}[Order]
+	Let $\omega$ be a meromorphic differential, not identically zero, and $p \in R$. The
+	\vocab{order} of $\omega$ at $p$ is
+	$$
+	\ord_p(\omega) = \ord_{\phi(p)}(f_\phi)
+	$$
+	for any chart $(\phi, U)$ about $p$, where $\ord$ denotes the order of vanishing (so a
+	pole of order $m$ has $\ord = -m$).
+\end{definition}
+
+This is well defined: the transition factor $\tau'$ is holomorphic and nowhere zero, so
+multiplying by it changes no order of vanishing. We call $p$ a zero of $\omega$ if
+$\ord_p(\omega) > 0$ and a pole if $\ord_p(\omega) < 0$; by the identity theorem these
+form a discrete set, hence a finite one when $R$ is compact.
+
+\begin{definition}[Divisor and Degree]
+	Let $R$ be compact. The \vocab{divisor} of a non-zero meromorphic differential
+	$\omega$, or of a non-constant meromorphic function $f$, is the formal sum
+	$$
+	\Div(\omega) = \sum_{p \in R} \ord_p(\omega)\cdot p, \qquad
+	\Div(f) = \sum_{p\in R}\ord_p(f)\cdot p,
+	$$
+	and its \vocab{degree} is the integer $\deg\Div(\omega) = \sum_p \ord_p(\omega)$.
+\end{definition}
+
+\begin{lemma}\label{lem:degdivf}
+	Let $f$ be a non-constant meromorphic function on a compact Riemann surface $R$. Then
+	$\deg\Div(f) = 0$.
+\end{lemma}
+
+\begin{proof}
+	View $f$ as a map $R \to \Cinf$. By the valency theorem the sum of the orders of the
+	zeros of $f$ is
+	$$
+	\sum_{p \in f^{-1}(0)}\mult_f(p) = \deg f,
+	$$
+	and likewise the sum of the orders of the poles is
+	$\sum_{p\in f^{-1}(\infty)}\mult_f(p) = \deg f$. These cancel.
+\end{proof}
+
+In other words, a meromorphic function on a compact surface has exactly as many zeros as
+poles. The corresponding count for a differential is not zero, and what it is instead is
+the whole point.
+
+\begin{theorem}[Degree of a Canonical Divisor]\label{thm:canonicaldegree}
+	Let $R$ be a compact Riemann surface of genus $g$ carrying a non-constant meromorphic
+	function. Then for every non-zero meromorphic differential $\omega$ on $R$,
+	$$
+	\deg\Div(\omega) = 2g - 2.
+	$$
+\end{theorem}
+
+\begin{proof}
+	\emph{The answer does not depend on $\omega$.} If $\omega'$ is another non-zero
+	differential then $\omega' = h\omega$ for a meromorphic $h$ by Lemma
+	\ref{lem:diffmodule}, and orders add: $\ord_p(\omega') = \ord_p(h) + \ord_p(\omega)$.
+	Summing and applying Lemma \ref{lem:degdivf} gives
+	$\deg\Div(\omega') = \deg\Div(\omega)$. (If $h$ is constant this is trivial.)
+
+	\emph{A convenient choice.} Let $f : R \to \Cinf$ be a non-constant meromorphic
+	function, of degree $n$ say, and take $\omega = \dd f$, which is not identically zero.
+	We compute $\ord_p(\dd f)$ using the local normal form (Proposition
+	\ref{prop:localform}), writing $m = \mult_f(p)$.
+
+	If $f(p) \neq \infty$, choose the chart $\psi(w) = w - f(p)$ downstairs and a chart
+	$\phi$ upstairs putting $f$ in normal form, so that
+	$f\circ\phi^{-1}(z) = f(p) + z^m$. Then $\dd f$ has local expression $mz^{m-1}$, and
+	$$
+	\ord_p(\dd f) = m - 1.
+	$$
+	If $f(p) = \infty$, use the chart $\psi(w) = 1/w$ downstairs, so that normal form reads
+	$1/f\circ\phi^{-1}(z) = z^m$, i.e.\ $f\circ\phi^{-1}(z) = z^{-m}$. Then $\dd f$ has
+	local expression $-mz^{-m-1}$, and
+	$$
+	\ord_p(\dd f) = -m-1.
+	$$
+	Comparing the two, a pole of $f$ contributes $-m-1 = (m-1) - 2m$. Hence
+	$$
+	\deg\Div(\dd f) = \sum_{p\in R}\left(\mult_f(p)-1\right)
+	- 2\!\!\sum_{p\in f^{-1}(\infty)}\!\!\mult_f(p)
+	= \sum_{p\in R}\left(\mult_f(p)-1\right) - 2n,
+	$$
+	the last step by the valency theorem. Finally Riemann--Hurwitz (Theorem \ref{thm:RH})
+	applied to $f : R \to \Cinf$, whose target has genus $0$, gives
+	$$
+	2g-2 = n(0 - 2) + \sum_{p\in R}\left(\mult_f(p)-1\right),
+	$$
+	so that $\sum_p(\mult_f(p)-1) = 2g-2+2n$. Substituting, $\deg\Div(\dd f) = 2g-2$.
+\end{proof}
+
+\begin{remark}
+	The hypothesis that $R$ carries a non-constant meromorphic function looks like a
+	blemish, and it is: it is a (hard) theorem that every compact Riemann surface does, so
+	the hypothesis is vacuous. All the surfaces we have met come with one for free, and we
+	shall not use the general result.
+\end{remark}
+
+Divisors of the form $\Div(\omega)$ are called \vocab{canonical divisors}, and the theorem
+says they all have the same degree, namely $2g-2$. This is a genuinely new way to compute
+the genus: exhibit a single differential and count its zeros and poles.
+
+\begin{example}
+	On $\Cinf$, the differential $\dd z$ of Example \ref{ex:dzonsphere} has divisor
+	$-2\cdot\infty$, of degree $-2 = 2\cdot 0 - 2$. On $\C/\Lambda$, the differential
+	$\dd z$ of Example \ref{ex:dzontorus} has empty divisor, of degree $0 = 2\cdot 1 - 2$.
+	Both agree with Theorem \ref{thm:canonicaldegree}, as they had better.
+\end{example}
+
+\begin{example}[The Cubic Curve Again]
+	Let $\hat R$ be the compactified curve $w^2 = z^3-z$ of Section
+	\ref{subsec:compactifycubic}, and consider
+	$$
+	\omega = \frac{\mathrm{d}z}{w}.
+	$$
+	We claim $\omega$ is holomorphic and nowhere vanishing, so that
+	$\deg\Div(\omega) = 0$ and hence $g(\hat R) = 1$ -- recovering Example
+	\ref{ex:cubicgenus} without any Riemann--Hurwitz bookkeeping.
+
+	Differentiating the equation gives $2w\,\mathrm{d}w = (3z^2-1)\mathrm{d}z$, so that
+	$$
+	\omega = \frac{\mathrm{d}z}{w} = \frac{2\,\mathrm{d}w}{3z^2-1}
+	$$
+	wherever both expressions make sense. Away from the points with $w = 0$ or
+	$z = \infty$, the coordinate $z$ is a chart and $w \neq 0$, so the first expression is
+	holomorphic and non-vanishing. At each of the three points $(z_0,0)$ with
+	$z_0 \in \{0,\pm1\}$ the coordinate $w$ is a chart, and $3z_0^2 - 1 \neq 0$ there
+	(indeed $3z^2-1$ and $z^3-z$ have no common root), so the second expression is
+	holomorphic and non-vanishing. Finally at $\infty$ we use the coordinates
+	$u = 1/z$, $v = z/w$ of Section \ref{subsec:compactifycubic}, in which the curve reads
+	$u = v^2(1-u^2)$; the implicit function theorem makes $v$ a local coordinate with
+	$u = v^2 + O(v^6)$, so $\mathrm{d}u = (2v + O(v^5))\mathrm{d}v$ and
+	$$
+	\omega = \frac{\mathrm{d}z}{w} = \frac{-\mathrm{d}u/u^2}{1/(uv)}
+	= -\frac{v\,\mathrm{d}u}{u} = -\frac{v(2v+O(v^5))}{v^2 + O(v^6)}\mathrm{d}v
+	= \left(-2 + O(v^4)\right)\mathrm{d}v,
+	$$
+	again holomorphic and non-vanishing. So $\Div(\omega) = 0$ and $g(\hat R) = 1$.
+\end{example}
+
+\subsection{The Residue Theorem}
+
+Differentials, not functions, are the objects one integrates. If $\gamma$ is a path lying
+inside a single chart $(\phi, U)$, we may define
+$$
+\int_\gamma \omega = \int_{\phi\circ\gamma} f_\phi(z)\dd z,
+$$
+and the change of variables formula for contour integrals shows this does not depend on
+the chart: substituting $z = \tau(w)$ turns $f_\phi(z)\dd z$ into
+$f_\phi(\tau(w))\tau'(w)\dd w = f_\psi(w)\dd w$, which is exactly the compatibility rule.
+A general path is cut into finitely many such pieces. So $\int_\gamma\omega$ makes sense
+for any path, and this is what a differential is \emph{for}.
+
+\begin{definition}[Residue]
+	Let $\omega$ be a meromorphic differential on $R$ and $p \in R$. The \vocab{residue}
+	of $\omega$ at $p$ is
+	$$
+	\res_p(\omega) = \frac{1}{2\pi i}\int_\gamma \omega,
+	$$
+	where $\gamma$ is a small positively oriented loop about $p$ inside a chart, enclosing
+	no other pole of $\omega$.
+\end{definition}
+
+Equivalently, $\res_p(\omega)$ is the coefficient of $(z - \phi(p))^{-1}$ in the Laurent
+expansion of $f_\phi$; the point of the integral formulation is that it makes
+chart-independence obvious, whereas the coefficient of $z^{-1}$ looks as though it ought
+to depend on the coordinate. (It is worth pausing on this. For a meromorphic
+\emph{function} the coefficient of $z^{-1}$ is \emph{not} chart-independent, and `the
+residue of a function at a point of a Riemann surface' is meaningless. Only differentials
+have residues.)
+
+\begin{theorem}[Residue Theorem on a Compact Surface]\label{thm:residuesum}
+	Let $\omega$ be a meromorphic differential on a compact Riemann surface $R$. Then
+	$$
+	\sum_{p \in R}\res_p(\omega) = 0,
+	$$
+	the sum being finite.
+\end{theorem}
+
+\begin{proof}
+	The poles $p_1,\dots,p_k$ of $\omega$ are finite in number. Choose a triangulation of
+	$R$ (Lemma \ref{lem:triangexists}) and subdivide until every closed triangle lies
+	inside a single chart; perturbing slightly, we may also assume no $p_i$ lies on an edge
+	or vertex, so each pole is interior to exactly one triangle. Orient every triangle
+	positively, which is possible because $R$ is orientable and the charts are
+	holomorphic.
+
+	For a triangle $\Delta$ contained in the chart $(\phi, U)$, the classical residue
+	theorem applied to $f_\phi$ on the region $\phi(\Delta)$ gives
+	$$
+	\int_{\partial\Delta}\omega = 2\pi i \sum_{p_i \in \Delta^\circ}\res_{p_i}(\omega).
+	$$
+	Summing over all triangles, the right-hand side is $2\pi i \sum_p \res_p(\omega)$,
+	since each pole lies in exactly one triangle. On the left, each edge of the
+	triangulation belongs to exactly two triangles and is traversed once in each direction,
+	so the contributions cancel in pairs and the total is $0$.
+\end{proof}
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+	\draw[thin] (0,0) -- (2,0) -- (0.65,1.6) -- cycle;
+	\draw[thin] (2,0) -- (2.75,1.75) -- (0.65,1.6);
+	% orientation arrows on the outer edges
+	\draw[->, thin] (0.90,0) -- (1.15,0);
+	\draw[->, thin] (2.34,0.79) -- (2.47,1.09);
+	\draw[->, thin] (1.81,1.68) -- (1.45,1.66);
+	\draw[->, thin] (0.36,0.88) -- (0.25,0.61);
+	% the shared edge, traversed once in each direction
+	\draw[thick, color=blue] (2,0) -- (0.65,1.6);
+	\draw[->, thin, color=blue] (1.46,0.46) -- (1.01,0.99);
+	\draw[->, thin, color=blue] (1.19,1.15) -- (1.64,0.61);
+	\node at (0.72,0.50) {\small $\Delta$};
+	\node at (2.02,1.28) {\small $\Delta'$};
+\end{tikzpicture}
+\end{center}
+
+The picture is the whole proof: whatever $\omega$ does inside the triangles, the boundary
+integrals cancel along every shared edge, so their total vanishes -- and their total is
+$2\pi i$ times the sum of all the residues.
+
+\begin{example}
+	Take $R = \Cinf$ and $\omega = f(z)\dd z$ for a rational $f$. The theorem says the sum
+	of the residues of $f$ over $\C$, together with the residue at $\infty$ (which in the
+	chart $w = 1/z$ is the residue at $0$ of $-f(1/w)/w^2$), is zero. This is the familiar
+	`sum of residues including infinity vanishes' of IB Complex Analysis, now seen as a
+	statement about the sphere.
+\end{example}
+
+\begin{example}
+	Take $R = \C/\Lambda$ and $\omega = f\dd z$ for an elliptic function $f$, using the
+	nowhere-vanishing $\dd z$ of Example \ref{ex:dzontorus}; then $\res_p(\omega)$ is the
+	ordinary residue of $f$. The theorem says the residues of an elliptic function in a
+	period parallelogram sum to zero, which is exactly what the cancellation of opposite
+	sides gave us in the second proof of Corollary \ref{cor:degatleast2}. The
+	triangulation argument above is the same cancellation, done invariantly.
+\end{example}
+
+\subsection{The Degree--Genus Formula}
+
+We met the degree--genus formula in Example \ref{ex:fermatgenus} as an observation about
+Fermat curves. It holds for every smooth plane curve, and the proof is a pretty
+application of Riemann--Hurwitz.
+
+\begin{theorem}[Degree--Genus Formula]\label{thm:degreegenus}
+	Let $C \subseteq \mathbb{P}^2$ be a smooth projective plane curve of degree $d \geq 1$.
+	Then $C$ is a compact Riemann surface of genus
+	$$
+	g(C) = \frac{(d-1)(d-2)}{2}.
+	$$
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+	That $C$ is a compact Riemann surface is Proposition \ref{prop:algebraicsurface}
+	together with the gluing of charts at infinity, exactly as in Section
+	\ref{subsec:compactifycubic}.
+
+	Pick a point $q \in \mathbb{P}^2 \setminus C$ and project from it: each $p \in C$ lies
+	on a unique line through $q$, and the set of such lines is a copy of
+	$\mathbb{P}^1 \cong \Cinf$. This gives a holomorphic map
+	$$
+	\pi_q : C \longrightarrow \Cinf.
+	$$
+	A line meets $C$ in $d$ points counted with multiplicity (B\'ezout's theorem), so
+	$\deg \pi_q = d$. A point $p$ is a ramification point of $\pi_q$ precisely when the
+	line $qp$ meets $C$ at $p$ with multiplicity at least $2$, that is, when the line is
+	tangent to $C$ at $p$.
+
+	For a generic choice of $q$ -- and this is the step we are not proving -- every tangent
+	line through $q$ is tangent at exactly one point and to order exactly $2$, so each
+	ramification point has multiplicity $2$; and the number of such points is $d(d-1)$.
+	(This last count is again B\'ezout: the points of $C$ whose tangent passes through $q$
+	are the intersections of $C$ with its \emph{polar curve} with respect to $q$, which has
+	degree $d - 1$.) Riemann--Hurwitz now gives
+	$$
+	2g(C) - 2 = d\,(0 - 2) + d(d-1)\cdot(2-1) = d^2 - 3d,
+	$$
+	whence $g(C) = (d^2-3d+2)/2 = (d-1)(d-2)/2$.
+\end{proof}
+
+The two computations we did by hand are the special cases we can check independently: the
+Fermat curve $x^d + y^d = 1$ of Example \ref{ex:fermatgenus}, where we projected along a
+coordinate axis rather than from a general point and found the same answer, and the cubic
+$w^2 = z^3 - z$, which after homogenising is a smooth plane cubic of genus
+$(3-1)(3-2)/2 = 1$.
+
+\begin{remark}
+	It is worth being clear about what the formula does and does not say. Every smooth
+	plane curve of degree $d$ has genus $(d-1)(d-2)/2$, so smooth plane curves realise only
+	the genera $0, 0, 1, 3, 6, 10, \dots$. Compact Riemann surfaces of the missing genera
+	certainly exist -- the hyperelliptic curves supply all of them -- but they cannot be
+	embedded in $\mathbb{P}^2$ without singularities. Genus $2$ is the first example.
+	Plane curves are special, and it is exactly the interplay between the abstract theory
+	and such concrete models that makes the subject work.
+\end{remark}
 
 \section{Quotients and Uniformisation}
 
